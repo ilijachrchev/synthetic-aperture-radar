@@ -30,5 +30,4 @@ You may (but are not required to) consider the following:
 - If you are familiar with your study area (e.g., it’s your hometown), you can provide personal context and stories for the SAR imagery.
 - Consider making your summary interactive (e.g., image sliders, web maps, etc.).
 
-> For data and resources related to this challenge, refer to the Resources tab at the top of the page. More resources may be added before the hackathon begins.
-
+> _For data and resources related to this challenge, refer to the Resources tab at the top of the page. More resources may be added before the hackathon begins._
