@@ -42,7 +42,9 @@ SITES: dict[str, Site] = {
         Site(
             name="pego_oliva",
             title="Pego-Oliva marsh and Girona plain (DANA Adam flood)",
-            bbox=(-0.25, 38.78, 0.10, 38.95),
+            # Covers every flood label: EMSR935 reaches 38.992 N, the
+            # Generalitat footprint 0.028 E (checked against the WFS data).
+            bbox=(-0.25, 38.78, 0.06, 39.02),
             crs="EPSG:32630",
             models=("cv",),
         ),

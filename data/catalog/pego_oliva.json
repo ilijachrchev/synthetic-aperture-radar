@@ -3,10 +3,10 @@
  "bbox": [
   -0.25,
   38.78,
-  0.1,
-  38.95
+  0.06,
+  39.02
  ],
- "retrieved_utc": "2026-11-13T22:49:00+00:00",
+ "retrieved_utc": "2026-11-13T23:00:51+00:00",
  "source": "https://cmr.earthdata.nasa.gov/search/granules.umm_json",
  "collections": [
   "NISAR_L2_GCOV_PROVISIONAL_V1",
@@ -1003,7 +1003,7 @@
      39.97821
     ]
    ],
-   "site_coverage": 0.518
+   "site_coverage": 0.633
   },
   {
    "granule_ur": "NISAR_L2_PR_GCOV_024_167_D_069_2005_DHDH_A_20260707T190140_20260707T190215_P05023_N_F_J_001",
@@ -1048,7 +1048,7 @@
      39.99965
     ]
    ],
-   "site_coverage": 0.519
+   "site_coverage": 0.634
   },
   {
    "granule_ur": "NISAR_L2_PR_GCOV_025_167_D_069_2005_DHDH_A_20260719T190140_20260719T190214_P05023_N_F_J_001",
@@ -1093,7 +1093,7 @@
      39.95611
     ]
    ],
-   "site_coverage": 0.517
+   "site_coverage": 0.632
   },
   {
    "granule_ur": "NISAR_L2_PR_GCOV_028_167_D_069_2005_DHDH_A_20260824T190138_20260824T190212_P05023_N_F_J_001",
@@ -1138,7 +1138,7 @@
      39.99193
     ]
    ],
-   "site_coverage": 0.517
+   "site_coverage": 0.632
   },
   {
    "granule_ur": "NISAR_L2_PR_GCOV_029_167_D_069_2005_DHDH_A_20260905T190137_20260905T190212_P05023_N_F_J_001",
@@ -1183,7 +1183,7 @@
      40.03947
     ]
    ],
-   "site_coverage": 0.52
+   "site_coverage": 0.636
   },
   {
    "granule_ur": "NISAR_L2_PR_GCOV_030_167_D_069_2005_DHDH_A_20260917T190137_20260917T190212_P05023_N_F_J_001",
@@ -1228,7 +1228,7 @@
      40.03976
     ]
    ],
-   "site_coverage": 0.519
+   "site_coverage": 0.635
   },
   {
    "granule_ur": "NISAR_L2_PR_GCOV_031_167_D_069_2005_DHDH_A_20260929T190137_20260929T190212_P05023_N_F_J_001",
@@ -1273,7 +1273,7 @@
      40.04226
     ]
    ],
-   "site_coverage": 0.517
+   "site_coverage": 0.632
   },
   {
    "granule_ur": "NISAR_L2_PR_GCOV_032_167_D_069_2005_DHDH_A_20261011T190137_20261011T190212_P05023_N_F_J_001",
@@ -1318,7 +1318,7 @@
      40.04723
     ]
    ],
-   "site_coverage": 0.518
+   "site_coverage": 0.633
   },
   {
    "granule_ur": "NISAR_L2_PR_GCOV_033_167_D_069_2005_DHDH_A_20261023T190137_20261023T190212_P05036_N_F_J_001",
@@ -1363,7 +1363,7 @@
      40.06602
     ]
    ],
-   "site_coverage": 0.519
+   "site_coverage": 0.635
   },
   {
    "granule_ur": "NISAR_L2_PR_GUNW_023_058_A_021_024_2000_SH_20260618T050655_20260618T050722_20260630T050650_20260630T050721_P05023_N_F_J_001",
@@ -2237,7 +2237,7 @@
    ],
    "reference_utc": "2026-06-25T19:01:41+00:00",
    "secondary_utc": "2026-07-07T19:01:40+00:00",
-   "site_coverage": 0.518
+   "site_coverage": 0.633
   },
   {
    "granule_ur": "NISAR_L2_PR_GUNW_024_167_D_069_025_2000_SH_20260707T190140_20260707T190215_20260719T190140_20260719T190214_P05023_N_F_J_001",
@@ -2283,7 +2283,7 @@
    ],
    "reference_utc": "2026-07-07T19:01:40+00:00",
    "secondary_utc": "2026-07-19T19:01:40+00:00",
-   "site_coverage": 0.519
+   "site_coverage": 0.634
   },
   {
    "granule_ur": "NISAR_L2_PR_GUNW_025_167_D_069_028_2000_SH_20260719T190140_20260719T190214_20260824T190138_20260824T190212_P05023_N_F_J_001",
@@ -2329,7 +2329,7 @@
    ],
    "reference_utc": "2026-07-19T19:01:40+00:00",
    "secondary_utc": "2026-08-24T19:01:38+00:00",
-   "site_coverage": 0.517
+   "site_coverage": 0.632
   },
   {
    "granule_ur": "NISAR_L2_PR_GUNW_028_167_D_069_029_2000_SH_20260824T190138_20260824T190212_20260905T190137_20260905T190212_P05023_N_F_J_001",
@@ -2375,7 +2375,7 @@
    ],
    "reference_utc": "2026-08-24T19:01:38+00:00",
    "secondary_utc": "2026-09-05T19:01:37+00:00",
-   "site_coverage": 0.517
+   "site_coverage": 0.632
   },
   {
    "granule_ur": "NISAR_L2_PR_GUNW_029_167_D_069_030_2000_SH_20260905T190137_20260905T190212_20260917T190137_20260917T190212_P05023_N_F_J_001",
@@ -2421,7 +2421,7 @@
    ],
    "reference_utc": "2026-09-05T19:01:37+00:00",
    "secondary_utc": "2026-09-17T19:01:37+00:00",
-   "site_coverage": 0.52
+   "site_coverage": 0.636
   },
   {
    "granule_ur": "NISAR_L2_PR_GUNW_030_167_D_069_031_2000_SH_20260917T190137_20260917T190212_20260929T190137_20260929T190212_P05023_N_F_J_001",
@@ -2467,7 +2467,7 @@
    ],
    "reference_utc": "2026-09-17T19:01:37+00:00",
    "secondary_utc": "2026-09-29T19:01:37+00:00",
-   "site_coverage": 0.519
+   "site_coverage": 0.635
   },
   {
    "granule_ur": "NISAR_L2_PR_GUNW_031_167_D_069_032_2000_SH_20260929T190137_20260929T190212_20261011T190137_20261011T190212_P05023_N_F_J_001",
@@ -2513,7 +2513,7 @@
    ],
    "reference_utc": "2026-09-29T19:01:37+00:00",
    "secondary_utc": "2026-10-11T19:01:37+00:00",
-   "site_coverage": 0.517
+   "site_coverage": 0.632
   }
  ]
 }
