@@ -33,17 +33,18 @@
 |---|---|---|---|---|
 | Albufera, Valencia | Rice cycle and winter flooding (perellonà) | 20 dates, 18 Jun to 28 Oct, 3 tracks ✔ | Same-day Sentinel-1 water map on every date ✔ | The big October water is the farmers, not the storm ✔ |
 | Pego-Oliva marsh | DANA "Adam" flood, 17 to 19 Oct ✔ | Track 066 D: 16 Oct to 28 Oct ✔ | Copernicus EMSR935 ✔ | Small signal, 9.6 days after the peak |
-| Serra d'Espadà, Castellón | Wildfire, about 9,600 ha, 25 Jul to 2 Sep ~ | Track 058 A: 24 Jul (day before) to 17 Aug and 16 Oct ✔ | EFFIS, EMSR905 ~ | Terrain and rain |
-| Lorca, Alto Guadalentín | Ground sinking, up to about 10 cm/yr ✔, slower lately ~ | Track 167 D: continuous, 25 Jun to 11 Oct ✔ | EGMS, GNSS station LOR1 ~ | Only about 1 to 4 cm of motion in the window ? |
+| Serra d'Espadà, Castellón | Wildfire, about 9,200 ha (EFFIS), started 25 Jul ✔ | Track 058 A: 24 Jul (day before) to 17 Aug and 16 Oct ✔ | EFFIS, EMSR905 ✔ | Terrain and rain |
+| Lorca, Alto Guadalentín | Ground sinking: over 10 cm/yr in 1992 to 2012, about 4 cm/yr at GNSS station LOR1 since 2025 ✔ | Track 167 D: continuous, 25 Jun to 11 Oct ✔ | EGMS, GNSS station LOR1 ✔ | Only about 1 to 4 cm of motion in the window ? |
 | Panama (global) | M7.7 earthquake, 9 Oct ✔ | 4 tracks; one pass 6 h after the quake; fringes visible ✔ | USGS ✔ | Frame edge, ionosphere |
 
-Backups: Monòver sinking bowl (about 6.5 cm/yr, 23.6 ha) ~ · Pacaya-Samiria flooded forest in the El Niño drought (Peru) ~ · Querétaro sinking (5 to 10 cm/yr) ~
+Backups: Monòver sinking bowl (up to about 6.5 cm/yr, more than 42 ha) ✔ · Pacaya-Samiria flooded forest in the El Niño drought (Peru) ~
 
 ## 4. Free labels and helper data
 
 - **OPERA DSWx-S1** (Sentinel-1 water, 30 m): 1,194 files over the Albufera since Aug 2024, with one on the same day as every NISAR pass. Free training labels and a fair L-band vs C-band comparison. ✔
-- **Copernicus EMS** outlines (EMSR935 flood, EMSR905 fire) and **EFFIS** burnt areas. ~
-- **EGMS** ground motion (latest release covers 2020 to 2024; downloads need a free EU Login). ~
+- **Copernicus EMS** outlines (EMSR935 flood, EMSR905 fire) and **EFFIS** burnt areas. ✔
+- **Valencian regional WFS** (ICV, no login): the EMSR935 flood outline plus the Generalitat's official 1,023 ha river-flood footprint for DANA "Adam". ✔
+- **EGMS** ground motion (latest update covers 2020 to 2025, out since 4 Nov 2026; downloads need a free EU Login, the API a CLMS token). ✔
 - **USGS** earthquake API. ✔
 
 ## 5. What L-band shows
@@ -61,7 +62,7 @@ Confounders: wind on water (looks bright), rain, steep terrain, ionosphere.
 ## 6. Predictions that stay honest
 
 - **Keep:**
-  - Lorca sinking: trend + seasonal fit on EGMS, backtested (train 2020 to 2022, test 2023 to 2024), then checked against NISAR, an independent sensor.
+  - Lorca sinking: trend + seasonal fit on EGMS, backtested (train 2020 to 2023, test 2024 to 2025), then checked against NISAR, an independent sensor.
   - Albufera flooded area on the next passes: seasonal baseline from DSWx-S1 (2024 and 2025) plus the current state. Commit the forecast to git before the data arrives.
   - Every forecast gets a skill score against a naive baseline.
 - **Drop:** soil moisture (a storm's signal fades in about 4 days, the revisit is 12) ~, flood recession (water drains faster than the revisit) ?, earthquake prediction (not honest).
