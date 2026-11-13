@@ -33,6 +33,7 @@ from pipeline.config import CATALOG_DIR, RAW_DIR, Site, get_site
 
 GCOV_GROUP = "/science/LSAR/GCOV/grids/frequencyA"
 GCOV_LAYERS = ("HHHH", "HVHV", "mask", "numberOfLooks")
+DEFAULT_LAYERS = ("HHHH", "HVHV", "mask")  # numberOfLooks is opt-in (--with-looks): a third of the volume
 CMR_COLLECTIONS = "https://cmr.earthdata.nasa.gov/search/collections.json"
 NISAR_RAW = RAW_DIR / "nisar"
 MIN_COVERAGE = 0.99  # only frames that cover the whole site box
@@ -76,10 +77,12 @@ def collection_concept_id(short_name: str) -> str:
     return entries[0]["id"]
 
 
-def plan(site: Site, stack_id: str, overwrite: bool) -> dict[str, list[dict[str, Any]]]:
+def plan(site: Site, stack_id: str, overwrite: bool, dates: set[str] | None = None) -> dict[str, list[dict[str, Any]]]:
     """Granules still to fetch, grouped by collection (one Harmony job per collection)."""
     jobs: dict[str, list[dict[str, Any]]] = {}
     for g in select_granules(load_catalog(site), stack_id):
+        if dates and acquisition_stamp(g)[:8] not in dates:
+            continue
         day_dir = NISAR_RAW / site.name / stack_id / acquisition_stamp(g)[:8]
         if (day_dir / "request.json").exists() and not overwrite:
             continue
@@ -87,7 +90,8 @@ def plan(site: Site, stack_id: str, overwrite: bool) -> dict[str, list[dict[str,
     return jobs
 
 
-def run_job(site: Site, stack_id: str, short_name: str, granules: list[dict[str, Any]]) -> None:
+def run_job(site: Site, stack_id: str, short_name: str, granules: list[dict[str, Any]],
+            layers: tuple[str, ...] = DEFAULT_LAYERS) -> None:
     from harmony import BBox, Client, Collection, Request  # imported here so --dry-run needs no login
 
     concept_id = collection_concept_id(short_name)
@@ -95,7 +99,7 @@ def run_job(site: Site, stack_id: str, short_name: str, granules: list[dict[str,
         collection=Collection(id=concept_id),
         spatial=BBox(*site.bbox),
         granule_name=[g["granule_ur"] for g in granules],
-        variables=[f"{GCOV_GROUP}/{layer}" for layer in GCOV_LAYERS],
+        variables=[f"{GCOV_GROUP}/{layer}" for layer in layers],
         format="image/tiff",
         skip_preview=True,
     )
@@ -129,7 +133,7 @@ def run_job(site: Site, stack_id: str, short_name: str, granules: list[dict[str,
                 "layers": got,
                 "retrieved_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
             }, indent=1), encoding="utf-8")
-            missing = [lay for lay in GCOV_LAYERS if lay not in got]
+            missing = [lay for lay in layers if lay not in got]
             note = f" (missing: {', '.join(missing)})" if missing else ""
             print(f"  {stamp[:8]}: {len(got)} layers{note}")
         leftovers = [f.name for f in files if f.exists()]
@@ -143,18 +147,21 @@ def main() -> None:
     parser.add_argument("--stack", required=True, help="stack id from the catalog, e.g. 066_D_069")
     parser.add_argument("--dry-run", action="store_true", help="show what would be requested, no login needed")
     parser.add_argument("--overwrite", action="store_true", help="fetch dates that are already on disk again")
+    parser.add_argument("--date", action="append", help="only this acquisition date (YYYYMMDD); repeatable")
+    parser.add_argument("--with-looks", action="store_true", help="also fetch numberOfLooks (not needed by the baseline)")
     args = parser.parse_args()
 
     site = get_site(args.site)
-    jobs = plan(site, args.stack, args.overwrite)
+    layers = GCOV_LAYERS if args.with_looks else DEFAULT_LAYERS
+    jobs = plan(site, args.stack, args.overwrite, set(args.date) if args.date else None)
     total = sum(len(v) for v in jobs.values())
-    print(f"{site.name} {args.stack}: {total} granule(s) to fetch, layers {', '.join(GCOV_LAYERS)}")
+    print(f"{site.name} {args.stack}: {total} granule(s) to fetch, layers {', '.join(layers)}")
     for short_name, granules in jobs.items():
         print(f" {short_name}: {', '.join(acquisition_stamp(g)[:8] for g in granules)}")
     if args.dry_run or not jobs:
         return
     for short_name, granules in jobs.items():
-        run_job(site, args.stack, short_name, granules)
+        run_job(site, args.stack, short_name, granules, layers)
 
 
 if __name__ == "__main__":
