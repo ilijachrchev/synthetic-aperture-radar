@@ -105,15 +105,20 @@ CV and ML read the same NISAR stack but answer different questions. Prediction u
 
 ## Shared between the models
 
-Agree on these two in the first hour so nobody waits on anybody.
+Agree on these two before anyone builds, so nobody waits on anybody.
 
-**1. One NISAR stack** (read by CV and ML). Per site, built once: every date, HH and HV in dB, on one grid.
+**1. One NISAR stack** (read by CV and ML). Built once per site with **Harmony** (Earthdata Search or the `harmony-py` client): it cuts the site out of each NISAR file and returns COGs of `HHHH`, `HVHV`, `mask` and `numberOfLooks`, reprojected to **EPSG:32630** (UTM 30N; every Spanish site we use lies west of 0°). No HDF5 parsing on our side.
+
+- Snap every date to the same grid (same origin, 20 m pixels) before stacking.
+- Keep linear power for filtering and averaging; convert to dB at the end (10·log10, not 20).
+- A valid pixel is finite, positive and inside the scene on every date it is compared on. The GCOV `mask` describes how radar samples were averaged; it is not a water mask.
+- Reading the HDF5 files directly instead? GDAL older than 3.13 needs the NETCDF driver to place them on the map.
 
 ```
-data/stack/<site>.nc    dims: time × y × x    vars: HH, HV (dB), mask    attrs: track, frame, dates
+data/stack/<site>.nc    dims: time × y × x    vars: HH, HV (dB), valid    attrs per date: granule, crid, track, frame
 ```
 
-**2. One output format** (written by all three). 8-bit Cloud-Optimized GeoTIFF, web-optimized (`rio cogeo create --web-optimized`), plus one entry per layer in `data/manifest.json`. Example entry (values are placeholders):
+**2. One output format** (written by all three). Analysis runs on EPSG:32630; display layers are 8-bit Cloud-Optimized GeoTIFFs, web-optimized (`rio cogeo create --web-optimized`), plus one entry per layer in `data/manifest.json` that says exactly which NISAR file it came from. Example entry (values are placeholders):
 
 ```json
 {
@@ -122,6 +127,8 @@ data/stack/<site>.nc    dims: time × y × x    vars: HH, HV (dB), mask    attrs
   "layer": "water",
   "date": "2026-10-28",
   "file": "data/cv/albufera/water_20261028.tif",
+  "source": { "granule": "NISAR_L2_PR_GCOV_...", "crid": "P05036", "track": "066", "direction": "D", "frame": "069" },
+  "valid_fraction": 0.0,
   "score": { "iou": 0.0 }
 }
 ```
