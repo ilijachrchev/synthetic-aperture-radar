@@ -6,7 +6,7 @@
 
 NASA Space Apps Challenge 2026 · Valencia, Spain · Challenge: [Dancing with the SARs](https://www.spaceappschallenge.org/2026/challenges/dancing-with-the-sars/)
 
-[Challenge brief](docs/INSTRUCTIONS.md) · [Resources](docs/RESOURCES.md)
+[Challenge brief](docs/INSTRUCTIONS.md) · [Resources](docs/RESOURCES.md) · [Research](docs/RESEARCH.md)
 
 </div>
 
@@ -21,7 +21,7 @@ An open-source, interactive web app that turns NISAR L-band radar data into maps
 - **Predictions with honest uncertainty**: every forecast comes with a range and is scored against a simple baseline.
 - **Plain language first**, with the radar details one click deeper.
 
-> 🚧 **Work in progress.** Built during the hackathon (13 to 15 Nov 2026). The team is still choosing the scope and the study sites.
+> 🚧 **Work in progress.** Built during the hackathon (13 to 15 Nov 2026). The team is still choosing the scope and the study sites; [docs/RESEARCH.md](docs/RESEARCH.md) has the options and the data behind them.
 
 ## How it works
 
