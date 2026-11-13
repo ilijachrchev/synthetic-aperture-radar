@@ -55,3 +55,40 @@ flowchart LR
 | Backend, optional | FastAPI · TiTiler | Only for dynamic tiles; the demo does not need it |
 | Compute | Google Colab / Kaggle (free GPU) | Inference runs offline and exports COGs |
 | Hosting | Vercel or GitHub Pages · Hugging Face datasets for large files | All three serve HTTP range requests with CORS |
+
+## Data sources
+
+- **NISAR L2 GCOV** (radar brightness, HH and HV, 20 m) and **GUNW** (12-day ground-motion pairs, 80 m), from NASA's [ASF DAAC](https://nisar-docs.asf.alaska.edu/).
+- **OPERA DSWx-S1**: Sentinel-1 surface water maps, used as training labels and for an L-band vs C-band comparison.
+- **Copernicus EMS** rapid mapping and **EFFIS**: flood and burnt-area outlines for validation.
+- **EGMS** (European Ground Motion Service): years of ground-motion history.
+- **USGS** earthquake catalog.
+
+## Repository layout (planned)
+
+```
+web/        Next.js app
+pipeline/   notebooks and scripts: fetch, process, bake
+data/       manifest and small derived files (large files are hosted elsewhere)
+docs/       challenge brief, resources, research
+```
+
+## Team
+
+To be added.
+
+## Use of Super Intelligence (SI)
+
+Space Apps asks every team to disclose how SI tools were used.
+
+- Research notes and documentation in this repository were drafted with an SI assistant (Claude Code). Facts were checked against primary sources (NASA CMR, USGS, official docs).
+- The project idea and all decisions are the team's own.
+- SI-assisted commits carry a `Co-Authored-By` trailer. SI-generated images will carry a visible watermark.
+
+## License
+
+To be decided by the team. It will be an open-source license, as the challenge requires.
+
+## Acknowledgements
+
+NISAR is a joint mission of NASA and ISRO. Data courtesy of NASA's Alaska Satellite Facility DAAC, NASA JPL OPERA, the Copernicus programme and the USGS. This project is not endorsed by NASA.
