@@ -45,3 +45,54 @@ Backups: Monòver sinking bowl (about 6.5 cm/yr, 23.6 ha) ~ · Pacaya-Samiria fl
 - **Copernicus EMS** outlines (EMSR935 flood, EMSR905 fire) and **EFFIS** burnt areas. ~
 - **EGMS** ground motion (latest release covers 2020 to 2024; downloads need a free EU Login). ~
 - **USGS** earthquake API. ✔
+
+## 5. What L-band shows
+
+| Change | Layer | What to expect |
+|---|---|---|
+| Open water | GCOV HH | Very dark. Threshold per scene (Otsu); published thresholds disagree |
+| Flooded vegetation | GCOV HH | Brighter (about +3 dB, double bounce), HV stays flat |
+| Rice | GCOV HH and HV over time | Dark (flooded), then bright (canopy), then a drop (harvest) |
+| Burned forest | GCOV HV | Drops |
+| Ground motion | GUNW unwrapped phase | One fringe is about 12 cm toward or away from the satellite |
+
+Confounders: wind on water (looks bright), rain, steep terrain, ionosphere.
+
+## 6. Predictions that stay honest
+
+- **Keep:**
+  - Lorca sinking: trend + seasonal fit on EGMS, backtested (train 2020 to 2022, test 2023 to 2024), then checked against NISAR, an independent sensor.
+  - Albufera flooded area on the next passes: seasonal baseline from DSWx-S1 (2024 and 2025) plus the current state. Commit the forecast to git before the data arrives.
+  - Every forecast gets a skill score against a naive baseline.
+- **Drop:** soil moisture (a storm's signal fades in about 4 days, the revisit is 12) ~, flood recession (water drains faster than the revisit) ?, earthquake prediction (not honest).
+- **Show:** ranges with numbers (fan chart or dotplot), "forecast made on [date]", skill against the baseline.
+
+## 7. Competition
+
+GitHub sample of 98 projects on this challenge ~
+- Crowded: Bangladesh floods (21), "anywhere" globes and dashboards (33).
+- Rare: Mexico City (1).
+- Empty: Spain (0), wildfire, rice, honest forecasting.
+
+## 8. Traps
+
+- Downloading whole files (our laptop disks are nearly full).
+- Mixing tracks, modes or BETA data.
+- Live processing during the demo.
+- Using C-band dB thresholds on L-band data.
+- Calling the rice-field flooding a flood.
+- Promising "AI predicts disasters".
+- The AGPL licence of `albumentationsx`.
+
+## 9. Key sources
+
+- NISAR data guide: https://nisar-docs.asf.alaska.edu/
+- What NISAR data exists: https://nisar-docs.asf.alaska.edu/availability-overview/
+- Catalog query example: https://cmr.earthdata.nasa.gov/search/granules.json?short_name=NISAR_L2_GCOV_V1&point=-0.35,39.33
+- Streaming notebooks: https://github.com/ASFOpenSARlab/NISAR_Cookbook
+- Submission rules (SI, demo limits): https://www.spaceappschallenge.org/resources/project-submission-guide/
+- Valencia schedule: https://www.spaceappschallenge.org/2026/local-events/valencia/?tab=schedule
+- Panama M7.7 (USGS): https://earthquake.usgs.gov/earthquakes/eventpage/us6000u18k
+- DANA "Adam" flood mapping (EMSR935): https://mapping.emergency.copernicus.eu/activations/EMSR935/
+- EGMS: https://egms.land.copernicus.eu/
+- OPERA products: https://www.jpl.nasa.gov/go/opera/products
