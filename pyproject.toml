@@ -18,6 +18,7 @@ dependencies = [
     "rioxarray>=0.17",
     "xarray>=2024.10",
     "h5netcdf>=1.4",
+    "h5py>=3.11",  # h5netcdf's backend; not pulled in automatically since h5netcdf 1.8
     "scikit-image>=0.24",
     "earthaccess>=0.14",
     "harmony-py>=1.0",
