@@ -42,6 +42,7 @@ from rasterio.warp import Resampling, reproject, transform_bounds
 from pipeline.config import PIXEL_SIZE_M, RAW_DIR, STACK_DIR, Site, get_site
 
 POWER_LAYERS = ("HHHH", "HVHV")
+REQUIRED_FILES = ("HHHH.tif", "mask.tif")  # HVHV is absent on HH-only dates and becomes NaN
 MASK_VALID = range(1, 6)  # subswath numbers of fully focused samples
 FULL_SUPPORT = 0.999      # share of valid source pixels required under the bilinear kernel
 
@@ -117,9 +118,16 @@ def load_date(day_dir: Path, grid: Grid) -> dict[str, np.ndarray]:
 
 def build_stack(site: Site, stack_id: str, raw_root: Path = RAW_DIR / "nisar", out_dir: Path = STACK_DIR) -> Path:
     stack_dir = raw_root / site.name / stack_id
-    day_dirs = sorted(d for d in stack_dir.iterdir() if (d / "request.json").exists()) if stack_dir.exists() else []
+    fetched = sorted(d for d in stack_dir.iterdir() if (d / "request.json").exists()) if stack_dir.exists() else []
+    day_dirs = []
+    for d in fetched:
+        missing = [f for f in REQUIRED_FILES if not (d / f).exists()]
+        if missing:
+            print(f"  WARNING: skipping {d.name}, missing {', '.join(missing)} (fetch it again with --overwrite)")
+        else:
+            day_dirs.append(d)
     if not day_dirs:
-        raise FileNotFoundError(f"no fetched dates in {stack_dir}: run python -m pipeline.nisar_fetch first")
+        raise FileNotFoundError(f"no complete fetched dates in {stack_dir}: run python -m pipeline.nisar_fetch first")
     grid = site_grid(site)
 
     layers = {"HH": [], "HV": [], "valid": [], "looks": []}

@@ -20,8 +20,12 @@ DSWX_FILL = 255
 
 
 def open_stack(path: str | Path) -> xr.Dataset:
-    """Open a stack written by pipeline.stack, keeping its CRS and transform."""
-    return xr.open_dataset(path, engine="h5netcdf", decode_coords="all")
+    """Load a stack written by pipeline.stack into memory, keeping its CRS and transform.
+
+    Loaded eagerly (a stack is tens of MB) so the file is closed right away and
+    can be rebuilt while a notebook still holds the data.
+    """
+    return xr.load_dataset(path, engine="h5netcdf", decode_coords="all")
 
 
 def to_db(power: np.ndarray) -> np.ndarray:

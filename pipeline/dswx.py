@@ -1,8 +1,11 @@
 """Same-day Sentinel-1 water maps (OPERA DSWx-S1) as labels for the CV model.
 
-For every NISAR acquisition date of a site, finds the DSWx-S1 tiles of the same
-UTC day over the site box (public CMR search) and downloads only their water
-classification layer, B01_WTR (needs the Earthdata login in your .netrc).
+For every NISAR GCOV acquisition of a site (one per stack and time; a day can
+hold a morning ascending and an evening descending acquisition), picks the one
+Sentinel-1 pass closest in time on the same UTC day and downloads only its
+water classification layer, B01_WTR, newest reprocessing per tile (needs the
+Earthdata login in your .netrc). The real time gap is recorded per acquisition,
+so labels far from the NISAR time can be filtered out.
 
 B01_WTR classes (OPERA DSWx-S1 product spec JPL D-108761 Rev A, July 2024,
 the version of the v1.0 files we use; the older v0.2.1 table differs):
@@ -10,8 +13,8 @@ the version of the v1.0 files we use; the older v0.2.1 table differs):
     250 HAND masked, 251 layover/shadow masked, 255 fill (no data)
 
 Output:
-    data/raw/dswx/<site>/<YYYYMMDD>/<granule>_B01_WTR.tif
-    data/raw/dswx/<site>/index.json
+    data/raw/dswx/<site>/<stack_id>/<YYYYMMDD>/<granule>_B01_WTR.tif
+    data/raw/dswx/<site>/index.json   (one entry per NISAR acquisition)
 
 Usage:
     python -m pipeline.dswx --site albufera --dry-run
@@ -35,6 +38,7 @@ CMR_GRANULES = "https://cmr.earthdata.nasa.gov/search/granules.umm_json"
 DSWX_COLLECTION = "OPERA_L3_DSWX-S1_V1"
 DSWX_RAW = RAW_DIR / "dswx"
 MIN_COVERAGE = 0.99
+PASS_GAP_MIN = 10.0  # tiles of one Sentinel-1 pass start within minutes of each other
 
 WTR_CLASSES = {
     0: "not_water",
@@ -47,14 +51,38 @@ WTR_CLASSES = {
 WTR_INVALID = (250, 251, 255)
 
 
-def nisar_dates(site: Site, min_coverage: float = MIN_COVERAGE) -> dict[str, list[str]]:
-    """NISAR GCOV acquisition times per UTC date, for frames that cover the whole site."""
+def _ts(iso: str) -> datetime:
+    return datetime.fromisoformat(iso.replace("Z", "+00:00"))
+
+
+def hours_apart(a_iso: str, b_iso: str) -> float:
+    return abs((_ts(a_iso) - _ts(b_iso)).total_seconds()) / 3600
+
+
+def _tile(granule_ur: str) -> str:
+    return granule_ur.split("_")[3]  # OPERA_L3_DSWx-S1_<TILE>_<acq>Z_<production>Z_<platform>_30_v1.0
+
+
+def _production(granule_ur: str) -> str:
+    return granule_ur.split("_")[5]
+
+
+def _platform(granule_ur: str) -> str:
+    return granule_ur.split("_")[6]
+
+
+def nisar_acquisitions(site: Site, min_coverage: float = MIN_COVERAGE) -> list[dict[str, str]]:
+    """One entry per NISAR GCOV acquisition whose frame covers the whole site."""
     catalog = json.loads((CATALOG_DIR / f"{site.name}.json").read_text(encoding="utf-8"))
-    dates: dict[str, list[str]] = {}
+    seen, out = set(), []
     for g in catalog["granules"]:
-        if g["product"] == "GCOV" and g["site_coverage"] >= min_coverage:
-            dates.setdefault(g["begin_utc"][:10], []).append(g["begin_utc"])
-    return dict(sorted(dates.items()))
+        if g["product"] != "GCOV" or g["site_coverage"] < min_coverage:
+            continue
+        key = (g["stack_id"], g["begin_utc"])
+        if key not in seen:
+            seen.add(key)
+            out.append({"stack_id": g["stack_id"], "nisar_utc": g["begin_utc"], "granule_ur": g["granule_ur"]})
+    return sorted(out, key=lambda a: (a["nisar_utc"], a["stack_id"]))
 
 
 def wtr_url(umm: dict[str, Any]) -> str | None:
@@ -87,47 +115,48 @@ def search_day(site: Site, day: str) -> list[dict[str, Any]]:
     return sorted(out, key=lambda g: g["begin_utc"])
 
 
-def hours_apart(a_iso: str, b_iso: str) -> float:
-    a = datetime.fromisoformat(a_iso.replace("Z", "+00:00"))
-    b = datetime.fromisoformat(b_iso.replace("Z", "+00:00"))
-    return abs((a - b).total_seconds()) / 3600
+def group_passes(granules: list[dict[str, Any]], gap_min: float = PASS_GAP_MIN) -> list[list[dict[str, Any]]]:
+    """Group granules into Sentinel-1 passes: same platform, start times within gap_min."""
+    passes: list[list[dict[str, Any]]] = []
+    for g in sorted(granules, key=lambda x: (_platform(x["granule_ur"]), x["begin_utc"])):
+        last = passes[-1] if passes else None
+        if (last and _platform(last[-1]["granule_ur"]) == _platform(g["granule_ur"])
+                and hours_apart(last[-1]["begin_utc"], g["begin_utc"]) * 60 <= gap_min):
+            last.append(g)
+        else:
+            passes.append([g])
+    return passes
 
 
-def _tile(granule_ur: str) -> str:
-    return granule_ur.split("_")[3]  # OPERA_L3_DSWx-S1_<TILE>_<acq>Z_<production>Z_...
-
-
-def _production(granule_ur: str) -> str:
-    return granule_ur.split("_")[5]
-
-
-def select_closest_pass(granules: list[dict[str, Any]], window_h: float = 0.5) -> list[dict[str, Any]]:
-    """Keep the Sentinel-1 pass closest to NISAR, one (newest) granule per tile.
-
-    A day can hold a morning and an evening Sentinel-1 pass, and reprocessed
-    duplicates of a tile. Labels should come from the pass nearest the NISAR
-    acquisition, so we keep granules within window_h of the best match.
-    """
-    if not granules:
-        return []
-    best = min(g["hours_from_nisar"] for g in granules)
-    close = [g for g in granules if g["hours_from_nisar"] - best <= window_h]
+def pick_pass(granules: list[dict[str, Any]], nisar_utc: str) -> tuple[list[dict[str, Any]], float | None]:
+    """The pass closest to one NISAR acquisition, newest reprocessing per tile, and its time gap (h)."""
+    passes = group_passes(granules)
+    if not passes:
+        return [], None
+    best = min(passes, key=lambda p: min(hours_apart(g["begin_utc"], nisar_utc) for g in p))
     newest: dict[str, dict[str, Any]] = {}
-    for g in close:
+    for g in best:
         tile = _tile(g["granule_ur"])
         if tile not in newest or _production(g["granule_ur"]) > _production(newest[tile]["granule_ur"]):
             newest[tile] = g
-    return sorted(newest.values(), key=lambda g: _tile(g["granule_ur"]))
+    chosen = sorted(newest.values(), key=lambda g: _tile(g["granule_ur"]))
+    gap = round(max(hours_apart(g["begin_utc"], nisar_utc) for g in chosen), 2)
+    return chosen, gap
 
 
-def build_index(site: Site) -> list[dict[str, Any]]:
-    """For each NISAR date: its acquisition times, every same-day DSWx-S1 granule and the selected ones."""
+def build_index(site: Site, stacks: set[str] | None = None) -> list[dict[str, Any]]:
+    """One entry per NISAR acquisition: its stack and time, the chosen pass and the time gap."""
+    by_day: dict[str, list[dict[str, Any]]] = {}
     index = []
-    for day, nisar_times in nisar_dates(site).items():
-        granules = search_day(site, day)
-        for g in granules:
-            g["hours_from_nisar"] = round(min(hours_apart(g["begin_utc"], t) for t in nisar_times), 2)
-        index.append({"date": day, "nisar_utc": nisar_times, "dswx": granules, "selected": select_closest_pass(granules)})
+    for acq in nisar_acquisitions(site):
+        if stacks and acq["stack_id"] not in stacks:
+            continue
+        day = acq["nisar_utc"][:10]
+        if day not in by_day:
+            by_day[day] = search_day(site, day)
+        chosen, gap = pick_pass(by_day[day], acq["nisar_utc"])
+        index.append({**acq, "date": day, "hours_from_nisar": gap,
+                      "platform": _platform(chosen[0]["granule_ur"]) if chosen else None, "selected": chosen})
     return index
 
 
@@ -139,12 +168,13 @@ def download(site: Site, index: list[dict[str, Any]]) -> None:
         urls = [g["wtr_url"] for g in entry["selected"] if g["wtr_url"]]
         if not urls:
             continue
-        day_dir = DSWX_RAW / site.name / entry["date"].replace("-", "")
-        day_dir.mkdir(parents=True, exist_ok=True)
-        todo = [u for u in urls if not (day_dir / u.rsplit("/", 1)[-1]).exists()]
+        acq_dir = DSWX_RAW / site.name / entry["stack_id"] / entry["date"].replace("-", "")
+        acq_dir.mkdir(parents=True, exist_ok=True)
+        todo = [u for u in urls if not (acq_dir / u.rsplit("/", 1)[-1]).exists()]
         if todo:
-            earthaccess.download(todo, local_path=str(day_dir))
-        print(f"  {entry['date']}: {len(urls)} WTR tile(s)")
+            earthaccess.download(todo, local_path=str(acq_dir))
+        entry["files"] = [str((acq_dir / u.rsplit("/", 1)[-1]).relative_to(DSWX_RAW)) for u in urls]
+        print(f"  {entry['stack_id']} {entry['date']}: {len(urls)} WTR tile(s), {entry['hours_from_nisar']} h")
     out = DSWX_RAW / site.name / "index.json"
     out.write_text(json.dumps(index, indent=1), encoding="utf-8")
     print(f"  index -> {out}")
@@ -153,18 +183,17 @@ def download(site: Site, index: list[dict[str, Any]]) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--site", required=True)
+    parser.add_argument("--stack", action="append", help="only this stack id; repeatable")
     parser.add_argument("--dry-run", action="store_true", help="show the matches, no login needed")
     args = parser.parse_args()
 
     site = get_site(args.site)
-    index = build_index(site)
-    matched = sum(1 for e in index if e["dswx"])
-    print(f"{site.name}: {matched} of {len(index)} NISAR dates have a same-day DSWx-S1 map")
+    index = build_index(site, set(args.stack) if args.stack else None)
+    matched = sum(1 for e in index if e["selected"])
+    print(f"{site.name}: {matched} of {len(index)} NISAR acquisitions have a same-day DSWx-S1 pass")
     for e in index:
-        sel = e["selected"]
-        tiles = [_tile(g["granule_ur"]) for g in sel]
-        gap = max((g["hours_from_nisar"] for g in sel), default=None)
-        print(f"  {e['date']}: {len(e['dswx'])} found, {len(sel)} selected {tiles}, at most {gap} h from NISAR")
+        tiles = [_tile(g["granule_ur"]) for g in e["selected"]]
+        print(f"  {e['stack_id']} {e['nisar_utc'][:16]}: {e['platform']} {tiles} gap {e['hours_from_nisar']} h")
     if not args.dry_run:
         download(site, index)
 

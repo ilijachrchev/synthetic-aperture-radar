@@ -23,17 +23,21 @@ SITE = Site("test", "synthetic", (-0.40, 39.30, -0.37, 39.33), "EPSG:32630", ("c
 LAND, WATER, HV = 0.1, 0.001, 0.02
 
 
+PAD = 10        # scene margin around the site grid, in pixels
+STRIPE = (60, 63)   # scene columns with mask 0 (partially focused), inside the site grid
+FILL_TO = 15        # scene columns [0, 15) are fill (mask 255): grid columns 0..4 fall in it
+
+
 def _scene_utm30():
     """A 20 m UTM 30 scene that covers the site with a margin."""
     grid = site_grid(SITE)
-    pad = 10
-    transform = from_origin(grid.transform.c - pad * 20, grid.transform.f + pad * 20, 20, 20)
-    h, w = grid.height + 2 * pad, grid.width + 2 * pad
+    transform = from_origin(grid.transform.c - PAD * 20, grid.transform.f + PAD * 20, 20, 20)
+    h, w = grid.height + 2 * PAD, grid.width + 2 * PAD
     hh = np.full((h, w), LAND, dtype="float32")
-    hh[60:90, 50:80] = WATER                      # water patch
+    hh[60:90, 80:110] = WATER                     # water patch
     mask = np.ones((h, w), dtype="uint8")
-    mask[:, 120:123] = 0                          # partially focused stripe
-    mask[:, :5] = 255                             # outside the radar footprint
+    mask[:, STRIPE[0]:STRIPE[1]] = 0              # partially focused stripe, inside the grid
+    mask[:, :FILL_TO] = 255                       # outside the radar footprint, reaches into the grid
     hh[mask == 255] = np.nan
     hv = np.full((h, w), HV, dtype="float32")
     hv[mask == 255] = np.nan
@@ -72,6 +76,11 @@ def _to_utm31(transform, layers):
 
 
 def test_two_native_zones_land_on_one_grid(tmp_path):
+    _build_two_zones_and_check(tmp_path)
+
+
+def _build_two_zones_and_check(tmp_path):
+    """Build the two-zone stack, run every check, return valid pixels near the stripe on date 2."""
     raw = tmp_path / "raw"
     t30, layers = _scene_utm30()
     _write(raw / "test" / "000_D_000" / "20261016", "EPSG:32630", t30, layers, "20261016T185318")
@@ -107,5 +116,19 @@ def test_two_native_zones_land_on_one_grid(tmp_path):
     inter = np.sum(water[0] & water[1] & both)
     union = np.sum((water[0] | water[1]) & both)
     assert inter / union > 0.85
-    # The invalid stripe (mask 0) is excluded on the first date.
-    assert valid[0].sum() < valid[0].size
+    # Date 1 is on the grid's own lattice: the stripe and the fill land on exact grid columns.
+    s0, s1 = STRIPE[0] - PAD, STRIPE[1] - PAD
+    assert not valid[0][:, s0:s1].any()                       # mask 0 stripe dropped
+    assert not valid[0][:, : FILL_TO - PAD].any()             # mask 255 fill dropped
+    assert valid[0][:, s1 + 1 : s1 + 10].all()                # clean pixels kept
+    # Date 2 came from UTM 31: the stripe's centre column is dropped (nearest mask).
+    assert not valid[1][:, s0 + 1].any()
+    return valid[1][:, s0 - 2 : s1 + 2].sum()
+
+
+def test_bilinear_support_rule_drops_pixels_that_touched_invalid_data(tmp_path, monkeypatch):
+    """With the support rule off, more pixels next to the stripe count as valid."""
+    strict = _build_two_zones_and_check(tmp_path / "strict")
+    monkeypatch.setattr("pipeline.stack.FULL_SUPPORT", 0.0)
+    relaxed = _build_two_zones_and_check(tmp_path / "relaxed")
+    assert relaxed > strict
