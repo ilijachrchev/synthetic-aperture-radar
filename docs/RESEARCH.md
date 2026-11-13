@@ -22,7 +22,7 @@
 
 - **Products:** GCOV is radar brightness, HH and HV, 20 m, already on a map grid, 1 to 7 GB per file. GUNW is 12-day ground-motion pairs, 80 m, about 2 GB. ✔
 - **Revisit:** 12 days per track, 2 to 4 tracks per site. Permanent gap 27 Jul to 10 Aug 2026, bridged by 24 and 36-day pairs. ✔
-- **Access:** free Earthdata login. Files are cloud-optimized, so we stream a small area over HTTPS (about 1 min per layer ~). Never download whole files. ✔
+- **Access:** free Earthdata login. Easiest route: **Harmony** cuts a site and the chosen layers out of each file and returns COGs, reprojected if asked (EPSG:32630 for our sites) ✔. Fallback: stream a small area over HTTPS (about 1 min per layer ~). Never download whole files. ✔
 - **No login needed:** NASA's CMR search and the preview PNGs, both readable from a browser (CORS). A preview can be placed on the map within 1 to 5 px by fitting its 4 corners to the frame outline. ✔
 - **Urgent Response:** for big events NISAR also publishes fast-processed products (collections `NISAR_UR_L1` and `NISAR_UR_L2`). Panama has 300 L2 files, 22 of them interferograms spanning the quake. They are removed once the standard products exist. ✔
 - **Not available:** soil moisture (SME2) after 21 Oct, glacier offsets (GOFF) over Spain. GIBS NISAR map tiles break at zoom 12 and above (fine at 10 and below). ✔
@@ -86,7 +86,31 @@ GitHub sample of 98 projects on this challenge ~
 - Promising "AI predicts disasters".
 - The AGPL licence of `albumentationsx`.
 
-## 9. Key sources
+## 9. Second plan (PR #3), checked
+
+Each item was checked against primary sources. Only what holds up and helps the three models is kept.
+
+| Item | Verdict | Why |
+|---|---|---|
+| Harmony subsets to COG (site, layers, reprojection) | **Use** | Harmony capabilities API and NISAR docs confirm it for GCOV and GUNW; removes our HDF5 code |
+| GDAL older than 3.13 needs the NETCDF driver | **Use** | NISAR docs; matters only if we read HDF5 directly |
+| The GCOV `mask` is not a water mask | **Use** | NISAR docs |
+| Filter in linear power, dB = 10·log10 | **Use** | GCOV stores linear power |
+| One analysis grid, EPSG:32630 | **Use** | All our Spanish sites lie west of 0° |
+| Area from the analysis grid (0.04 ha per 20 m pixel) | **Use** | Plain geometry; never measure on web tiles |
+| Change classes, "candidate" until checked | **Use** | Honest labels for CV output |
+| Threshold sensitivity as an area range | **Use** | Gives CV numbers a range |
+| JRC Global Surface Water v1.5 (1984 to 2024) | **Use** | ML label: permanent vs seasonal water |
+| Provenance fields in the manifest | **Use** | Every layer traceable to its NISAR file |
+| NASA Worldview already shows NISAR | **Note** | A slider alone is not new; explaining the change is |
+| Sentinel-1 RTC chapter on the 2024 flood | Drop | DSWx-S1 water maps since Aug 2024 already cover it |
+| Sentinel-2 water index as labels | Drop | Same-day DSWx-S1 has no clouds and matches the NISAR date |
+| React + Vite with pre-rendered tiles | Drop | Next.js reading COGs directly does the same job |
+| No models, no predictions, DANA only as context | Drop | Team chose three models; EMSR935 gives DANA labels |
+| Catalog JSON dumps (about 5,000 lines) | Drop | One CMR query rebuilds them |
+| Provisional data "through 23 Oct" | Wrong | It ends 21 Oct (CMR) |
+
+## 10. Key sources
 
 - NISAR data guide: https://nisar-docs.asf.alaska.edu/
 - What NISAR data exists: https://nisar-docs.asf.alaska.edu/availability-overview/
