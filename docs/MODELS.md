@@ -70,3 +70,33 @@ CV and ML read the same NISAR stack but answer different questions. Prediction u
 | **Check** | Confusion matrix and per-class F1 on held-out blocks |
 | **Delivers** | Class map COG + confidence COG + `metrics.json` + feature importance |
 | **Done when** | Both sites are classified, scored and listed in the manifest |
+
+---
+
+## Prediction model
+
+**Owner:** `⬜ Open: add your name here`
+
+> 📈 Forecasts what comes next, always with a range and a score against a simple baseline.
+
+**A. Ground sinking in Lorca (Alto Guadalentín)**
+
+| | |
+|---|---|
+| **Data** | EGMS Ortho vertical motion, 100 m grid, 2020 to 2025 (free EU Login) · GNSS station LOR1 (Nevada Geodetic Laboratory) · NISAR GUNW track 167 D, 25 Jun to 11 Oct 2026, 7 pairs |
+| **Processing** | Clip EGMS to Lorca, one time series per point · NISAR phase to motion: d = -λ/(4π) · φ, with λ about 24.4 cm · subtract a stable reference pixel · remove the ionosphere screen shipped in each file · chain the 12, 24 and 36-day pairs into one series |
+| **Model** | Linear trend + yearly sine per point, with conformal ranges (MAPIE) |
+| **Check** | Backtest: train 2020 to 2023, test 2024 to 2025, against constant and straight-line baselines. Then the real test: the EGMS forecast for Jun to Oct 2026 against what NISAR measured, an independent sensor |
+| **Delivers** | Forecast JSON per point (median, 80% and 95% ranges) · backtest scores · forecast vs NISAR comparison |
+
+**B. Flooded area in the Albufera**
+
+| | |
+|---|---|
+| **Data** | OPERA DSWx-S1 water history since Aug 2024 (two seasons) · NISAR dates for the current state. Uses the Sentinel-1 maps, not the CV masks, so it never waits on CV |
+| **Processing** | Flooded hectares per date inside the rice area |
+| **Model** | Day-of-year baseline + the current anomaly |
+| **Check** | Leave one season out · skill against persistence. Forecasts for the next passes are committed to git before that data is published |
+| **Delivers** | Forecast JSON (median and range per upcoming pass) + skill score |
+
+**Done when:** both forecasts have ranges, backtest scores and a committed, timestamped forecast file.
