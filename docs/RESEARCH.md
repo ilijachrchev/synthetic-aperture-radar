@@ -24,6 +24,7 @@
 - **Revisit:** 12 days per track, 2 to 4 tracks per site. Permanent gap 27 Jul to 10 Aug 2026, bridged by 24 and 36-day pairs. ✔
 - **Access:** free Earthdata login. Files are cloud-optimized, so we stream a small area over HTTPS (about 1 min per layer ~). Never download whole files. ✔
 - **No login needed:** NASA's CMR search and the preview PNGs, both readable from a browser (CORS). A preview can be placed on the map within 1 to 5 px by fitting its 4 corners to the frame outline. ✔
+- **Urgent Response:** for big events NISAR also publishes fast-processed products (collections `NISAR_UR_L1` and `NISAR_UR_L2`). Panama has 300 L2 files, 22 of them interferograms spanning the quake. They are removed once the standard products exist. ✔
 - **Not available:** soil moisture (SME2) after 21 Oct, glacier offsets (GOFF) over Spain. GIBS NISAR map tiles break at zoom 12 and above (fine at 10 and below). ✔
 - **Gotchas:** only compare the same track, frame and mode (2005 vs 4005; some dates are HH only). Valencia straddles UTM zones 30 and 31. GUNW ships ionosphere, troposphere and tide corrections but does not apply them, and ionosphere stripes are not ground motion. ✔
 
@@ -35,9 +36,9 @@
 | Pego-Oliva marsh | DANA "Adam" flood, 17 to 19 Oct ✔ | Track 066 D: 16 Oct to 28 Oct ✔ | Copernicus EMSR935 ✔ | Small signal, 9.6 days after the peak |
 | Serra d'Espadà, Castellón | Wildfire, about 9,200 ha (EFFIS), started 25 Jul ✔ | Track 058 A: 24 Jul (day before) to 17 Aug and 16 Oct ✔ | EFFIS, EMSR905 ✔ | Terrain and rain |
 | Lorca, Alto Guadalentín | Ground sinking: over 10 cm/yr in 1992 to 2012, about 4 cm/yr at GNSS station LOR1 since 2025 ✔ | Track 167 D: continuous, 25 Jun to 11 Oct ✔ | EGMS, GNSS station LOR1 ✔ | Only about 1 to 4 cm of motion in the window ? |
-| Panama (global) | M7.7 earthquake, 9 Oct ✔ | 4 tracks; one pass 6 h after the quake; fringes visible ✔ | USGS ✔ | Frame edge, ionosphere |
+| Panama (global) | M7.7 earthquake, 9 Oct ✔; about 9,500 landslides mapped by 31 Oct ~ | 4 tracks; one pass 6 h after the quake; fringes visible ✔ | USGS ✔ | Frame edge, ionosphere. NASA ran Urgent Response processing but has published no story or map ✔ |
 
-Backups: Monòver sinking bowl (up to about 6.5 cm/yr, more than 42 ha) ✔ · Pacaya-Samiria flooded forest in the El Niño drought (Peru) ~
+Backups: Monòver sinking bowl (up to about 6.5 cm/yr, more than 42 ha) ✔ · Pacaya-Samiria flooded forest, river at red-alert low levels in Oct 2026 (Peru) ~
 
 ## 4. Free labels and helper data
 
@@ -65,7 +66,7 @@ Confounders: wind on water (looks bright), rain, steep terrain, ionosphere.
   - Lorca sinking: trend + seasonal fit on EGMS, backtested (train 2020 to 2023, test 2024 to 2025), then checked against NISAR, an independent sensor.
   - Albufera flooded area on the next passes: seasonal baseline from DSWx-S1 (2024 and 2025) plus the current state. Commit the forecast to git before the data arrives.
   - Every forecast gets a skill score against a naive baseline.
-- **Drop:** soil moisture (a storm's signal fades in about 4 days, the revisit is 12) ~, flood recession (water drains faster than the revisit) ?, earthquake prediction (not honest).
+- **Drop:** soil moisture (a storm's signal fades in about 4 days, the revisit is 12) ✔, flood recession (water drains faster than the revisit) ?, earthquake prediction (not honest).
 - **Show:** ranges with numbers (fan chart or dotplot), "forecast made on [date]", skill against the baseline.
 
 ## 7. Competition
