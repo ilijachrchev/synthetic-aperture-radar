@@ -100,3 +100,30 @@ CV and ML read the same NISAR stack but answer different questions. Prediction u
 | **Delivers** | Forecast JSON (median and range per upcoming pass) + skill score |
 
 **Done when:** both forecasts have ranges, backtest scores and a committed, timestamped forecast file.
+
+---
+
+## Shared between the models
+
+Agree on these two in the first hour so nobody waits on anybody.
+
+**1. One NISAR stack** (read by CV and ML). Per site, built once: every date, HH and HV in dB, on one grid.
+
+```
+data/stack/<site>.nc    dims: time × y × x    vars: HH, HV (dB), mask    attrs: track, frame, dates
+```
+
+**2. One output format** (written by all three). 8-bit Cloud-Optimized GeoTIFF, web-optimized (`rio cogeo create --web-optimized`), plus one entry per layer in `data/manifest.json`. Example entry (values are placeholders):
+
+```json
+{
+  "model": "cv",
+  "site": "albufera",
+  "layer": "water",
+  "date": "2026-10-28",
+  "file": "data/cv/albufera/water_20261028.tif",
+  "score": { "iou": 0.0 }
+}
+```
+
+<sub>Data facts and sources: [RESEARCH.md](RESEARCH.md). Drafted with an SI assistant; the split and the owners are the team's choice.</sub>
