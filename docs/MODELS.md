@@ -50,3 +50,23 @@ CV and ML read the same NISAR stack but answer different questions. Prediction u
 | **Check** | IoU and F1 against held-out DSWx-S1 dates, EMSR935 and EFFIS. Plus an L-band vs C-band disagreement map: where NISAR sees water under vegetation that Sentinel-1 misses |
 | **Delivers** | 8-bit COG masks per date and layer (water, flooded vegetation, burn) + `metrics.json` |
 | **Done when** | Every date at the three sites is masked, scored and listed in the manifest |
+
+---
+
+## ML model
+
+**Owner:** `⬜ Open: add your name here`
+
+> 🧮 Labels every pixel by how it behaves through the season: what kind of land it is and what changed.
+
+| | |
+|---|---|
+| **Sites** | Albufera region (rice, wetland, orchards, urban) · Serra d'Espadà (forest and burn) |
+| **Data** | The shared NISAR GCOV stack: every date, HH and HV in dB, one grid per site |
+| **Labels** | ESA WorldCover land cover (10 m) · EFFIS burnt area · polygons drawn in QGIS for rice paddies and open water |
+| **Processing** | One row per pixel with time-series features: mean, std, min and max of HH and HV · HH/HV ratio · variability · date and size of the biggest drop and rise · number of dark (water) dates. Train and test on separate map blocks so neighbouring pixels do not leak |
+| **Model** | LightGBM or XGBoost. Feature importance shows which polarization and which part of the season matter most |
+| **Classes** | Rice paddy · permanent water · urban · forest · burned · other crops and shrub |
+| **Check** | Confusion matrix and per-class F1 on held-out blocks |
+| **Delivers** | Class map COG + confidence COG + `metrics.json` + feature importance |
+| **Done when** | Both sites are classified, scored and listed in the manifest |
