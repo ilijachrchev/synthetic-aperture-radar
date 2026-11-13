@@ -63,8 +63,8 @@ CV and ML read the same NISAR stack but answer different questions. Prediction u
 | | |
 |---|---|
 | **Sites** | Albufera region (rice, wetland, orchards, urban) · Serra d'Espadà (forest and burn) |
-| **Data** | The shared NISAR GCOV stack: every date, HH and HV in dB, one grid per site |
-| **Labels** | ESA WorldCover land cover (10 m) · EFFIS burnt area · polygons drawn in QGIS for rice paddies and open water |
+| **Data** | The shared NISAR GCOV stack: every date, HH and HV in dB, on the EPSG:32630 grid |
+| **Labels** | ESA WorldCover land cover (10 m) · JRC Global Surface Water v1.5 occurrence, 1984 to 2024 (separates permanent water from seasonal water) · EFFIS burnt area · polygons drawn in QGIS for rice paddies and open water |
 | **Processing** | One row per pixel with time-series features: mean, std, min and max of HH and HV · HH/HV ratio · variability · date and size of the biggest drop and rise · number of dark (water) dates. Train and test on separate map blocks so neighbouring pixels do not leak |
 | **Model** | LightGBM or XGBoost. Feature importance shows which polarization and which part of the season matter most |
 | **Classes** | Rice paddy · permanent water · urban · forest · burned · other crops and shrub |
