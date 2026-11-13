@@ -45,10 +45,11 @@ CV and ML read the same NISAR stack but answer different questions. Prediction u
 | **Sites** | Albufera (rice-field flooding) · Pego-Oliva marsh (DANA "Adam" flood) · Serra d'Espadà (wildfire) |
 | **Data** | NISAR GCOV, HH and HV at 20 m. Tracks 058 A, 066 D and 167 D, 18 Jun to 28 Oct 2026. Before/after pairs: Pego-Oliva on 066 D (16 → 28 Oct), Espadà on 058 A (24 Jul → 17 Aug and 16 Oct) |
 | **Labels** | Same-day OPERA DSWx-S1 water maps (one for every Albufera date) · EMSR935 flood outline and the Generalitat 1,023 ha flood footprint · EFFIS burnt area (EMSR905) |
-| **Processing** | Cut out the site · convert to dB (10·log10) · drop invalid pixels (mask layer) · 5×5 speckle filter · one grid per site (Valencia sits on UTM zones 30 and 31) · resample labels to 20 m · 256 px tiles |
+| **Processing** | Read the shared stack (EPSG:32630, 20 m) · 5×5 speckle filter in linear power, then dB · keep only pixels valid on every compared date · resample labels to the same 20 m grid · 256 px tiles |
 | **Model** | Baseline: Otsu threshold per scene on HH; flooded vegetation where HH rises about 3 dB while HV stays flat. Then a small U-Net (segmentation-models-pytorch) with a TorchGeo Sentinel-1 encoder (HH → VV, HV → VH). Augmentation: flips and rotations only |
+| **Classes** | Per scene: water · flooded vegetation · burned. Per before/after pair: stable water · water gain · water loss · other change · not observed. Labelled "candidate" until checked against the labels |
 | **Check** | IoU and F1 against held-out DSWx-S1 dates, EMSR935 and EFFIS. Plus an L-band vs C-band disagreement map: where NISAR sees water under vegetation that Sentinel-1 misses |
-| **Delivers** | 8-bit COG masks per date and layer (water, flooded vegetation, burn) + `metrics.json` |
+| **Delivers** | 8-bit COG masks per date and per pair + `metrics.json` + hectares per class (pixels × 0.04 ha on the 20 m grid), with a range from re-running at nearby thresholds |
 | **Done when** | Every date at the three sites is masked, scored and listed in the manifest |
 
 ---
@@ -62,8 +63,8 @@ CV and ML read the same NISAR stack but answer different questions. Prediction u
 | | |
 |---|---|
 | **Sites** | Albufera region (rice, wetland, orchards, urban) · Serra d'Espadà (forest and burn) |
-| **Data** | The shared NISAR GCOV stack: every date, HH and HV in dB, one grid per site |
-| **Labels** | ESA WorldCover land cover (10 m) · EFFIS burnt area · polygons drawn in QGIS for rice paddies and open water |
+| **Data** | The shared NISAR GCOV stack: every date, HH and HV in dB, on the EPSG:32630 grid |
+| **Labels** | ESA WorldCover land cover (10 m) · JRC Global Surface Water v1.5 occurrence, 1984 to 2024 (separates permanent water from seasonal water) · EFFIS burnt area · polygons drawn in QGIS for rice paddies and open water |
 | **Processing** | One row per pixel with time-series features: mean, std, min and max of HH and HV · HH/HV ratio · variability · date and size of the biggest drop and rise · number of dark (water) dates. Train and test on separate map blocks so neighbouring pixels do not leak |
 | **Model** | LightGBM or XGBoost. Feature importance shows which polarization and which part of the season matter most |
 | **Classes** | Rice paddy · permanent water · urban · forest · burned · other crops and shrub |
@@ -105,15 +106,20 @@ CV and ML read the same NISAR stack but answer different questions. Prediction u
 
 ## Shared between the models
 
-Agree on these two in the first hour so nobody waits on anybody.
+Agree on these two before anyone builds, so nobody waits on anybody.
 
-**1. One NISAR stack** (read by CV and ML). Per site, built once: every date, HH and HV in dB, on one grid.
+**1. One NISAR stack** (read by CV and ML). Built once per site with **Harmony** (Earthdata Search or the `harmony-py` client): it cuts the site out of each NISAR file and returns COGs of `HHHH`, `HVHV`, `mask` and `numberOfLooks`, reprojected to **EPSG:32630** (UTM 30N; every Spanish site we use lies west of 0°). No HDF5 parsing on our side.
+
+- Snap every date to the same grid (same origin, 20 m pixels) before stacking.
+- Keep linear power for filtering and averaging; convert to dB at the end (10·log10, not 20).
+- A valid pixel is finite, positive and inside the scene on every date it is compared on. The GCOV `mask` describes how radar samples were averaged; it is not a water mask.
+- Reading the HDF5 files directly instead? GDAL older than 3.13 needs the NETCDF driver to place them on the map.
 
 ```
-data/stack/<site>.nc    dims: time × y × x    vars: HH, HV (dB), mask    attrs: track, frame, dates
+data/stack/<site>.nc    dims: time × y × x    vars: HH, HV (dB), valid    attrs per date: granule, crid, track, frame
 ```
 
-**2. One output format** (written by all three). 8-bit Cloud-Optimized GeoTIFF, web-optimized (`rio cogeo create --web-optimized`), plus one entry per layer in `data/manifest.json`. Example entry (values are placeholders):
+**2. One output format** (written by all three). Analysis runs on EPSG:32630; display layers are 8-bit Cloud-Optimized GeoTIFFs, web-optimized (`rio cogeo create --web-optimized`), plus one entry per layer in `data/manifest.json` that says exactly which NISAR file it came from. Example entry (values are placeholders):
 
 ```json
 {
@@ -122,6 +128,8 @@ data/stack/<site>.nc    dims: time × y × x    vars: HH, HV (dB), mask    attrs
   "layer": "water",
   "date": "2026-10-28",
   "file": "data/cv/albufera/water_20261028.tif",
+  "source": { "granule": "NISAR_L2_PR_GCOV_...", "crid": "P05036", "track": "066", "direction": "D", "frame": "069" },
+  "valid_fraction": 0.0,
   "score": { "iou": 0.0 }
 }
 ```
