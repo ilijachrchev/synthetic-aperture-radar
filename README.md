@@ -38,3 +38,20 @@ flowchart LR
 2. **Process:** calibrate to dB, filter speckle, detect change, classify it, forecast.
 3. **Bake:** export small Cloud-Optimized GeoTIFFs (COGs) and JSON.
 4. **Show:** the browser reads the COGs directly. No tile server or backend is needed for the demo.
+
+## Stack
+
+| Layer | Tools | Notes |
+|---|---|---|
+| Web app | Next.js 16 · TypeScript · React 19 | Static export; the map lives in client-only components |
+| Maps | MapLibre GL JS 6 · react-map-gl 8 · `@geomatico/maplibre-cog-protocol` | Reads COGs straight from static hosting, no tile server |
+| Charts | Recharts (or Observable Plot) | Time series and forecast ranges |
+| Data access | `earthaccess` · `asf_search` · h5py / h5netcdf · xarray | Each person needs a free [NASA Earthdata login](https://urs.earthdata.nasa.gov/) |
+| Geo processing | rasterio · rioxarray · rio-cogeo · geopandas · scikit-image | Runs in Google Colab (Linux), not on our laptops |
+| Radar time series | MintPy (reads NISAR GUNW) | Used as an external tool only (GPL-3.0) |
+| ML, main | XGBoost / LightGBM · scikit-learn | Per-pixel change classes; CPU, minutes |
+| CV, stretch | PyTorch · segmentation-models-pytorch · TorchGeo (Lightning optional) | Small U-Net with Sentinel-1 pretrained encoders; flips/rotations in NumPy (no albumentations: its maintained fork is AGPL) |
+| Forecasting | NumPy / statsforecast · MAPIE | Trend + seasonal fits with conformal intervals |
+| Backend, optional | FastAPI · TiTiler | Only for dynamic tiles; the demo does not need it |
+| Compute | Google Colab / Kaggle (free GPU) | Inference runs offline and exports COGs |
+| Hosting | Vercel or GitHub Pages · Hugging Face datasets for large files | All three serve HTTP range requests with CORS |
