@@ -1,0 +1,107 @@
+{
+ "question": "18 Jun 2026, Albufera rice: who is right, NISAR or Sentinel-1?",
+ "referee": "Sentinel-2 L2A 2026-06-08 and 2026-06-23; wet = (LSWI + 0.05 >= EVI) or MNDWI > 0 on both dates",
+ "maps": {
+  "nisar_water_ha": 6387.2,
+  "s1_water_ha": 249.6,
+  "rice_ha_scored": 14627.8
+ },
+ "stratum_ha": {
+  "A": 116.2,
+  "B": 6271.0,
+  "C": 133.4,
+  "D": 8107.2,
+  "E": 5661.2
+ },
+ "counts": {
+  "A": {
+   "wet": 19,
+   "dry": 0,
+   "unclear": 6
+  },
+  "B": {
+   "wet": 25,
+   "dry": 5,
+   "unclear": 120
+  },
+  "C": {
+   "wet": 20,
+   "dry": 4,
+   "unclear": 14
+  },
+  "D": {
+   "wet": 31,
+   "dry": 24,
+   "unclear": 95
+  },
+  "E": {
+   "wet": 2,
+   "dry": 133,
+   "unclear": 15
+  }
+ },
+ "control_E_wet_share": 0.015,
+ "estimates": {
+  "p_wet": {
+   "A": 1.0,
+   "B": 0.833,
+   "C": 0.833,
+   "D": 0.564
+  },
+  "nisar_user": 0.836,
+  "nisar_producer": 0.533,
+  "s1_user": 0.911,
+  "s1_producer": 0.023,
+  "b_user": 0.833,
+  "wet_share": 0.685
+ },
+ "ci95": {
+  "nisar_user": [
+   0.695,
+   0.962
+  ],
+  "nisar_producer": [
+   0.466,
+   0.606
+  ],
+  "s1_user": [
+   0.822,
+   0.979
+  ],
+  "s1_producer": [
+   0.019,
+   0.027
+  ],
+  "b_user": [
+   0.69,
+   0.962
+  ],
+  "wet_share": [
+   0.584,
+   0.778
+  ]
+ },
+ "wet_rice_ha": [
+  10023,
+  [
+   8548,
+   11379
+  ]
+ ],
+ "rule": {
+  "min_share_pass": 0.7,
+  "min_ci_low": 0.6
+ },
+ "verdict": "NISAR wins: most water only NISAR sees is water by the independent referee",
+ "s2_sanity": {
+  "2026-06-08": {
+   "median_ndvi": 0.345,
+   "median_b11": 0.1078
+  },
+  "2026-06-23": {
+   "median_ndvi": 0.618,
+   "median_b11": 0.1696
+  }
+ },
+ "bias_note": "optical misses water under a closed canopy: the referee is biased against NISAR"
+}
