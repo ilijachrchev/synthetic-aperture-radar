@@ -51,6 +51,9 @@ def _cmd_run(args: argparse.Namespace) -> None:
 
     # Labels and sea.
     if args.truth_var:
+        if args.truth_var not in st.extra:
+            available = ", ".join(sorted(st.extra)) if st.extra else "(none)"
+            sys.exit(f"--truth-var '{args.truth_var}' not found in stack; available variables: {available}")
         y_map = st.extra[args.truth_var].astype(np.int16)
         sea = y_map == synthetic.SEA
         y_map[sea] = config.UNLABELED

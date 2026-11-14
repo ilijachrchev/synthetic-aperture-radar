@@ -214,6 +214,14 @@ def test_command_end_to_end_on_fake_stack(tmp_path):
         assert web.colormap(1)[config.CLASS_INDEX["forest"]][:3] == config.CLASS_COLORS["forest"]
 
 
+def test_command_truth_var_missing_fails_clearly(tmp_path):
+    stack_dir = tmp_path / "stack"
+    main(["synthetic", "--stack-dir", str(stack_dir), "--size", "80"])
+    with pytest.raises(SystemExit, match=r"--truth-var 'nope' not found in stack; available variables: truth"):
+        main(["run", "--site", "synthetic", "--stack", "066_D_069", "--truth-var", "nope",
+              "--stack-dir", str(stack_dir), "--out-dir", str(tmp_path / "ml")])
+
+
 def test_manifest_upsert_replaces_same_key(tmp_path):
     p = tmp_path / "manifest.json"
     export.upsert_manifest(p, [{"model": "cv", "site": "a", "layer": "water", "date": "d"}])
