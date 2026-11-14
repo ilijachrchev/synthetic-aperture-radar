@@ -1,0 +1,198 @@
+.sr-only {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	clip: rect(0 0 0 0);
+	white-space: nowrap;
+}
+.mach {
+	position: relative;
+	height: calc(100svh + 140svh);
+	--front: #f6f8ff;
+	--front-ink: #0b0b0c;
+	--back: #082058;
+}
+[data-theme="dark"] .mach {
+	--front: #0e2b72;
+	--front-ink: #ffffff;
+	--back: #2350ff;
+}
+.mach-stage {
+	position: sticky;
+	top: 0;
+	height: 100svh;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 22px;
+	padding: 24px 32px;
+}
+.mach-eyebrow {
+	margin: 0;
+}
+
+/* The band: a frame with two rails, the slats between them turning on their own axes. */
+.mach-band {
+	position: relative;
+	width: min(1344px, 100%);
+	height: min(560px, 62svh);
+	display: grid;
+	grid-template-columns: repeat(var(--n), minmax(0, 1fr));
+	perspective: 2200px;
+	padding: 12px 0;
+	--w: min(1344px, calc(100vw - 64px));
+}
+.mach-rail {
+	position: absolute;
+	left: -8px;
+	right: -8px;
+	height: 12px;
+	border-radius: 6px;
+	background:
+		radial-gradient(circle, rgb(255 255 255 / 0.6) 1.3px, transparent 1.8px) 0 50% / 26px 12px repeat-x,
+		#0b1636;
+	z-index: 2;
+}
+.mach-rail-top {
+	top: 0;
+}
+.mach-rail-bottom {
+	bottom: 0;
+}
+.mach-slat {
+	position: relative;
+	transform-style: preserve-3d;
+	transform: rotateY(var(--r, 0deg));
+	--r: 0deg;
+	--shade: 0;
+}
+.mach-face {
+	position: absolute;
+	inset: 0;
+	overflow: hidden;
+	backface-visibility: hidden;
+	-webkit-backface-visibility: hidden;
+}
+.mach-face::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background: #000;
+	opacity: var(--shade);
+	pointer-events: none;
+}
+.mach-front {
+	background: var(--front);
+	color: var(--front-ink);
+	box-shadow: inset -1px 0 0 rgb(8 32 88 / 0.08);
+}
+/* every front shows its own slice of one block of words as wide as the band */
+.mach-words {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: calc(var(--i) * var(--w) / var(--n) * -1);
+	width: var(--w);
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	font-size: min(calc(var(--w) * 0.128), 14.5svh);
+	line-height: 0.86;
+	white-space: nowrap;
+}
+.mach-back {
+	transform: rotateY(180deg);
+	background: var(--back);
+	color: #fff;
+	box-shadow: inset 1px 0 0 rgb(255 255 255 / 0.08);
+}
+.mach-back img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	opacity: 0.9;
+}
+.mach-step {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	padding: 22px 16px;
+	background:
+		radial-gradient(120% 60% at 50% 0%, rgb(255 255 255 / 0.14), transparent 70%),
+		var(--back);
+}
+.mach-step .mono {
+	font-size: 12px;
+	opacity: 0.7;
+}
+.mach-step b {
+	font-size: clamp(22px, 2.2vw, 34px);
+	line-height: 0.9;
+}
+.mach-step strong {
+	margin-top: auto;
+	font-size: clamp(40px, 4.8vw, 74px);
+	line-height: 0.86;
+	background: linear-gradient(17deg, #86b4ff, #c4d8fe 60%, #ffffff);
+	-webkit-background-clip: text;
+	background-clip: text;
+	color: transparent;
+}
+.mach-step p {
+	margin: 0;
+	font-size: 13.5px;
+	line-height: 1.4;
+	color: rgb(255 255 255 / 0.82);
+}
+.mach-after {
+	margin: 0;
+	max-width: 520px;
+	text-align: center;
+	font-size: 17px;
+	color: var(--ink-2);
+}
+
+@media (max-width: 900px) {
+	.mach {
+		height: calc(100svh + 110svh);
+	}
+	.mach-band {
+		--w: calc(100vw - 32px);
+		height: min(520px, 60svh);
+	}
+	.mach-stage {
+		padding: 16px;
+	}
+	.mach-step {
+		padding: 14px 8px;
+	}
+	.mach-step p {
+		display: none;
+	}
+	.mach-step b {
+		font-size: 17px;
+	}
+	.mach-step strong {
+		font-size: 30px;
+	}
+}
+@media (max-width: 640px) {
+	.mach-band {
+		height: min(380px, 52svh);
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.mach {
+		height: auto;
+	}
+	.mach-stage {
+		position: relative;
+		height: auto;
+		padding: 120px 24px;
+	}
+}
