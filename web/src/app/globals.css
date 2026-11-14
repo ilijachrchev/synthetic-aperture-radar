@@ -1,0 +1,176 @@
+@import "tailwindcss";
+
+/* Type: Inter Tight for display and text (the references' neo-grotesque), Instrument Serif for the one italic accent
+   per screen, DM Mono for small technical labels (tracks, coordinates, dates). */
+@theme {
+	--font-sans: var(--font-inter-tight), ui-sans-serif, system-ui, sans-serif;
+	--font-serif: var(--font-instrument-serif), ui-serif, Georgia, serif;
+	--font-mono: var(--font-dm-mono), ui-monospace, "SFMono-Regular", Consolas, monospace;
+	--ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+	--ease-in-out-quart: cubic-bezier(0.76, 0, 0.24, 1);
+}
+
+/* Day: the morning photo's lilac white (#E8E7F5 to #F4F3F9, measured), navy ink, a violet accent.
+   Night: the dusk photo's indigo ground and its pink clouds (#F0B0AE, measured) as the accent. */
+:root {
+	color-scheme: light;
+	--bg: #efedf7;
+	--bg-2: #e7e4f2;
+	--surface: #ffffff;
+	--ink: #16163a;
+	--ink-2: #34355c;
+	--muted: #5c5d7e;
+	--line: rgb(22 22 58 / 0.12);
+	--line-strong: rgb(22 22 58 / 0.22);
+	--accent: #5f50d8;
+	--pill-bg: #16163a;
+	--pill-fg: #ffffff;
+	--glass: rgb(255 255 255 / 0.46);
+	--glass-strong: rgb(255 255 255 / 0.7);
+	--glass-line: rgb(255 255 255 / 0.75);
+	--hero-ink: #16163a;
+	--hero-muted: rgb(22 22 58 / 0.66);
+	--chart: rgb(22 22 58 / 0.8);
+	--chart-grid: rgb(22 22 58 / 0.14);
+	--shadow: 0 1px 2px rgb(22 22 58 / 0.06), 0 12px 32px rgb(22 22 58 / 0.08);
+	--ease: cubic-bezier(0.16, 1, 0.3, 1);
+}
+[data-theme="dark"] {
+	color-scheme: dark;
+	--bg: #0a0e1a;
+	--bg-2: #0f1424;
+	--surface: #131a2c;
+	--ink: #f2f1f7;
+	--ink-2: #d4d5e8;
+	--muted: #a3a9c2;
+	--line: rgb(255 255 255 / 0.1);
+	--line-strong: rgb(255 255 255 / 0.2);
+	--accent: #f2b4b0;
+	--pill-bg: #ffffff;
+	--pill-fg: #0a0e1a;
+	--glass: rgb(12 16 34 / 0.38);
+	--glass-strong: rgb(12 16 34 / 0.62);
+	--glass-line: rgb(255 255 255 / 0.16);
+	--hero-ink: #ffffff;
+	--hero-muted: rgb(255 255 255 / 0.74);
+	--chart: rgb(255 255 255 / 0.94);
+	--chart-grid: rgb(255 255 255 / 0.16);
+	--shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 12px 32px rgb(0 0 0 / 0.35);
+}
+
+html {
+	background: var(--bg);
+	-webkit-text-size-adjust: 100%;
+}
+body {
+	background: var(--bg);
+	color: var(--ink);
+	font-family: var(--font-sans);
+	font-feature-settings: "ss01", "cv11";
+	-webkit-font-smoothing: antialiased;
+	transition: background-color 0.5s var(--ease), color 0.5s var(--ease);
+}
+::selection {
+	background: color-mix(in oklab, var(--accent) 30%, transparent);
+}
+:where(a, button, [role="button"]):focus-visible {
+	outline: 2px solid var(--accent);
+	outline-offset: 3px;
+	border-radius: 999px;
+}
+:where(button, a, [role="button"]):active {
+	transform: scale(0.975);
+}
+
+/* A faint baked grain so no ground ever sits flat (public/img/grain.png, painted once, normal blending). */
+.grain {
+	position: relative;
+	isolation: isolate;
+}
+.grain::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	z-index: -1;
+	pointer-events: none;
+	background: url("/img/grain.png") repeat;
+	background-size: 160px 160px;
+	opacity: 0.5;
+}
+[data-theme="dark"] .grain::after {
+	opacity: 0.35;
+}
+
+/* Theme switch: a circle of the new light grows from the switch (theme-toggle.tsx drives the clip-path). */
+::view-transition-old(root),
+::view-transition-new(root) {
+	animation: none;
+	mix-blend-mode: normal;
+}
+
+/* Scroll-linked reveals from the mahoraga kit: compositor only, no script, everything visible without support. */
+@supports (animation-timeline: view()) {
+	[data-reveal] {
+		animation-timing-function: linear;
+		animation-fill-mode: both;
+		animation-timeline: view();
+		animation-range: entry calc(var(--r, 0) * 1%) entry calc(75% + var(--r, 0) * 1%);
+	}
+	[data-reveal="rise"] {
+		animation-name: reveal-rise;
+	}
+	[data-reveal="open"] {
+		animation-name: reveal-open;
+		animation-range: entry 0% cover 45%;
+	}
+	[data-reveal="line"] {
+		animation-name: reveal-line;
+		transform-origin: left;
+		animation-range: entry 0% cover 40%;
+	}
+}
+@keyframes reveal-rise {
+	from {
+		opacity: 0;
+		transform: translate3d(0, 48px, 0) scale(0.98);
+	}
+}
+@keyframes reveal-open {
+	from {
+		clip-path: inset(10% 8% 10% 8% round 48px);
+	}
+	to {
+		clip-path: inset(0 0 0 0 round 28px);
+	}
+}
+@keyframes reveal-line {
+	from {
+		transform: scaleX(0);
+	}
+}
+
+/* Arrival motion for the hero: lines rise in once on load. */
+.anim-rise {
+	animation: rise-in 1s var(--ease) both;
+	animation-delay: var(--d, 0ms);
+}
+@keyframes rise-in {
+	from {
+		opacity: 0;
+		transform: translate3d(0, 0.45em, 0);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	[data-reveal],
+	.anim-rise {
+		animation: none !important;
+	}
+	*,
+	*::before,
+	*::after {
+		transition-duration: 0.01ms !important;
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+	}
+}

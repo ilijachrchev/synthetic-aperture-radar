@@ -1,0 +1,392 @@
+/* The hero: one rounded panel (the Vision Pro reference's frame) holding the Albufera photograph, dawn by day and
+   dusk by night, with the Andromeda reference's thin science figures on the right. Everything is anchored to the
+   panel's corners; the photo is anchored at the bottom so its SI mark (bottom centre) is always in view. */
+.hero {
+	position: relative;
+	margin: 12px;
+	height: clamp(640px, calc(100svh - 24px), 1000px);
+	border-radius: 30px;
+	overflow: hidden;
+	isolation: isolate;
+	color: var(--hero-ink);
+	background: var(--bg-2);
+	box-shadow: var(--shadow);
+}
+
+.hero-media {
+	position: absolute;
+	inset: 0;
+	z-index: -1;
+}
+.hero-media picture,
+.hero-media img {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	object-position: 50% 100%;
+}
+.hero-dusk {
+	opacity: 0;
+	transition: opacity 0.9s var(--ease);
+}
+[data-theme="dark"] .hero-dusk {
+	opacity: 1;
+}
+
+/* Light where text sits: a pale wash under the nav and the lead by day, an indigo one under the figures by night. */
+.hero-scrim {
+	position: absolute;
+	inset: 0;
+	background:
+		linear-gradient(to bottom, rgb(239 237 247 / 0.55), transparent 22%),
+		radial-gradient(70% 55% at 0% 100%, rgb(239 237 247 / 0.55), transparent 70%);
+	transition: opacity 0.9s var(--ease);
+}
+.hero-scrim-night {
+	position: absolute;
+	inset: 0;
+	opacity: 0;
+	background:
+		linear-gradient(to bottom, rgb(10 14 32 / 0.45), transparent 24%),
+		radial-gradient(60% 70% at 100% 100%, rgb(8 12 28 / 0.62), transparent 72%),
+		radial-gradient(55% 60% at 0% 100%, rgb(8 12 28 / 0.42), transparent 70%);
+	transition: opacity 0.9s var(--ease);
+}
+[data-theme="dark"] .hero-scrim {
+	opacity: 0;
+}
+[data-theme="dark"] .hero-scrim-night {
+	opacity: 1;
+}
+
+.hero-nav {
+	position: absolute;
+	top: 22px;
+	left: 28px;
+	right: 22px;
+	display: grid;
+	grid-template-columns: 1fr auto 1fr;
+	align-items: center;
+	gap: 16px;
+}
+.hero-links {
+	display: flex;
+	gap: 34px;
+	font-size: 15px;
+	color: var(--hero-ink);
+}
+.hero-links a {
+	opacity: 0.86;
+	transition: opacity 0.2s var(--ease);
+}
+.hero-links a:hover {
+	opacity: 1;
+}
+.hero-actions {
+	display: flex;
+	justify-content: flex-end;
+	align-items: center;
+	gap: 10px;
+}
+
+.hero-pill {
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+	height: 44px;
+	padding: 0 8px 0 20px;
+	border-radius: 999px;
+	background: var(--pill-bg);
+	color: var(--pill-fg);
+	font-size: 15px;
+	font-weight: 500;
+	transition: transform 0.26s var(--ease), background-color 0.4s var(--ease), color 0.4s var(--ease);
+}
+.hero-pill:hover {
+	transform: translateY(-1px);
+}
+.hero-pill .hero-dot {
+	display: grid;
+	place-items: center;
+	width: 30px;
+	height: 30px;
+	border-radius: 999px;
+	background: var(--pill-fg);
+	color: var(--pill-bg);
+}
+.hero-ghost {
+	display: inline-flex;
+	align-items: center;
+	height: 44px;
+	padding: 0 20px;
+	border-radius: 999px;
+	border: 1px solid var(--line-strong);
+	color: var(--hero-ink);
+	font-size: 15px;
+	font-weight: 500;
+	background: var(--glass);
+	backdrop-filter: blur(10px);
+	-webkit-backdrop-filter: blur(10px);
+}
+
+/* Headline: a light kicker line and the giant place name, sized by both width and height so it stays in the sky. */
+.hero-title {
+	position: absolute;
+	top: clamp(96px, 13svh, 128px);
+	left: 40px;
+	margin: 0;
+	--big: clamp(84px, min(11.4vw, 18svh), 196px);
+}
+.hero-kicker {
+	display: block;
+	font-size: calc(var(--big) * 0.26);
+	font-weight: 300;
+	letter-spacing: -0.02em;
+	line-height: 1.1;
+}
+.hero-place {
+	display: block;
+	font-size: var(--big);
+	font-weight: 700;
+	letter-spacing: -0.045em;
+	line-height: 0.86;
+	margin-left: -0.04em;
+}
+.hero-sub {
+	display: block;
+	max-width: 330px;
+	margin: calc(var(--big) * 0.12) 0 0 calc(var(--big) * 2.7);
+	font-size: clamp(16px, 1.35vw, 20px);
+	font-weight: 300;
+	line-height: 1.35;
+	color: var(--hero-ink);
+}
+
+/* Place card, top right: the Andromeda reference's object card, here the real radar crop of the lagoon. */
+.hero-place-card {
+	position: absolute;
+	top: 104px;
+	right: 40px;
+	display: flex;
+	gap: 14px;
+	align-items: center;
+}
+.hero-place-card img {
+	width: 66px;
+	height: 66px;
+	border-radius: 14px;
+	object-fit: cover;
+	border: 1px solid var(--glass-line);
+	box-shadow: var(--shadow);
+	background: #1c0a1d;
+}
+.hero-place-card b {
+	display: block;
+	font-size: 17px;
+	font-weight: 600;
+}
+.hero-place-card span {
+	display: block;
+	font-size: 14px;
+	color: var(--hero-muted);
+	line-height: 1.35;
+}
+
+/* Bottom left: who sees it, the lead and the two buttons, on clear glass so it reads over the reeds. */
+.hero-lead {
+	position: absolute;
+	left: 28px;
+	bottom: 28px;
+	width: min(460px, calc(50% - 40px));
+	padding: 22px 24px 24px;
+	border-radius: 24px;
+	background: var(--glass);
+	border: 1px solid var(--glass-line);
+	backdrop-filter: blur(14px) saturate(1.3);
+	-webkit-backdrop-filter: blur(14px) saturate(1.3);
+	box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.35), var(--shadow);
+}
+.hero-seen {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	font-size: 13px;
+	line-height: 1.3;
+	color: var(--hero-muted);
+}
+.hero-thumbs {
+	display: flex;
+}
+.hero-thumbs img {
+	width: 30px;
+	height: 30px;
+	border-radius: 999px;
+	object-fit: cover;
+	border: 2px solid var(--glass-strong);
+	background: #1c0a1d;
+}
+.hero-thumbs img + img {
+	margin-left: -9px;
+}
+.hero-lead-text {
+	margin-top: 16px;
+	font-size: clamp(19px, 1.6vw, 24px);
+	font-weight: 300;
+	line-height: 1.25;
+	letter-spacing: -0.015em;
+}
+.hero-lead-text em {
+	font-family: var(--font-serif);
+	font-style: italic;
+	font-weight: 400;
+	font-size: 1.12em;
+	color: var(--accent);
+}
+.hero-buttons {
+	margin-top: 20px;
+	display: flex;
+	gap: 10px;
+	flex-wrap: wrap;
+}
+
+/* Right: the signal trace of every pass, the wavelength and three numbers. */
+.hero-figures {
+	position: absolute;
+	right: 40px;
+	bottom: 34px;
+	width: 440px;
+	color: var(--hero-ink);
+}
+.hero-fig-label {
+	font-size: 16px;
+	font-weight: 600;
+	letter-spacing: -0.01em;
+}
+.hero-chart {
+	display: block;
+	width: 100%;
+	height: auto;
+	margin-top: 6px;
+}
+.hero-small {
+	font-size: 13px;
+	color: var(--hero-muted);
+}
+.hero-big {
+	display: flex;
+	align-items: baseline;
+	gap: 10px;
+	margin-top: 4px;
+	font-size: 64px;
+	font-weight: 300;
+	letter-spacing: -0.035em;
+	line-height: 1;
+	font-variant-numeric: tabular-nums;
+}
+.hero-big i {
+	font-style: normal;
+	color: var(--hero-muted);
+}
+.hero-stats {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 16px;
+	margin-top: 22px;
+	padding-top: 16px;
+	border-top: 1px solid var(--chart-grid);
+}
+.hero-stats b {
+	display: block;
+	margin-top: 2px;
+	font-size: 30px;
+	font-weight: 300;
+	letter-spacing: -0.03em;
+	font-variant-numeric: tabular-nums;
+}
+.hero-stats b i {
+	font-style: normal;
+	font-size: 0.6em;
+	color: var(--hero-muted);
+	margin-left: 3px;
+}
+
+/* Below 1100px the figures leave the photo and sit under the hero as their own strip. */
+.hero-strip {
+	display: none;
+}
+@media (max-width: 1100px) {
+	.hero-figures {
+		display: none;
+	}
+	.hero-strip {
+		display: block;
+		margin: 0 12px;
+		padding: 28px 24px;
+		border-radius: 26px;
+		background: var(--surface);
+		border: 1px solid var(--line);
+	}
+	.hero-strip .hero-figures,
+	.hero-strip .hero-figures * {
+		--hero-ink: var(--ink);
+		--hero-muted: var(--muted);
+		--chart: var(--ink);
+	}
+	.hero-strip .hero-figures {
+		display: block;
+		position: static;
+		width: 100%;
+		max-width: 560px;
+		margin: 0 auto;
+	}
+	.hero-lead {
+		width: min(520px, calc(100% - 56px));
+	}
+}
+@media (max-width: 900px) {
+	.hero-links {
+		display: none;
+	}
+	.hero-nav {
+		grid-template-columns: 1fr auto;
+	}
+	.hero-place-card {
+		display: none;
+	}
+}
+@media (max-width: 640px) {
+	.hero {
+		height: max(640px, calc(100svh - 24px));
+		border-radius: 26px;
+	}
+	.hero-nav {
+		left: 18px;
+		right: 14px;
+		top: 16px;
+	}
+	.hero-title {
+		left: 20px;
+		top: 84px;
+		--big: clamp(64px, 21vw, 96px);
+	}
+	.hero-kicker {
+		font-size: 22px;
+	}
+	.hero-sub {
+		margin: 12px 0 0 0;
+		max-width: 290px;
+		font-size: 17px;
+	}
+	.hero-lead {
+		left: 12px;
+		right: 12px;
+		bottom: 64px;
+		width: auto;
+		padding: 18px;
+	}
+	.hero-actions .hero-pill {
+		display: none;
+	}
+}
