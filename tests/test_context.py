@@ -19,7 +19,37 @@ def test_jrc_tiles_named_by_west_and_north_edges():
     assert sorted(jrc_tiles((-0.25, 38.78, 0.06, 39.02))) == ["0E_40N", "10W_40N"]
 
 
-def test_mjd_to_date_matches_ngl_rows():
+def test_grid_bbox_contains_site_box():
+    from pipeline.config import get_site
+    from pipeline.context import grid_bbox_wgs84
+
+    for name in ("albufera", "pego_oliva", "espada", "lorca"):
+        w, s, e, n = grid_bbox_wgs84(get_site(name))
+        sw, ss, se, sn = get_site(name).bbox
+        assert w < sw and s < ss and e > se and n > sn
+
+
+def test_warp_to_grid_covers_the_grid_and_keeps_class_codes(tmp_path):
+    import numpy as np
+    import rasterio
+    from rasterio.transform import from_origin
+    from rasterio.warp import Resampling
+
+    from pipeline.config import get_site
+    from pipeline.context import grid_bbox_wgs84, warp_to_grid
+
+    site = get_site("albufera")
+    w, s, e, n = grid_bbox_wgs84(site)
+    res = 1 / 12000  # WorldCover's 10 m pixel in degrees
+    width, height = int((e - w) / res) + 1, int((n - s) / res) + 1
+    codes = np.full((height, width), 40, dtype="uint8")
+    codes[:, width // 2:] = 80  # cropland west, water east
+    path = tmp_path / "wc.tif"
+    with rasterio.open(path, "w", driver="GTiff", height=height, width=width, count=1, dtype="uint8",
+                       crs="EPSG:4326", transform=from_origin(w, n, res, res), nodata=0) as dst:
+        dst.write(codes, 1)
+    out = warp_to_grid(path, site, Resampling.mode, 0)
+    assert set(np.unique(out)) == {40, 80}  # no empty edges, no blended codes
     # First two LOR1 rows: MJD 55086 is 09SEP12, MJD 55087 is 09SEP13.
     assert mjd_to_date(55086) == date(2009, 9, 12)
     assert mjd_to_date(55087) == date(2009, 9, 13)

@@ -1,8 +1,11 @@
 """Helper data around the NISAR scenes (public sources, no login).
 
-Rasters are clipped to each site and saved under data/raw/context/ (not
-committed; rerun this module to rebuild them). Small tables go to
-data/context/ (committed).
+Rasters are clipped around each site's stack grid and saved under
+data/raw/context/ (not committed; rerun this module to rebuild them), then
+resampled onto the exact 20 m stack grid of the site and saved to data/context/
+(committed, small): <site>_worldcover_2021_20m.tif (mode resampling, class codes
+kept) and <site>_jrc_occurrence_20m.tif (bilinear, percent). Small tables go to
+data/context/ too.
 
 - ESA WorldCover 2021 v200 land cover, 10 m (CC BY 4.0), for CV and ML.
 - JRC Global Surface Water v1.5 occurrence 1984 to 2024, 30 m: how often
@@ -28,12 +31,15 @@ import math
 from datetime import date, timedelta
 from pathlib import Path
 
+import numpy as np
 import rasterio
 import requests
 from rasterio import Env as GDALConfig
 from rasterio.merge import merge
+from rasterio.warp import Resampling, reproject, transform_bounds
 
-from pipeline.config import DATA_DIR, RAW_DIR, SITES, Site
+from pipeline.config import DATA_DIR, PIXEL_SIZE_M, RAW_DIR, SITES, Site
+from pipeline.stack import site_grid
 
 CONTEXT_RAW = RAW_DIR / "context"
 CONTEXT_DIR = DATA_DIR / "context"
@@ -92,13 +98,64 @@ def clip_remote(urls: list[str], bbox: tuple[float, float, float, float], out_pa
     return out_path
 
 
+def grid_bbox_wgs84(site: Site, margin_deg: float = 0.005) -> tuple[float, float, float, float]:
+    """WGS84 box that contains the site's whole stack grid, plus a small margin.
+
+    The stack grid is snapped outward in UTM, so its corners reach a little past
+    the site box; clipping helper data to this box leaves no empty edges.
+    """
+    g = site_grid(site)
+    left, top = g.transform.c, g.transform.f
+    right, bottom = left + g.width * PIXEL_SIZE_M, top - g.height * PIXEL_SIZE_M
+    w, s, e, n = transform_bounds(site.crs, "EPSG:4326", left, bottom, right, top, densify_pts=21)
+    return (w - margin_deg, s - margin_deg, e + margin_deg, n + margin_deg)
+
+
 def fetch_rasters(site: Site) -> None:
-    wc = [WORLDCOVER_URL.format(tile=t) for t in worldcover_tiles(site.bbox)]
-    path = clip_remote(wc, site.bbox, CONTEXT_RAW / f"{site.name}_worldcover_2021.tif")
+    bbox = grid_bbox_wgs84(site)
+    wc = [WORLDCOVER_URL.format(tile=t) for t in worldcover_tiles(bbox)]
+    path = clip_remote(wc, bbox, CONTEXT_RAW / f"{site.name}_worldcover_2021.tif")
     print(f"{site.name}: WorldCover from {len(wc)} tile(s) -> {path.relative_to(DATA_DIR.parent)}")
-    jrc = [JRC_OCCURRENCE_URL.format(tile=t) for t in jrc_tiles(site.bbox)]
-    path = clip_remote(jrc, site.bbox, CONTEXT_RAW / f"{site.name}_jrc_occurrence_v1_5.tif")
+    jrc = [JRC_OCCURRENCE_URL.format(tile=t) for t in jrc_tiles(bbox)]
+    path = clip_remote(jrc, bbox, CONTEXT_RAW / f"{site.name}_jrc_occurrence_v1_5.tif")
     print(f"{site.name}: JRC occurrence from {len(jrc)} tile(s) -> {path.relative_to(DATA_DIR.parent)}")
+
+
+def warp_to_grid(src_path: Path, site: Site, resampling: Resampling, nodata: int) -> np.ndarray:
+    """One raw helper raster resampled onto the site's stack grid (uint8, nodata where uncovered)."""
+    grid = site_grid(site)
+    out = np.full((grid.height, grid.width), nodata, dtype="float32")
+    with rasterio.open(src_path) as src:
+        reproject(
+            source=rasterio.band(src, 1), destination=out,
+            src_nodata=src.nodata if src.nodata is not None else nodata,
+            dst_transform=grid.transform, dst_crs=grid.crs, dst_nodata=nodata, resampling=resampling,
+        )
+    return np.clip(np.rint(out), 0, 255).astype("uint8")
+
+
+def context_on_grid(site: Site) -> list[Path]:
+    """WorldCover and JRC occurrence on the exact 20 m stack grid of the site (committed files)."""
+    grid = site_grid(site)
+    layers = [
+        # raw clip, output, resampling, nodata: WorldCover codes stay codes (0 is its no-data),
+        # JRC occurrence stays 0..100 % (255 is its no-data)
+        (f"{site.name}_worldcover_2021.tif", f"{site.name}_worldcover_2021_20m.tif", Resampling.mode, 0),
+        (f"{site.name}_jrc_occurrence_v1_5.tif", f"{site.name}_jrc_occurrence_20m.tif", Resampling.bilinear, 255),
+    ]
+    CONTEXT_DIR.mkdir(parents=True, exist_ok=True)
+    written = []
+    for raw, out_name, resampling, nodata in layers:
+        data = warp_to_grid(CONTEXT_RAW / raw, site, resampling, nodata)
+        path = CONTEXT_DIR / out_name
+        with rasterio.open(path, "w", driver="GTiff", height=grid.height, width=grid.width, count=1,
+                           dtype="uint8", crs=grid.crs, transform=grid.transform, nodata=nodata,
+                           compress="deflate", tiled=True, blockxsize=512, blockysize=512) as dst:
+            dst.write(data, 1)
+        print(f"{site.name}: {out_name} on the {grid.width} x {grid.height} stack grid, "
+              f"{100 * float(np.mean(data != nodata)):.1f}% covered")
+        written.append(path)
+    return written
 
 
 MJD_EPOCH = date(1858, 11, 17)  # Modified Julian Date day 0
@@ -150,6 +207,7 @@ def main() -> None:
     for site in SITES.values():
         if site.name != "panama":  # land cover and water history are for the Spanish sites
             fetch_rasters(site)
+            context_on_grid(site)
     fetch_lor1()
     fetch_panama_event()
 
