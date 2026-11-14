@@ -3,9 +3,9 @@ import { LandingMotion } from '@/components/landing-motion'
 import { SiteFooter } from '@/components/site-footer'
 import { Smooth } from '@/components/smooth'
 import type { Chapter } from '@/components/story-scroll'
-import { HERO, STORIES } from '@/content/landing'
+import { STORIES } from '@/content/landing'
 import ground from '@/data/context.json'
-import { day, dayYear, imaged, monthName, RADAR } from '@/lib/radar'
+import { day, imaged, monthName, RADAR } from '@/lib/radar'
 import { mapStories } from '@/lib/stories'
 
 const GROUND = ground as unknown as Record<string, { w: number; h: number; box: [number, number, number, number] }>
@@ -53,17 +53,11 @@ function chapters(): Chapter[] {
 }
 
 export default function Home() {
-	const albufera = RADAR.sites.albufera.passes
-	const last = albufera[albufera.length - 1].dates.at(-1)!
-	// what is shown, where and when, in one line (the winners' research: say it before anything else)
-	const eyebrow = `${HERO.eyebrow} · ${albufera.length} passes, ${day(albufera[0].dates[0])} to ${dayYear(last)}`
-	const source = { label: 'NISAR GCOV and GUNW, provisional, via NASA ASF DAAC', href: 'https://search.asf.alaska.edu/' }
-
 	return (
 		<main>
 			<Smooth />
 			<LandingMotion />
-			<Hero stories={mapStories()} eyebrow={eyebrow} source={source} />
+			<Hero stories={mapStories()} />
 			<Stories chapters={chapters()} />
 			<SiteFooter />
 		</main>
