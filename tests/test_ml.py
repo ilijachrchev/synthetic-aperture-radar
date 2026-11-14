@@ -16,7 +16,7 @@ from rasterio.transform import from_origin
 from scipy.ndimage import binary_dilation
 
 from pipeline.config import get_site
-from pipeline.ml import config, data, export, features, labels, split, synthetic
+from pipeline.ml import config, data, export, features, labels, split, synthetic, train
 from pipeline.ml.__main__ import main
 from pipeline.stack import Grid, site_grid
 
@@ -70,6 +70,21 @@ def test_split_has_gap_and_no_overlap():
     train_mask, test_mask = split.split_blocks((200, 200), block_px=50, gap_px=2, seed=1)
     assert test_mask.any() and train_mask.any()
     assert not (binary_dilation(test_mask, iterations=2) & train_mask).any()
+
+
+def test_split_gives_a_rare_clustered_class_its_share_of_test():
+    # 20 x 20 blocks of 10 px. Common class everywhere; "rice" only in a
+    # 4 x 3 group of blocks in one corner (like the first Albufera polygons).
+    y = np.full((200, 200), config.CLASS_INDEX["other_crops_shrub"], np.int16)
+    y[0:40, 0:30] = config.CLASS_INDEX["rice_paddy"]
+    rice = y == config.CLASS_INDEX["rice_paddy"]
+    for seed in range(10):
+        train_mask, test_mask = split.split_blocks(y.shape, block_px=10, gap_px=1, seed=seed, labels=y)
+        share = (rice & test_mask).sum() / rice.sum()
+        assert 0.2 <= share <= 0.4                              # about a quarter, never none
+        assert (rice & train_mask).sum() >= 0.5 * rice.sum()    # training keeps enough
+        assert abs(test_mask.mean() - 0.25) < 0.05              # overall test size unchanged
+        assert not (train_mask & test_mask).any()
 
 
 # --- data: the shared stack format ---------------------------------------------
@@ -211,6 +226,11 @@ def test_command_end_to_end_on_fake_stack(tmp_path):
     run = out_dir / "synthetic_066_D_069"
     m = json.loads((run / "metrics.json").read_text())
     assert m["overall_accuracy"] > 0.9                 # fake classes are easy by design
+    # The saved model reloads and gives class probabilities without retraining.
+    import lightgbm
+    booster = lightgbm.Booster(model_file=str(run / "model.txt"))
+    assert booster.num_feature() == len(m["feature_names"])
+    assert set(m["model_classes"]) <= set(config.CLASSES)
     assert len(m["dates"]) == 11 and m["dates_left_out"] == []
     assert m["sea_pixels"] > 0
     assert not manifest.exists()                       # fake runs never touch the manifest
@@ -249,3 +269,137 @@ def test_manifest_keeps_both_tracks_and_replaces_a_rerun(tmp_path):
     rows = json.loads(p.read_text())
     assert sorted((r["stack"], r["date"]) for r in rows) == [
         ("058_A_021", "2026-06-18/2026-10-28"), ("066_D_069", "2026-06-18/2026-10-16")]
+
+
+# --- follow-up to the first real run (PR #7 review) -----------------------------
+
+T8 = np.array(["2026-06-18", "2026-06-30", "2026-07-12", "2026-07-24",
+               "2026-08-17", "2026-08-29", "2026-09-10", "2026-09-22"], dtype="datetime64[ns]")
+
+
+def test_step_drop_finds_a_lasting_drop_and_its_date():
+    hv = _px([-13, -13, -13, -13, -19, -19, -19, -19])   # a fire between 24 Jul and 17 Aug
+    hh = _px([-8, -8, -8, -8, -8, -8, -8, -8])
+    X, _, _ = features.pixel_features(hh, hv, T8, dark_threshold_db=-15)
+    f = dict(zip(features.FEATURE_NAMES, X[0]))
+    assert f["hv_step_drop"] == pytest.approx(6)
+    assert f["hv_step_doy"] == 229                         # 17 Aug, the first date after
+    assert f["hv_late_minus_early"] == pytest.approx(-6)
+    assert f["hh_step_drop"] == pytest.approx(0)
+
+
+def test_step_drop_ignores_a_single_dark_date():
+    hv = _px([-13, -13, -13, -19, -13, -13, -13, -13])   # one noisy date, no lasting change
+    X, _, _ = features.pixel_features(hv, hv, T8, dark_threshold_db=-15)
+    f = dict(zip(features.FEATURE_NAMES, X[0]))
+    assert f["hv_step_drop"] < 1.5                          # below the burned rule
+    assert f["hv_drop_size"] == pytest.approx(6)            # the old single-step feature is fooled
+
+
+def test_water_threshold_uses_the_sea_and_falls_back_on_land_only():
+    rng = np.random.default_rng(0)
+    land = rng.normal(-8, 1.5, 20_000)
+    sea = rng.normal(-23, 1.5, 10_000)
+    t, rule = features.water_threshold(np.concatenate([land, sea]))
+    assert -18 < t < -12 and rule == "otsu with sea"
+    t, rule = features.water_threshold(land)                # no water mode
+    assert t == features.WATER_DB_FALLBACK and rule.startswith("fallback")
+
+
+def test_burned_rule_only_allows_burned_after_an_hv_drop():
+    X = np.zeros((2, len(features.FEATURE_NAMES)), np.float32)
+    X[0, features.FEATURE_NAMES.index("hv_step_drop")] = 3.0
+    X[1, features.FEATURE_NAMES.index("hv_step_drop")] = 0.5
+    forbid = train.burned_rule(X, 1.5)[config.CLASS_INDEX["burned"]]
+    assert list(forbid) == [False, True]
+    assert train.burned_rule(X, None) == {}
+
+
+def test_speckle_filter_smooths_and_keeps_gaps(fake_stack_path):
+    raw = data.load(fake_stack_path, filter_px=0)
+    smooth = data.load(fake_stack_path, filter_px=5)
+    # Urban is constant over time in the fake stack, so date-to-date wobble of one
+    # pixel is pure speckle. Stay 3 px inside urban parcels so the window sees urban only.
+    from scipy.ndimage import binary_erosion
+    urban = binary_erosion(raw.extra["truth"] == config.CLASS_INDEX["urban"], iterations=3)
+    wobble = lambda st: np.nanmedian(np.nanstd(st.hh_db[:, urban], axis=0))  # noqa: E731
+    assert wobble(smooth) < 0.5 * wobble(raw)
+    seen_raw, seen_smooth = np.isfinite(raw.hh_db), np.isfinite(smooth.hh_db)
+    assert not (seen_smooth & ~seen_raw).any()          # never invents a pixel
+    # boxcar_power drops pixels with under half a valid window (map corners, gaps)
+    assert seen_smooth.sum() > 0.97 * seen_raw.sum()
+
+
+def test_corine_splits_trees_and_adds_rice_but_not_over_towns_or_water(tmp_path):
+    grid = Grid("EPSG:32630", from_origin(725_000, 4_365_000, 20, 20), 30, 30)
+    wc = np.full((30, 30), 40)                  # cropland
+    wc[0:10, 0:10] = 10                         # trees in an orchard area
+    wc[0:10, 20:30] = 10                        # trees in a forest area
+    wc[20:30, 0:10] = 10                        # trees in neither
+    wc[15:18, 15:18] = 50                       # a village inside the rice area
+    with rasterio.open(tmp_path / "wc.tif", "w", driver="GTiff", height=30, width=30, count=1,
+                       dtype="uint8", crs=grid.crs, transform=grid.transform, nodata=0) as dst:
+        dst.write(wc.astype("uint8"), 1)
+    sq = lambda col, row, size, code: _square(725_000 + 20 * col, 4_365_000 - 20 * row, 20 * size,  # noqa: E731
+                                              {"Code_18": code})
+    clc = _write_geojson(tmp_path / "clc.geojson",
+                         [sq(0, 0, 10, "222"), sq(20, 0, 10, "312"), sq(10, 10, 15, "213")])
+    y, _ = labels.build_labels(grid, worldcover=tmp_path / "wc.tif", corine=clc)
+    assert (y[0:10, 0:10] == config.CLASS_INDEX["orchard"]).all()
+    assert (y[0:10, 20:30] == config.CLASS_INDEX["forest"]).all()
+    assert (y[20:30, 0:10] == config.UNLABELED).all()        # trees we cannot name stay out
+    assert (y[15:18, 15:18] == config.CLASS_INDEX["urban"]).all()
+    assert y[14, 20] == config.CLASS_INDEX["rice_paddy"]     # well inside the shrunk rice area
+    assert y[10, 10] != config.CLASS_INDEX["rice_paddy"]     # the 60 m edge is dropped
+
+
+def test_ml_manifest_rerun_replaces_instead_of_duplicating(tmp_path):
+    p = tmp_path / "manifest.json"
+    cv = {"model": "cv", "site": "a", "stack": "s", "layer": "water", "date": "2026-10-16"}
+    export.upsert_manifest(p, [cv, {**cv, "date": "2026-10-28"}], key_fields=export.DATED_MANIFEST_KEY)
+    ml = {"model": "ml", "site": "a", "stack": "s", "layer": "class"}
+    export.upsert_manifest(p, [{**ml, "date": "2026-06-18/2026-10-28"}], key_fields=export.ML_MANIFEST_KEY)
+    export.upsert_manifest(p, [{**ml, "date": "2026-06-18/2026-10-16"}], key_fields=export.ML_MANIFEST_KEY)
+    rows = json.loads(p.read_text())
+    assert [r["model"] for r in rows].count("ml") == 1 and rows[-1]["date"].endswith("10-16")
+    assert [r["model"] for r in rows].count("cv") == 2       # per-date CV entries untouched
+
+
+ALBUFERA_CLC = config.LABELS_DIR / "albufera_clc2018.geojson"
+ALBUFERA_DRAWN = config.LABELS_DIR / "albufera_drawn.geojson"
+
+
+@pytest.mark.skipif(not (ALBUFERA_WC.exists() and ALBUFERA_CLC.exists()), reason="label files not present")
+def test_real_albufera_labels_with_corine():
+    grid = site_grid(get_site("albufera"))
+    y, _ = labels.build_labels(grid, **labels.default_sources("albufera"))
+    ha = {n: (y == i).sum() * config.PIXEL_HA for i, n in enumerate(config.CLASSES)}
+    assert ha["rice_paddy"] > 10_000                          # CORINE 213 shrunk: about 14,400 ha
+    assert ha["orchard"] > 5 * ha["forest"]                   # Albufera trees are mostly orchards
+    if ALBUFERA_DRAWN.exists():                               # every hand-drawn field stays rice
+        drawn = labels.rasterize_polygons(ALBUFERA_DRAWN, grid)
+        assert (y[drawn == config.CLASS_INDEX["rice_paddy"]] == config.CLASS_INDEX["rice_paddy"]).all()
+
+
+def test_majority_filter_clears_specks_and_keeps_shapes_and_nodata():
+    m = np.full((20, 20), config.CLASS_INDEX["forest"], np.uint8)
+    m[5, 5] = config.CLASS_INDEX["permanent_water"]            # a lone speck
+    m[10:18, 10:18] = config.CLASS_INDEX["permanent_water"]    # a real lake
+    m[0:3, 15:20] = config.NODATA_U8                           # sea / not classified
+    out = train.majority_filter(m)
+    assert out[5, 5] == config.CLASS_INDEX["forest"]
+    assert (out[11:17, 11:17] == config.CLASS_INDEX["permanent_water"]).all()
+    assert (out[0:3, 15:20] == config.NODATA_U8).all()         # nodata never filled
+    assert np.array_equal(train.majority_filter(m, size=1), m)
+
+
+def test_sieve_removes_specks_with_mixed_neighbours():
+    m = np.full((12, 12), config.CLASS_INDEX["forest"], np.uint8)
+    m[:, 6:] = config.CLASS_INDEX["orchard"]
+    m[4:8, 4:8] = config.CLASS_INDEX["other_crops_shrub"]     # a 16 px field: stays
+    m[1, 6] = config.CLASS_INDEX["permanent_water"]            # speck between forest and orchard
+    m[0, 0] = config.NODATA_U8
+    out = train.sieve_small_patches(m, 5)
+    assert out[1, 6] != config.CLASS_INDEX["permanent_water"]
+    assert (out[4:8, 4:8] == config.CLASS_INDEX["other_crops_shrub"]).all()
+    assert out[0, 0] == config.NODATA_U8

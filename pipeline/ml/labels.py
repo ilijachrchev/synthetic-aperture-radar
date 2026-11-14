@@ -2,11 +2,15 @@
 
 Sources, lowest to highest priority (a later source overwrites an earlier one):
 
-1. ESA WorldCover 2021      -> forest / urban / other_crops_shrub
+1. ESA WorldCover 2021      -> forest / urban / other_crops_shrub. With CORINE,
+   tree cover is split into orchard (CORINE 221-223) and forest (311-313) and
+   left unlabeled elsewhere
 2. JRC water occurrence     -> permanent_water where occurrence >= 90 %; water
    that JRC calls seasonal (1 to 89 %) is left unlabeled: it may be rice
-3. EFFIS burnt area         -> burned
-4. Hand-drawn polygons      -> any class, from a `class` column (GeoJSON or GeoPackage)
+3. CORINE 2018 rice (213), shrunk by 60 m -> rice_paddy, except on pixels
+   already labelled urban or permanent water (villages, canals)
+4. EFFIS burnt area         -> burned
+5. Hand-drawn polygons      -> any class, from a `class` column (GeoJSON or GeoPackage)
 
 The sea is never a label: it would swamp the permanent-water class and it is
 not part of the land story.
@@ -14,7 +18,7 @@ not part of the land story.
 Defaults (default_sources) are the files the shared pipeline commits:
 data/context/<site>_worldcover_2021_20m.tif, data/context/<site>_jrc_occurrence_20m.tif,
 data/context/<site>_sea_20m.tif, data/labels/<site>_effis_burnt_area.geojson,
-and our data/labels/<site>_drawn.geojson.
+and our data/labels/<site>_clc2018.geojson and data/labels/<site>_drawn.geojson.
 
 Written with SI assistance (Claude Code), reviewed by the team.
 """
@@ -34,6 +38,8 @@ from pipeline.stack import Grid
 
 from . import config
 
+RICE_SHRINK_M = 60.0  # CORINE rice polygons are shrunk so field edges, paths and canals drop out
+
 
 def default_sources(site: str) -> dict[str, Path | None]:
     """The label files that exist for a site, None where there is none."""
@@ -43,6 +49,7 @@ def default_sources(site: str) -> dict[str, Path | None]:
         "effis": config.LABELS_DIR / f"{site}_effis_burnt_area.geojson",
         "polygons": config.LABELS_DIR / f"{site}_drawn.geojson",
         "sea": config.CONTEXT_DIR / f"{site}_sea_20m.tif",
+        "corine": config.LABELS_DIR / f"{site}_clc2018.geojson",
     }
     return {k: (p if p.exists() else None) for k, p in candidates.items()}
 
@@ -89,6 +96,17 @@ def rasterize_polygons(path: str | Path, grid: Grid, class_name: str | None = No
                      fill=config.UNLABELED, dtype="int16")
 
 
+def corine_mask(clc: gpd.GeoDataFrame, grid: Grid, codes: tuple[str, ...], shrink_m: float = 0.0) -> np.ndarray:
+    """Pixels whose centre lies inside CORINE polygons with one of the codes."""
+    sel = clc[clc["Code_18"].astype(str).isin(codes)].to_crs(grid.crs)
+    geoms = sel.geometry.buffer(-shrink_m) if shrink_m else sel.geometry
+    geoms = [g for g in geoms if g is not None and not g.is_empty]
+    if not geoms:
+        return np.zeros((grid.height, grid.width), bool)
+    return rasterize(((g, 1) for g in geoms), out_shape=(grid.height, grid.width),
+                     transform=grid.transform, fill=0, dtype="uint8").astype(bool)
+
+
 def sea_mask(worldcover: np.ndarray | None, jrc_occurrence: np.ndarray | None,
              edges: tuple[str, ...] = ("east",)) -> np.ndarray:
     """Sea computed from in-memory layers, with the shared rule in pipeline.context.
@@ -114,21 +132,29 @@ def build_labels(
     effis: str | Path | None = None,
     polygons: str | Path | None = None,
     sea: str | Path | None = None,
+    corine: str | Path | None = None,
 ) -> tuple[np.ndarray, np.ndarray]:
     """Return (labels int16 with UNLABELED, sea bool).
 
     sea: a 1 = sea raster (data/context/<site>_sea_20m.tif). Without it the sea
     is computed from WorldCover / JRC with the same shared rule.
+    corine: CORINE 2018 polygons with a Code_18 column (pipeline.ml.corine).
     """
     shape = (grid.height, grid.width)
     labels = np.full(shape, config.UNLABELED, dtype=np.int16)
     wc = occ = None
+    clc = gpd.read_file(corine) if corine is not None else None
 
     if worldcover is not None:
         # Mode keeps the majority class inside each 20 m pixel if resampling is needed.
         wc = read_on_grid(worldcover, grid, Resampling.mode)
         for code, name in config.WORLDCOVER_TO_CLASS.items():
             labels[wc == code] = config.CLASS_INDEX[name]
+        if clc is not None:
+            trees = wc == config.WORLDCOVER_TREE
+            labels[trees] = config.UNLABELED
+            labels[trees & corine_mask(clc, grid, config.CORINE_ORCHARD)] = config.CLASS_INDEX["orchard"]
+            labels[trees & corine_mask(clc, grid, config.CORINE_FOREST)] = config.CLASS_INDEX["forest"]
 
     if jrc_occurrence is not None:
         occ = read_on_grid(jrc_occurrence, grid, Resampling.average)
@@ -136,6 +162,11 @@ def build_labels(
         seasonal = (occ > 0) & ~permanent
         labels[seasonal] = config.UNLABELED
         labels[permanent] = config.CLASS_INDEX["permanent_water"]
+
+    if clc is not None:
+        rice = corine_mask(clc, grid, config.CORINE_RICE, shrink_m=RICE_SHRINK_M)
+        keep = np.isin(labels, [config.CLASS_INDEX["urban"], config.CLASS_INDEX["permanent_water"]])
+        labels[rice & ~keep] = config.CLASS_INDEX["rice_paddy"]
 
     if effis is not None:
         burned = rasterize_polygons(effis, grid, class_name="burned")

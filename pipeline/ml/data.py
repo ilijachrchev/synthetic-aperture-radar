@@ -9,6 +9,13 @@ P05036, VALIDATED). Ilija measured the step into it on stable urban pixels:
 -0.10 to -0.34 dB in HH, inside normal 12-day changes (DATA.md), so every date
 is kept by default. crid="majority" or a CRID name keeps only those dates.
 
+Speckle: each date is smoothed with a FILTER_PX x FILTER_PX mean in linear power
+(pipeline.cv.data.boxcar_power, which never mixes in invalid pixels) before the
+dB conversion. On raw pixels the median biggest 12-day HH drop on Albufera tree
+cover is 1.98 dB, after a 5 x 5 filter 1.17 dB (PR #7): without it the change
+features mostly measure speckle. The 2 px gap in the spatial split covers a 5 x 5
+window, so filtering does not leak between train and test blocks.
+
 Written with SI assistance (Claude Code), reviewed by the team.
 """
 
@@ -21,10 +28,16 @@ from pathlib import Path
 import numpy as np
 
 from pipeline.config import SITES, get_site
-from pipeline.cv.data import grid_of, open_stack, to_db
+from pipeline.cv.data import boxcar_power, grid_of, open_stack, to_db
 from pipeline.stack import Grid, site_grid
 
 PROVENANCE_VARS = ("granule_ur", "crid", "maturity", "pols")
+FILTER_PX = 5
+
+
+def _smooth(power: np.ndarray, valid: np.ndarray, size: int) -> np.ndarray:
+    """Per-date speckle filter in linear power; NaN where the centre is not valid."""
+    return np.stack([boxcar_power(power[t], valid[t], size=size) for t in range(power.shape[0])])
 
 
 @dataclass
@@ -53,8 +66,9 @@ def stack_path(site: str, stack_id: str, stack_dir: Path) -> Path:
     return stack_dir / f"{site}_{stack_id}.nc"
 
 
-def load(path: str | Path, crid: str = "all") -> MLStack:
-    """Load a stack. crid: "all" (default), "majority", or one CRID such as "P05023"."""
+def load(path: str | Path, crid: str = "all", filter_px: int = FILTER_PX) -> MLStack:
+    """Load a stack. crid: "all" (default), "majority", or one CRID such as "P05023".
+    filter_px: speckle filter window (0 or 1 = no filter)."""
     ds = open_stack(path)
     for var in ("HH", "HV", "valid"):
         if var not in ds or ds[var].dims != ("time", "y", "x"):
@@ -88,8 +102,11 @@ def load(path: str | Path, crid: str = "all") -> MLStack:
         raise ValueError(f"{path}: no dates left after the CRID filter {crid!r}")
 
     valid = ds["valid"].values.astype(bool)[keep]
-    hh = to_db(ds["HH"].values[keep])
-    hv = to_db(ds["HV"].values[keep])
+    hh_pow, hv_pow = ds["HH"].values[keep], ds["HV"].values[keep]
+    if filter_px and filter_px > 1:
+        hh_pow, hv_pow = _smooth(hh_pow, valid, filter_px), _smooth(hv_pow, valid, filter_px)
+    hh = to_db(hh_pow)
+    hv = to_db(hv_pow)
     hh[~valid] = np.nan
     hv[~valid] = np.nan
     extra = {v: ds[v].values for v in ds.data_vars if ds[v].dims == ("y", "x")}

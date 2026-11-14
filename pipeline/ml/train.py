@@ -6,6 +6,8 @@ Written with SI assistance (Claude Code), reviewed by the team.
 from __future__ import annotations
 
 import numpy as np
+from rasterio.features import sieve
+from scipy.ndimage import uniform_filter
 from lightgbm import LGBMClassifier
 from sklearn.metrics import accuracy_score, cohen_kappa_score, confusion_matrix, precision_recall_fscore_support
 
@@ -51,8 +53,50 @@ def predict_proba_full(model: LGBMClassifier, X: np.ndarray) -> np.ndarray:
     return proba
 
 
-def evaluate(model: LGBMClassifier, X: np.ndarray, y: np.ndarray) -> dict:
-    pred = np.argmax(predict_proba_full(model, X), axis=1)
+def sieve_small_patches(class_map: np.ndarray, min_px: int) -> np.ndarray:
+    """Patches smaller than min_px pixels take the class of their largest neighbour
+    (GDAL sieve, 8-connected). Nodata pixels are masked: never filled, never used.
+
+    The majority filter leaves specks whose neighbours are mixed (no class gets
+    5 votes): after it, 155 single-pixel water patches were left at Espadà.
+    """
+    if min_px <= 1:
+        return class_map
+    valid = class_map != config.NODATA_U8
+    out = sieve(class_map, size=min_px, mask=valid, connectivity=8)
+    out[~valid] = config.NODATA_U8
+    return out
+
+
+def majority_filter(class_map: np.ndarray, size: int = 3, min_votes: int = 5) -> np.ndarray:
+    """Replace a pixel by the most common class in its size x size window when
+    that class has at least min_votes pixels; nodata pixels never vote and stay nodata.
+
+    Clears single-pixel specks: in the first real run 766 water patches at Espadà,
+    most of them one pixel, on grassland and trees (Ilija, PR #13).
+    """
+    if size <= 1:
+        return class_map
+    valid = class_map != config.NODATA_U8
+    votes = np.stack([
+        np.rint(uniform_filter((class_map == c).astype(np.float32), size=size, mode="constant") * size * size)
+        for c in range(len(config.CLASSES))
+    ])
+    winner = np.argmax(votes, axis=0).astype(np.uint8)
+    strong = np.max(votes, axis=0) >= min_votes
+    out = class_map.copy()
+    change = valid & strong & (winner != class_map)
+    out[change] = winner[change]
+    return out
+
+
+def evaluate(model: LGBMClassifier | None, X: np.ndarray | None, y: np.ndarray,
+             forbid: dict[int, np.ndarray] | None = None, pred: np.ndarray | None = None) -> dict:
+    """Scores on held-out rows. forbid: the same rules the map uses, indexed like X.
+    pred: score these predicted classes instead (e.g. the final, filtered map)."""
+    if pred is None:
+        proba = _apply_rules(predict_proba_full(model, X), forbid, np.arange(X.shape[0]))
+        pred = np.argmax(proba, axis=1)
     all_classes = list(range(len(config.CLASSES)))
     p, r, f1, support = precision_recall_fscore_support(
         y, pred, labels=all_classes, zero_division=0
@@ -88,9 +132,33 @@ def feature_importance(model: LGBMClassifier) -> list[dict]:
     return [{"feature": FEATURE_NAMES[i], "gain_share": float(share[i])} for i in order]
 
 
+def burned_rule(X: np.ndarray, min_hv_drop_db: float | None) -> dict[int, np.ndarray]:
+    """Rows where "burned" is not allowed: HV did not drop by min_hv_drop_db and stay down.
+
+    Default 1.0 dB (precision 0.98, recall 0.77 on espada 058_A_022; 1.5 dB gives
+    0.99 and 0.57). The CV baseline rule (HV step drop >= 1.5 dB) agrees with EFFIS at precision
+    0.94 to 0.99 (Ilija, PR #7). Without it the model learned burned as a static
+    kind of forest and over-predicted it by 70 % at Espadà.
+    """
+    if min_hv_drop_db is None:
+        return {}
+    drop = X[:, FEATURE_NAMES.index("hv_step_drop")]
+    return {config.CLASS_INDEX["burned"]: ~(np.nan_to_num(drop, nan=0.0) >= min_hv_drop_db)}
+
+
+def _apply_rules(proba: np.ndarray, forbid: dict[int, np.ndarray] | None, rows: np.ndarray) -> np.ndarray:
+    """Zero a class where a rule forbids it; the next most likely class wins.
+    Probabilities are not renormalized, so confidence drops where a rule fired."""
+    if forbid:
+        proba = proba.copy()
+        for c, mask in forbid.items():
+            proba[mask[rows], c] = 0.0
+    return proba
+
+
 def predict_map(
     model: LGBMClassifier, X: np.ndarray, usable: np.ndarray, shape: tuple[int, int],
-    chunk: int = 200_000,
+    chunk: int = 200_000, forbid: dict[int, np.ndarray] | None = None,
 ) -> tuple[np.ndarray, np.ndarray]:
     """Class map (uint8, NODATA_U8 where unusable) and confidence (max probability, NaN)."""
     classes = np.full(X.shape[0], config.NODATA_U8, dtype=np.uint8)
@@ -98,7 +166,7 @@ def predict_map(
     idx = np.flatnonzero(usable)
     for start in range(0, idx.size, chunk):
         part = idx[start:start + chunk]
-        proba = predict_proba_full(model, X[part])
+        proba = _apply_rules(predict_proba_full(model, X[part]), forbid, part)
         classes[part] = np.argmax(proba, axis=1).astype(np.uint8)
         confidence[part] = proba.max(axis=1)
     return classes.reshape(shape), confidence.reshape(shape)

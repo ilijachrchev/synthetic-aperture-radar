@@ -26,7 +26,13 @@ FEATURE_NAMES: list[str] = [
     "hv_drop_size", "hv_drop_doy", "hv_rise_size", "hv_rise_doy",
     "dark_fraction",                          # share of HH dates darker than the water threshold
     "n_valid_hh", "n_valid_hv",
+    # Lasting change (a fire, a harvest): averages of several dates, so speckle cancels.
+    "hh_late_minus_early", "hv_late_minus_early",   # mean of the second half minus the first half
+    "hh_step_drop", "hh_step_doy",                  # biggest drop of mean(after) vs mean(before) a date
+    "hv_step_drop", "hv_step_doy",
 ]
+
+MIN_SIDE_DATES = 2  # each side of a step needs this many seen dates
 
 
 def otsu_threshold(values: np.ndarray, bins: int = 256) -> float:
@@ -45,6 +51,26 @@ def otsu_threshold(values: np.ndarray, bins: int = 256) -> float:
     # them; take its middle rather than its edge next to one mode.
     best = np.flatnonzero(between >= between.max() * (1 - 1e-9))
     return float(centres[best].mean())
+
+
+# Water threshold sanity range and fallback (HH, dB). At L-band, open water is
+# about -20 dB or darker and vegetation about -12 to -5 dB. An Otsu result
+# outside this range means the histogram had no water mode (e.g. land only:
+# -5.2 dB at Albufera, -7.9 dB at Espadà in the first real run, PR #7).
+WATER_DB_RANGE = (-20.0, -9.0)
+WATER_DB_FALLBACK = -15.0
+
+
+def water_threshold(hh_db: np.ndarray) -> tuple[float, str]:
+    """HH dB threshold for "dark like open water": Otsu over every seen value,
+    sea included, or WATER_DB_FALLBACK if Otsu leaves WATER_DB_RANGE."""
+    try:
+        t = otsu_threshold(hh_db.ravel())
+    except ValueError:
+        return WATER_DB_FALLBACK, "fallback (no data)"
+    if WATER_DB_RANGE[0] <= t <= WATER_DB_RANGE[1]:
+        return t, "otsu with sea"
+    return WATER_DB_FALLBACK, f"fallback (otsu gave {t:.1f} dB)"
 
 
 def _day_of_year(times: np.ndarray) -> np.ndarray:
@@ -86,6 +112,38 @@ def _step_features(steps: np.ndarray, doy: np.ndarray) -> list[np.ndarray]:
     ]
 
 
+def _half_change(a: np.ndarray) -> np.ndarray:
+    """Mean of the second half of the dates minus the mean of the first half."""
+    t = a.shape[0]
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", category=RuntimeWarning)
+        return np.nanmean(a[t // 2:], axis=0) - np.nanmean(a[: t // 2], axis=0)
+
+
+def _step_drop(a: np.ndarray, doy: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    """Biggest lasting drop: max over split dates k of mean(a[:k]) - mean(a[k:]).
+
+    Returns (size in dB, >= 0; doy of the first date after the split). Only
+    splits with MIN_SIDE_DATES seen dates on each side count; NaN if none.
+    """
+    seen = np.isfinite(a)
+    filled = np.where(seen, a, 0.0)
+    csum, ccount = np.cumsum(filled, axis=0), np.cumsum(seen, axis=0)
+    total, n_all = csum[-1], ccount[-1]
+    best = np.full(a.shape[1], -np.inf)
+    best_doy = np.full(a.shape[1], np.nan)
+    for k in range(1, a.shape[0]):
+        n_before, n_after = ccount[k - 1], n_all - ccount[k - 1]
+        ok = (n_before >= MIN_SIDE_DATES) & (n_after >= MIN_SIDE_DATES)
+        drop = np.full(a.shape[1], -np.inf)
+        drop[ok] = csum[k - 1][ok] / n_before[ok] - (total[ok] - csum[k - 1][ok]) / n_after[ok]
+        better = drop > best
+        best[better] = drop[better]
+        best_doy[better] = doy[k]
+    size = np.where(np.isfinite(best), np.maximum(best, 0.0), np.nan)
+    return size, np.where(np.isfinite(best), best_doy, np.nan)
+
+
 def pixel_features(
     hh_db: np.ndarray,
     hv_db: np.ndarray,
@@ -125,6 +183,9 @@ def pixel_features(
             *hv_steps[1:],
             np.where(n_hh > 0, (hh < dark_threshold_db).sum(0) / np.maximum(n_hh, 1), np.nan),
             n_hh.astype(np.float64), n_hv.astype(np.float64),
+            _half_change(hh), _half_change(hv),
+            *_step_drop(hh, doy),
+            *_step_drop(hv, doy),
         ]
     X = np.stack(cols, axis=1).astype(np.float32)
     assert X.shape[1] == len(FEATURE_NAMES)
