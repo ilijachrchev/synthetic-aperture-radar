@@ -532,12 +532,14 @@
 
 .fl-foot {
 	display: flex;
-	flex-wrap: wrap;
 	align-items: center;
 	gap: 6px 16px;
 	margin-top: 2px;
 	font-size: 11.5px;
 	color: var(--muted);
+}
+.fl-foot > * {
+	flex: none;
 }
 .fl-picnote {
 	font-weight: 650;
@@ -577,9 +579,13 @@
 	border-radius: 3px;
 	background: var(--ems);
 }
-.fl-attrib {
-	margin-left: auto;
+.fl-foot > .fl-attrib {
+	flex: 1 1 0;
+	min-width: 0;
+	overflow: hidden;
 	text-align: right;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 .fl-src {
 	height: 24px;
@@ -759,4 +765,75 @@
 .fl-tl-nopass {
 	stroke: var(--line-strong);
 	stroke-width: 1.4;
+}
+
+/* ---------------------------------------------------------------- from far out */
+.fl-farchip {
+	opacity: calc(1 - var(--near, 1));
+}
+.fl-ring {
+	position: relative;
+	display: block;
+	padding-top: 34px;
+	font-size: 13px;
+	font-weight: 700;
+	color: var(--on-map);
+	text-shadow:
+		0 1px 2px rgb(0 0 0 / 0.9),
+		0 0 12px rgb(0 0 0 / 0.8);
+	white-space: nowrap;
+	opacity: calc(1 - var(--near, 1));
+	pointer-events: none;
+}
+.fl-ring::before,
+.fl-ring::after {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: 50%;
+	width: 24px;
+	height: 24px;
+	margin-left: -12px;
+	border-radius: 999px;
+	box-shadow:
+		0 0 0 2.5px #fff,
+		0 0 0 4px rgb(0 0 0 / 0.35);
+}
+.fl-ring::after {
+	box-shadow: 0 0 0 2px #fff;
+	animation: fl-ring 2.2s var(--ease) infinite;
+}
+@keyframes fl-ring {
+	from {
+		transform: scale(1);
+		opacity: 0.9;
+	}
+	to {
+		transform: scale(2.6);
+		opacity: 0;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.fl-ring::after {
+		animation: none;
+	}
+}
+
+/* ---------------------------------------------------------------- the film: only what the story needs */
+.fl[data-cinema] .fl-tools,
+.fl[data-cinema] .fl-legend,
+.fl[data-cinema] .fl-sensor,
+.fl[data-cinema] .fl-play,
+.fl[data-cinema] .fl-picnote,
+.fl[data-cinema] .fl-keys,
+.fl[data-cinema] .fl-src,
+.fl[data-cinema] .pal {
+	display: none;
+}
+.fl[data-cinema] .fl-caption {
+	font-size: clamp(19px, 1.9vw, 30px);
+}
+.fl[data-cinema] .fl-dock-top {
+	min-height: 0;
+	padding: 2px 2px 0;
 }

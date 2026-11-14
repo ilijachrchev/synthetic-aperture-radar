@@ -48,6 +48,8 @@ export class PictureLayer {
 	private opacityStart = 0
 	private sat = 1
 	private bright = 1
+	private dim = new Map<string, [number, number]>()
+	private dimmed = false
 	private alpha = 1
 	private maxSize: number
 	private gone = false
@@ -140,10 +142,21 @@ export class PictureLayer {
 		this.map?.triggerRepaint()
 	}
 
-	/** saturation and brightness, 1 is the picture as it is; lowered a little while radar water sits on top */
+	/** saturation and brightness of every picture, 1 is the picture as it is */
 	setTone(sat: number, bright: number) {
 		this.sat = sat
 		this.bright = bright
+		this.map?.triggerRepaint()
+	}
+
+	/** how far one picture steps back while radar water sits on it (a sky full of cloud steps back more) */
+	setDim(key: string, sat: number, bright: number) {
+		this.dim.set(key, [sat, bright])
+	}
+
+	/** switch the stepping back on or off; each picture keeps its own, so a fade never flashes */
+	setDimmed(on: boolean) {
+		this.dimmed = on
 		this.map?.triggerRepaint()
 	}
 
@@ -202,8 +215,11 @@ export class PictureLayer {
 		gl.useProgram(this.program)
 		gl.uniformMatrix4fv(this.u.u_matrix, false, mat)
 		gl.uniform1i(this.u.u_tex, 0)
-		gl.uniform1f(this.u.u_sat, this.sat)
-		gl.uniform1f(this.u.u_bright, this.bright)
+		const tone = (key: string) => {
+			const d = this.dimmed ? this.dim.get(key) : undefined
+			gl.uniform1f(this.u.u_sat, this.sat * (d ? d[0] : 1))
+			gl.uniform1f(this.u.u_bright, this.bright * (d ? d[1] : 1))
+		}
 		gl.enable(gl.BLEND)
 		gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA)
 		gl.bindVertexArray(this.vao)
@@ -212,10 +228,12 @@ export class PictureLayer {
 		withClip(gl, this.clip, () => {
 			if (this.back) {
 				gl.bindTexture(gl.TEXTURE_2D, this.back.tex)
+				tone(this.back.key)
 				gl.uniform1f(this.u.u_alpha, shown)
 				gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4)
 			}
 			gl.bindTexture(gl.TEXTURE_2D, this.front!.tex)
+			tone(this.front!.key)
 			gl.uniform1f(this.u.u_alpha, shown * ease(mixIn))
 			gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4)
 		})

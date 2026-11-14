@@ -9,6 +9,7 @@ For one site it gathers every radar water map in a date range and writes, under 
                        R  255 where this pass saw the pixel, 0 where it did not
                        G  signed distance to the edge of all water (open water plus flooded vegetation)
                        B  signed distance to the edge of open water
+    <series>/always.webp  the same fields for the water that every pass of the series has
     base.png           R  255 on the sea (left to the base map)
     meta.json          the grid, the time, source files and hectares of every frame, and the area between passes
 
@@ -266,6 +267,13 @@ def bake_series(name, frames, sea, row_ha, out_dir):
         fields.append((decode(g), decode(b)))
         print(f"  {name} {i:02d} {f.get('time_utc', f.get('date'))} {f.get('platform', '')}: open {rec['open_ha']} ha, "
               f"flooded vegetation {rec['veg_ha']} ha, seen {rec['seen']:.0%}", flush=True)
+    # Water that every pass of the series has: the page can measure "new" water against it (a lagoon, a river)
+    always = np.logical_and.reduce([c > 0 for c in filled]) & land
+    always_open = np.logical_and.reduce([c == 1 for c in filled]) & land
+    Image.fromarray(np.dstack([np.full(always.shape, 255, "uint8"), encode(signed_distance(always)), encode(signed_distance(always_open))])).save(
+        folder / "always.webp", "WEBP", lossless=True, quality=100, method=4)
+    always_rec = {"file": f"{name}/always.webp", "water_ha": round(float((area * always).sum()), 1)}
+
     # Hectares the app shows between two passes, so the counter matches the picture. The app runs two clocks in a
     # gap: one for pixels that get wetter (gain) and one for pixels that dry (loss). Three paths cover every case:
     #   both  the two clocks run together (an ordinary gap)
@@ -301,7 +309,7 @@ def bake_series(name, frames, sea, row_ha, out_dir):
         })
         print(f"  {name} gap {i:02d}: open water {between[-1]['both'][0][0]} -> {between[-1]['gain'][-1][0]} (all gains) "
               f"-> {between[-1]['both'][-1][0]} ha", flush=True)
-    return records, between
+    return records, between, always_rec
 
 
 def main():
@@ -349,15 +357,15 @@ def main():
         s1_download(passes, args.cache / args.site)
         frames = [{"time_utc": p["time_utc"], "platform": p["platform"], "granules": [t["granule"] for t in p["tiles"]],
                    "cls": s1_classes(p, transform, width, height)} for p in passes]
-        records, between = bake_series("s1", frames, sea, row_ha, out_dir)
+        records, between, always = bake_series("s1", frames, sea, row_ha, out_dir)
         series.append({"id": "s1", "sensor": "Sentinel-1", "band": "C band", "classes": ["open water", "flooded vegetation"],
-                       "product": "OPERA DSWx-S1 B01_WTR (JPL, via PO.DAAC)", "frames": records, "between": between})
+                       "product": "OPERA DSWx-S1 B01_WTR (JPL, via PO.DAAC)", "frames": records, "between": between, "always": always})
     for stack, frames in nisar_frames(args.data_root, args.site, transform, width, height, args.stacks).items():
-        records, between = bake_series(f"nisar_{stack}", frames, sea, row_ha, out_dir)
+        records, between, always = bake_series(f"nisar_{stack}", frames, sea, row_ha, out_dir)
         two = any(r["veg_ha"] > 0 for r in records)
         series.append({"id": f"nisar_{stack}", "sensor": "NISAR", "band": "L band", "stack": stack,
                        "classes": ["open water", "flooded vegetation"] if two else ["water"],
-                       "product": "NISAR GCOV water, the team CV model", "frames": records, "between": between})
+                       "product": "NISAR GCOV water, the team CV model", "frames": records, "between": between, "always": always})
 
     x0, y1 = transform.c, transform.f
     x1, y0 = x0 + width * RES, y1 - height * RES

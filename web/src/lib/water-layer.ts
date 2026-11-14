@@ -33,6 +33,8 @@ export type WaterSeries = {
 	stack?: string
 	frames: WaterFrame[]
 	between: WaterGap[]
+	/** the water every pass of the series has, as one more frame */
+	always?: { file: string; water_ha: number }
 }
 export type WaterMeta = {
 	site: string

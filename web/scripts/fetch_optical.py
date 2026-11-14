@@ -84,7 +84,7 @@ def read_day(items, transform, width, height):
             take = empty & (tile.max(axis=0) > 0)
             if take.any():
                 out[:, take] = tile[:, take]
-                used.append(it)
+                used.append({**it, "share": round(float(take.mean()), 3)})
     return out, used
 
 
@@ -118,12 +118,15 @@ def main():
         filled = float((rgb.max(axis=0) > 0).mean())
         name = f"{day}.webp"
         Image.fromarray(np.moveaxis(rgb, 0, -1)).save(folder / name, "WEBP", quality=args.quality, method=6)
-        rec = {"day": day, "file": f"optical/{name}", "time_utc": used[0]["time_utc"] if used else None,
-               "platform": used[0]["platform"] if used else None, "covered": round(filled, 3),
-               "scenes": [{"id": u["id"], "tile": u["tile"], "cloud_pct": u["cloud_pct"]} for u in used]}
+        # the cloud share quoted for the picture is the one of the scene that fills most of it
+        main = max(used, key=lambda u: u["share"]) if used else None
+        rec = {"day": day, "file": f"optical/{name}", "time_utc": main["time_utc"] if main else None,
+               "platform": main["platform"] if main else None, "covered": round(filled, 3),
+               "cloud_pct": main["cloud_pct"] if main else None, "main_scene": main["id"] if main else None,
+               "scenes": [{"id": u["id"], "tile": u["tile"], "cloud_pct": u["cloud_pct"], "share": u["share"]} for u in used]}
         index["scenes"] = sorted([s for s in index["scenes"] if s["day"] != day] + [rec], key=lambda s: s["day"])
         size = (folder / name).stat().st_size / 1e6
-        print(f"  {day}: {[(u['id'], u['cloud_pct']) for u in used]} covered {filled:.0%}, {size:.1f} MB", flush=True)
+        print(f"  {day}: {[(u['id'], u['cloud_pct'], u['share']) for u in used]} covered {filled:.0%}, {size:.1f} MB", flush=True)
     index_path.write_text(json.dumps(index, indent=1), encoding="utf-8")
     print(f"index -> {index_path}")
 

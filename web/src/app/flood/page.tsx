@@ -1,11 +1,9 @@
 import type { Metadata } from 'next'
-import { FloodApp } from '@/components/flood/flood-app'
+import { WaterApp } from '@/components/flood/water-app'
+import { DANA } from '@/content/stories'
 
-export const metadata: Metadata = {
-	title: 'DANA Adam flood · Dancing with the SARs',
-	description: 'The October 2026 flood at the Pego-Oliva marsh, played pass by pass from real radar water maps over real satellite pictures.',
-}
+export const metadata: Metadata = DANA.meta
 
 export default function FloodPage() {
-	return <FloodApp />
+	return <WaterApp story={DANA} />
 }

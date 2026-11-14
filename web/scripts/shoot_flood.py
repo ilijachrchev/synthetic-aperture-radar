@@ -48,6 +48,7 @@ def main():
     ap.add_argument("--scale", type=float, default=1.0)
     ap.add_argument("--palette", default="2")
     ap.add_argument("--headed", action="store_true")
+    ap.add_argument("--cinema", action="store_true", help="film mode: only what the story needs on screen")
     args = ap.parse_args()
     w, h = (int(v) for v in args.size.split("x"))
     os.makedirs(args.out, exist_ok=True)
@@ -65,6 +66,7 @@ def main():
             shot = SHOTS[name]
             page.evaluate("__flood.compare(false); __flood.water(true); __flood.outlines(true); __flood.exact(false); __flood.optical('auto')")
             want = shot.get("series", NISAR)
+            page.evaluate(f"__flood.cinema({'true' if args.cinema else 'false'})")
             page.evaluate(f"__flood.series({json.dumps(want)})")
             page.wait_for_function(f"window.__flood && __flood.current === {json.dumps(want)}", timeout=30000)
             cam = shot.get("camera", {"center": MARSH, "zoom": 12.45})

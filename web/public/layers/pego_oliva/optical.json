@@ -3,91 +3,110 @@
   {
    "day": "2026-10-08",
    "file": "optical/2026-10-08.webp",
-   "time_utc": "2026-10-08T11:00:42Z",
+   "time_utc": "2026-10-08T11:00:27Z",
    "platform": "sentinel-2a",
    "covered": 1.0,
+   "cloud_pct": 2.4,
+   "main_scene": "S2A_30SYJ_20261008_1_L2A",
    "scenes": [
     {
      "id": "S2A_30SYH_20261008_1_L2A",
      "tile": "MGRS-30SYH",
-     "cloud_pct": 32.0
+     "cloud_pct": 32.0,
+     "share": 0.137
     },
     {
      "id": "S2A_30SYJ_20261008_1_L2A",
      "tile": "MGRS-30SYJ",
-     "cloud_pct": 2.4
+     "cloud_pct": 2.4,
+     "share": 0.863
     },
     {
      "id": "S2A_31SBD_20261008_1_L2A",
      "tile": "MGRS-31SBD",
-     "cloud_pct": 2.6
+     "cloud_pct": 2.6,
+     "share": 0.0
     }
    ]
   },
   {
    "day": "2026-10-18",
    "file": "optical/2026-10-18.webp",
-   "time_utc": "2026-10-18T11:00:39Z",
+   "time_utc": "2026-10-18T11:00:24Z",
    "platform": "sentinel-2a",
    "covered": 1.0,
+   "cloud_pct": 100.0,
+   "main_scene": "S2A_30SYJ_20261018_1_L2A",
    "scenes": [
     {
      "id": "S2A_30SYH_20261018_1_L2A",
      "tile": "MGRS-30SYH",
-     "cloud_pct": 99.2
+     "cloud_pct": 99.2,
+     "share": 0.137
     },
     {
      "id": "S2A_30SYJ_20261018_1_L2A",
      "tile": "MGRS-30SYJ",
-     "cloud_pct": 100.0
+     "cloud_pct": 100.0,
+     "share": 0.863
     }
    ]
   },
   {
    "day": "2026-10-21",
    "file": "optical/2026-10-21.webp",
-   "time_utc": "2026-10-21T11:00:29Z",
+   "time_utc": "2026-10-21T11:00:14Z",
    "platform": "sentinel-2b",
    "covered": 1.0,
+   "cloud_pct": 0.0,
+   "main_scene": "S2B_30SYJ_20261021_0_L2A",
    "scenes": [
     {
      "id": "S2B_30SYH_20261021_0_L2A",
      "tile": "MGRS-30SYH",
-     "cloud_pct": 0.0
+     "cloud_pct": 0.0,
+     "share": 0.137
     },
     {
      "id": "S2B_30SYJ_20261021_0_L2A",
      "tile": "MGRS-30SYJ",
-     "cloud_pct": 0.0
+     "cloud_pct": 0.0,
+     "share": 0.863
     },
     {
      "id": "S2B_31SBC_20261021_0_L2A",
      "tile": "MGRS-31SBC",
-     "cloud_pct": 0.0
+     "cloud_pct": 0.0,
+     "share": 0.0
     },
     {
      "id": "S2B_31SBD_20261021_0_L2A",
      "tile": "MGRS-31SBD",
-     "cloud_pct": 0.0
+     "cloud_pct": 0.0,
+     "share": 0.0
     }
    ]
   },
   {
    "day": "2026-10-28",
    "file": "optical/2026-10-28.webp",
-   "time_utc": "2026-10-28T11:00:35Z",
+   "time_utc": "2026-10-28T11:00:20Z",
    "platform": "sentinel-2a",
    "covered": 1.0,
+   "cloud_pct": 25.5,
+   "main_scene": "S2A_30SYJ_20261028_1_L2A",
    "scenes": [
     {
      "id": "S2A_30SYH_20261028_1_L2A",
      "tile": "MGRS-30SYH",
-     "cloud_pct": 17.3
+     "cloud_pct": 17.3,
+     "share": 0.137
     },
     {
      "id": "S2A_30SYJ_20261028_1_L2A",
      "tile": "MGRS-30SYJ",
-     "cloud_pct": 25.5
+     "cloud_pct": 25.5,
+     "share": 0.863
     }
    ]
   }
