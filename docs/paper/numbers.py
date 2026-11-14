@@ -90,6 +90,84 @@ def rows() -> list[tuple[str, str, str]]:
         "derived: sum over strata A-D of stratum_ha x wet/(wet+dry), reference.csv label")
     add("v2.wet_rice_share_est", pct(est / s["rice_ha_scored"]), "derived: v2.wet_rice_ha_est / rice_ha_scored")
 
+    # True worst/best case for unclear points (each unclear point set wet or dry to push the score
+    # down or up), the stratified estimator over all points of strata A-D.
+    W = s["weights"]
+    for lab_key, tag in (("label_v1", "v1"), ("label", "v2")):
+        for m in ("nisar", "s1", "unet"):
+            res = {}
+            for kind in ("producer", "user"):
+                for side in ("lo", "hi"):
+                    num = den = 0.0
+                    for h in "ABCD":
+                        pts_h = [p for p in ref if p["stratum"] == h]
+                        a = mm = ww = 0
+                        for p in pts_h:
+                            mapped = p[m] == "1"
+                            lab = p[lab_key]
+                            if lab == "unclear":
+                                if kind == "producer":
+                                    wet = (mapped if side == "hi" else not mapped)
+                                else:
+                                    wet = (side == "hi")
+                            else:
+                                wet = lab == "wet"
+                            a += mapped and wet
+                            mm += mapped
+                            ww += wet
+                        n_h = len(pts_h)
+                        num += W[h] * a / n_h
+                        den += W[h] * (ww if kind == "producer" else mm) / n_h
+                    res[(kind, side)] = num / den if den else float("nan")
+            for kind in ("producer", "user"):
+                add(f"{tag}.{m}.range_{kind}", f"{res[(kind, 'lo')]:.2f}–{res[(kind, 'hi')]:.2f}",
+                    f"derived from reference.csv {lab_key}: unclear points set to the worst / best case")
+    # Base rates: how wet the rice was anyway, and what a random map of NISAR's size would score
+    for lab_key, tag in (("label_v1", "v1"), ("label", "v2")):
+        lab = [p[lab_key] for p in ref if p["stratum"] == "D"]
+        add(f"{tag}.d_wet_share", f"{lab.count('wet') / (lab.count('wet') + lab.count('dry')):.2f}",
+            f"derived: stratum D wet / decided, reference.csv {lab_key}")
+    unc = [p for p in ref if p["stratum"] == "B" and p["label"] == "unclear"]
+
+    def _after(p):
+        return p["wet_2026-06-22"] if p["wet_2026-06-22"] in ("0", "1") else p["wet_2026-06-23"]
+    add("v2.b_unclear_wet_then_dry", f"{sum(p['wet_2026-06-08'] == '1' and _after(p) == '0' for p in unc)} of {len(unc)}",
+        "derived: reference.csv, stratum B unclear points wet on 8 Jun and dry on the first clear look after")
+    add("v1.b_decided", sum(p["label_v1"] in ("wet", "dry") for p in ref if p["stratum"] == "B"),
+        "derived: reference.csv label_v1, stratum B decided points")
+    add("june.nisar_area_share", f"{s['nisar_water_ha'] / s['rice_ha_scored']:.2f}",
+        "derived: nisar_water_ha / rice_ha_scored (producer's accuracy of a random map of the same size)")
+
+    # Rule v1 as first run and posted (commit 54fdc99), before rule v2 existed
+    try:
+        v1c = json.loads(subprocess.run(["git", "-C", str(ROOT), "show", "54fdc99:data/validation/june18/result.json"],
+                                        capture_output=True, text=True, check=True, encoding="utf-8").stdout)
+        src1 = "git 54fdc99:data/validation/june18/result.json"
+        for k in ("b_user", "nisar_producer", "nisar_user", "s1_producer"):
+            lo, hi = v1c["ci95"][k]
+            add(f"v1.ci95.{k}", f"{lo:.2f}–{hi:.2f}", f"{src1} ci95.{k}")
+        ha, (lo, hi) = v1c["wet_rice_ha"]
+        add("v1.wet_rice_ha", f"{ha:,}", f"{src1} wet_rice_ha")
+        add("v1.wet_rice_ha_ci", f"{lo:,}–{hi:,}", f"{src1} wet_rice_ha interval")
+    except Exception as e:
+        add("v1.unavailable", f"commit 54fdc99 not found ({type(e).__name__})", "-")
+
+    # Rain-driven floods in the NISAR period before the DANA (training labels)
+    ev = list(csv.DictReader(open(ROOT / "data/prediction/flood/events.csv", encoding="utf-8")))
+    pre = [e for e in ev if "2026-06-17" <= e["date"] < "2026-10-15"]
+    add("alert.nisar_period_new_floods", sum(e["new_flood"] == "1" for e in pre),
+        "data/prediction/flood/events.csv new_flood, both sites, 17 Jun - 14 Oct 2026")
+    big = max(pre, key=lambda e: float(e["rain_3d_max_mm"]))
+    add("alert.nisar_period_max_rain", f"{float(big['rain_3d_max_mm']):.0f} mm ({big['site']}, {big['date']})",
+        "data/prediction/flood/events.csv rain_3d_max_mm, 17 Jun - 14 Oct 2026")
+    th = n_th = None
+    pg = load("data/prediction/nisar_check.json")["pego_oliva_dana"]["thresholds_db"]
+    add("pego.otsu_db", f"{pg['before']} / {pg['after']}", "data/prediction/nisar_check.json pego_oliva_dana.thresholds_db")
+    jd = [d for d in load("data/prediction/nisar_check.json")["albufera_rice"]["dates"] if d["date"] == "2026-06-18"][0]
+    add("alb.066.jun18_dark_14_16", f"{jd['nisar_dark_pct']['-14']} / {jd['nisar_dark_pct']['-16']} %",
+        "data/prediction/nisar_check.json albufera_rice.dates[2026-06-18].nisar_dark_pct.-14/-16")
+    add("alb.066.jun18_median", f"{jd['median_hh_db']['rice']} dB", "data/prediction/nisar_check.json albufera_rice.dates[2026-06-18].median_hh_db.rice")
+
     sanity = r["optical_sanity"]
     for d, o in sanity.items():
         add(f"optical.ndvi_{d}", f"{o['median_ndvi']:.2f}", f"{src_r} optical_sanity.{d}.median_ndvi")
