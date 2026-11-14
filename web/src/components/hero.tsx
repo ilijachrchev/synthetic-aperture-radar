@@ -1,18 +1,18 @@
-import { ArrowUpRight } from 'lucide-react'
+import { ArrowUpRight, Radio } from 'lucide-react'
 import { getImageProps } from 'next/image'
 import Link from 'next/link'
-import { HERO, NAV } from '@/content/site'
-import { coords, datesWithCounts, day, imaged, latest, RADAR } from '@/lib/radar'
-import { Brand } from './brand'
-import { PulseChart } from './pulse-chart'
-import { ThemeToggle } from './theme-toggle'
+import { HERO } from '@/content/landing'
+import { datesWithCounts, day, imaged, latest, RADAR } from '@/lib/radar'
+import { SiteNav } from './site-nav'
+import { Title } from './title'
 import './hero.css'
 
 const ALT = 'Flooded rice paddies of the Albufera with a thatched barraca, an SI-generated photo illustration'
 
-// One photograph, two lights: dawn for the day theme, dusk for the night theme, each with a 9:16 cut for phones.
-function Photo({ light, className }: { light: 'day' | 'dusk'; className?: string }) {
-	const common = { alt: light === 'day' ? ALT : '', sizes: '100vw', quality: 85 }
+// One photograph, two lights: dawn by day, dusk by night, each with a 9:16 cut for phones. The SI mark is baked into
+// the bottom centre of every file, which no crop and no text here ever covers.
+function Photo({ light }: { light: 'day' | 'dusk' }) {
+	const common = { alt: light === 'day' ? ALT : '', sizes: '(max-width: 1000px) 100vw, 50vw', quality: 85 }
 	const {
 		props: { srcSet: wide },
 	} = getImageProps({ ...common, src: `/img/hero-${light}-v2.webp`, width: 2560, height: 1429 })
@@ -20,141 +20,78 @@ function Photo({ light, className }: { light: 'day' | 'dusk'; className?: string
 		props: { srcSet: tall, ...rest },
 	} = getImageProps({ ...common, src: `/img/hero-${light}-tall-v2.webp`, width: 864, height: 1536, fetchPriority: light === 'day' ? 'high' : 'auto' })
 	return (
-		<picture className={className}>
-			<source media="(max-aspect-ratio: 4/5)" srcSet={tall} />
+		<picture className={`hero-pic hero-pic-${light}`}>
+			<source media="(max-width: 1000px)" srcSet={tall} />
 			<source srcSet={wide} />
 			<img {...rest} src={rest.src} alt={common.alt} />
 		</picture>
 	)
 }
 
-export function Figures() {
-	const all = RADAR.sites.albufera.passes
-	const dates = datesWithCounts('albufera')
-	return (
-		<div className="hero-figures">
-			<p className="hero-fig-label">Every NISAR pass over the Albufera</p>
-			<PulseChart site="albufera" className="hero-chart" />
-			<p className="hero-small" style={{ marginTop: 14 }}>
-				Wavelength
-			</p>
-			<p className="hero-big">
-				24 <i>cm</i>
-			</p>
-			<p className="hero-small" style={{ marginTop: 6 }}>
-				L-band radar: it sees through cloud, day or night
-			</p>
-			<div className="hero-stats">
-				<div>
-					<p className="hero-small">Repeat</p>
-					<b>
-						12<i>days</i>
-					</b>
-				</div>
-				<div>
-					<p className="hero-small">Pixel</p>
-					<b>
-						20<i>m</i>
-					</b>
-				</div>
-				<div>
-					<p className="hero-small">
-						Passes since {day(dates[0].date)}
-					</p>
-					<b>{all.length}</b>
-				</div>
-			</div>
-		</div>
-	)
-}
-
 export function Hero() {
-	const site = RADAR.sites.albufera
-	const last = latest('albufera', '066')
-	const trio = imaged('albufera', '066').filter((_, i, a) => i === 0 || i === Math.floor(a.length / 2) || i === a.length - 1)
+	const passes = RADAR.sites.albufera.passes
+	const first = datesWithCounts('albufera')[0].date
+	const last = latest('coast', '066')
+	const thumbs = imaged('coast', '066').filter((_, i, a) => i === 0 || i === Math.floor(a.length / 2) || i === a.length - 1)
+
 	return (
-		<>
-			<section className="hero" aria-label="Introduction">
-				<div className="hero-media" aria-hidden={false}>
+		<section className="hero" aria-label="Introduction">
+			<SiteNav />
+			<div className="hero-stage">
+				<div className="hero-photo">
 					<Photo light="day" />
-					<Photo light="dusk" className="hero-dusk" />
-					<div className="hero-scrim" />
-					<div className="hero-scrim-night" />
+					<Photo light="dusk" />
 				</div>
 
-				<header className="hero-nav">
-					<Brand />
-					<nav className="hero-links" aria-label="Sections">
-						{NAV.map((n) => (
-							<Link key={n.href} href={n.href}>
-								{n.label}
-							</Link>
-						))}
-					</nav>
-					<div className="hero-actions">
-						<ThemeToggle />
-						<Link href={HERO.primary.href} className="hero-pill">
-							{HERO.primary.label}
-							<span className="hero-dot">
-								<ArrowUpRight size={16} strokeWidth={2} />
-							</span>
-						</Link>
-					</div>
-				</header>
-
-				<h1 className="hero-title">
-					<span className="hero-kicker anim-rise">{HERO.kicker}</span>
-					<span className="hero-place anim-rise" style={{ ['--d' as string]: '90ms' }}>
-						{HERO.place}
-					</span>
-					<span className="hero-sub anim-rise" style={{ ['--d' as string]: '200ms' }}>
-						{HERO.sub}
-					</span>
-				</h1>
-
-				<div className="hero-place-card">
-					{last?.img && <img src={last.img} alt={`NISAR radar view of the Albufera, ${day(last.dates[0])}`} width={66} height={66} />}
-					<div>
-						<b>Albufera</b>
-						<span>Valencia, Spain</span>
-						<span>{coords(site.point)}</span>
-					</div>
-				</div>
-
-				<div className="hero-lead">
-					<div className="hero-seen">
-						<span className="hero-thumbs">
-							{trio.map((p) => (
-								<img key={p.img} src={p.img!} alt="" width={30} height={30} />
-							))}
-						</span>
-						<span>
-							{HERO.seenBy[0]}
-							<br />
-							{HERO.seenBy[1]}
-						</span>
-					</div>
-					<p className="hero-lead-text">
-						{HERO.lead} <em>{HERO.leadAccent}</em>
+				<div className="hero-stat" data-rise style={{ ['--d' as string]: '200ms' }}>
+					<p className="display hero-stat-n">{passes.length}</p>
+					<p className="hero-stat-l">
+						NISAR passes over the
+						<br />
+						Albufera since {day(first)}
 					</p>
-					<div className="hero-buttons">
-						<Link href={HERO.primary.href} className="hero-pill">
-							{HERO.primary.label}
-							<span className="hero-dot">
-								<ArrowUpRight size={16} strokeWidth={2} />
-							</span>
-						</Link>
-						<Link href={HERO.secondary.href} className="hero-ghost">
-							{HERO.secondary.label}
-						</Link>
-					</div>
+					<span className="hero-thumbs" aria-hidden>
+						{thumbs.map((p) => (
+							<img key={p.img} src={p.img!} alt="" width={34} height={34} />
+						))}
+					</span>
 				</div>
 
-				<Figures />
-			</section>
-			<div className="hero-strip">
-				<Figures />
+				{last?.img && (
+					<div className="hero-pass" data-rise style={{ ['--d' as string]: '520ms' }}>
+						<img src={last.img} alt="" width={44} height={44} />
+						<div>
+							<p>
+								<Radio size={13} strokeWidth={2.2} aria-hidden /> Latest NISAR pass
+							</p>
+							<p className="mono">
+								{day(last.dates[0])} 2026 · track {last.track} {last.dir}
+							</p>
+						</div>
+					</div>
+				)}
+
+				<div className="hero-side" data-rise style={{ ['--d' as string]: '320ms' }}>
+					<p className="lead">{HERO.lead}</p>
+					<a className="hero-src" href={HERO.source.href} target="_blank" rel="noopener noreferrer">
+						Data: <span>{HERO.source.label}</span>
+					</a>
+				</div>
+
+				<Title as="h1" lines={HERO.lines} accent={HERO.accent} className="hero-title" />
+
+				<div className="hero-cta" data-rise style={{ ['--d' as string]: '420ms' }}>
+					<Link href="/map" className="pill">
+						<span className="pill-dot">
+							<ArrowUpRight size={18} strokeWidth={2.2} />
+						</span>
+						Open the map
+					</Link>
+					<Link href="/#how" className="pill-ghost">
+						How it works <span className="mono">4 steps</span>
+					</Link>
+				</div>
 			</div>
-		</>
+		</section>
 	)
 }
