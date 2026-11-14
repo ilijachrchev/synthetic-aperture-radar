@@ -59,3 +59,17 @@ export function coords([lon, lat]: [number, number]) {
 	const ew = lon >= 0 ? 'E' : 'W'
 	return `${Math.abs(lat).toFixed(2)}° ${ns}, ${Math.abs(lon).toFixed(2)}° ${ew}`
 }
+
+/** The pass (or pair) on a site whose last date and track match. */
+export function findPass(site: SiteKey, date: string, track: string) {
+	return RADAR.sites[site].passes.find((p) => p.dates[p.dates.length - 1] === date && p.track === track && p.img)
+}
+
+/** "31 passes · 18 Jun to 28 Oct" for a backscatter site, "16 pairs · ..." for ground motion. */
+export function coverage(site: SiteKey) {
+	const s = RADAR.sites[site]
+	const first = s.passes[0].dates[0]
+	const last = s.passes[s.passes.length - 1].dates.at(-1)!
+	const unit = s.product === 'GUNW' ? 'pairs' : 'passes'
+	return `${s.passes.length} ${unit} · ${day(first)} to ${day(last)}`
+}

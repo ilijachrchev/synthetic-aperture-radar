@@ -73,26 +73,36 @@ def parse_name(title):
     return info
 
 
+def place(valid, poly):
+    """The browse is a lat/lon grid, but its canvas is larger than the radar footprint. Fit pixel = a * degree + b on
+    each axis by matching the footprint's extreme pixels (north, south, west, east corners) to the polygon's
+    extreme vertices, least squares over all four."""
+    ys, xs = np.where(valid)
+    corners = {"N": (xs[ys.argmin()], ys.min()), "S": (xs[ys.argmax()], ys.max()), "W": (xs.min(), ys[xs.argmin()]), "E": (xs.max(), ys[xs.argmax()])}
+    verts = poly[:-1] if poly[0] == poly[-1] else poly
+    geo = {"N": max(verts, key=lambda p: p[1]), "S": min(verts, key=lambda p: p[1]), "W": min(verts, key=lambda p: p[0]), "E": max(verts, key=lambda p: p[0])}
+    keys = list(corners)
+    ax, bx = np.polyfit([geo[k][0] for k in keys], [corners[k][0] for k in keys], 1)
+    ay, by = np.polyfit([geo[k][1] for k in keys], [corners[k][1] for k in keys], 1)
+    return lambda lon, lat: (ax * lon + bx, ay * lat + by)
+
+
 def cut(png_path, poly, box, out_path, product):
-    im = Image.open(png_path).convert("RGB")
-    w, h = im.size
-    lons = [p[0] for p in poly]
-    lats = [p[1] for p in poly]
-    west, east, south, north = min(lons), max(lons), min(lats), max(lats)
-
-    def px(lon, lat):
-        return ((lon - west) / (east - west) * w, (north - lat) / (north - south) * h)
-
+    src = np.asarray(Image.open(png_path).convert("RGBA"))
+    rgb = src[..., :3]
+    # outside the footprint the GCOV previews are transparent; GUNW ones are white, and white also marks masked water
+    if (src[..., 3] < 255).any():
+        valid = src[..., 3] > 0
+    else:
+        valid = ~(rgb >= 252).all(axis=2)
+    nodata = ~valid | ((rgb <= 3).all(axis=2) if product == "GCOV" else (rgb >= 252).all(axis=2))
+    px = place(valid, poly)
+    h, w = valid.shape
     mask = Image.new("L", (w, h), 0)
     ImageDraw.Draw(mask).polygon([px(lon, lat) for lon, lat in poly], fill=255)
-    # no-data inside the footprint: pure black on backscatter previews, pure white where GUNW masks water
-    rgb = np.asarray(im)
-    nodata = (rgb >= 252).all(axis=2) if product == "GUNW" else (rgb <= 3).all(axis=2)
     m = np.asarray(mask).copy()
     m[nodata] = 0
-    mask = Image.fromarray(m)
-    rgba = im.copy()
-    rgba.putalpha(mask)
+    rgba = Image.fromarray(np.dstack([rgb, m]).astype(np.uint8), "RGBA")
     x0, y0 = px(box[0], box[3])
     x1, y1 = px(box[2], box[1])
     crop = rgba.crop((round(x0), round(y0), round(x1), round(y1)))

@@ -28,8 +28,8 @@
      "img": "/radar/albufera/20260618_058A.webp",
      "valid": 1.0,
      "px": [
-      204,
-      289
+      169,
+      211
      ]
     },
     {
@@ -46,8 +46,8 @@
      "img": "/radar/albufera/20260618_066D.webp",
      "valid": 1.0,
      "px": [
-      198,
-      248
+      169,
+      210
      ]
     },
     {
@@ -61,11 +61,11 @@
      "crid": "P05023",
      "collection": "NISAR_L2_GCOV_PROVISIONAL_V1",
      "granule": "NISAR_L2_PR_GCOV_023_167_D_068_2005_DHDH_A_20260625T190107_20260625T190142_P05023_N_F_J_001",
-     "img": null,
-     "valid": 0.247,
+     "img": "/radar/albufera/20260625_167D.webp",
+     "valid": 0.678,
      "px": [
-      190,
-      242
+      165,
+      211
      ]
     },
     {
@@ -80,10 +80,10 @@
      "collection": "NISAR_L2_GCOV_PROVISIONAL_V1",
      "granule": "NISAR_L2_PR_GCOV_024_058_A_021_2005_DHDH_A_20260630T050650_20260630T050721_P05023_N_F_J_001",
      "img": "/radar/albufera/20260630_058A.webp",
-     "valid": 0.889,
+     "valid": 1.0,
      "px": [
-      199,
-      262
+      169,
+      210
      ]
     },
     {
@@ -100,8 +100,8 @@
      "img": "/radar/albufera/20260630_066D.webp",
      "valid": 1.0,
      "px": [
-      199,
-      247
+      169,
+      210
      ]
     },
     {
@@ -115,11 +115,11 @@
      "crid": "P05023",
      "collection": "NISAR_L2_GCOV_PROVISIONAL_V1",
      "granule": "NISAR_L2_PR_GCOV_024_167_D_068_2005_DHDH_A_20260707T190106_20260707T190141_P05023_N_F_J_001",
-     "img": null,
-     "valid": 0.085,
+     "img": "/radar/albufera/20260707_167D.webp",
+     "valid": 0.609,
      "px": [
-      190,
-      242
+      165,
+      211
      ]
     },
     {
@@ -136,8 +136,8 @@
      "img": "/radar/albufera/20260712_058A.webp",
      "valid": 1.0,
      "px": [
-      203,
-      282
+      169,
+      210
      ]
     },
     {
@@ -152,10 +152,10 @@
      "collection": "NISAR_L2_GCOV_PROVISIONAL_V1",
      "granule": "NISAR_L2_PR_GCOV_025_066_D_069_2005_DHDH_M_20260712T185320_20260712T185355_P05023_N_F_J_001",
      "img": "/radar/albufera/20260712_066D.webp",
-     "valid": 1.0,
+     "valid": 0.997,
      "px": [
-      199,
-      248
+      169,
+      211
      ]
     },
     {
@@ -169,11 +169,11 @@
      "crid": "P05023",
      "collection": "NISAR_L2_GCOV_PROVISIONAL_V1",
      "granule": "NISAR_L2_PR_GCOV_025_167_D_068_2005_DHDH_A_20260719T190106_20260719T190141_P05023_N_F_J_001",
-     "img": null,
-     "valid": 0.354,
+     "img": "/radar/albufera/20260719_167D.webp",
+     "valid": 0.748,
      "px": [
-      190,
-      242
+      165,
+      211
      ]
     },
     {
@@ -188,10 +188,10 @@
      "collection": "NISAR_L2_GCOV_PROVISIONAL_V1",
      "granule": "NISAR_L2_PR_GCOV_026_058_A_021_2005_DHDH_A_20260724T050653_20260724T050720_P05023_N_F_J_001",
      "img": "/radar/albufera/20260724_058A.webp",
-     "valid": 0.999,
+     "valid": 1.0,
      "px": [
-      205,
-      289
+      169,
+      210
      ]
     },
     {
@@ -208,8 +208,8 @@
      "img": "/radar/albufera/20260724_066D.webp",
      "valid": 1.0,
      "px": [
-      199,
-      248
+      170,
+      211
      ]
     },
     {
@@ -226,8 +226,8 @@
      "img": "/radar/albufera/20260817_058A.webp",
      "valid": 1.0,
      "px": [
-      205,
-      289
+      169,
+      210
      ]
     },
     {
@@ -244,8 +244,8 @@
      "img": "/radar/albufera/20260817_066D.webp",
      "valid": 1.0,
      "px": [
-      198,
-      247
+      169,
+      211
      ]
     },
     {
@@ -259,11 +259,11 @@
      "crid": "P05023",
      "collection": "NISAR_L2_GCOV_PROVISIONAL_V1",
      "granule": "NISAR_L2_PR_GCOV_028_167_D_068_2005_DHDH_A_20260824T190104_20260824T190139_P05023_N_F_J_001",
-     "img": null,
-     "valid": 0.145,
+     "img": "/radar/albufera/20260824_167D.webp",
+     "valid": 0.63,
      "px": [
-      190,
-      242
+      165,
+      211
      ]
     },
     {
@@ -280,8 +280,8 @@
      "img": "/radar/albufera/20260829_058A.webp",
      "valid": 1.0,
      "px": [
-      205,
-      289
+      169,
+      210
      ]
     },
     {
@@ -298,8 +298,8 @@
      "img": "/radar/albufera/20260829_066D.webp",
      "valid": 1.0,
      "px": [
-      199,
-      248
+      170,
+      210
      ]
     },
     {
@@ -313,11 +313,11 @@
      "crid": "P05023",
      "collection": "NISAR_L2_GCOV_PROVISIONAL_V1",
      "granule": "NISAR_L2_PR_GCOV_029_167_D_069_2005_DHDH_A_20260905T190137_20260905T190212_P05023_N_F_J_001",
-     "img": null,
-     "valid": 0.514,
+     "img": "/radar/albufera/20260905_167D.webp",
+     "valid": 0.875,
      "px": [
-      196,
-      241
+      170,
+      212
      ]
     },
     {
@@ -332,10 +332,10 @@
      "collection": "NISAR_L2_GCOV_PROVISIONAL_V1",
      "granule": "NISAR_L2_PR_GCOV_030_058_A_021_2005_DHDH_A_20260910T050651_20260910T050718_P05023_N_F_J_001",
      "img": "/radar/albufera/20260910_058A.webp",
-     "valid": 0.958,
+     "valid": 1.0,
      "px": [
-      205,
-      289
+      169,
+      210
      ]
     },
     {
@@ -352,8 +352,8 @@
      "img": "/radar/albufera/20260910_066D.webp",
      "valid": 1.0,
      "px": [
-      198,
-      247
+      170,
+      211
      ]
     },
     {
@@ -367,11 +367,11 @@
      "crid": "P05023",
      "collection": "NISAR_L2_GCOV_PROVISIONAL_V1",
      "granule": "NISAR_L2_PR_GCOV_030_167_D_069_2005_DHDH_A_20260917T190137_20260917T190212_P05023_N_F_J_001",
-     "img": null,
-     "valid": 0.475,
+     "img": "/radar/albufera/20260917_167D.webp",
+     "valid": 0.88,
      "px": [
-      196,
-      241
+      170,
+      212
      ]
     },
     {
@@ -386,10 +386,10 @@
      "collection": "NISAR_L2_GCOV_PROVISIONAL_V1",
      "granule": "NISAR_L2_PR_GCOV_031_058_A_021_2005_SHSH_A_20260922T050651_20260922T050719_P05023_N_F_J_001",
      "img": "/radar/albufera/20260922_058A.webp",
-     "valid": 1.0,
+     "valid": 0.989,
      "px": [
-      203,
-      282
+      169,
+      210
      ]
     },
     {
@@ -406,8 +406,8 @@
      "img": "/radar/albufera/20260922_066D.webp",
      "valid": 1.0,
      "px": [
-      199,
-      247
+      169,
+      211
      ]
     },
     {
@@ -421,11 +421,11 @@
      "crid": "P05023",
      "collection": "NISAR_L2_GCOV_PROVISIONAL_V1",
      "granule": "NISAR_L2_PR_GCOV_031_167_D_069_2005_DHDH_A_20260929T190137_20260929T190212_P05023_N_F_J_001",
-     "img": null,
-     "valid": 0.54,
+     "img": "/radar/albufera/20260929_167D.webp",
+     "valid": 0.889,
      "px": [
-      196,
-      241
+      171,
+      212
      ]
     },
     {
@@ -442,8 +442,8 @@
      "img": "/radar/albufera/20261004_058A.webp",
      "valid": 1.0,
      "px": [
-      204,
-      289
+      168,
+      210
      ]
     },
     {
@@ -460,8 +460,8 @@
      "img": "/radar/albufera/20261004_066D.webp",
      "valid": 1.0,
      "px": [
-      198,
-      247
+      169,
+      211
      ]
     },
     {
@@ -475,11 +475,11 @@
      "crid": "P05023",
      "collection": "NISAR_L2_GCOV_PROVISIONAL_V1",
      "granule": "NISAR_L2_PR_GCOV_032_167_D_069_2005_DHDH_A_20261011T190137_20261011T190212_P05023_N_F_J_001",
-     "img": null,
-     "valid": 0.482,
+     "img": "/radar/albufera/20261011_167D.webp",
+     "valid": 0.899,
      "px": [
-      196,
-      241
+      170,
+      212
      ]
     },
     {
@@ -494,10 +494,10 @@
      "collection": "NISAR_L2_GCOV_PROVISIONAL_V1",
      "granule": "NISAR_L2_PR_GCOV_033_058_A_021_2005_DHDH_A_20261016T050652_20261016T050719_P05023_N_F_J_001",
      "img": "/radar/albufera/20261016_058A.webp",
-     "valid": 0.998,
+     "valid": 1.0,
      "px": [
-      204,
-      289
+      169,
+      210
      ]
     },
     {
@@ -514,8 +514,8 @@
      "img": "/radar/albufera/20261016_066D.webp",
      "valid": 1.0,
      "px": [
-      198,
-      248
+      170,
+      211
      ]
     },
     {
@@ -530,10 +530,10 @@
      "collection": "NISAR_L2_GCOV_V1",
      "granule": "NISAR_L2_PR_GCOV_033_167_D_069_2005_DHDH_A_20261023T190137_20261023T190212_P05036_N_F_J_001",
      "img": "/radar/albufera/20261023_167D.webp",
-     "valid": 0.615,
+     "valid": 0.946,
      "px": [
-      196,
-      241
+      170,
+      212
      ]
     },
     {
@@ -548,10 +548,10 @@
      "collection": "NISAR_L2_GCOV_V1",
      "granule": "NISAR_L2_PR_GCOV_034_058_A_021_2005_DHDH_A_20261028T050652_20261028T050719_P05036_N_F_J_001",
      "img": "/radar/albufera/20261028_058A.webp",
-     "valid": 0.958,
+     "valid": 1.0,
      "px": [
-      204,
-      288
+      169,
+      210
      ]
     },
     {
@@ -568,8 +568,8 @@
      "img": "/radar/albufera/20261028_066D.webp",
      "valid": 1.0,
      "px": [
-      199,
-      248
+      169,
+      210
      ]
     }
    ]
@@ -598,11 +598,11 @@
      "crid": "P05023",
      "collection": "NISAR_L2_GCOV_PROVISIONAL_V1",
      "granule": "NISAR_L2_PR_GCOV_029_167_D_069_2005_DHDH_A_20260905T190137_20260905T190212_P05023_N_F_J_001",
-     "img": null,
-     "valid": 0.0,
+     "img": "/radar/pego/20260905_167D.webp",
+     "valid": 0.55,
      "px": [
-      174,
-      159
+      152,
+      139
      ]
     },
     {
@@ -619,8 +619,8 @@
      "img": "/radar/pego/20260910_058A.webp",
      "valid": 1.0,
      "px": [
-      182,
-      189
+      150,
+      138
      ]
     },
     {
@@ -637,8 +637,8 @@
      "img": "/radar/pego/20260910_066D.webp",
      "valid": 1.0,
      "px": [
-      176,
-      163
+      151,
+      138
      ]
     },
     {
@@ -653,10 +653,10 @@
      "collection": "NISAR_L2_GCOV_PROVISIONAL_V1",
      "granule": "NISAR_L2_PR_GCOV_030_167_D_069_2005_DHDH_A_20260917T190137_20260917T190212_P05023_N_F_J_001",
      "img": null,
-     "valid": 0.0,
+     "valid": 0.548,
      "px": [
-      174,
-      159
+      152,
+      139
      ]
     },
     {
@@ -671,10 +671,10 @@
      "collection": "NISAR_L2_GCOV_PROVISIONAL_V1",
      "granule": "NISAR_L2_PR_GCOV_031_058_A_021_2005_SHSH_A_20260922T050651_20260922T050719_P05023_N_F_J_001",
      "img": "/radar/pego/20260922_058A.webp",
-     "valid": 1.0,
+     "valid": 0.999,
      "px": [
-      180,
-      185
+      150,
+      138
      ]
     },
     {
@@ -691,8 +691,8 @@
      "img": "/radar/pego/20260922_066D.webp",
      "valid": 1.0,
      "px": [
-      176,
-      163
+      150,
+      139
      ]
     },
     {
@@ -707,10 +707,10 @@
      "collection": "NISAR_L2_GCOV_PROVISIONAL_V1",
      "granule": "NISAR_L2_PR_GCOV_031_167_D_069_2005_DHDH_A_20260929T190137_20260929T190212_P05023_N_F_J_001",
      "img": null,
-     "valid": 0.0,
+     "valid": 0.55,
      "px": [
-      174,
-      158
+      151,
+      139
      ]
     },
     {
@@ -727,8 +727,8 @@
      "img": "/radar/pego/20261004_058A.webp",
      "valid": 1.0,
      "px": [
-      181,
-      190
+      150,
+      138
      ]
     },
     {
@@ -743,10 +743,10 @@
      "collection": "NISAR_L2_GCOV_PROVISIONAL_V1",
      "granule": "NISAR_L2_PR_GCOV_032_066_D_069_2005_DHDH_M_20261004T185318_20261004T185353_P05023_N_F_J_001",
      "img": "/radar/pego/20261004_066D.webp",
-     "valid": 0.998,
+     "valid": 0.959,
      "px": [
-      176,
-      163
+      150,
+      138
      ]
     },
     {
@@ -761,10 +761,10 @@
      "collection": "NISAR_L2_GCOV_PROVISIONAL_V1",
      "granule": "NISAR_L2_PR_GCOV_032_167_D_069_2005_DHDH_A_20261011T190137_20261011T190212_P05023_N_F_J_001",
      "img": null,
-     "valid": 0.0,
+     "valid": 0.549,
      "px": [
-      174,
-      159
+      151,
+      139
      ]
     },
     {
@@ -781,8 +781,8 @@
      "img": "/radar/pego/20261016_058A.webp",
      "valid": 1.0,
      "px": [
-      182,
-      190
+      150,
+      138
      ]
     },
     {
@@ -799,8 +799,8 @@
      "img": "/radar/pego/20261016_066D.webp",
      "valid": 1.0,
      "px": [
-      176,
-      162
+      151,
+      139
      ]
     },
     {
@@ -814,11 +814,11 @@
      "crid": "P05036",
      "collection": "NISAR_L2_GCOV_V1",
      "granule": "NISAR_L2_PR_GCOV_033_167_D_069_2005_DHDH_A_20261023T190137_20261023T190212_P05036_N_F_J_001",
-     "img": null,
-     "valid": 0.0,
+     "img": "/radar/pego/20261023_167D.webp",
+     "valid": 0.552,
      "px": [
-      174,
-      159
+      151,
+      139
      ]
     },
     {
@@ -835,8 +835,8 @@
      "img": "/radar/pego/20261028_058A.webp",
      "valid": 1.0,
      "px": [
-      182,
-      190
+      150,
+      138
      ]
     },
     {
@@ -853,8 +853,8 @@
      "img": "/radar/pego/20261028_066D.webp",
      "valid": 1.0,
      "px": [
-      177,
-      162
+      150,
+      139
      ]
     }
    ]
@@ -884,10 +884,10 @@
      "collection": "NISAR_L2_GCOV_PROVISIONAL_V1",
      "granule": "NISAR_L2_PR_GCOV_024_167_D_068_2005_DHDH_A_20260707T190106_20260707T190141_P05023_N_F_J_001",
      "img": "/radar/espada/20260707_167D.webp",
-     "valid": 0.973,
+     "valid": 1.0,
      "px": [
-      274,
-      221
+      239,
+      193
      ]
     },
     {
@@ -904,8 +904,8 @@
      "img": "/radar/espada/20260712_058A.webp",
      "valid": 1.0,
      "px": [
-      279,
-      226
+      238,
+      192
      ]
     },
     {
@@ -920,10 +920,10 @@
      "collection": "NISAR_L2_GCOV_PROVISIONAL_V1",
      "granule": "NISAR_L2_PR_GCOV_025_066_D_068_2005_DHDH_A_20260712T185246_20260712T185321_P05023_N_F_J_001",
      "img": null,
-     "valid": 0.036,
+     "valid": 0.535,
      "px": [
-      278,
-      224
+      239,
+      193
      ]
     },
     {
@@ -938,10 +938,10 @@
      "collection": "NISAR_L2_GCOV_PROVISIONAL_V1",
      "granule": "NISAR_L2_PR_GCOV_025_167_D_068_2005_DHDH_A_20260719T190106_20260719T190141_P05023_N_F_J_001",
      "img": "/radar/espada/20260719_167D.webp",
-     "valid": 0.989,
+     "valid": 1.0,
      "px": [
-      275,
-      222
+      238,
+      193
      ]
     },
     {
@@ -958,8 +958,8 @@
      "img": "/radar/espada/20260724_058A.webp",
      "valid": 1.0,
      "px": [
-      280,
-      226
+      238,
+      192
      ]
     },
     {
@@ -974,10 +974,10 @@
      "collection": "NISAR_L2_GCOV_PROVISIONAL_V1",
      "granule": "NISAR_L2_PR_GCOV_026_066_D_068_2005_DHDH_A_20260724T185246_20260724T185320_P05023_N_F_J_001",
      "img": null,
-     "valid": 0.023,
+     "valid": 0.482,
      "px": [
-      280,
-      229
+      238,
+      193
      ]
     },
     {
@@ -994,8 +994,8 @@
      "img": "/radar/espada/20260817_058A.webp",
      "valid": 1.0,
      "px": [
-      280,
-      226
+      238,
+      193
      ]
     },
     {
@@ -1010,10 +1010,10 @@
      "collection": "NISAR_L2_GCOV_PROVISIONAL_V1",
      "granule": "NISAR_L2_PR_GCOV_028_066_D_068_2005_DHDH_A_20260817T185244_20260817T185319_P05023_N_F_J_001",
      "img": null,
-     "valid": 0.016,
+     "valid": 0.487,
      "px": [
-      278,
-      224
+      239,
+      194
      ]
     },
     {
@@ -1028,10 +1028,10 @@
      "collection": "NISAR_L2_GCOV_PROVISIONAL_V1",
      "granule": "NISAR_L2_PR_GCOV_028_167_D_068_2005_DHDH_A_20260824T190104_20260824T190139_P05023_N_F_J_001",
      "img": "/radar/espada/20260824_167D.webp",
-     "valid": 0.999,
+     "valid": 1.0,
      "px": [
-      275,
-      221
+      239,
+      194
      ]
     },
     {
@@ -1048,8 +1048,8 @@
      "img": "/radar/espada/20260829_058A.webp",
      "valid": 1.0,
      "px": [
-      279,
-      226
+      238,
+      192
      ]
     },
     {
@@ -1064,10 +1064,10 @@
      "collection": "NISAR_L2_GCOV_PROVISIONAL_V1",
      "granule": "NISAR_L2_PR_GCOV_029_066_D_068_2005_DHDH_A_20260829T185244_20260829T185319_P05023_N_F_J_001",
      "img": null,
-     "valid": 0.037,
+     "valid": 0.534,
      "px": [
-      278,
-      224
+      239,
+      193
      ]
     },
     {
@@ -1082,10 +1082,10 @@
      "collection": "NISAR_L2_GCOV_PROVISIONAL_V1",
      "granule": "NISAR_L2_PR_GCOV_029_167_D_068_2005_DHDH_A_20260905T190104_20260905T190138_P05023_N_F_J_001",
      "img": "/radar/espada/20260905_167D.webp",
-     "valid": 0.938,
+     "valid": 1.0,
      "px": [
-      276,
-      226
+      239,
+      193
      ]
     },
     {
@@ -1102,8 +1102,8 @@
      "img": "/radar/espada/20260910_058A.webp",
      "valid": 1.0,
      "px": [
-      280,
-      225
+      238,
+      193
      ]
     },
     {
@@ -1117,11 +1117,11 @@
      "crid": "P05023",
      "collection": "NISAR_L2_GCOV_PROVISIONAL_V1",
      "granule": "NISAR_L2_PR_GCOV_030_066_D_068_2005_DHDH_A_20260910T185244_20260910T185319_P05023_N_F_J_001",
-     "img": null,
-     "valid": 0.047,
+     "img": "/radar/espada/20260910_066D.webp",
+     "valid": 0.562,
      "px": [
-      278,
-      224
+      238,
+      193
      ]
     },
     {
@@ -1136,10 +1136,10 @@
      "collection": "NISAR_L2_GCOV_PROVISIONAL_V1",
      "granule": "NISAR_L2_PR_GCOV_030_167_D_068_2005_DHDH_A_20260917T190103_20260917T190138_P05023_N_F_J_001",
      "img": "/radar/espada/20260917_167D.webp",
-     "valid": 0.997,
+     "valid": 1.0,
      "px": [
-      274,
-      221
+      239,
+      193
      ]
     },
     {
@@ -1156,8 +1156,8 @@
      "img": "/radar/espada/20260922_058A.webp",
      "valid": 1.0,
      "px": [
-      281,
-      231
+      238,
+      192
      ]
     },
     {
@@ -1172,10 +1172,10 @@
      "collection": "NISAR_L2_GCOV_PROVISIONAL_V1",
      "granule": "NISAR_L2_PR_GCOV_031_066_D_068_2005_DHDH_A_20260922T185244_20260922T185319_P05023_N_F_J_001",
      "img": null,
-     "valid": 0.041,
+     "valid": 0.547,
      "px": [
-      278,
-      224
+      239,
+      194
      ]
     },
     {
@@ -1190,10 +1190,10 @@
      "collection": "NISAR_L2_GCOV_PROVISIONAL_V1",
      "granule": "NISAR_L2_PR_GCOV_031_167_D_068_2005_DHDH_A_20260929T190103_20260929T190138_P05023_N_F_J_001",
      "img": "/radar/espada/20260929_167D.webp",
-     "valid": 0.996,
+     "valid": 1.0,
      "px": [
-      275,
-      221
+      238,
+      193
      ]
     },
     {
@@ -1210,8 +1210,8 @@
      "img": "/radar/espada/20261004_058A.webp",
      "valid": 1.0,
      "px": [
-      281,
-      230
+      238,
+      192
      ]
     },
     {
@@ -1226,10 +1226,10 @@
      "collection": "NISAR_L2_GCOV_PROVISIONAL_V1",
      "granule": "NISAR_L2_PR_GCOV_032_066_D_068_2005_DHDH_A_20261004T185244_20261004T185319_P05023_N_F_J_001",
      "img": null,
-     "valid": 0.025,
+     "valid": 0.509,
      "px": [
-      279,
-      224
+      239,
+      193
      ]
     },
     {
@@ -1244,10 +1244,10 @@
      "collection": "NISAR_L2_GCOV_PROVISIONAL_V1",
      "granule": "NISAR_L2_PR_GCOV_032_167_D_068_2005_DHDH_A_20261011T190103_20261011T190138_P05023_N_F_J_001",
      "img": "/radar/espada/20261011_167D.webp",
-     "valid": 0.998,
+     "valid": 1.0,
      "px": [
-      274,
-      222
+      238,
+      193
      ]
     },
     {
@@ -1264,8 +1264,8 @@
      "img": "/radar/espada/20261016_058A.webp",
      "valid": 1.0,
      "px": [
-      279,
-      226
+      239,
+      193
      ]
     },
     {
@@ -1280,10 +1280,10 @@
      "collection": "NISAR_L2_GCOV_PROVISIONAL_V1",
      "granule": "NISAR_L2_PR_GCOV_033_066_D_068_2005_DHDH_A_20261016T185244_20261016T185319_P05023_N_F_J_001",
      "img": null,
-     "valid": 0.009,
+     "valid": 0.464,
      "px": [
-      278,
-      225
+      239,
+      194
      ]
     },
     {
@@ -1298,10 +1298,10 @@
      "collection": "NISAR_L2_GCOV_V1",
      "granule": "NISAR_L2_PR_GCOV_033_167_D_068_2005_DHDH_A_20261023T190104_20261023T190138_P05036_N_F_J_001",
      "img": "/radar/espada/20261023_167D.webp",
-     "valid": 0.978,
+     "valid": 1.0,
      "px": [
-      276,
-      225
+      238,
+      193
      ]
     },
     {
@@ -1318,8 +1318,8 @@
      "img": "/radar/espada/20261028_058A.webp",
      "valid": 1.0,
      "px": [
-      279,
-      226
+      238,
+      192
      ]
     },
     {
@@ -1334,10 +1334,10 @@
      "collection": "NISAR_L2_GCOV_V1",
      "granule": "NISAR_L2_PR_GCOV_034_066_D_068_2005_DHDH_A_20261028T185244_20261028T185319_P05036_N_F_J_001",
      "img": null,
-     "valid": 0.0,
+     "valid": 0.421,
      "px": [
-      278,
-      224
+      239,
+      193
      ]
     }
    ]
@@ -1368,10 +1368,10 @@
      "collection": "NISAR_L2_GUNW_PROVISIONAL_V1",
      "granule": "NISAR_L2_PR_GUNW_023_159_A_020_024_4000_SH_20260625T051433_20260625T051511_20260707T051432_20260707T051510_P05023_N_F_J_001",
      "img": "/radar/lorca/20260625_20260707_159A.webp",
-     "valid": 0.913,
+     "valid": 0.912,
      "px": [
-      229,
-      187
+      200,
+      171
      ]
     },
     {
@@ -1387,10 +1387,10 @@
      "collection": "NISAR_L2_GUNW_PROVISIONAL_V1",
      "granule": "NISAR_L2_PR_GUNW_023_167_D_069_024_2000_SH_20260625T190141_20260625T190216_20260707T190140_20260707T190215_P05023_N_F_J_001",
      "img": "/radar/lorca/20260625_20260707_167D.webp",
-     "valid": 0.779,
+     "valid": 0.996,
      "px": [
-      229,
-      197
+      199,
+      173
      ]
     },
     {
@@ -1406,10 +1406,10 @@
      "collection": "NISAR_L2_GUNW_PROVISIONAL_V1",
      "granule": "NISAR_L2_PR_GUNW_024_159_A_020_025_4000_SH_20260707T051432_20260707T051510_20260719T051432_20260719T051510_P05023_N_F_J_001",
      "img": "/radar/lorca/20260707_20260719_159A.webp",
-     "valid": 0.87,
+     "valid": 0.873,
      "px": [
-      230,
-      188
+      201,
+      171
      ]
     },
     {
@@ -1425,10 +1425,10 @@
      "collection": "NISAR_L2_GUNW_PROVISIONAL_V1",
      "granule": "NISAR_L2_PR_GUNW_024_167_D_069_025_2000_SH_20260707T190140_20260707T190215_20260719T190140_20260719T190214_P05023_N_F_J_001",
      "img": "/radar/lorca/20260707_20260719_167D.webp",
-     "valid": 0.659,
+     "valid": 0.984,
      "px": [
-      229,
-      196
+      199,
+      172
      ]
     },
     {
@@ -1446,8 +1446,8 @@
      "img": "/radar/lorca/20260719_20260812_159A.webp",
      "valid": 0.954,
      "px": [
-      230,
-      187
+      197,
+      169
      ]
     },
     {
@@ -1465,8 +1465,8 @@
      "img": "/radar/lorca/20260812_20260824_159A.webp",
      "valid": 0.963,
      "px": [
-      228,
-      184
+      196,
+      170
      ]
     },
     {
@@ -1482,10 +1482,10 @@
      "collection": "NISAR_L2_GUNW_PROVISIONAL_V1",
      "granule": "NISAR_L2_PR_GUNW_025_167_D_069_028_2000_SH_20260719T190140_20260719T190214_20260824T190138_20260824T190212_P05023_N_F_J_001",
      "img": "/radar/lorca/20260719_20260824_167D.webp",
-     "valid": 0.612,
+     "valid": 0.969,
      "px": [
-      230,
-      201
+      198,
+      173
      ]
     },
     {
@@ -1501,10 +1501,10 @@
      "collection": "NISAR_L2_GUNW_PROVISIONAL_V1",
      "granule": "NISAR_L2_PR_GUNW_028_159_A_020_029_4000_SH_20260824T051430_20260824T051508_20260905T051429_20260905T051508_P05023_N_F_J_001",
      "img": "/radar/lorca/20260824_20260905_159A.webp",
-     "valid": 0.887,
+     "valid": 0.885,
      "px": [
-      229,
-      187
+      201,
+      171
      ]
     },
     {
@@ -1519,11 +1519,11 @@
      "crid": "P05023",
      "collection": "NISAR_L2_GUNW_PROVISIONAL_V1",
      "granule": "NISAR_L2_PR_GUNW_028_167_D_069_029_2000_SH_20260824T190138_20260824T190212_20260905T190137_20260905T190212_P05023_N_F_J_001",
-     "img": null,
-     "valid": 0.419,
+     "img": "/radar/lorca/20260824_20260905_167D.webp",
+     "valid": 0.913,
      "px": [
-      230,
-      201
+      198,
+      172
      ]
     },
     {
@@ -1538,11 +1538,11 @@
      "crid": "P05023",
      "collection": "NISAR_L2_GUNW_PROVISIONAL_V1",
      "granule": "NISAR_L2_PR_GUNW_027_159_A_021_030_4000_SH_20260812T051504_20260812T051509_20260917T051503_20260917T051508_P05023_N_P_J_001",
-     "img": null,
-     "valid": 0.0,
+     "img": "/radar/lorca/20260812_20260917_159A.webp",
+     "valid": 0.906,
      "px": [
-      285,
-      524
+      199,
+      173
      ]
     },
     {
@@ -1558,10 +1558,10 @@
      "collection": "NISAR_L2_GUNW_PROVISIONAL_V1",
      "granule": "NISAR_L2_PR_GUNW_029_159_A_020_030_4000_SH_20260905T051429_20260905T051508_20260917T051429_20260917T051508_P05023_N_F_J_001",
      "img": "/radar/lorca/20260905_20260917_159A.webp",
-     "valid": 0.907,
+     "valid": 0.91,
      "px": [
-      228,
-      184
+      199,
+      171
      ]
     },
     {
@@ -1576,11 +1576,11 @@
      "crid": "P05023",
      "collection": "NISAR_L2_GUNW_PROVISIONAL_V1",
      "granule": "NISAR_L2_PR_GUNW_029_167_D_069_030_2000_SH_20260905T190137_20260905T190212_20260917T190137_20260917T190212_P05023_N_F_J_001",
-     "img": null,
-     "valid": 0.443,
+     "img": "/radar/lorca/20260905_20260917_167D.webp",
+     "valid": 0.93,
      "px": [
-      229,
-      197
+      198,
+      173
      ]
     },
     {
@@ -1596,10 +1596,10 @@
      "collection": "NISAR_L2_GUNW_PROVISIONAL_V1",
      "granule": "NISAR_L2_PR_GUNW_030_159_A_020_031_4000_SH_20260917T051429_20260917T051508_20260929T051429_20260929T051504_P05023_N_F_J_001",
      "img": "/radar/lorca/20260917_20260929_159A.webp",
-     "valid": 0.911,
+     "valid": 0.913,
      "px": [
-      228,
-      184
+      199,
+      171
      ]
     },
     {
@@ -1614,11 +1614,11 @@
      "crid": "P05023",
      "collection": "NISAR_L2_GUNW_PROVISIONAL_V1",
      "granule": "NISAR_L2_PR_GUNW_030_167_D_069_031_2000_SH_20260917T190137_20260917T190212_20260929T190137_20260929T190212_P05023_N_F_J_001",
-     "img": null,
-     "valid": 0.442,
+     "img": "/radar/lorca/20260917_20260929_167D.webp",
+     "valid": 0.93,
      "px": [
-      229,
-      197
+      199,
+      173
      ]
     },
     {
@@ -1633,11 +1633,11 @@
      "crid": "P05023",
      "collection": "NISAR_L2_GUNW_PROVISIONAL_V1",
      "granule": "NISAR_L2_PR_GUNW_031_159_A_021_032_4000_SH_20260929T051503_20260929T051509_20261011T051503_20261011T051509_P05023_N_P_J_001",
-     "img": null,
-     "valid": 0.0,
+     "img": "/radar/lorca/20260929_20261011_159A.webp",
+     "valid": 0.972,
      "px": [
-      283,
-      497
+      199,
+      173
      ]
     },
     {
@@ -1652,11 +1652,11 @@
      "crid": "P05023",
      "collection": "NISAR_L2_GUNW_PROVISIONAL_V1",
      "granule": "NISAR_L2_PR_GUNW_031_167_D_069_032_2000_SH_20260929T190137_20260929T190212_20261011T190137_20261011T190212_P05023_N_F_J_001",
-     "img": null,
-     "valid": 0.428,
+     "img": "/radar/lorca/20260929_20261011_167D.webp",
+     "valid": 0.925,
      "px": [
-      229,
-      196
+      199,
+      173
      ]
     }
    ]
@@ -1687,10 +1687,10 @@
      "collection": "NISAR_L2_GUNW_PROVISIONAL_V1",
      "granule": "NISAR_L2_PR_GUNW_029_141_D_085_030_2000_SH_20260903T235335_20260903T235348_20260915T235335_20260915T235348_P05023_N_P_J_001",
      "img": "/radar/panama/20260903_20260915_141D.webp",
-     "valid": 0.283,
+     "valid": 0.459,
      "px": [
-      470,
-      585
+      371,
+      262
      ]
     },
     {
@@ -1706,10 +1706,10 @@
      "collection": "NISAR_L2_GUNW_PROVISIONAL_V1",
      "granule": "NISAR_L2_PR_GUNW_030_141_D_085_031_2000_SH_20260915T235335_20260915T235348_20260927T235335_20260927T235348_P05023_N_P_J_001",
      "img": "/radar/panama/20260915_20260927_141D.webp",
-     "valid": 0.285,
+     "valid": 0.448,
      "px": [
-      470,
-      585
+      371,
+      264
      ]
     },
     {
@@ -1725,10 +1725,10 @@
      "collection": "NISAR_L2_GUNW_PROVISIONAL_V1",
      "granule": "NISAR_L2_PR_GUNW_031_141_D_085_032_2000_SH_20260927T235335_20260927T235348_20261009T235335_20261009T235349_P05023_N_P_J_001",
      "img": "/radar/panama/20260927_20261009_141D.webp",
-     "valid": 0.286,
+     "valid": 0.444,
      "px": [
-      470,
-      585
+      371,
+      262
      ]
     },
     {
@@ -1744,10 +1744,10 @@
      "collection": "NISAR_L2_GUNW_V1",
      "granule": "NISAR_L2_PR_GUNW_032_141_D_085_033_2000_SH_20261009T235335_20261009T235349_20261021T235335_20261021T235349_P05036_N_P_J_001",
      "img": "/radar/panama/20261009_20261021_141D.webp",
-     "valid": 0.339,
+     "valid": 0.47,
      "px": [
-      468,
-      560
+      371,
+      262
      ]
     }
    ]
@@ -1777,10 +1777,10 @@
      "collection": "NISAR_L2_GCOV_PROVISIONAL_V1",
      "granule": "NISAR_L2_PR_GCOV_023_066_D_069_2005_DHDH_M_20260618T185321_20260618T185356_P05023_N_F_J_001",
      "img": "/radar/valencia/20260618_066D.webp",
-     "valid": 0.783,
+     "valid": 0.974,
      "px": [
-      441,
-      551
+      377,
+      470
      ]
     },
     {
@@ -1795,10 +1795,10 @@
      "collection": "NISAR_L2_GCOV_PROVISIONAL_V1",
      "granule": "NISAR_L2_PR_GCOV_024_066_D_069_2005_DHDH_M_20260630T185321_20260630T185356_P05023_N_F_J_001",
      "img": "/radar/valencia/20260630_066D.webp",
-     "valid": 0.788,
+     "valid": 0.976,
      "px": [
-      441,
-      552
+      377,
+      469
      ]
     },
     {
@@ -1813,10 +1813,10 @@
      "collection": "NISAR_L2_GCOV_PROVISIONAL_V1",
      "granule": "NISAR_L2_PR_GCOV_025_066_D_069_2005_DHDH_M_20260712T185320_20260712T185355_P05023_N_F_J_001",
      "img": "/radar/valencia/20260712_066D.webp",
-     "valid": 0.766,
+     "valid": 0.928,
      "px": [
-      441,
-      551
+      377,
+      470
      ]
     },
     {
@@ -1831,10 +1831,10 @@
      "collection": "NISAR_L2_GCOV_PROVISIONAL_V1",
      "granule": "NISAR_L2_PR_GCOV_026_066_D_069_2005_DHDH_M_20260724T185319_20260724T185354_P05023_N_F_J_001",
      "img": "/radar/valencia/20260724_066D.webp",
-     "valid": 0.779,
+     "valid": 0.934,
      "px": [
-      441,
-      551
+      377,
+      470
      ]
     },
     {
@@ -1849,10 +1849,10 @@
      "collection": "NISAR_L2_GCOV_PROVISIONAL_V1",
      "granule": "NISAR_L2_PR_GCOV_028_066_D_069_2005_DHDH_M_20260817T185318_20260817T185353_P05023_N_F_J_001",
      "img": "/radar/valencia/20260817_066D.webp",
-     "valid": 0.78,
+     "valid": 0.959,
      "px": [
-      441,
-      551
+      377,
+      469
      ]
     },
     {
@@ -1867,10 +1867,10 @@
      "collection": "NISAR_L2_GCOV_PROVISIONAL_V1",
      "granule": "NISAR_L2_PR_GCOV_029_066_D_069_2005_DHDH_M_20260829T185318_20260829T185353_P05023_N_F_J_001",
      "img": "/radar/valencia/20260829_066D.webp",
-     "valid": 0.783,
+     "valid": 0.956,
      "px": [
-      441,
-      551
+      376,
+      470
      ]
     },
     {
@@ -1885,10 +1885,10 @@
      "collection": "NISAR_L2_GCOV_PROVISIONAL_V1",
      "granule": "NISAR_L2_PR_GCOV_030_066_D_069_2005_DHDH_M_20260910T185318_20260910T185353_P05023_N_F_J_001",
      "img": "/radar/valencia/20260910_066D.webp",
-     "valid": 0.786,
+     "valid": 0.975,
      "px": [
-      441,
-      552
+      376,
+      469
      ]
     },
     {
@@ -1903,10 +1903,10 @@
      "collection": "NISAR_L2_GCOV_PROVISIONAL_V1",
      "granule": "NISAR_L2_PR_GCOV_031_066_D_069_2005_DHDH_M_20260922T185318_20260922T185353_P05023_N_F_J_001",
      "img": "/radar/valencia/20260922_066D.webp",
-     "valid": 0.788,
+     "valid": 0.975,
      "px": [
-      441,
-      552
+      377,
+      470
      ]
     },
     {
@@ -1921,10 +1921,10 @@
      "collection": "NISAR_L2_GCOV_PROVISIONAL_V1",
      "granule": "NISAR_L2_PR_GCOV_032_066_D_069_2005_DHDH_M_20261004T185318_20261004T185353_P05023_N_F_J_001",
      "img": "/radar/valencia/20261004_066D.webp",
-     "valid": 0.787,
+     "valid": 0.973,
      "px": [
-      440,
-      552
+      376,
+      469
      ]
     },
     {
@@ -1939,10 +1939,10 @@
      "collection": "NISAR_L2_GCOV_PROVISIONAL_V1",
      "granule": "NISAR_L2_PR_GCOV_033_066_D_069_2005_DHDH_M_20261016T185318_20261016T185353_P05023_N_F_J_001",
      "img": "/radar/valencia/20261016_066D.webp",
-     "valid": 0.787,
+     "valid": 0.976,
      "px": [
-      441,
-      551
+      376,
+      469
      ]
     },
     {
@@ -1957,10 +1957,10 @@
      "collection": "NISAR_L2_GCOV_V1",
      "granule": "NISAR_L2_PR_GCOV_034_066_D_069_2005_DHDH_M_20261028T185318_20261028T185353_P05036_N_F_J_001",
      "img": "/radar/valencia/20261028_066D.webp",
-     "valid": 0.786,
+     "valid": 0.975,
      "px": [
-      441,
-      551
+      376,
+      468
      ]
     }
    ]
