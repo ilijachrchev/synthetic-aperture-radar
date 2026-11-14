@@ -303,6 +303,7 @@ def analyse_stack(stack_id: str, with_detrend: bool = True) -> tuple[dict, np.nd
     iy, ix = lor1_cell(pairs[0])
     dates = [str(f.stem).split("_")[0] for f in files[:1]] + [str(f.stem).split("_")[1] for f in files]
     lor1 = [0.0]
+    series = {dates[0]: cum.copy()}
     for d, ok in zip(pairs, valid):
         ph = d["unwrappedPhase"] - corrections[chosen](d)
         up = np.sqrt(np.clip(1 - cube_at(d, "losUnitVectorX", height) ** 2 - cube_at(d, "losUnitVectorY", height) ** 2, 0, 1))
@@ -311,6 +312,7 @@ def analyse_stack(stack_id: str, with_detrend: bool = True) -> tuple[dict, np.nd
         if with_detrend:
             v = detrend(v, ok, height, d["x"], d["y"])
         cum += v
+        series[dates[len(series)]] = cum.copy()
         win = (slice(max(iy - 1, 0), iy + 2), slice(max(ix - 1, 0), ix + 2))
         cell = cum[win][all_ok[win]]
         lor1.append(round(float(np.median(cell)), 2) if cell.size else None)
@@ -353,7 +355,44 @@ def analyse_stack(stack_id: str, with_detrend: bool = True) -> tuple[dict, np.nd
                 (np.array([date.fromisoformat(d).toordinal() for d in dates]) - np.mean([date.fromisoformat(d).toordinal() for d in dates])) / 365.25)))), 1),
             "days_of_record_for_3_sigma": n_days,
             "date_for_3_sigma": None if n_days is None else (date.fromisoformat(dates[0]) + timedelta(days=n_days)).isoformat()}
-    return result, cum_map, {"x": pairs[0]["x"], "y": pairs[0]["y"], "lor1": (iy, ix), "bowl": (by, bx)}
+    east = cube_at(pairs[0], "losUnitVectorX", height)
+    return result, cum_map, {"x": pairs[0]["x"], "y": pairs[0]["y"], "lor1": (iy, ix), "bowl": (by, bx),
+                             "series": {k: np.where(all_ok, m, np.nan) for k, m in series.items()},
+                             "los_east": east, "los_up": up}
+
+
+def decompose(a: dict, d: dict) -> dict:
+    """Ascending + descending -> east and vertical on the common dates (north neglected: both
+    near-polar tracks barely see it). Inputs are vertical-equivalent maps; LOS = map * up."""
+    if a["x"].size != d["x"].size or not np.allclose(a["x"], d["x"]) or not np.allclose(a["y"], d["y"]):
+        raise ValueError("the two tracks are not on the same 80 m grid")
+    common = [t for t in a["series"] if t in d["series"]]
+    det = a["los_east"] * d["los_up"] - d["los_east"] * a["los_up"]
+    iy, ix = a["lor1"]
+    win = (slice(max(iy - 1, 0), iy + 2), slice(max(ix - 1, 0), ix + 2))
+    t0 = common[0]
+    east, up = [], []
+    for t in common:
+        la = (a["series"][t] - a["series"][t0]) * a["los_up"]
+        ld = (d["series"][t] - d["series"][t0]) * d["los_up"]
+        e_map = (la * d["los_up"] - ld * a["los_up"]) / det
+        u_map = (a["los_east"] * ld - d["los_east"] * la) / det
+        ce, cu = e_map[win], u_map[win]
+        ok = np.isfinite(ce) & np.isfinite(cu)
+        east.append(round(float(np.median(ce[ok])), 2) if ok.any() else None)
+        up.append(round(float(np.median(cu[ok])), 2) if ok.any() else None)
+    gnss = gnss_series(common)
+    diffs = [x - g for x, g in zip(up, gnss) if x is not None and g is not None]
+    return {"dates": common,
+            "lor1_valid_in_both": bool(np.isfinite(a["series"][common[-1]][win]).any()
+                                       and np.isfinite(d["series"][common[-1]][win]).any()),
+            "reference": "median of each track's valid pixels over the whole box (both frames cover it)",
+            "lor1_vertical_mm": up, "lor1_east_mm": east, "gnss_vertical_mm": gnss,
+            "vertical_rate_mm_yr": rate_mm_yr(common, up), "east_rate_mm_yr": rate_mm_yr(common, east),
+            "gnss_rate_mm_yr": rate_mm_yr(common, gnss),
+            "rms_difference_mm": round(float(np.sqrt(np.mean(np.square(diffs)))), 2) if diffs else None,
+            "geometry_at_lor1": {"ascending_east_up": [round(float(a["los_east"][iy, ix]), 3), round(float(a["los_up"][iy, ix]), 3)],
+                                 "descending_east_up": [round(float(d["los_east"][iy, ix]), 3), round(float(d["los_up"][iy, ix]), 3)]}}
 
 
 def plot(results: list[tuple[dict, np.ndarray, dict]]) -> None:
@@ -393,6 +432,9 @@ def analyse() -> int:
               "detrend_note": DETREND_NOTE,
               "stacks": {r[0].get("stack", s): r[0] for r, s in zip(done, STACKS)},
               "without_detrend": {s: {"lor1": raw[s].get("lor1")} for s in STACKS}}
+    geos = {r[0]["stack"]: r[2] for r in ok}
+    if len(geos) == 2:
+        result["vertical_east_split"] = decompose(geos["159_A_021"], geos["167_D_069"])
     OUT.write_text(json.dumps(result, indent=1) + "\n", encoding="utf-8")
     if ok:
         plot(ok)
@@ -402,6 +444,11 @@ def analyse() -> int:
               f"LOR1 NISAR {L['nisar_rate_mm_yr']} mm/yr vs GNSS {L['gnss_rate_mm_yr']} mm/yr, RMS {L['rms_difference_mm']} mm; "
               f"map 5-95 % {r['noise']['map_p05_p95_mm']} mm; 3 sigma by {r.get('detectability', {}).get('date_for_3_sigma')}")
         print(f"   NISAR {L['nisar_vertical_mm']}\n   GNSS  {L['gnss_vertical_mm']}\n   scores {r['correction_scores_median_spread_rad']}")
+    if "vertical_east_split" in result:
+        v = result["vertical_east_split"]
+        print(f"asc+desc split {v['dates'][0]}..{v['dates'][-1]}: LOR1 vertical {v['vertical_rate_mm_yr']} mm/yr vs GNSS "
+              f"{v['gnss_rate_mm_yr']}, east {v['east_rate_mm_yr']} mm/yr, RMS {v['rms_difference_mm']} mm\n   U {v['lor1_vertical_mm']}\n"
+              f"   E {v['lor1_east_mm']}\n   G {v['gnss_vertical_mm']}")
     print(f"-> {OUT.relative_to(REPO_ROOT)}, {FIG.relative_to(REPO_ROOT)}")
     return 0
 
