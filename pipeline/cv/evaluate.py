@@ -145,6 +145,41 @@ def unet_predictor(model_path: str | Path, threshold: float = 0.5) -> Predictor:
     return predict
 
 
+def ensemble_predictor(model_paths: list[Path], threshold: float = 0.5) -> Predictor:
+    """Mean of several U-Nets' (open, any) water probabilities.
+
+    All members must come from the same training site and validation blocks,
+    otherwise one member's training pixels would be scored as held out.
+    """
+    members = [unet_predictor(p, threshold) for p in model_paths]
+    first = members[0].checkpoint  # type: ignore[attr-defined]
+    for member, path in zip(members[1:], model_paths[1:]):
+        other = member.checkpoint  # type: ignore[attr-defined]
+        if other["config"]["site"] != first["config"]["site"] or other.get("val_blocks") != first.get("val_blocks"):
+            raise ValueError(f"{path} was validated on other blocks than {model_paths[0]}; the scores would leak")
+
+    def probabilities(ds: xr.Dataset, t: int) -> tuple[np.ndarray, np.ndarray]:
+        parts = [m.probabilities(ds, t) for m in members]  # type: ignore[attr-defined]
+        return np.mean([p[0] for p in parts], axis=0), np.mean([p[1] for p in parts], axis=0)
+
+    def predict(ds: xr.Dataset, t: int) -> tuple[dict[str, np.ndarray], np.ndarray, dict]:
+        p_open, p_any = probabilities(ds, t)
+        ok = np.isfinite(p_open)
+        return {"open": ok & (p_open >= threshold), "any": ok & (p_any >= threshold)}, ok, {}
+
+    predict.checkpoint = first  # type: ignore[attr-defined]
+    predict.probabilities = probabilities  # type: ignore[attr-defined]
+    predict.members = [str(p).replace("\\", "/") for p in model_paths]  # type: ignore[attr-defined]
+    return predict
+
+
+def load_predictor(model_paths: list[Path], threshold: float = 0.5) -> Predictor:
+    """One checkpoint, or the ensemble of several."""
+    if len(model_paths) == 1:
+        return unet_predictor(model_paths[0], threshold)
+    return ensemble_predictor(model_paths, threshold)
+
+
 def masks(pred: np.ndarray | dict[str, np.ndarray]) -> tuple[np.ndarray, np.ndarray]:
     """(open water, any water) masks of a prediction; a single mask counts for both."""
     return (pred["open"], pred["any"]) if isinstance(pred, dict) else (pred, pred)
@@ -307,10 +342,10 @@ def _built(site: str, stack_id: str) -> bool:
     return (STACK_DIR / f"{site}_{stack_id}.nc").exists()
 
 
-def model_report(model_path: Path, threshold: float, val_only: bool = False) -> dict:
-    """U-Net and baseline on the same pixels: validation blocks of the training site, and (unless
-    val_only) all of the test site plus the DANA flood checks."""
-    unet = unet_predictor(model_path, threshold)
+def model_report(model_paths: list[Path], threshold: float, val_only: bool = False) -> dict:
+    """U-Net (or ensemble) and baseline on the same pixels: validation blocks of the training
+    site, and (unless val_only) all of the test site plus the DANA flood checks."""
+    unet = load_predictor(model_paths, threshold)
     checkpoint = unet.checkpoint  # type: ignore[attr-defined]
     cfg = checkpoint["config"]
     rows = []
@@ -330,16 +365,16 @@ def model_report(model_path: Path, threshold: float, val_only: bool = False) -> 
         for check in FLOODS if _built(check["site"], check["stack"])]
     return {
         "created_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-        "model": str(model_path).replace("\\", "/"), "checkpoint_epoch": checkpoint["epoch"],
+        "model": [str(p).replace("\\", "/") for p in model_paths], "checkpoint_epoch": checkpoint["epoch"],
         "train_site": cfg["site"], "inputs": cfg.get("inputs", "current"), "label_mode": cfg.get("label_mode", "water13"),
         "probability_threshold": threshold, "val_only": val_only,
         "water_vs_dswx": rows, "flood_vs_emsr935": floods,
     }
 
 
-def threshold_sweep(model_path: Path, thresholds: list[float]) -> dict:
+def threshold_sweep(model_paths: list[Path], thresholds: list[float]) -> dict:
     """Open and any water IoU per probability threshold, on the training site's validation blocks only."""
-    unet = unet_predictor(model_path)
+    unet = load_predictor(model_paths)
     checkpoint = unet.checkpoint  # type: ignore[attr-defined]
     site, region = checkpoint["config"]["site"], training_region(checkpoint)
     per_date: dict[float, dict[str, list[float]]] = {thr: {"open": [], "any": []} for thr in thresholds}
@@ -361,7 +396,8 @@ def threshold_sweep(model_path: Path, thresholds: list[float]) -> dict:
                     pooled[thr][k] += (tp, fp, fn)
                     if tp + fp + fn:
                         per_date[thr][k].append(tp / (tp + fp + fn))
-    out = {"model": str(model_path).replace("\\", "/"), "site": site, "split": "held-out validation blocks", "rows": []}
+    out = {"model": [str(p).replace("\\", "/") for p in model_paths], "site": site,
+           "split": "held-out validation blocks", "rows": []}
     for thr in thresholds:
         row = {"threshold": thr}
         for k in ("open", "any"):
@@ -430,19 +466,22 @@ def print_sweep(sweep: dict) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--model", type=Path, help="U-Net checkpoint to score against the baseline")
+    parser.add_argument("--model", type=Path, nargs="+",
+                        help="U-Net checkpoint to score against the baseline; several = their ensemble")
+    parser.add_argument("--name", help="output file stem (default: the model's stem, or cv_ensemble)")
     parser.add_argument("--threshold", type=float, default=0.5, help="water probability threshold for the U-Net")
     parser.add_argument("--val-only", action="store_true", help="only the training site's validation blocks")
     parser.add_argument("--sweep", help="comma-separated thresholds to try on the validation blocks")
     args = parser.parse_args()
     METRICS_DIR.mkdir(parents=True, exist_ok=True)
+    name = args.name or (args.model[0].stem if args.model and len(args.model) == 1 else "cv_ensemble")
     if args.model and args.sweep:
         report = threshold_sweep(args.model, [float(v) for v in args.sweep.split(",")])
-        path = METRICS_DIR / f"{args.model.stem}_sweep.json"
+        path = METRICS_DIR / f"{name}_sweep.json"
         print_sweep(report)
     elif args.model:
         report = model_report(args.model, args.threshold, args.val_only)
-        path = METRICS_DIR / f"{args.model.stem}{'_val' if args.val_only else ''}.json"
+        path = METRICS_DIR / f"{name}{'_val' if args.val_only else ''}.json"
         print_comparison(report)
     else:
         report = baseline_report()

@@ -56,7 +56,8 @@ class TrainConfig:
     val_share: float = 0.2
     block: int = BLOCK_PX
     tile: int = TILE_PX
-    seed: int = 0
+    seed: int = 0              # weights and crops; a new seed is a new training run
+    split_seed: int = 0        # validation blocks; keep it fixed so runs are scored on the same blocks
     encoder_weights: str | None = S1_WEIGHTS
     stratify: bool = True      # validation blocks get a fair share of the changing water
     focus_share: float = 0.5   # share of crops drawn from windows with changing water
@@ -138,7 +139,8 @@ def train(cfg: TrainConfig, scenes: list[Scene] | None = None, permanent: np.nda
     shape = scenes[0].y.shape
     # Dates each pixel is changing water, from the DSWx classes: the same for every label mode.
     changing = sum((np.isin(s.cls, WATER_CLASSES) & ~permanent).astype("float64") for s in scenes)
-    val_ids = choose_validation_blocks(shape, cfg.val_share, cfg.seed, cfg.block, changing if cfg.stratify else None)
+    val_ids = choose_validation_blocks(shape, cfg.val_share, cfg.split_seed, cfg.block,
+                                       changing if cfg.stratify else None)
     val = blocks_mask(shape, val_ids, cfg.block)
     mean, std = channel_stats(scenes, ~val)
     train_set = CropDataset(scenes, ~val, mean, std, cfg.samples_per_epoch, cfg.tile, cfg.seed,
@@ -212,14 +214,16 @@ def main() -> None:
     parser.add_argument("--samples", type=int, default=TrainConfig.samples_per_epoch, help="training crops per epoch")
     parser.add_argument("--batch", type=int, default=TrainConfig.batch)
     parser.add_argument("--lr", type=float, default=TrainConfig.lr)
-    parser.add_argument("--seed", type=int, default=TrainConfig.seed)
+    parser.add_argument("--seed", type=int, default=TrainConfig.seed, help="weights and crops")
+    parser.add_argument("--split-seed", type=int, default=TrainConfig.split_seed, help="validation blocks (keep fixed)")
     parser.add_argument("--inputs", default=TrainConfig.inputs, choices=list(INPUTS))
     parser.add_argument("--label-mode", default=TrainConfig.label_mode, choices=list(LABEL_MODES))
     parser.add_argument("--jitter-db", type=float, default=TrainConfig.jitter_db)
     parser.add_argument("--random-init", action="store_true", help="no Sentinel-1 pretrained encoder")
     args = parser.parse_args()
     cfg = TrainConfig(site=args.site, epochs=args.epochs, samples_per_epoch=args.samples, batch=args.batch,
-                      lr=args.lr, seed=args.seed, encoder_weights=None if args.random_init else S1_WEIGHTS,
+                      lr=args.lr, seed=args.seed, split_seed=args.split_seed,
+                      encoder_weights=None if args.random_init else S1_WEIGHTS,
                       inputs=args.inputs, label_mode=args.label_mode, jitter_db=args.jitter_db, name=args.name)
     out = MODELS_DIR / f"{cfg.name}.pt"
     summary = train(cfg, out=out)
