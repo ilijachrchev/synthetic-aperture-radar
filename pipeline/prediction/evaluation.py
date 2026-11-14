@@ -42,7 +42,7 @@ def rolling_backtest(series: Series, start: date, end: date, horizons: tuple[int
         try:
             train_days, train_values = training_window(
                 series, origin, window_days, min_observations, min_span_days)
-            fits = [fit_model(name, train_days, train_values) for name in MODEL_NAMES]
+            fits = [fit_model(name, train_days, train_values, series.steps) for name in MODEL_NAMES]
         except ValueError:
             continue
         last_origin = origin

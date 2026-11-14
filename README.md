@@ -42,9 +42,8 @@ The first implemented component forecasts vertical displacement at Lorca's LOR1 
 
 ```bash
 python -m pip install -e ".[dev,prediction]"
-python -m pipeline.prediction fetch --station LOR1
 python -m pipeline.prediction run
-python -m unittest discover -s tests -v
+python -m pytest -q
 ```
 
 Outputs: [`data/prediction/lorca/`](data/prediction/lorca/) and [`data/manifest.json`](data/manifest.json). See the [prediction guide](pipeline/prediction/README.md) for the frozen 14 November example, data cutoffs, backtests, limitations and EGMS import instructions.

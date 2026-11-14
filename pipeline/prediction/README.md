@@ -10,9 +10,8 @@ Python 3.11+ (the shared `pyproject.toml`); no GPU, Earthdata account, or web se
 
 ```bash
 python -m pip install -e ".[dev,prediction]"
-python -m pipeline.prediction fetch --station LOR1
-python -m pipeline.prediction run --as-of 2026-11-14
-python -m unittest discover -s tests -v
+python -m pipeline.prediction run --as-of 2026-11-14   # reads the committed data/context/lorca_gnss_LOR1_up.csv
+python -m pytest -q
 ```
 
 Use `python3` if that is your Python executable. The same commands work from a checked-out repository in Colab. Without `--as-of`, the forecast origin defaults to today's UTC date. `run` reads the cached input and makes no network requests. `fetch` explicitly refreshes the small public input, records its SHA-256 and retrieval time, and stores it under ignored `data/raw/ngl/`.
@@ -71,13 +70,13 @@ The default source has a **599-day missing-observation gap** between December 20
 
 ### Forecast issue date versus observation date
 
-The checked source ends on **17 October 2026**. The frozen run has forecast origin **14 November 2026**, making the latest observation 28 days old. Targets are therefore:
+The committed station file (`data/context/lorca_gnss_LOR1_up.csv`, from `pipeline.context`) ends on **31 October 2026**. The run has forecast origin **14 November 2026**, making the latest observation 14 days old. Targets are therefore:
 
 | From forecast origin | Target | Lead from the last observation |
 | --- | --- | --- |
-| +12 days | 26 November 2026 | 40 days |
-| +24 days | 8 December 2026 | 52 days |
-| +36 days | 20 December 2026 | 64 days |
+| +12 days | 26 November 2026 | 26 days |
+| +24 days | 8 December 2026 | 38 days |
+| +36 days | 20 December 2026 | 50 days |
 
 The pipeline evaluates/calibrates those longer effective leads as well as the standard 12/24/36-day comparisons. It does not apply a 12-day error range to a 40-day extrapolation. `issued_at_utc` is the actual execution timestamp; `forecast_origin` is the requested as-of date, and `data_cutoff` is the latest observation used. An explicit past `--as-of` is a retrospective scenario, not proof that a forecast was published at that historical time.
 
@@ -91,7 +90,7 @@ These backtests use today's provider data release. They are not a simulation of 
 
 ## First real-data results
 
-The frozen example contains **1,793 retained observations from 1 January 2020 through 17 October 2026**. Held-out MAE in millimeters:
+The run contains **1,807 retained observations from 1 January 2020 through 31 October 2026**. Held-out MAE in millimeters:
 
 | Horizon | Scored targets | Persistence | Linear | Trend + annual cycle |
 | --- | ---: | ---: | ---: | ---: |
@@ -100,6 +99,20 @@ The frozen example contains **1,793 retained observations from 1 January 2020 th
 | 36 days | 17 | 5.065 | 4.667 | 5.011 |
 
 The earlier development split selected **persistence** at all required leads. The selected future forecast therefore predicts zero additional change from the last observed position, with ranges; all trend forecasts are still exported. This is a baseline result, not evidence that the ground will stop moving. We do not change the selected model after looking at final test winners. A later model/window/regime comparison needs a newly reserved evaluation period before claiming improvement.
+
+### Why persistence wins, and the antenna change (issue #16)
+
+LOR1 had an antenna-height change on 2023-08-03 (0 → 0.0771 m), the first day after a 600-day data gap (Dec 2021 – Aug 2023). It does **not** explain the result. Trends fitted on either side of the gap meet with the ground about 60 mm *lower* after it, while an uncorrected antenna raised by 7.7 cm would show up as a jump *upward*. NGL heights already refer to the ground marker. What the data shows is a change in the sinking itself:
+
+| Period | Vertical rate |
+| --- | ---: |
+| 2016–2021 | ≈ −55 to −63 mm/yr |
+| Dec 2021 – Aug 2023 (gap) | ≈ −95 mm/yr |
+| 2023–2026 | ≈ −33 to −45 mm/yr |
+
+The 2023 selection period sits right after that change, so its 3-year training windows mix two regimes, and the trend models lose to persistence there (MAE 11–14 mm vs 6–8 mm). The trend models now take a **step term at each equipment change** (`models.py`, from the antenna column), which is standard for GNSS. It does not change the selection: the regime change is in the rate, not just the level.
+
+On the held-out 2025 test, linear and trend + annual cycle do beat persistence at 24 and 36 days (+8 to +14 %). Selection was on 2023, and switching after seeing the test would be choosing on it. The EGMS history (2020–2025, no gap) is the fair way to revisit this.
 
 ## Use an actual EGMS Ortho Vertical CSV
 
@@ -122,7 +135,7 @@ Only the selected row's `YYYYMMDD` columns become displacement observations. The
 ## What remains after this milestone
 
 - Import and inspect an actual EGMS Vertical point or small group, preserving the product release and reference metadata.
-- Check GNSS equipment/earthquake offsets before treating a single trend as a physical explanation. The present loader does not remove such offsets.
+- Equipment changes are modelled as steps (above); earthquake offsets are not. The 2023 rate change means a single trend is not a physical explanation either.
 - Build a corrected NISAR GUNW comparison with coherence/connected-component checks and matching motion geometry. Vertical and line-of-sight motion must not be subtracted directly.
 - Resolve the GUNW input workflow: MintPy's NISAR loader expects HDF5 products and metadata, not only the Harmony intensity/phase COGs used elsewhere.
 - Add Albufera water-area forecasting as a separate series/pipeline with its own units, coverage rules, and validation. It is not implemented in this milestone.

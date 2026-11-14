@@ -13,8 +13,8 @@
     "chart": "data/prediction/lorca/chart.png",
     "source_type": "gnss",
     "units": "mm",
-    "issued_at_utc": "2026-11-13T23:37:10+00:00",
-    "data_cutoff": "2026-10-17"
+    "issued_at_utc": "2026-11-14T12:03:52+00:00",
+    "data_cutoff": "2026-10-31"
   },
   {
     "model": "prediction",
