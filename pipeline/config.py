@@ -73,6 +73,19 @@ SITES: dict[str, Site] = {
 }
 
 
+# NISAR stacks shared by the CV and ML models: frames that cover the whole site
+# box (checked in the catalog). Tracks have different viewing geometry, so each
+# track is its own stack and tracks are never mixed.
+STACKS: dict[str, tuple[str, ...]] = {
+    "albufera": ("066_D_069", "058_A_021"),
+    "pego_oliva": ("066_D_069", "058_A_021"),
+    "espada": ("058_A_022", "167_D_068"),
+}
+
+# Sites whose CV labels are same-day Sentinel-1 water maps (Espadà uses EFFIS).
+DSWX_LABEL_SITES: tuple[str, ...] = ("albufera", "pego_oliva")
+
+
 def get_site(name: str) -> Site:
     """Return a site by name, with a clear error listing the valid names."""
     try:
