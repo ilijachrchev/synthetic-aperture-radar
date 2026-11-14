@@ -78,8 +78,13 @@ def write_json(obj, path: Path) -> None:
     path.write_text(json.dumps(obj, indent=2), encoding="utf-8")
 
 
+# Names for the two key styles of upsert_manifest.
+ML_MANIFEST_KEY = ("model", "site", "stack", "layer")           # one entry per stack and layer (default)
+DATED_MANIFEST_KEY = ("model", "site", "stack", "layer", "date")  # one entry per date (e.g. CV water maps)
+
+
 def upsert_manifest(manifest_path: Path, entries: list[dict],
-                    key_fields: tuple[str, ...] = ("model", "site", "stack", "layer")) -> None:
+                    key_fields: tuple[str, ...] = ML_MANIFEST_KEY) -> None:
     """Replace entries with the same key (by default model, site, stack, layer); keep the rest.
 
     The stack is in the key, so two tracks of one site never replace each other.
