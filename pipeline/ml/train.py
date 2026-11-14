@@ -51,8 +51,11 @@ def predict_proba_full(model: LGBMClassifier, X: np.ndarray) -> np.ndarray:
     return proba
 
 
-def evaluate(model: LGBMClassifier, X: np.ndarray, y: np.ndarray) -> dict:
-    pred = np.argmax(predict_proba_full(model, X), axis=1)
+def evaluate(model: LGBMClassifier, X: np.ndarray, y: np.ndarray,
+             forbid: dict[int, np.ndarray] | None = None) -> dict:
+    """Scores on held-out rows. forbid: the same rules the map uses, indexed like X."""
+    proba = _apply_rules(predict_proba_full(model, X), forbid, np.arange(X.shape[0]))
+    pred = np.argmax(proba, axis=1)
     all_classes = list(range(len(config.CLASSES)))
     p, r, f1, support = precision_recall_fscore_support(
         y, pred, labels=all_classes, zero_division=0
@@ -88,9 +91,32 @@ def feature_importance(model: LGBMClassifier) -> list[dict]:
     return [{"feature": FEATURE_NAMES[i], "gain_share": float(share[i])} for i in order]
 
 
+def burned_rule(X: np.ndarray, min_hv_drop_db: float | None) -> dict[int, np.ndarray]:
+    """Rows where "burned" is not allowed: HV did not drop by min_hv_drop_db and stay down.
+
+    The CV baseline rule (HV step drop >= 1.5 dB) agrees with EFFIS at precision
+    0.94 to 0.99 (Ilija, PR #7). Without it the model learned burned as a static
+    kind of forest and over-predicted it by 70 % at Espadà.
+    """
+    if min_hv_drop_db is None:
+        return {}
+    drop = X[:, FEATURE_NAMES.index("hv_step_drop")]
+    return {config.CLASS_INDEX["burned"]: ~(np.nan_to_num(drop, nan=0.0) >= min_hv_drop_db)}
+
+
+def _apply_rules(proba: np.ndarray, forbid: dict[int, np.ndarray] | None, rows: np.ndarray) -> np.ndarray:
+    """Zero a class where a rule forbids it; the next most likely class wins.
+    Probabilities are not renormalized, so confidence drops where a rule fired."""
+    if forbid:
+        proba = proba.copy()
+        for c, mask in forbid.items():
+            proba[mask[rows], c] = 0.0
+    return proba
+
+
 def predict_map(
     model: LGBMClassifier, X: np.ndarray, usable: np.ndarray, shape: tuple[int, int],
-    chunk: int = 200_000,
+    chunk: int = 200_000, forbid: dict[int, np.ndarray] | None = None,
 ) -> tuple[np.ndarray, np.ndarray]:
     """Class map (uint8, NODATA_U8 where unusable) and confidence (max probability, NaN)."""
     classes = np.full(X.shape[0], config.NODATA_U8, dtype=np.uint8)
@@ -98,7 +124,7 @@ def predict_map(
     idx = np.flatnonzero(usable)
     for start in range(0, idx.size, chunk):
         part = idx[start:start + chunk]
-        proba = predict_proba_full(model, X[part])
+        proba = _apply_rules(predict_proba_full(model, X[part]), forbid, part)
         classes[part] = np.argmax(proba, axis=1).astype(np.uint8)
         confidence[part] = proba.max(axis=1)
     return classes.reshape(shape), confidence.reshape(shape)

@@ -8,4 +8,4 @@ Written with SI assistance (Claude Code), reviewed by the team.
 See the README section "Use of Super Intelligence (SI)".
 """
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"
