@@ -112,7 +112,80 @@ Results: `data/metrics/cv_optical_select.json`, `data/metrics/cv_optical_benchma
 
 ## 10. Results
 
-Not yet run.
+Run on 14 and 15 Nov 2026; the test sites were counted once, at 23:59, after every parameter was chosen. Files: `data/metrics/cv_optical_select.json` (the parameters, chosen on the training sites) and `data/metrics/cv_optical_benchmark.json` (every table below, also per land type, with intervals). Scores are pooled IoU of changing open water against the optical answer key; brackets are 95 % intervals.
+
+### Parameters chosen on the training sites
+
+Coherence cut c = 0.25 (IoU 0.391). U-Net thresholds: v1 0.05 (0.313), v2 0.05 (0.350), the ablations 0.05. Spot filter s = 0.5 (0.308, below v2 without it). Every U-Net threshold is the lowest value tried (section 11).
+
+### Test sites, all dates
+
+| Method | Pego-Oliva (19 dates) | Donana (26 dates) |
+|---|---|---|
+| NISAR -15 dB threshold | **0.340** [0.196, 0.416] | 0.042 [0.023, 0.064] |
+| NISAR dark and low coherence | 0.306 [0.128, 0.389] | **0.109** [0.079, 0.194] |
+| NISAR Otsu | 0.075 [0.029, 0.138] | 0.029 [0.016, 0.046] |
+| v1, pre-registered threshold 0.3 | 0.190 [0.069, 0.286] | 0.052 [0.025, 0.083] |
+| v1, threshold 0.05 | 0.129 [0.052, 0.200] | 0.036 [0.019, 0.056] |
+| v2 | 0.138 [0.056, 0.209] | 0.059 [0.034, 0.089] |
+| v2 with spot filter | 0.149 [0.058, 0.226] | 0.067 [0.038, 0.100] |
+
+False water as a share of the answer key's dry ground, Donana: threshold 31.7 %, v1 at 0.05 37.9 %, v2 22.2 %, dark and low coherence 5.4 %. Pego-Oliva: 0.02 to 0.8 % for every method.
+
+Paired differences: v2 minus v1 (both at their chosen 0.05) is +0.010 [0.004, 0.013] at Pego-Oliva and +0.024 [0.014, 0.035] at Donana. Dark and low coherence minus the threshold is -0.034 [-0.130, 0.033] at Pego-Oliva (no clear difference) and +0.067 [0.040, 0.160] at Donana. The spot filter adds +0.011 [0.001, 0.019] and +0.007 [0.003, 0.013].
+
+### Against Sentinel-1 (dates with a same-pass map)
+
+| Method | Pego-Oliva (11 dates) | Donana (17 dates) | Training blocks (25 dates) |
+|---|---|---|---|
+| Sentinel-1 map (DSWx-S1) | 0.289 [0.063, 0.444] | **0.291** [0.187, 0.441] | 0.464 [0.285, 0.590] |
+| NISAR -15 dB threshold | **0.382** [0.167, 0.463] | 0.056 [0.023, 0.086] | 0.375 [0.145, 0.548] |
+| NISAR dark and low coherence | 0.355 [0.101, 0.442] | 0.121 [0.081, 0.236] | 0.542 [0.182, 0.676] |
+| v1, threshold 0.3 | 0.272 [0.088, 0.383] | 0.083 [0.030, 0.124] | 0.469 [0.194, 0.643] |
+| v2 | 0.199 [0.063, 0.291] | 0.090 [0.046, 0.130] | **0.623** [0.338, 0.795] |
+
+v2 minus Sentinel-1: -0.090 [-0.201, 0.047] at Pego-Oliva (no clear difference), -0.201 [-0.375, -0.078] at Donana (Sentinel-1 better), +0.159 [-0.002, 0.287] on the training blocks (no clear difference, by a hair). The threshold against Sentinel-1 at Pego-Oliva was not a pre-registered pair and is not tested.
+
+### Ablation, single seed 0, all dates
+
+| Change against v1's seed 0 model | Training blocks | Pego-Oliva | Donana |
+|---|---|---|---|
+| Coherence only | +0.055 [0.035, 0.071] | -0.014 [-0.030, -0.004] | +0.023 [0.008, 0.044] |
+| Coherence and label cleanup | +0.044 [0.023, 0.062] | +0.012 [-0.007, 0.024] | +0.040 [0.018, 0.069] |
+
+The cleanup-only run was not trained (section 11).
+
+### Per land type
+
+- Pego-Oliva cropland: v2 0.784, threshold 0.721, v1 0.689, dark and low coherence 0.638.
+- Pego-Oliva bare ground: v1 and v2 call 26 to 27 % of the dry ground water (threshold 3.4 %). That is where the U-Nets lose most at Pego-Oliva.
+- Donana: dark and low coherence is the best NISAR method in every land type; on grass, shrub and wetland its false water is 5.8 % against 36 % for the threshold.
+
+### The DANA flood (EMSR935, 877 ha labelled, every method on the same pixels)
+
+| Method | Water gain IoU | Precision | Recall | New water | Before-flood control IoU |
+|---|---|---|---|---|---|
+| v1, threshold 0.3 | **0.305** | 0.82 | 0.33 | 349 ha | 0.074 |
+| v2, coherence withheld on both dates | 0.303 | 0.79 | 0.33 | 364 ha | 0.117 |
+| v2 with spot filter, coherence withheld | **0.309** | 0.78 | 0.34 | 383 ha | 0.101 |
+| v1, threshold 0.05 | 0.269 | 0.80 | 0.29 | 316 ha | 0.211 |
+| Sentinel-1 map | 0.230 | 0.66 | 0.26 | 343 ha | 0.185 |
+| NISAR -15 dB threshold | 0.230 | 0.93 | 0.23 | 220 ha | 0.137 |
+| NISAR Otsu | 0.203 | 0.87 | 0.21 | 211 ha | 0.249 |
+
+Not comparable (coherence on 16 Oct only): dark and low coherence 0.291, v2 0.292, v2 with spot filter 0.304.
+
+### Dates without coherence (descriptive only)
+
+Pego-Oliva, 28 Oct on two tracks: threshold 0.471, v1 0.361, v2 0.347. Donana, three dates: every NISAR method below 0.11.
+
+### Reading
+
+1. **No method wins everywhere.** On new flood water the U-Nets lead (about 0.30 against 0.23 for the Sentinel-1 map and for the threshold). On everyday water at Pego-Oliva the plain threshold leads. On Donana's dry marsh the Sentinel-1 map leads, and among NISAR methods the coherence rule.
+2. **Coherence works where smooth dry ground is the error.** At Donana it cuts false water from 32 % to 5 % of the dry ground, and it costs recall where marsh water keeps some coherence (Pego-Oliva).
+3. **v2 beats v1 at both test sites, by 0.01 and 0.02 IoU:** a real gain, but small. On the flood the two are level.
+4. **Thresholds chosen on the training sites do not carry over.** At 0.05 the U-Nets call too much water on bare ground at Pego-Oliva; v1's pre-registered 0.3 scores higher there (0.190 against 0.129).
+5. **Limits.** One season, two test sites, one flood; the answer key cannot see water under plants and drops muddy water; the Pego-Oliva intervals are wide.
 
 ## 11. Changes after the first score
 
