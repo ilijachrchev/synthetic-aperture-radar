@@ -6,7 +6,9 @@ import numpy as np
 import rasterio
 from rasterio.transform import from_origin
 
-from pipeline.cv.export import COLORMAP, DOY_NEVER, DOY_NODATA, KEY_FIELDS, NODATA, water_classes, water_days, write_cog
+from pipeline.cv.export import (
+    COLORMAP, DOY_NEVER, DOY_NODATA, KEY_FIELDS, NODATA, probability_u8, water_classes, water_days, write_cog,
+)
 from pipeline.ml.export import upsert_manifest
 from pipeline.stack import Grid
 
@@ -19,6 +21,24 @@ def test_water_classes_binary_and_three_class():
     assert water_classes(p_open, p_any, 0.5, three=True).tolist() == [[1, 2, 0]]
     sea = np.array([[True, False, False]])
     assert water_classes(p_open, p_any, 0.5, three=True, sea=sea).tolist() == [[NODATA, 2, 0]]
+
+
+def test_burn_needs_two_passes_in_a_row_and_stays():
+    from pipeline.cv.export import lasting_start
+
+    d = [np.array([[1, 1, 0, 1]], bool),    # pass 0
+         np.array([[1, 0, 1, 0]], bool),    # pass 1
+         np.array([[0, 0, 1, 1]], bool)]    # pass 2
+    # px 0: drop on 0 and 1 -> starts 0; px 1: single drop -> never; px 2: 1 and 2 -> starts 1;
+    # px 3: drops on 0 and 2 but not in a row -> never
+    assert lasting_start(d).tolist() == [[0, -1, 1, -1]]
+
+
+def test_probability_layer_encoding():
+    p = np.array([[0.0, 0.004, 0.5, 1.0, np.nan]], "float32")
+    sea = np.array([[False, False, False, True, False]])
+    assert probability_u8(p).tolist() == [[0, 1, 100, 200, NODATA]]
+    assert probability_u8(p, sea).tolist() == [[0, 1, 100, NODATA, NODATA]]
 
 
 def test_first_and_last_water_days():
