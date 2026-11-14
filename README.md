@@ -33,6 +33,7 @@ An open-source, interactive web app that turns NISAR L-band radar data into maps
 - **Time series**: every 12-day NISAR pass, not a single before/after snapshot.
 - **Predictions with honest uncertainty**: every forecast comes with a range and is scored against a simple baseline.
 - **Plain language first**, with the radar details one click deeper.
+- **A game** (`/game`): see the marsh on the last pass before the October storm, mark where you think the water will be, and learn from the pass that followed why each cell flooded or stayed dry.
 
 > 🚧 **Work in progress.** Built during the hackathon (13 to 15 Nov 2026). Models and owners: [docs/MODELS.md](docs/MODELS.md). Data facts and sources: [docs/RESEARCH.md](docs/RESEARCH.md).
 

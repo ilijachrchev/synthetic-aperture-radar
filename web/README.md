@@ -12,6 +12,15 @@ pnpm build && pnpm start
 
 `pnpm build` runs `check:dashes` first: no en or em dash may appear anywhere in the app's own files.
 
+## The game
+
+`/game` replays the DANA "Adam" storm at the Pego-Oliva marsh as a guessing game: the player sees the last NISAR
+pass before the rain and the rain forecast of that evening, marks ten cells of a 476 m grid where they expect new
+water, and is scored against the pass after the storm. Every cell then explains itself from the measurements
+(height above the sea, water before, the Copernicus map, what Sentinel-1 saw the same evening). The cells are
+measured once by `python scripts/bake_game.py` from the baked frames, the terrain tiles and the EMS outline, into
+`public/layers/pego_oliva/game.json`. Code: `src/components/game/`, copy: `src/content/game.ts`.
+
 ## Radar data
 
 `pnpm radar --raw <folder outside the repo>` asks NASA's public catalogue (CMR) for every NISAR GCOV and GUNW
