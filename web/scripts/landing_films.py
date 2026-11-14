@@ -11,50 +11,41 @@ For each story it writes into web/public/films/:
   <page>.jpg        the first frame, shown until the film starts
   <page>-still.jpg  a frame from late in the film, for people who ask for less motion (the film does not play for them)
 
-Recording needs a running build of the app and a free graphics card: a busy computer drops frames, so each story is
-recorded a few times and the smoothest take is kept. Encoding needs only ffmpeg on the path.
+Recording needs a running build of the app. It is done frame by frame on the page's own clock (record_flood.py
+--steady): every frame of a film is a new one and they are evenly spaced, on a busy computer too, it only takes longer
+(a few minutes a story). Encoding needs only ffmpeg on the path.
 Written with SI assistance (Claude Code), reviewed by the team.
 """
 import argparse
-import re
 import shutil
 import subprocess
 import sys
+from fractions import Fraction
 from pathlib import Path
 
 WEB = Path(__file__).resolve().parents[1]
 # page: (file name of the recording, where in the film the still is taken, as a share of its length)
 STORIES = {"flood": ("dana_flood", 0.64), "fire": ("espada_fire", 0.8), "rice": ("rice_season", 0.9)}
-GOOD = 30  # frames a second: a take this smooth is kept without trying again
 
 
 def run(*cmd):
     return subprocess.run([str(c) for c in cmd], capture_output=True, text=True, encoding="utf-8")
 
 
-def record(base, cache, takes):
-    """Film each story page a few times and keep the smoothest take."""
+def record(base, cache, fps):
+    """Film each story page frame by frame. One take is enough: every frame is drawn before it is taken."""
     for page, (name, _) in STORIES.items():
-        best = (0.0, None)
-        for k in range(takes):
-            take = cache / f"_{page}_{k}"
-            shutil.rmtree(take, ignore_errors=True)
-            done = run(sys.executable, WEB / "scripts" / "record_flood.py", take, "--url", f"{base}/{page}?story", "--seconds", "70", "--screencast", "--quality", "90")
-            m = re.search(r"screencast: (\d+) frames in ([\d.]+) s \((\d+) a second\)", done.stdout + done.stderr)
-            if not m or not (take / "film.mp4").exists():
-                print(f"{page} take {k} failed: {(done.stdout + done.stderr)[-300:]}", flush=True)
-                continue
-            rate = float(m.group(3))
-            print(f"{page} take {k}: {m.group(1)} frames in {m.group(2)} s, {rate:.0f} a second", flush=True)
-            if rate > best[0]:
-                best = (rate, take)
-            if rate >= GOOD:
-                break
-        if best[1]:
-            shutil.copyfile(best[1] / "film.mp4", cache / f"{name}.mp4")
-            print(f"{page}: kept the take at {best[0]:.0f} frames a second", flush=True)
-        for k in range(takes):
-            shutil.rmtree(cache / f"_{page}_{k}", ignore_errors=True)
+        take = cache / f"_{page}"
+        shutil.rmtree(take, ignore_errors=True)
+        print(f"{page}: recording frame by frame at {fps} a second", flush=True)
+        done = run(sys.executable, WEB / "scripts" / "record_flood.py", take, "--url", f"{base}/{page}?story", "--seconds", "70", "--steady", "--fps", fps)
+        for line in (done.stdout + done.stderr).splitlines():
+            if line.startswith(("steady:", "  frame", "console")):
+                print(f"  {line.strip()}", flush=True)
+        if not (take / "film.mp4").exists():
+            sys.exit(f"{page}: the recording failed: {(done.stdout + done.stderr)[-400:]}")
+        shutil.copyfile(take / "film.mp4", cache / f"{name}.mp4")
+        shutil.rmtree(take, ignore_errors=True)
 
 
 def encode(cache, out, width, crf):
@@ -68,7 +59,10 @@ def encode(cache, out, width, crf):
             print(f"{page}: no recording at {src}, skipped")
             continue
         film = out / f"{page}.mp4"
-        done = run("ffmpeg", "-y", "-loglevel", "error", "-i", src, "-vf", scale, "-c:v", "libx264", "-preset", "medium", "-crf", crf, "-g", "60",
+        rate = run("ffprobe", "-v", "error", "-select_streams", "v:0", "-show_entries", "stream=r_frame_rate", "-of", "default=nw=1:nk=1", src).stdout.split()
+        fps = round(float(Fraction(rate[0]))) if rate else 30
+        # a key frame every two seconds, so the film can start anywhere quickly
+        done = run("ffmpeg", "-y", "-loglevel", "error", "-i", src, "-vf", scale, "-c:v", "libx264", "-preset", "slow", "-crf", crf, "-g", 2 * fps,
                    "-threads", "4", "-pix_fmt", "yuv420p", "-movflags", "+faststart", "-an", film)
         if done.returncode:
             sys.exit(f"ffmpeg failed on {src}: {done.stderr[-400:]}")
@@ -81,7 +75,7 @@ def encode(cache, out, width, crf):
 def main():
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--record", metavar="URL", help="record the story pages of the app running at this address first")
-    ap.add_argument("--takes", type=int, default=4, help="how many times a story is recorded at most")
+    ap.add_argument("--fps", type=int, default=30, help="frames a second of the recordings")
     ap.add_argument("--cache", type=Path, default=WEB / ".cache" / "film", help="where the recordings are kept (not in git)")
     ap.add_argument("--out", type=Path, default=WEB / "public" / "films")
     ap.add_argument("--width", type=int, default=1280)
@@ -91,7 +85,7 @@ def main():
         sys.exit("ffmpeg is not on the path")
     args.cache.mkdir(parents=True, exist_ok=True)
     if args.record:
-        record(args.record.rstrip("/"), args.cache, args.takes)
+        record(args.record.rstrip("/"), args.cache, args.fps)
     encode(args.cache, args.out, args.width, args.crf)
 
 
