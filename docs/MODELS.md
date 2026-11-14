@@ -87,13 +87,26 @@ CV and ML read the same NISAR stack but answer different questions. Prediction u
 
 | | Forecast | Data | Held-out result | NISAR check |
 |---|---|---|---|---|
-| **A** | [Lorca ground sinking](../pipeline/prediction/README.md) | GNSS LOR1 (NGL), daily since 2009 | Selection on 2023 picks persistence ("no further change"). On the 2025 test, linear trend beats persistence by 14 % at 24 days and 8 % at 36 days, trend + annual cycle by 8 % and 1 %. Reported, not switched to. Sinking slowed from about 95 to about 40 mm/yr after 2023 | ⚠️ Not yet: 13 GUNW pairs, Jun–Oct. Descending −53 vs GNSS −48 mm/yr, ascending +18 vs −35; per-date atmosphere ≈ 6–13 mm ≈ the signal so far. Descending should resolve the rate at 3σ by about mid-Nov |
+| **A** | [Lorca ground sinking](../pipeline/prediction/README.md) | GNSS LOR1 (NGL), daily since 2009 | Selection on 2023 picks persistence ("no further change"). On the 2025 test, linear trend beats persistence by 14 % at 24 days and 8 % at 36 days, trend + annual cycle by 8 % and 1 %. Reported, not switched to. Sinking slowed from about 95 to about 40 mm/yr after 2023 | ⚠️ Not yet: 13 GUNW pairs, Jun–Oct. Descending −53 vs GNSS −48 mm/yr, ascending +18 vs −35; per-date atmosphere ≈ 6–13 mm ≈ the signal so far. Descending should resolve the rate at 3σ by about mid-Nov. The asc + desc vertical/east split (6 common dates) gives −2 vs −36 mm/yr: noise-bound too |
 | **B** | [Albufera rice-field flooded area](../pipeline/prediction/albufera/README.md) | DSWx-S1, 413 passes since Aug 2024; CORINE rice mask, 14,791 ha | Climatology beats persistence by +42 / +60 / +64 % at 16 / 28 / 40 days on the 2026 season; 80 % ranges hold 73–80 % | ✅ NISAR and DSWx-S1 rise together in the autumn flooding |
 | **C** | [Rain-threshold flood alert](../pipeline/prediction/flood/README.md) | IFS 9 km rain (Open-Meteo) + DSWx-S1, Albufera and Pego-Oliva | Held-out DANA: 2 of 2 caught, 0 false alarms in the surrounding weeks (too few events for a skill claim). Replay: amber 2–3 days ahead, never red | ✅ NISAR new water lies 87 % inside the official DANA outline |
 
 **NISAR check** ([`nisar_check.py`](../pipeline/prediction/nisar_check.py), stacks `albufera_066_D_069` and `pego_oliva_066_D_069`, CV baseline from `pipeline.cv`):
 
-- **Albufera rice, 11 NISAR dates, 5 with a Sentinel-1 pass within 2 h** (the 18 UTC pass; same pairing rule as `pipeline.cv.evaluate`): share of the rice mask darker than −15 dB on NISAR vs the share DSWx-S1 maps as flooded. **Autumn:** 6 → 14 → 31 % (NISAR) vs 2.5 → 10 → 22 % (DSWx-S1) on 4, 16 and 28 Oct. **Summer:** NISAR sees 44 % dark on 18 Jun, falling to 0 by late July, while DSWx-S1 sees about 2 %. That fits paddies flooded from May sowing until the August drainage, i.e. water among young rice that the C-band map misses, but it is not confirmed on the ground. Non-rice cropland stays at 0–1 % throughout. Correlation over the 5 paired dates: r = 0.34 (−15 dB, pulled down by 18 Jun), 0.65 (−18 dB); the per-scene Otsu threshold gives 0.14, because it follows the whole scene. Five points, so read the series, not r.
+- **Albufera rice, two NISAR tracks** (066 D evening, 058 A morning, 11 dates each; Sentinel-1 paired only within 2 h, as `pipeline.cv.evaluate`): share of the rice mask darker than −15 dB on NISAR vs the share DSWx-S1 maps as flooded.
+  - **Autumn, the flooding the forecast predicts:** 066 D 6 → 14 → 31 % vs DSWx-S1 2.5 → 10 → 22 %; 058 A 2 → 8 → 31 % vs 3 → 10 → 32 %, on 4, 16 and 28 Oct. On 28 Oct the two NISAR tracks agree (31.0 / 30.8 %); DSWx-S1 differs by 10 points between its morning and evening pass.
+  - **Why −15 dB** (fixed before the check, `pipeline.ml` fallback): it is confirmed on 058 A, which played no part in choosing it, and −18 dB breaks at the 28 Oct peak (10.3 / 1.6 % dark). Sensitivity, recomputed by `nisar_check.py` (Ilija's analysis in discussion #9):
+
+    | Threshold | 066 D, r (5 dates) | 066 D, r without June (4) | 058 A, r (10 dates) | 058 A, mean gap |
+    |---|---:|---:|---:|---:|
+    | −14 dB | 0.31 | 0.996 | 0.92 | 3.7 points |
+    | **−15 dB** | **0.34** | **0.997** | **0.98** | **1.3 points** |
+    | −16 dB | 0.39 | 0.998 | 0.98 | 2.5 points |
+    | −17 dB | 0.45 | 0.996 | 0.97 | 3.8 points |
+    | −18 dB | 0.65 | 0.984 | 0.96 | 4.5 points |
+
+    Non-rice cropland stays at ≤ 1.7 % dark at −15 dB on both tracks.
+  - **June, an open question:** on 18 Jun both tracks see 44–47 % of the rice dark while DSWx-S1 sees about 2 %; it fades by late July on both. That fits water among young rice that C-band misses (paddies are flooded from May sowing to the August drainage), but it is not confirmed on the ground. It is a sensor difference, not a threshold effect.
 - **Pego-Oliva DANA, 16 → 28 Oct:** 212 ha of new NISAR water inside the EMSR935 mapped areas, **87 %** of it inside the official flood outline (62–93 % over ±1 dB); same region as `pipeline.cv.evaluate`, so it matches `cv_baseline.json`. DSWx-S1 inside the outline, on the 18 UTC passes: 234 → 408 ha.
 
 **Done when:** every forecast has ranges, backtest scores and a committed, timestamped forecast file. ✅ Met for A, B and C.

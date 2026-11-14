@@ -5,9 +5,10 @@ Spain only starts in Jun 2026. "NISAR stays first" (discussion #9) means NISAR
 is the check. Two checks, both with the CV baseline that is on main
 (pipeline.cv.baseline: Otsu threshold per scene on 5x5-filtered HH in dB):
 
-1. Albufera rice fields, track 066 D (11 dates, 18 Jun to 28 Oct 2026): the
-   share of the rice mask that NISAR sees dark (filtered HH below a FIXED
-   threshold, -15 dB as in pipeline.ml's fallback, and -18 dB) vs the share
+1. Albufera rice fields, tracks 066 D and 058 A (11 dates each, 18 Jun to 28 Oct
+   2026): the share of the rice mask that NISAR sees dark (filtered HH below a
+   FIXED threshold, -15 dB as in pipeline.ml's fallback; -14 to -18 dB as a
+   sensitivity table) vs the share
    DSWx-S1 maps as flooded on the Sentinel-1 pass within 2 h of NISAR, with
    non-rice cropland as a control. The per-scene Otsu threshold is reported
    too, but it follows the whole scene (sea, towns) and swung from -7.5 to
@@ -25,6 +26,7 @@ Usage:
     python -m pipeline.nisar_fetch --site albufera --stack 066_D_069      # Earthdata login
     python -m pipeline.stack --site albufera --stack 066_D_069
     (same for pego_oliva)
+    (same for albufera 058_A_021)
     python -m pipeline.prediction.nisar_check
 
 Writes data/prediction/nisar_check.json.
@@ -47,7 +49,9 @@ from pipeline.config import DATA_DIR, REPO_ROOT, STACK_DIR
 STACK_ID = "066_D_069"
 OUT = DATA_DIR / "prediction" / "nisar_check.json"
 DELTAS_DB = (-1.0, 0.0, 1.0)
-FIXED_DB = (-15.0, -18.0)
+FIXED_DB = (-14.0, -15.0, -16.0, -17.0, -18.0)   # -15 dB is the one used; the rest is the sensitivity table
+ALBUFERA_STACKS = ("066_D_069", "058_A_021")     # evening descending, morning ascending
+JUNE_TO = "2026-07-01"   # June: NISAR sees far more dark rice than DSWx-S1; reported on its own
 AUTUMN_FROM = "2026-10-01"   # the winter flooding the Albufera forecast predicts
 MAX_GAP_H = 2.0   # as pipeline.cv.evaluate: same pass time as NISAR
 
@@ -99,7 +103,7 @@ def pearson(a: list[float], b: list[float]) -> float | None:
     return round(float(np.corrcoef(a, b)[0, 1]), 3)
 
 
-def check_albufera(stack_path: Path) -> dict:
+def check_albufera(stack_path: Path, stack_id: str = STACK_ID) -> dict:
     import rasterio
     from pipeline.cv.data import open_stack
     from pipeline.prediction.albufera.mask import load as load_mask
@@ -138,11 +142,22 @@ def check_albufera(stack_path: Path) -> dict:
     paired = [o for o in out if o["dswx"] and o["rice_observed_fraction"] >= 0.9]
     autumn = [o for o in paired if o["date"] >= AUTUMN_FROM]
     corr = lambda sel, key: pearson([o["nisar_dark_pct"][key] for o in sel], [o["dswx"]["flooded_pct"] for o in sel])
-    return {"site": "albufera", "stack": STACK_ID, "rice_mask_ha": round(mask_ha, 1), "dates": out,
+    june = [o for o in paired if o["date"] < JUNE_TO]
+    rest = [o for o in paired if o["date"] >= JUNE_TO]
+    gap = lambda sel, key: round(float(np.mean([abs(o["nisar_dark_pct"][key] - o["dswx"]["flooded_pct"]) for o in sel])), 2) if sel else None
+    sensitivity = {f"{t:.0f}": {"r": corr(paired, f"{t:.0f}"), "r_without_june": corr(rest, f"{t:.0f}"),
+                                "mean_gap_points": gap(paired, f"{t:.0f}"),
+                                "control_max_pct": max(o["control_cropland_dark_pct"][f"{t:.0f}"] for o in out)}
+                   for t in FIXED_DB}
+    return {"site": "albufera", "stack": stack_id, "rice_mask_ha": round(mask_ha, 1), "dates": out,
             "paired_dates": len(paired),
             "pearson_r_paired_dates": {"-15": corr(paired, "-15"), "-18": corr(paired, "-18"),
                                     "otsu": pearson([o["otsu"]["water_ha"]["+0"] for o in paired],
                                                     [o["dswx"]["flooded_pct"] for o in paired])},
+            "threshold_sensitivity": {"paired_dates": len(paired), "june_dates": [o["date"] for o in june],
+                                      "by_threshold_db": sensitivity},
+            "june": [{"date": o["date"], "nisar_dark_pct_-15": o["nisar_dark_pct"]["-15"],
+                      "dswx_flooded_pct": o["dswx"]["flooded_pct"]} for o in june],
             "autumn": {"dates": [o["date"] for o in autumn],
                        "nisar_dark_pct_-15": [o["nisar_dark_pct"]["-15"] for o in autumn],
                        "dswx_flooded_pct": [o["dswx"]["flooded_pct"] for o in autumn],
@@ -196,8 +211,10 @@ def main(argv: list[str] | None = None) -> int:
     parser.parse_args(argv)
     result = {"issued_at_utc": datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
               "method": "pipeline.cv.baseline: Otsu per scene on 5x5-filtered HH (dB); +-1 dB threshold range"}
-    jobs = (("albufera_rice", "albufera", check_albufera), ("pego_oliva_dana", "pego_oliva", check_dana))
-    missing = [STACK_DIR / f"{site}_{STACK_ID}.nc" for _, site, _ in jobs]
+    # "albufera_rice" keeps the 066 D result under its original key; the second track sits next to it.
+    jobs = [("albufera_rice" if s == STACK_ID else f"albufera_rice_{s}", "albufera", s, check_albufera)
+            for s in ALBUFERA_STACKS] + [("pego_oliva_dana", "pego_oliva", STACK_ID, check_dana)]
+    missing = [STACK_DIR / f"{site}_{stack}.nc" for _, site, stack, _ in jobs]
     missing = [p for p in missing if not p.exists()]
     if missing:
         # data/stack is gitignored: writing a partial result would wipe the committed one.
@@ -205,10 +222,19 @@ def main(argv: list[str] | None = None) -> int:
             print(f"missing {p.relative_to(REPO_ROOT)} (build it with pipeline.nisar_fetch + pipeline.stack)")
         print(f"{OUT} left unchanged")
         return 1
-    for key, site, fn in jobs:
-        result[key] = fn(STACK_DIR / f"{site}_{STACK_ID}.nc")
+    for key, site, stack, fn in jobs:
+        path = STACK_DIR / f"{site}_{stack}.nc"
+        result[key] = fn(path, stack) if fn is check_albufera else fn(path)
+    result["threshold_choice"] = (
+        "-15 dB, fixed before the check (pipeline.ml fallback). Confirmed on the second Albufera track, which "
+        "played no part in choosing it (Ilija, discussion #9): best mean gap there, and -18 dB breaks at the "
+        "28 Oct flood peak on both tracks. June is a sensor difference, not a threshold effect, and is reported apart.")
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
+    for key in [k for k in result if k.startswith("albufera_rice")]:
+        a = result[key]
+        print(f"{a['stack']}: " + "  ".join(f"{t}: r {v['r']} (no June {v['r_without_june']}) gap {v['mean_gap_points']}"
+                                            for t, v in a["threshold_sensitivity"]["by_threshold_db"].items()))
     a = result["albufera_rice"]
     if "dates" in a:
         print(f"Albufera rice ({a['paired_dates']} paired dates): r paired dates {a['pearson_r_paired_dates']}, "

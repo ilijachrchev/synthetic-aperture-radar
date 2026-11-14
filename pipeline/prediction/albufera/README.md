@@ -58,7 +58,9 @@ Outputs: `data/prediction/albufera/` (`forecast.json`, `metrics.json`, `backtest
 | 16 Oct | 13.7 % | 9.8 % | 0.1 % |
 | 28 Oct | 31.0 % | 21.7 % | 0.3 % |
 
-In the autumn flooding this forecast predicts, the L-band and C-band series rise together. In June, NISAR sees much more water. The rice calendar has the paddies flooded from May sowing to the August drainage, so this is most likely water among young rice that DSWx-S1 misses, but it is not confirmed on the ground. A fixed threshold is used because the per-scene Otsu threshold follows the whole scene (sea, towns) and called about 90 % of the rice "water" in June and 64 % and 39 % on the two September dates. Correlation over the 5 paired dates: 0.34 at −15 dB (18 Jun pulls it down), 0.65 at −18 dB, 0.14 with Otsu; with five points, read the series rather than r.
+**Second track, 058 A (morning, 10 paired dates):** 2.2 / 7.6 / 30.8 % dark vs DSWx-S1 3.0 / 9.7 / 32.1 % on 4 / 16 / 28 Oct; r = 0.98, mean gap 1.3 points at −15 dB. The threshold was fixed before the check, and this track played no part in choosing it. −18 dB breaks at the 28 Oct peak on both tracks (10.3 / 1.6 % dark). Full sensitivity table: `docs/MODELS.md` and `nisar_check.json → threshold_sensitivity` (from Ilija's analysis in discussion #9).
+
+In the autumn flooding this forecast predicts, the L-band and C-band series rise together. **June is reported apart, as an open question:** on 18 Jun both NISAR tracks see 44–47 % of the rice dark. The rice calendar has the paddies flooded from May sowing to the August drainage, so this is most likely water among young rice that DSWx-S1 misses, but it is not confirmed on the ground. A fixed threshold is used because the per-scene Otsu threshold follows the whole scene (sea, towns) and called about 90 % of the rice "water" in June and 64 % and 39 % on the two September dates. Correlation over the 5 paired dates: 0.34 at −15 dB (18 Jun pulls it down), 0.65 at −18 dB, 0.14 with Otsu; with five points, read the series rather than r.
 
 ## Caveats
 
