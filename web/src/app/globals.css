@@ -67,7 +67,7 @@
 }
 
 html {
-	background: url("/img/grain.png") repeat, var(--bg);
+	background: var(--bg);
 	-webkit-text-size-adjust: 100%;
 }
 html.lenis,

@@ -1,6 +1,5 @@
 import { Hero, MapPreview, Stories } from '@/components/landing'
 import { LandingMotion } from '@/components/landing-motion'
-import { GroundSwitch, PageGround } from '@/components/page-ground'
 import { SiteFooter } from '@/components/site-footer'
 import { Smooth } from '@/components/smooth'
 import type { Chapter } from '@/components/story-scroll'
@@ -59,14 +58,12 @@ export default function Home() {
 
 	return (
 		<main>
-			<PageGround />
 			<Smooth />
 			<LandingMotion />
 			<Hero radar={season} track="066 D" facts={facts} />
 			<Stories chapters={chapters()} />
 			<MapPreview />
 			<SiteFooter />
-			<GroundSwitch />
 		</main>
 	)
 }
