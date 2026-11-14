@@ -1,0 +1,34 @@
+{
+  "name": "nisar-valencia-web",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "check:dashes": "node scripts/check-dashes.mjs",
+    "prebuild": "node scripts/check-dashes.mjs",
+    "radar": "python -I scripts/fetch_radar.py"
+  },
+  "dependencies": {
+    "lucide-react": "^1.73.0",
+    "maplibre-gl": "6.18.0",
+    "motion": "14.14.0",
+    "next": "16.4.6",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "react-map-gl": "8.1.3"
+  },
+  "devDependencies": {
+    "@tailwindcss/turbopack": "4.3.3",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.4.6",
+    "tailwindcss": "4.3.3",
+    "typescript": "^5"
+  },
+  "packageManager": "pnpm@10.20.0"
+}
