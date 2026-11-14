@@ -128,7 +128,7 @@ From the ground up, all on one Web Mercator grid:
 5. **Reference lines**: Copernicus EMS in pink, the Generalitat footprint in yellow, measured depths as dots. They appear on the day they describe.
 6. **Names**: a few place names.
 
-Colour. Data colours are fixed in every palette of the app, because they carry meaning:
+Colour. The panels wear the Lagoon theme of the app, by day and by night. Data colours are the same in both, because they carry meaning:
 
 | Meaning | Look |
 |---|---|
@@ -178,7 +178,7 @@ The first and last day rasters of the CV export are not used: this method needs 
 
 ### The film, 30 seconds
 
-Frames marked **real** are screenshots of the running app on real data (`web/scripts/shoot_flood.py`). Frames marked **mockup** were made with an SI image model for scenes that are not built yet; they carry a visible watermark and every number in them is a placeholder.
+Frames marked **real** are screenshots of the running app on real data (`web/scripts/shoot_flood.py`). Frames marked **mockup** were made with an SI image model for scenes that are not built yet; they carry a visible watermark and every number in them is a placeholder. The mockups were drawn before the app took the Lagoon theme, so their panels are navy.
 
 | # | Time | Shot | Camera | On screen | Frame |
 |---|---|---|---|---|---|
@@ -232,7 +232,7 @@ The bake picks up every CV water layer listed in `data/manifest.json` by itself.
 - Phones: the layout adapts, the layers were only tested on a desktop graphics card.
 - The film recording runs in a headless browser; a final cut should be recorded on a real screen.
 - Frame rate: 60 a second at rest and 59 to 60 while playing on a laptop graphics card (RTX 4070), measured in a headless browser. One frame runs long (about 0.1 s) each time a new Sentinel-2 picture is put on the graphics card.
-- Open for Ilija: which of the three palettes; whether the dock is the right weight; one page per story or one page with a story switch.
+- Open for Ilija: day or night as the default on these pages (both work, the film frames are by night); whether the dock is the right weight; one page per story or one page with a story switch.
 
 ## 10. Run it
 
