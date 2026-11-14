@@ -32,6 +32,8 @@ One NetCDF file per site and track: `data/stack/<site>_<stack>.nc`. Each track s
 | pego_oliva | 066_D_069 · 058_A_021 | 11 · 10 |
 | espada | 058_A_022 · 167_D_068 | 11 · 9 |
 
+These shared stacks cover the whole site box. One extra stack is for CV testing only: `pego_oliva_167_D_069` (9 dates, 25 Jun to 23 Oct). Its frame covers about 63 % of the box, and only 34 ha of the EMSR935 flood outline is seen on both 11 and 23 Oct. Build it with `--min-coverage 0.6` on `pipeline.nisar_fetch` and `pipeline.dswx`. For `pipeline.dswx`, list all three Pego-Oliva stacks with `--stack`, because the index is rewritten.
+
 Inside each file, dims `time x y x`:
 
 - `HH`, `HV`: gamma0 backscatter in **linear power**, NaN where the pixel is not valid. For dB use `to_db` (10·log10).
