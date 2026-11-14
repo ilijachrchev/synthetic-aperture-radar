@@ -1,0 +1,119 @@
+{
+  "site": "albufera",
+  "model": "spatial water likelihood (LightGBM)",
+  "model_sha256_16": "749d27c3f84f5633",
+  "rain_source": "Open-Meteo, ECMWF IFS 9 km, wettest lattice point of the site per day",
+  "holdout": {
+    "start": "2026-10-15",
+    "end": "2026-11-15"
+  },
+  "validation_status": "retrospective check on the held-out October 2026 window against Sentinel-1 maps; not yet scored against Copernicus EMSR935",
+  "scenario_id": "replay_2026-10-28",
+  "mode": "reconstruction",
+  "mode_note": "rain between issue and target is the rain that fell (IFS archive), not a forecast",
+  "issued_from_pass": "20261023T175350_S1D",
+  "issue_time_utc": "2026-10-23T17:53:50.000Z",
+  "target_pass": "20261028T060923_S1C",
+  "target_time_utc": "2026-10-28T06:09:23.000Z",
+  "lead_days": 4.51,
+  "rain": {
+    "rain_prior_7d_mm": 258.1,
+    "rain_prior_30d_mm": 427.70000000000005,
+    "rain_between_mm": 0.0,
+    "rain_between_max1d_mm": 0.0,
+    "days_since_rain_peak": 5.0
+  },
+  "check_against_sentinel1": {
+    "rain_and_state": {
+      "water_ap": 0.7979,
+      "new_water_ap": 0.3478,
+      "water_at_threshold": {
+        "precision": 0.7867,
+        "recall": 0.6879,
+        "f1": 0.734,
+        "iou": 0.5798,
+        "predicted_w": 114847.0,
+        "observed_w": 131343.0
+      },
+      "new_water_at_threshold": {
+        "precision": 0.4059,
+        "recall": 0.2756,
+        "f1": 0.3283,
+        "iou": 0.1964,
+        "predicted_w": 15473.0,
+        "observed_w": 22788.0
+      }
+    },
+    "terrain_only": {
+      "water_ap": 0.7825,
+      "new_water_ap": 0.3887,
+      "water_at_threshold": {
+        "precision": 0.7897,
+        "recall": 0.5855,
+        "f1": 0.6725,
+        "iou": 0.5066,
+        "predicted_w": 97382.0,
+        "observed_w": 131343.0
+      },
+      "new_water_at_threshold": {
+        "precision": 0.4462,
+        "recall": 0.3655,
+        "f1": 0.4019,
+        "iou": 0.2514,
+        "predicted_w": 18665.0,
+        "observed_w": 22788.0
+      }
+    },
+    "past_wet_share": {
+      "water_ap": 0.6929,
+      "new_water_ap": 0.3277,
+      "water_at_threshold": {
+        "precision": 0.7351,
+        "recall": 0.3543,
+        "f1": 0.4781,
+        "iou": 0.3142,
+        "predicted_w": 63303.0,
+        "observed_w": 131343.0
+      },
+      "new_water_at_threshold": {
+        "precision": 0.3382,
+        "recall": 0.088,
+        "f1": 0.1396,
+        "iou": 0.0751,
+        "predicted_w": 5928.0,
+        "observed_w": 22788.0
+      }
+    }
+  },
+  "score": "relative water likelihood 0-1 learned from Sentinel-1 water maps; not a calibrated flood probability",
+  "files": {
+    "water_likelihood_utm.tif": "float32 0-1, NaN outside land, EPSG:32630 20 m",
+    "new_water_likelihood_utm.tif": "the same, only where the previous water map says dry",
+    "evidence_utm.tif": "uint8 flags, see evidence",
+    "water_likelihood_web.tif": "uint8 0-100, 255 no data, Web Mercator COG",
+    "new_water_likelihood_web.tif": "uint8 0-100, 255 no data, Web Mercator COG"
+  },
+  "evidence": {
+    "0": "prediction from terrain, rain and the previous water map",
+    "1": "permanent water (JRC occurrence >= 90 %): context, not flooding",
+    "2": "built-up land: radar water maps are unreliable here, so nothing was learned from towns; the value is extrapolated from fields",
+    "3": "no water map before the issue time: new water cannot be told from old",
+    "4": "rarely or never mapped by Sentinel-1 (terrain mask, shadow): extrapolated",
+    "255": "sea or outside the land grid"
+  },
+  "thresholds": {
+    "water": 0.3129008966120227,
+    "new_water": 0.20000887192001116
+  },
+  "area_ha": {
+    "likely_water": 4593.9,
+    "likely_new_water": 618.9,
+    "counted_on": "evidence 0 pixels only"
+  },
+  "native_resolution": {
+    "rain": "ECMWF IFS 9 km, one value per site and day",
+    "terrain": "30 m",
+    "water_maps": "30 m"
+  },
+  "attribution": "OPERA DSWx-S1 (NASA JPL), Open-Meteo / ECMWF IFS (CC BY 4.0), ASF GLO-30 HAND, Copernicus DEM GLO-30, ESA WorldCover 2021, JRC Global Surface Water"
+}
