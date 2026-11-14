@@ -6,6 +6,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { ArrowUpRight } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { storyNav } from '@/lib/story-nav'
 import { ChangeLayer, type ChangeKind } from './change-layer'
 import { lenisRef } from './smooth'
 import './story-scroll.css'
@@ -66,15 +67,30 @@ function fit(sw: number, sh: number, g: Chapter['ground'], phone: boolean): Fit 
 }
 
 /**
- * The four stories as one pinned stage. Scrolling flies from place to place over the real ground (Sentinel-2
- * cloudless), and inside each place it scrubs through the NISAR passes, so the change plays out under the reader's
- * own hand: water spreads and drains, the scar burns in, the ground's motion flows, the quake's fringes open from
- * the epicentre. Everything moves by transform and opacity, written straight from the scroll position; the copy and
- * the timeline follow. Reduced motion steps from chapter to chapter and shows each finished season.
+ * The four stories, played on the monitor's screen. The page scrolls through a tall track (trigger) while the monitor
+ * stays pinned: for the first part (lead) the screen still shows the dashboard and this fades in over it, then
+ * scrolling flies from place to place over the real ground (Sentinel-2 cloudless) and, inside each place, scrubs
+ * through the NISAR passes, so the change plays out under the reader's own hand: water spreads and drains, the scar
+ * burns in, the ground's motion flows, the quake's fringes open from the epicentre. Everything moves by transform and
+ * opacity, written straight from the scroll position; the copy and the timeline follow, and the pill navbar lights the
+ * story on screen. Reduced motion steps from chapter to chapter and shows each finished season.
  */
-export function StoryScroll({ chapters }: { chapters: Chapter[] }) {
-	const track = useRef<HTMLDivElement>(null)
-	const stage = useRef<HTMLDivElement>(null)
+export function StoryScroll({
+	chapters,
+	trigger,
+	lead = 0.08,
+	tail = 0.05,
+	onScreen,
+}: {
+	chapters: Chapter[]
+	/** the tall track whose scroll drives the screen (given once it is in the page) */
+	trigger: HTMLElement | null
+	/** share of the track before the first story (the dashboard shows), and after the last */
+	lead?: number
+	tail?: number
+	/** how much of the screen the stories cover, 0 to 1, as they fade in over the dashboard */
+	onScreen?: (o: number) => void
+}) {
 	const win = useRef<HTMLDivElement>(null)
 	const scenes = useRef<(HTMLDivElement | null)[]>([])
 	const geos = useRef<(HTMLDivElement | null)[]>([])
@@ -87,6 +103,8 @@ export function StoryScroll({ chapters }: { chapters: Chapter[] }) {
 	const fits = useRef<Fit[]>([])
 	const shown = useRef<number[]>(chapters.map(() => -1))
 	const scrubs = useMemo(() => chapters.map(() => ({ current: 0 })), [chapters])
+	// which chapters are on screen at all, read by their change layers every frame
+	const shows = useMemo(() => chapters.map((_, i) => ({ current: i === 0 })), [chapters])
 	const progress = useRef(0)
 	const [cur, setCur] = useState(0)
 	const [near, setNear] = useState(false)
@@ -95,9 +113,17 @@ export function StoryScroll({ chapters }: { chapters: Chapter[] }) {
 
 	// start reading the passes once the stage is about a screen and a half away
 	useEffect(() => {
-		const el = track.current
+		const el = win.current
 		if (!el) return
-		const io = new IntersectionObserver(([e]) => e.isIntersecting && setNear(true), { rootMargin: '150% 0px' })
+		const io = new IntersectionObserver(
+			([e]) => {
+				if (!e.isIntersecting) return
+				setNear(true)
+				// decode every ground before it flies in, so no chapter waits on a picture
+				el.querySelectorAll<HTMLImageElement>('.st-ground').forEach((im) => im.decode().catch(() => {}))
+			},
+			{ rootMargin: '150% 0px' },
+		)
 		io.observe(el)
 		return () => io.disconnect()
 	}, [])
@@ -141,6 +167,7 @@ export function StoryScroll({ chapters }: { chapters: Chapter[] }) {
 				scene.style.opacity = String(o)
 				scene.style.visibility = o > 0.002 ? 'visible' : 'hidden'
 			}
+			shows[i].current = o > 0.002
 			if (geo) geo.style.transform = `scale(${s})`
 			if (copy) {
 				copy.style.opacity = String(co)
@@ -175,6 +202,22 @@ export function StoryScroll({ chapters }: { chapters: Chapter[] }) {
 		}
 	}
 
+	// the track's scroll, split into the dashboard's lead, the stories, and a short hold at the end
+	const drive = useRef<(raw: number) => void>(() => {})
+	drive.current = (raw: number) => {
+		const span = 1 - lead - tail
+		const p = clamp((raw - lead) / span)
+		// the stories fade in over the dashboard during the last two thirds of the lead
+		const o = lead > 0 ? clamp((raw - lead * 0.35) / (lead * 0.65)) : 1
+		if (win.current) {
+			win.current.style.opacity = String(o)
+			win.current.style.visibility = o > 0.002 ? 'visible' : 'hidden'
+		}
+		onScreen?.(o)
+		render.current(p)
+		storyNav.set(o < 0.5 ? -1 : curRef.current)
+	}
+
 	// lay each ground out for the stage's size
 	useEffect(() => {
 		const el = win.current
@@ -206,108 +249,102 @@ export function StoryScroll({ chapters }: { chapters: Chapter[] }) {
 		render.current(progress.current)
 	}, [cur])
 
-	useGSAP(() => {
-		const el = track.current
-		if (!el) return
-		const st = ScrollTrigger.create({ trigger: el, start: 'top top', end: 'bottom bottom', onUpdate: (self) => render.current(self.progress), onRefresh: (self) => render.current(self.progress) })
-		render.current(st.progress)
-		if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-			// the stage grows into the screen as it arrives
-			gsap.fromTo(win.current, { scale: 0.9 }, { scale: 1, ease: 'none', scrollTrigger: { trigger: el, start: 'top bottom', end: 'top top', scrub: true } })
-		}
-		return () => st.kill()
-	}, [])
+	useGSAP(
+		() => {
+			if (!trigger) return
+			const st = ScrollTrigger.create({ trigger, start: 'top top', end: 'bottom bottom', onUpdate: (self) => drive.current(self.progress), onRefresh: (self) => drive.current(self.progress) })
+			drive.current(st.progress)
+			return () => st.kill()
+		},
+		{ dependencies: [trigger] },
+	)
 
-	const go = (i: number) => {
-		const el = track.current
-		if (!el) return
-		const top = el.getBoundingClientRect().top + window.scrollY
-		const span = el.offsetHeight - window.innerHeight
-		const y = top + ((i + (i === 0 ? 0.04 : T + 0.04)) / N) * span
-		if (lenisRef.current) lenisRef.current.scrollTo(y, { duration: 1.6 })
-		else window.scrollTo({ top: y, behavior: 'smooth' })
-	}
+	// the navbar takes the reader to a story (or back to the top) through here
+	useEffect(() => {
+		storyNav.register((i) => {
+			const scroll = (y: number) => {
+				if (lenisRef.current) lenisRef.current.scrollTo(y, { duration: 1.6 })
+				else window.scrollTo({ top: y, behavior: 'smooth' })
+			}
+			if (i < 0) return scroll(0)
+			const el = trigger
+			if (!el) return
+			const top = el.getBoundingClientRect().top + window.scrollY
+			const span = el.offsetHeight - window.innerHeight
+			const into = (i + (i === 0 ? 0.04 : T + 0.04)) / N
+			scroll(top + (lead + into * (1 - lead - tail)) * span)
+		})
+	}, [trigger, lead, tail, N])
 
 	const ch = chapters[cur]
 	return (
-		<div ref={track} className="st-track" style={{ '--n': N } as React.CSSProperties}>
-			<div ref={stage} className="st-stage">
-				<div ref={win} className="st-window">
-					{chapters.map((c, i) => (
-						<div key={c.key} ref={(n) => void (scenes.current[i] = n)} className="st-scene" style={i === 0 ? undefined : { opacity: 0, visibility: 'hidden' }}>
-							<div ref={(n) => void (geos.current[i] = n)} className="st-geo">
-								<img className="st-ground" src={c.ground.src} alt="" width={c.ground.w} height={c.ground.h} decoding="async" />
-								<div
-									className="st-box"
-									style={{
-										left: `${c.ground.box[0] * 100}%`,
-										top: `${c.ground.box[1] * 100}%`,
-										width: `${(c.ground.box[2] - c.ground.box[0]) * 100}%`,
-										height: `${(c.ground.box[3] - c.ground.box[1]) * 100}%`,
-									}}
-								>
-									{near ? (
-										<ChangeLayer className="st-change" kind={c.change} frames={c.frames} scrub={scrubs[i]} active={Math.abs(i - cur) <= 1} base={0.94} refCount={c.refCount} revealAt={c.revealAt} epicentre={c.epi} />
-									) : null}
-									<span className="st-tag mono">NISAR · track {c.track}</span>
-								</div>
-							</div>
-						</div>
-					))}
-					<div className="st-shade" aria-hidden />
-
-					{chapters.map((c, i) => (
-						<article key={c.key} ref={(n) => void (copies.current[i] = n)} className="st-copy" style={i === 0 ? undefined : { opacity: 0, visibility: 'hidden' }} aria-label={c.title}>
-							<p className="mono st-num">
-								<span>{String(i + 1).padStart(2, '0')}</span> / {String(N).padStart(2, '0')} · {c.kind}
-							</p>
-							<h3 className="display st-title">{c.title}</h3>
-							<p className="st-what">{c.what}</p>
-							<div className="st-when">
-								<b className="display" ref={(n) => void (dateEls.current[i] = n)}>
-									{c.dates[0].day}
-								</b>
-								<small className="mono" ref={(n) => void (pairEls.current[i] = n)}>
-									{c.dates[0].pair ?? `pass 1 of ${c.frames.length}`}
-								</small>
-							</div>
-							<p className="st-legend">
-								<i data-k={c.change} aria-hidden /> {c.legend}
-							</p>
-							<Link href={`/map?story=${c.key}`} className="st-go">
-								Open in the map <ArrowUpRight size={16} strokeWidth={2.4} />
-							</Link>
-						</article>
-					))}
-
-					<div className="st-rail">
-						<nav className="st-tabs" aria-label="Stories">
-							{chapters.map((c, i) => (
-								<button key={c.key} type="button" aria-current={i === cur || undefined} onClick={() => go(i)}>
-									<span className="mono">{String(i + 1).padStart(2, '0')}</span> {c.where.split(' · ')[0]}
-								</button>
-							))}
-						</nav>
-						<div className="st-time" aria-hidden>
-							<div ref={tickBox} className="st-ticks" key={ch.key}>
-								{ch.at.map((a, k) => (
-									<i key={k} style={{ left: `${a * 100}%` }} />
-								))}
-								<span className="st-fill" ref={fill} />
-							</div>
-							<div className="st-months">
-								{ch.months.map((m) => (
-									<em key={m.label + m.at} style={{ left: `${m.at * 100}%` }}>
-										{m.label}
-									</em>
-								))}
-							</div>
+		<div ref={win} className="st-window" style={{ opacity: 0, visibility: 'hidden' }}>
+			{chapters.map((c, i) => (
+				<div key={c.key} ref={(n) => void (scenes.current[i] = n)} className="st-scene" style={i === 0 ? undefined : { opacity: 0, visibility: 'hidden' }}>
+					<div ref={(n) => void (geos.current[i] = n)} className="st-geo">
+						<img className="st-ground" src={c.ground.src} alt="" width={c.ground.w} height={c.ground.h} decoding="async" />
+						<div
+							className="st-box"
+							style={{
+								left: `${c.ground.box[0] * 100}%`,
+								top: `${c.ground.box[1] * 100}%`,
+								width: `${(c.ground.box[2] - c.ground.box[0]) * 100}%`,
+								height: `${(c.ground.box[3] - c.ground.box[1]) * 100}%`,
+							}}
+						>
+							{near ? (
+								<ChangeLayer className="st-change" kind={c.change} frames={c.frames} scrub={scrubs[i]} active={Math.abs(i - cur) <= 1} visible={shows[i]} base={0.94} refCount={c.refCount} revealAt={c.revealAt} epicentre={c.epi} />
+							) : null}
+							<span className="st-tag mono">NISAR · track {c.track}</span>
 						</div>
 					</div>
-					<span ref={bar} className="st-progress" aria-hidden />
-					<p className="st-credit">Ground: Sentinel-2 cloudless 2020 by EOX · Radar: NASA-ISRO NISAR via ASF DAAC</p>
+				</div>
+			))}
+			<div className="st-shade" aria-hidden />
+
+			{chapters.map((c, i) => (
+				<article key={c.key} ref={(n) => void (copies.current[i] = n)} className="st-copy" style={i === 0 ? undefined : { opacity: 0, visibility: 'hidden' }} aria-label={c.title}>
+					<p className="mono st-num">
+						<span>{String(i + 1).padStart(2, '0')}</span> / {String(N).padStart(2, '0')} · {c.kind}
+					</p>
+					<h3 className="display st-title">{c.title}</h3>
+					<p className="st-what">{c.what}</p>
+					<div className="st-when">
+						<b className="display" ref={(n) => void (dateEls.current[i] = n)}>
+							{c.dates[0].day}
+						</b>
+						<small className="mono" ref={(n) => void (pairEls.current[i] = n)}>
+							{c.dates[0].pair ?? `pass 1 of ${c.frames.length}`}
+						</small>
+					</div>
+					<p className="st-legend">
+						<i data-k={c.change} aria-hidden /> {c.legend}
+					</p>
+					<Link href={`/map?story=${c.key}`} className="st-go">
+						Open in the map <ArrowUpRight size={16} strokeWidth={2.4} />
+					</Link>
+				</article>
+			))}
+
+			<div className="st-rail" aria-hidden>
+				<div className="st-time">
+					<div ref={tickBox} className="st-ticks" key={ch.key}>
+						{ch.at.map((a, k) => (
+							<i key={k} style={{ left: `${a * 100}%` }} />
+						))}
+						<span className="st-fill" ref={fill} />
+					</div>
+					<div className="st-months">
+						{ch.months.map((m) => (
+							<em key={m.label + m.at} style={{ left: `${m.at * 100}%` }}>
+								{m.label}
+							</em>
+						))}
+					</div>
 				</div>
 			</div>
+			<span ref={bar} className="st-progress" aria-hidden />
+			<p className="st-credit">Ground: Sentinel-2 cloudless 2020 by EOX · Radar: NASA-ISRO NISAR via ASF DAAC</p>
 		</div>
 	)
 }

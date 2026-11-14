@@ -8,14 +8,14 @@ import { SplitText } from 'gsap/SplitText'
 gsap.registerPlugin(ScrollTrigger, SplitText, useGSAP)
 
 /**
- * The landing's motion outside the pinned stories (story-scroll.tsx), on GSAP. Headings rise word by word out of
- * their own masks; blocks rise in groups as they enter; the radar drifts slower than the page; the app's window tilts
- * up flat as it arrives. Transform and opacity only; scrubbed parts ride Lenis (smooth.tsx).
+ * The landing's motion around the monitor (the stories on its screen run in story-scroll.tsx), on GSAP. The line rises
+ * word by word, its two buttons follow, and the monitor rises in below them, its top half in view; scrolling tips it
+ * up flat until it pins in the middle of the screen. Transform and opacity only; the scroll is Lenis (smooth.tsx).
  */
 export function LandingMotion() {
 	useGSAP(() => {
 		if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-			gsap.set('[data-a], .hx-title, .sx-title, .hx-radar', { opacity: 1, clearProps: 'transform' })
+			gsap.set('[data-a], .hx-title, .mon-in', { opacity: 1, clearProps: 'transform' })
 			return
 		}
 
@@ -23,29 +23,16 @@ export function LandingMotion() {
 			gsap.utils.toArray<HTMLElement>(sel).forEach((h) => {
 				const split = SplitText.create(h, { type: 'words', mask: 'words' })
 				gsap.set(h, { opacity: 1 })
-				gsap.timeline(opts(h)).from(split.words, { yPercent: 115, duration: 1.15, ease: 'expo.out', stagger: 0.07 })
+				gsap.timeline(opts(h)).from(split.words, { yPercent: 115, duration: 1.15, ease: 'expo.out', stagger: 0.06 })
 			})
 
-		// hero, on load
+		// the hero arrives: the line, then the two buttons, then the monitor rising into its place under them
 		titles('.hx-title', () => ({ delay: 0.1 }))
-		gsap.fromTo('.hx [data-a]', { opacity: 0, y: 26 }, { opacity: 1, y: 0, duration: 1.1, ease: 'expo.out', stagger: 0.09, delay: 0.45 })
-		gsap.fromTo('.hx-radar', { opacity: 0, y: 40, scale: 0.96 }, { opacity: 1, y: 0, scale: 1, duration: 1.5, ease: 'expo.out', delay: 0.2 })
-		gsap.to('.hx-radar-inner', { yPercent: -7, ease: 'none', scrollTrigger: { trigger: '.hx', start: 'top top', end: 'bottom top', scrub: true } })
+		gsap.fromTo('.hx [data-a]', { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 1.1, ease: 'expo.out', stagger: 0.1, delay: 0.4 })
+		gsap.fromTo('.mon-in', { opacity: 0, y: 120 }, { opacity: 1, y: 0, duration: 1.6, ease: 'expo.out', delay: 0.3 })
 
-		// section headings and their lines
-		titles('.sx-title', (h) => ({ scrollTrigger: { trigger: h, start: 'top 86%', once: true } }))
-		gsap.utils.toArray<HTMLElement>('.sx-head [data-a]').forEach((el) => {
-			gsap.fromTo(el, { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 1.1, ease: 'expo.out', delay: 0.25, scrollTrigger: { trigger: el, start: 'top 90%', once: true } })
-		})
-
-		// groups rise together, one after another
-		gsap.utils.toArray<HTMLElement>('[data-a-group]').forEach((g) => {
-			gsap.fromTo(g.querySelectorAll('[data-a]'), { opacity: 0, y: 48 }, { opacity: 1, y: 0, duration: 1.2, ease: 'expo.out', stagger: 0.1, scrollTrigger: { trigger: g, start: 'top 84%', once: true } })
-		})
-
-		// the app's window lies back and comes up flat as it arrives
-		gsap.fromTo('.mx-frame', { rotateX: 16, scale: 0.9, y: 60 }, { rotateX: 0, scale: 1, y: 0, ease: 'none', scrollTrigger: { trigger: '.mx-stage', start: 'top 92%', end: 'top 25%', scrub: 0.6 } })
-
+		// as the page scrolls the monitor tips up from a slight lean and grows a touch, until it pins in the middle
+		gsap.fromTo('.mon', { rotateX: 16, scale: 0.92 }, { rotateX: 0, scale: 1, ease: 'none', scrollTrigger: { trigger: '.hx-track', start: 'top 55%', end: 'top top', scrub: true } })
 	})
 	return null
 }

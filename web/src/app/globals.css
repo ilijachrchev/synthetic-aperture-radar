@@ -78,15 +78,17 @@ html.lenis body {
 	overscroll-behavior: contain;
 }
 body {
-	background: url("/img/grain.png") repeat, var(--bg);
 	color: var(--ink);
 	font-family: var(--font-sans);
 	font-weight: 450;
 	-webkit-font-smoothing: antialiased;
-	transition: background-color 0.45s var(--ease), color 0.45s var(--ease);
+	transition: color 0.45s var(--ease);
 }
+/* The page ends where its content ends. Parts that animate in from below (the footer rises 90px into place) would
+   otherwise lengthen the scroll for as long as they are moved, and the smooth scroll measures that length on load,
+   which left a band of empty ground under the footer. clip, not hidden, so the sticky monitor still pins. */
 main {
-	overflow-x: clip;
+	overflow: clip;
 }
 ::selection {
 	background: var(--accent);

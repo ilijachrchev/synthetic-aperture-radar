@@ -11,10 +11,9 @@ const COLUMNS = [
 	{
 		title: 'Landing',
 		links: [
+			{ label: 'Overview', href: '/' },
 			{ label: 'Stories', href: '/#stories' },
-			{ label: 'The map', href: '/#app' },
-			{ label: 'How it works', href: '/#how' },
-			{ label: 'Data', href: '/#data' },
+			{ label: 'Open the map', href: '/map' },
 		],
 	},
 	{

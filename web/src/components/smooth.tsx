@@ -24,6 +24,9 @@ export function Smooth() {
 		gsap.ticker.lagSmoothing(0)
 		// anchor links glide too
 		const onClick = (e: MouseEvent) => {
+			// a link that handled its own click (the stories' links scroll to a story) is left alone; React listens on
+			// the document too, so stopping propagation would not reach this listener
+			if (e.defaultPrevented) return
 			const a = (e.target as HTMLElement).closest('a[href^="/#"], a[href^="#"]') as HTMLAnchorElement | null
 			if (!a || a.pathname !== window.location.pathname) return
 			const id = a.hash

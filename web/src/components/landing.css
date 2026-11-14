@@ -1,393 +1,231 @@
-/* The landing: four pieces on one ground. Hero (what it is + the real radar playing), the four stories pinned
-   (story-scroll.css), the app as itself, the footer. Everything GSAP moves starts hidden only when a script is there (html.js). */
+/* The landing: the line and two buttons centred on a lagoon panel, then the dashboard on a monitor that pins while the
+   four stories play on its screen, then the footer. Everything GSAP moves starts hidden only when a script is there. */
 .js .hx-title,
-.js .sx-title,
-.js .hx-radar {
+.js .mon-in {
 	opacity: 0;
 }
 
-/* ---------- hero ---------- */
+/* ---------- the panel ---------- */
+:root,
+[data-theme="light"] {
+	/* the lagoon by day, in the footer's blues: deep, a lighter body, glow in the wisps */
+	--smoke-0: #006d9e;
+	--smoke-1: #0b8fc0;
+	--smoke-2: #5fd2ea;
+}
+[data-theme="dark"] {
+	--smoke-0: #061820;
+	--smoke-1: #0b3342;
+	--smoke-2: #137f9c;
+}
 .hx {
 	position: relative;
-	min-height: min(100svh, 1000px);
-	display: flex;
-	flex-direction: column;
+	isolation: isolate;
 }
-.hx-grid {
-	flex: 1;
+.hx-bg {
+	position: absolute;
+	z-index: -1;
+	left: 14px;
+	right: 14px;
+	top: 14px;
+	height: calc(100svh - 28px);
+	border-radius: 30px;
+	overflow: hidden;
+	background: linear-gradient(180deg, var(--smoke-0), var(--smoke-1));
+}
+/* a touch of shade at the top so the white line reads on the brightest water */
+.hx-bg::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background: linear-gradient(180deg, rgb(0 25 40 / 0.26) 0%, rgb(0 25 40 / 0.08) 38%, transparent 60%);
+	pointer-events: none;
+}
+.hx-smoke {
+	position: absolute;
+	inset: 0;
 	width: 100%;
-	max-width: 1480px;
+	height: 100%;
+	opacity: 0;
+	transition: opacity 1.4s var(--ease);
+}
+.hx-smoke[data-on] {
+	opacity: 1;
+}
+
+/* ---------- the line and the two buttons, white on the panel in both themes ---------- */
+.hx-head {
+	/* wide enough for the line on one row at its largest size */
+	max-width: 1260px;
 	margin: 0 auto;
-	padding: 8px 32px 56px;
-	display: grid;
-	grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
-	align-items: center;
-	gap: 56px;
-}
-.hx-copy {
-	min-width: 0;
-}
-.hx-eyebrow {
-	margin: 0 0 26px;
-	font-size: 13px;
-	color: var(--muted);
+	padding: clamp(104px, 15svh, 150px) 24px 0;
+	text-align: center;
+	color: #fff;
 }
 .hx-title {
 	margin: 0;
-	font-size: clamp(64px, 8.2vw, 136px);
+	font-size: clamp(48px, 6.3vw, 104px);
+	text-wrap: balance;
 }
 .hx-line {
-	display: block;
+	display: inline;
 }
 .hx-lead {
-	margin: 30px 0 0;
-	max-width: 520px;
+	margin: 22px auto 0;
+	max-width: 620px;
+	text-wrap: balance;
+	color: rgb(255 255 255 / 0.86);
 }
 .hx-cta {
-	margin-top: 34px;
+	margin-top: 32px;
 	display: flex;
 	flex-wrap: wrap;
+	justify-content: center;
 	gap: 12px;
 }
-.hx-facts {
-	list-style: none;
-	margin: 34px 0 0;
-	padding: 0;
-	display: flex;
-	flex-wrap: wrap;
-	gap: 8px;
+.hx-cta .btn {
+	color: #0b0d0f;
+	background: #fff;
+	box-shadow: 0 14px 30px -16px rgb(0 0 0 / 0.5);
 }
-.hx-facts li {
-	padding: 7px 13px;
-	border-radius: 999px;
-	font-size: 13.5px;
-	font-weight: 600;
-	color: var(--ink-2);
-	box-shadow: inset 0 0 0 1px var(--line-strong);
+.hx-cta .btn-dot {
+	color: #fff;
+	background: #0b0d0f;
 }
-.hx-radar {
-	position: relative;
-	min-width: 0;
-	display: grid;
-	place-items: center;
+.hx-cta .btn-ghost {
+	color: #fff;
+	box-shadow: inset 0 0 0 1.5px rgb(255 255 255 / 0.55);
 }
-/* the light aura the radar sits in: a gradient, painted once */
-.hx-radar::before {
-	content: "";
-	position: absolute;
-	inset: -12% -18%;
-	z-index: -1;
-	background: radial-gradient(closest-side, var(--aura), transparent 72%);
-	pointer-events: none;
-}
-.hx-radar-inner {
-	width: 100%;
-	will-change: transform;
+.hx-cta .btn-ghost:hover {
+	background: rgb(255 255 255 / 0.12);
 }
 
-/* the living radar */
-.lr {
-	width: min(100%, calc(min(78svh, 760px) * 0.8));
-	margin: 0 auto;
-}
-.lr-frame {
+/* ---------- the monitor's track: pinned in the middle while the stories play ---------- */
+.hx-track {
 	position: relative;
-	aspect-ratio: 377 / 470;
-	border-radius: 30px;
-	overflow: hidden;
-	background: var(--stage);
-	box-shadow: 0 0 0 1px var(--line-strong), 0 2px 4px rgb(0 0 0 / 0.06), 0 50px 100px -40px rgb(0 70 100 / 0.5);
-	isolation: isolate;
+	/* one screen to arrive, a lead with the dashboard, about a screen and a fifth per story, a short hold */
+	height: calc(100svh + var(--n) * 120svh + 50svh);
+	margin-top: clamp(16px, 3svh, 40px);
 }
-.lr-frame img {
+.hx-sticky {
+	position: sticky;
+	top: 0;
+	height: 100svh;
+	/* the floating navbar keeps the top; the monitor centres in what is left */
+	padding: 72px 0 8px;
+	display: grid;
+	place-items: center;
+	perspective: 2000px;
+	perspective-origin: 50% 0;
+}
+.mon {
+	/* a wide 16:9 screen; its height plus bezel and stand (about 92px) fits under the navbar */
+	width: min(1600px, 94vw, calc((100svh - 172px) * 1.7778));
+	margin: 0 auto;
+	transform-origin: 50% 0;
+	will-change: transform;
+}
+.mon-body {
+	padding: clamp(8px, 1.1vw, 16px);
+	border-radius: clamp(14px, 1.9vw, 28px);
+	background: linear-gradient(180deg, #1a1d21, #0c0e10);
+	box-shadow: 0 0 0 1px rgb(255 255 255 / 0.07) inset, 0 1px 0 rgb(255 255 255 / 0.12) inset, 0 60px 120px -40px rgb(0 30 45 / 0.55), 0 20px 40px -20px rgb(0 0 0 / 0.35);
+}
+.mon-glass {
+	position: relative;
+	aspect-ratio: var(--ar, 16 / 9);
+	border-radius: clamp(5px, 0.7vw, 10px);
+	overflow: hidden;
+	background: #081217;
+}
+.mon-shot {
 	position: absolute;
 	inset: 0;
 	width: 100%;
 	height: 100%;
 	object-fit: cover;
-	opacity: 0;
-	transition: opacity 0.9s var(--ease);
+	display: none;
 }
-.lr-frame img[data-on] {
-	opacity: 0.5;
-	filter: saturate(0.45) brightness(0.92);
-}
-.lr-change {
-	position: absolute;
-	inset: 0;
-	width: 100%;
-	height: 100%;
-}
-.lr-key {
-	position: absolute;
-	right: 16px;
-	bottom: 16px;
-	margin: 0;
-	display: inline-flex;
-	align-items: center;
-	gap: 8px;
-	padding: 7px 12px;
-	border-radius: 999px;
-	font-size: 12px;
-	font-weight: 600;
-	color: #fff;
-	background: rgb(8 10 24 / 0.55);
-	backdrop-filter: blur(10px);
-	-webkit-backdrop-filter: blur(10px);
-}
-.lr-key i {
-	width: 12px;
-	height: 12px;
-	border-radius: 4px;
-	background: #36d6ff;
-}
-.lr-pin {
-	position: absolute;
-	transform: translate(-7px, -7px);
-	display: inline-flex;
-	align-items: center;
-	gap: 7px;
-	font-size: 12.5px;
-	font-weight: 600;
-	color: #fff;
-	text-shadow: 0 1px 3px rgb(0 0 0 / 0.8);
-}
-.lr-pin i {
-	width: 14px;
-	height: 14px;
-	border-radius: 999px;
-	border: 2px solid #fff;
-	box-shadow: 0 0 0 3px rgb(0 0 0 / 0.25);
-}
-.lr-live {
-	position: absolute;
-	left: 16px;
-	top: 16px;
-	margin: 0;
-	display: inline-flex;
-	align-items: center;
-	gap: 8px;
-	padding: 7px 12px;
-	border-radius: 999px;
-	font-size: 11.5px;
-	color: #fff;
-	background: rgb(8 10 24 / 0.55);
-	backdrop-filter: blur(10px);
-	-webkit-backdrop-filter: blur(10px);
-}
-.lr-live span {
-	width: 8px;
-	height: 8px;
-	border-radius: 999px;
-	background: var(--accent-2);
-	animation: lr-pulse 1.8s ease-in-out infinite;
-}
-@keyframes lr-pulse {
-	50% {
-		opacity: 0.35;
-	}
-}
-.lr-date {
-	position: absolute;
-	left: 16px;
-	bottom: 16px;
-	display: flex;
-	align-items: baseline;
-	gap: 8px;
-	padding: 10px 16px 8px;
-	border-radius: 18px;
-	color: #fff;
-	background: rgb(8 10 24 / 0.55);
-	backdrop-filter: blur(10px);
-	-webkit-backdrop-filter: blur(10px);
-}
-.lr-date b {
-	font-size: 46px;
-	animation: lr-roll 0.6s var(--ease) both;
-}
-@keyframes lr-roll {
-	from {
-		opacity: 0;
-		transform: translateY(40%);
-	}
-}
-.lr-date small {
-	font-size: 12px;
-	opacity: 0.75;
-}
-.lr-bar {
-	margin-top: 26px;
-	display: flex;
-	align-items: center;
-	gap: 14px;
-}
-.lr-bar > button {
-	flex: none;
-	display: grid;
-	place-items: center;
-	width: 38px;
-	height: 38px;
-	border-radius: 999px;
-	color: var(--on-btn);
-	background: var(--btn);
-}
-.lr-bar ol {
-	flex: 1;
-	list-style: none;
-	margin: 0;
-	padding: 0;
-	display: flex;
-	gap: 5px;
-}
-.lr-bar li {
-	flex: 1;
-}
-.lr-bar li button {
+:root:not([data-theme="dark"]) .mon-day,
+[data-theme="dark"] .mon-night {
 	display: block;
-	width: 100%;
-	height: 22px;
-	position: relative;
 }
-.lr-bar li button::after {
-	content: "";
+/* the app and the stories are laid out at the screen's own size and drawn scaled into it */
+.mon-layer {
 	position: absolute;
 	left: 0;
-	right: 0;
-	top: 9px;
-	height: 4px;
-	border-radius: 4px;
-	background: var(--line-strong);
-	transition: background-color 0.4s var(--ease), transform 0.4s var(--ease);
+	top: 0;
+	transform: scale(var(--k, 0.75));
+	transform-origin: 0 0;
 }
-.lr-bar li button[data-past]::after {
-	background: var(--ink-2);
+.mon-app {
+	animation: mon-in 0.8s var(--ease) 0.6s both;
 }
-.lr-bar li button[data-on]::after {
-	background: var(--accent);
-	transform: scaleY(1.8);
+@keyframes mon-in {
+	from {
+		opacity: 0;
+	}
 }
-.lr-count {
-	flex: none;
-	font-size: 12px;
-	color: var(--muted);
+/* the stand: a short neck and a flat foot, brushed metal by day and dark by night */
+.mon-neck {
+	width: 13%;
+	height: clamp(24px, 3.2vw, 46px);
+	margin: 0 auto;
+	background: linear-gradient(90deg, #b9bec3, #e7eaec 45%, #c9cdd1 60%, #a9aeb3);
+	clip-path: polygon(8% 0, 92% 0, 100% 100%, 0 100%);
+}
+.mon-foot {
+	width: 24%;
+	height: clamp(8px, 0.9vw, 12px);
+	margin: 0 auto;
+	border-radius: 0 0 8px 8px;
+	background: linear-gradient(180deg, #d9dde0, #a7acb1);
+	box-shadow: 0 18px 30px -12px rgb(0 0 0 / 0.35);
+}
+[data-theme="dark"] .mon-neck {
+	background: linear-gradient(90deg, #22272c, #3a4148 45%, #2b3137 60%, #1b2025);
+}
+[data-theme="dark"] .mon-foot {
+	background: linear-gradient(180deg, #353c43, #1b2025);
 }
 
-/* ---------- sections ---------- */
-.mx {
-	max-width: 1480px;
-	margin: 0 auto;
-	padding: 150px 32px 0;
-	scroll-margin-top: 10px;
+/* a phone: the monitor becomes a portrait screen at the phone's own size, with no stand */
+.mon[data-device="phone"] {
+	width: min(86vw, calc((100svh - 110px) * 0.53));
 }
-.sx-head {
-	max-width: 760px;
-	margin: 0 auto 60px;
-	text-align: center;
+.mon[data-device="phone"] .mon-body {
+	padding: 7px;
+	border-radius: 30px;
 }
-.sx-title {
-	margin: 0;
-	font-size: clamp(64px, 8.4vw, 132px);
+.mon[data-device="phone"] .mon-glass {
+	border-radius: 24px;
 }
-.sx-head .lead {
-	margin: 22px auto 0;
-	max-width: 560px;
-}
-
-/* the app, as itself */
-.mx-stage {
-	perspective: 1600px;
-}
-.mx-frame {
-	position: relative;
-	display: block;
-	max-width: 1240px;
-	margin: 0 auto;
-	border-radius: 22px;
-	overflow: hidden;
-	background: var(--card);
-	box-shadow: 0 50px 120px -40px rgb(0 40 60 / 0.5), 0 0 0 1px var(--line-strong);
-	transform-origin: 50% 0%;
-	will-change: transform;
-}
-.mx-bar {
-	display: flex;
-	align-items: center;
-	gap: 7px;
-	height: 40px;
-	padding: 0 16px;
-	color: var(--muted);
-}
-.mx-bar i {
-	width: 11px;
-	height: 11px;
-	border-radius: 999px;
-	background: currentColor;
-	opacity: 0.35;
-}
-.mx-bar .mono {
-	margin: 0 auto;
-	font-size: 12px;
-	opacity: 0.75;
-}
-.mx-shot {
+.mon[data-device="phone"] .mon-neck,
+.mon[data-device="phone"] .mon-foot {
 	display: none;
-	width: 100%;
-	height: auto;
-}
-:root:not([data-theme="dark"]) .mx-shot[data-t="light"],
-[data-theme="dark"] .mx-shot[data-t="dark"] {
-	display: block;
-}
-.mx-foot {
-	margin: 44px auto 0;
-	max-width: 1240px;
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	flex-wrap: wrap;
-	gap: 14px;
-}
-.mx-cmds {
-	list-style: none;
-	margin: 0;
-	padding: 0;
-	display: flex;
-	flex-wrap: wrap;
-	gap: 10px;
-}
-.mx-cmds li {
-	display: inline-flex;
-	align-items: center;
-	gap: 8px;
-	height: 54px;
-	padding: 0 20px;
-	border-radius: 999px;
-	font-size: 15px;
-	font-weight: 600;
-	box-shadow: inset 0 0 0 1.5px var(--line-strong);
-}
-.mx {
-	padding-bottom: 170px;
 }
 
 @media (max-width: 900px) {
-	.hx-grid {
-		grid-template-columns: minmax(0, 1fr);
-		gap: 40px;
-		padding: 8px 18px 40px;
+	.hx-line {
+		display: block;
 	}
 	.hx-title {
-		font-size: clamp(64px, 18vw, 110px);
+		font-size: clamp(52px, 14vw, 96px);
 	}
-	.lr {
-		width: min(100%, 460px);
+}
+@media (max-width: 860px) {
+	.hx-bg {
+		left: 8px;
+		right: 8px;
+		top: 8px;
+		height: calc(100svh - 16px);
+		border-radius: 22px;
 	}
 }
 @media (max-width: 640px) {
-	.hx-grid {
-		padding-inline: 16px;
+	.hx-head {
+		padding: 96px 16px 0;
 	}
-	/* both calls to action stay on one line on a phone */
 	.hx-cta {
 		gap: 8px;
 	}
@@ -401,15 +239,5 @@
 	}
 	.hx-cta .btn-ghost {
 		padding: 0 18px;
-	}
-	.mx {
-		padding: 110px 16px 0;
-	}
-	.mx {
-		padding-bottom: 120px;
-	}
-	.mx-cmds li {
-		height: 44px;
-		font-size: 14px;
 	}
 }

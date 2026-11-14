@@ -269,6 +269,7 @@ export function ChangeLayer({
 	revealAt = -1,
 	scrub,
 	active = true,
+	visible,
 	base = 0,
 	className,
 }: {
@@ -288,6 +289,8 @@ export function ChangeLayer({
 	scrub?: { current: number }
 	/** off while hidden under another scene: nothing is painted */
 	active?: boolean
+	/** read every frame: false while the layer is faded out, so it paints nothing until it shows again */
+	visible?: { current: boolean }
 	/** above 0, the radar itself is painted under the change at this opacity */
 	base?: number
 	className?: string
@@ -305,6 +308,8 @@ export function ChangeLayer({
 	on.current = active
 	const scr = useRef(scrub)
 	scr.current = scrub
+	const vis = useRef(visible)
+	vis.current = visible
 	st.current.target = index
 	st.current.playing = playing
 	const key = `${kind}|${refCount}|${base > 0}|${frames.join('|')}`
@@ -352,7 +357,7 @@ export function ChangeLayer({
 		io.observe(el)
 		const loop = (now: number) => {
 			raf = requestAnimationFrame(loop)
-			if (!seen || !on.current) return
+			if (!seen || !on.current || (vis.current && !vis.current.current)) return
 			const F = fields.current
 			if (!F) return
 			const s = st.current

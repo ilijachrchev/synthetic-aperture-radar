@@ -1,4 +1,4 @@
-import { Hero, MapPreview, Stories } from '@/components/landing'
+import { Hero } from '@/components/landing'
 import { LandingMotion } from '@/components/landing-motion'
 import { SiteFooter } from '@/components/site-footer'
 import { Smooth } from '@/components/smooth'
@@ -6,6 +6,7 @@ import type { Chapter } from '@/components/story-scroll'
 import { STORIES } from '@/content/landing'
 import ground from '@/data/context.json'
 import { day, imaged, monthName, RADAR } from '@/lib/radar'
+import { mapStories } from '@/lib/stories'
 
 const GROUND = ground as unknown as Record<string, { w: number; h: number; box: [number, number, number, number] }>
 
@@ -52,17 +53,11 @@ function chapters(): Chapter[] {
 }
 
 export default function Home() {
-	const season = imaged('valencia', '066').map((p) => ({ img: p.img!, date: p.dates[0] }))
-	const albufera = RADAR.sites.albufera.passes
-	const facts = [`${albufera.length} passes since ${day(albufera[0].dates[0])}`, 'One pass every 12 days', 'Sees through cloud, day or night']
-
 	return (
 		<main>
 			<Smooth />
 			<LandingMotion />
-			<Hero radar={season} track="066 D" facts={facts} />
-			<Stories chapters={chapters()} />
-			<MapPreview />
+			<Hero stories={mapStories()} chapters={chapters()} />
 			<SiteFooter />
 		</main>
 	)
