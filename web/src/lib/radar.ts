@@ -15,7 +15,7 @@ export type Pass = {
 	valid: number
 	px: [number, number]
 }
-export type SiteKey = 'albufera' | 'pego' | 'espada' | 'lorca' | 'panama' | 'valencia'
+export type SiteKey = 'albufera' | 'pego' | 'espada' | 'lorca' | 'panama' | 'valencia' | 'coast'
 export type SiteData = { product: 'GCOV' | 'GUNW'; box: [number, number, number, number]; point: [number, number]; passes: Pass[] }
 
 export const RADAR = data as unknown as { source: string; sites: Record<SiteKey, SiteData> }

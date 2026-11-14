@@ -30,6 +30,9 @@ SITES = {
                "tracks": ["141"], "min_valid": 0.25},
     # a wider view of the Valencia coast for the landing, one track so every pass shares one geometry
     "valencia": {"product": "GCOV", "point": (-0.35, 39.33), "box": (-0.78, 38.92, 0.02, 39.70), "start": "2026-06-01", "tracks": ["066"]},
+    # portrait tiles of the coast from Valencia to Cullera on every track, for the landing's pass mosaic; track 167 D
+    # covers it only in part, and that partial footprint is shown as it is
+    "coast": {"product": "GCOV", "point": (-0.35, 39.33), "box": (-0.66, 38.98, -0.08, 39.70), "start": "2026-06-01", "min_valid": 0.4},
 }
 END = "2026-11-14"
 
