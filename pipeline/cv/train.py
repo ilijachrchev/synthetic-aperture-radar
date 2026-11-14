@@ -160,13 +160,20 @@ def train(cfg: TrainConfig, scenes: list[Scene] | None = None,
     elif not isinstance(permanent, dict):
         permanent = {site: permanent for site in sites}
 
+    # Labels further than MAX_GAP_H from the NISAR pass (a --max-gap-h run) only add training
+    # crops: the blocks and every validation score use the same-pass labels, as without them,
+    # so such a run is chosen and compared on exactly the same pixels and labels.
+    clean = [s for s in scenes if s.gap_h is None or s.gap_h <= MAX_GAP_H]
+
     # Per site: dates each pixel is changing water (from the DSWx classes, the same for every
     # label mode) and the held-out blocks, which then hold a fair share of that water.
     val_ids: dict[str, list[int]] = {}
     val: dict[str, np.ndarray] = {}
     val_share_water: dict[str, float] = {}
     for site in sites:
-        here = [s for s in scenes if s.site == site]
+        here = [s for s in clean if s.site == site]
+        if not here:
+            raise ValueError(f"{site}: no scene with a label at most {MAX_GAP_H} h from the NISAR pass")
         changing = sum((np.isin(s.cls, WATER_CLASSES) & ~permanent[site]).astype("float64") for s in here)
         val_ids[site] = choose_validation_blocks(here[0].shape, cfg.val_share, cfg.split_seed, cfg.block,
                                                  changing if cfg.stratify else None)
@@ -177,8 +184,8 @@ def train(cfg: TrainConfig, scenes: list[Scene] | None = None,
     train_set = CropDataset(scenes, train_region, mean, std, cfg.samples_per_epoch, cfg.tile, cfg.seed,
                             focus={site: ~p for site, p in permanent.items()}, focus_share=cfg.focus_share,
                             jitter_db=cfg.jitter_db)
-    val_all = TileDataset(scenes, val, mean, std, cfg.tile)
-    dynamic = [replace(s, cls=np.where(permanent[s.site], IGNORE, s.cls).astype("uint8")) for s in scenes]
+    val_all = TileDataset(clean, val, mean, std, cfg.tile)
+    dynamic = [replace(s, cls=np.where(permanent[s.site], IGNORE, s.cls).astype("uint8")) for s in clean]
     loader = DataLoader(train_set, batch_size=cfg.batch, num_workers=0, drop_last=True)
     loader_all = DataLoader(val_all, batch_size=cfg.batch)
     loaders_dyn = {site: DataLoader(TileDataset([s for s in dynamic if s.site == site], val, mean, std, cfg.tile),
@@ -186,7 +193,8 @@ def train(cfg: TrainConfig, scenes: list[Scene] | None = None,
     classes = n_classes(cfg.label_mode)
     per_site = ", ".join(f"{site} {sum(s.site == site for s in scenes)} scenes, {len(val_ids[site])} blocks, "
                          f"{val_share_water[site]:.1%} of its changing water" for site in sites)
-    print(f"{cfg.name}: {len(scenes)} scenes, inputs {cfg.inputs} ({len(INPUTS[cfg.inputs])} channels), "
+    older = f" ({len(scenes) - len(clean)} with labels over {MAX_GAP_H} h, training only)" if len(clean) < len(scenes) else ""
+    print(f"{cfg.name}: {len(scenes)} scenes{older}, inputs {cfg.inputs} ({len(INPUTS[cfg.inputs])} channels), "
           f"labels {cfg.label_mode} ({classes} output) | training windows {len(train_set.pool)}, "
           f"{len(train_set.focus_pool)} with changing water | validation: {per_site}; {len(val_all)} tiles "
           f"| device {dev}", flush=True)

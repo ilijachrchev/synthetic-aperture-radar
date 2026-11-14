@@ -67,6 +67,7 @@ class Scene:
     y: np.ndarray  # (H, W) uint8 target of the label mode, IGNORE where not usable
     cls: np.ndarray | None = None  # (H, W) uint8 DSWx-S1 class, IGNORE where not usable or masked
     ref: np.ndarray | None = None  # (4, H, W) reference_db of the stack, the same array for all its scenes
+    gap_h: float | None = None     # hours between the label and the NISAR pass (None: unknown)
 
     @property
     def shape(self) -> tuple[int, int]:
@@ -177,10 +178,12 @@ def load_scenes(site: str, stacks: tuple[str, ...] | None = None, max_gap_h: flo
             if not dswx_files(entry) or np.isnan(ds["HV"].values[t]).all():
                 continue  # no label tiles, or an HH-only date
             water_map = dswx_on_grid(ds, dswx_files(entry))
+            if np.isin(water_map, DSWX_INVALID).all():
+                continue  # the pass's tiles touch the box but its swath misses the site: no label at all
             x, y = scene_arrays(ds, t, water_map, None, label_mode)  # the reference is added per crop
             usable = np.isfinite(x).all(axis=0)
             cls = np.where(usable & ~np.isin(water_map, DSWX_INVALID), water_map, IGNORE).astype("uint8")
-            scenes.append(Scene(site, stack_id, day, x.astype("float16"), y, cls, reference))
+            scenes.append(Scene(site, stack_id, day, x.astype("float16"), y, cls, reference, entry["hours_from_nisar"]))
         del ds
     return scenes
 

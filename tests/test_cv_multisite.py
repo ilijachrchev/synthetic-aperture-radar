@@ -75,6 +75,29 @@ def test_crops_stay_inside_each_sites_own_region():
     assert {scenes[i].site for i, _ in ds.pool} == {"a", "b"}
 
 
+def test_older_labels_add_training_crops_but_never_validation():
+    from pipeline.cv.dataset import WATER_CLASSES, choose_validation_blocks
+
+    clean = [_scene("a", s) for s in range(2)]
+    old = _scene("a", 5)
+    old.gap_h = 13.0
+    old.cls[150:, :] = 1                         # water that no same-pass scene has
+
+    def weight(ss):
+        return sum(np.isin(s.cls, WATER_CLASSES).astype("float64") for s in ss)
+
+    # if the older scene were used for the stratified blocks, they would move
+    assert (choose_validation_blocks((256, 256), 0.25, 0, 64, weight(clean))
+            != choose_validation_blocks((256, 256), 0.25, 0, 64, weight(clean + [old])))
+    cfg = TrainConfig(sites=("a",), epochs=1, samples_per_epoch=8, batch=4, tile=64, block=64,
+                      val_share=0.25, encoder_weights=None)
+    permanent = {"a": np.zeros((256, 256), bool)}
+    with_old = train(cfg, scenes=clean + [old], permanent=permanent, device="cpu")
+    without = train(cfg, scenes=clean, permanent=permanent, device="cpu")
+    assert with_old["val_blocks"] == without["val_blocks"]
+    assert len(with_old["train_scenes"]) == 3
+
+
 def test_two_site_training_keeps_blocks_per_site(tmp_path):
     from pipeline.cv.evaluate import train_sites_of, training_region
     from pipeline.cv.predict import load_model

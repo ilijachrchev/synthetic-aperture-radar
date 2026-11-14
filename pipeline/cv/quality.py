@@ -37,6 +37,7 @@ from pipeline.cv.evaluate import (
 )
 
 WORLDCOVER_BUILT = 50
+USABLE_LABEL_SHARE = 0.10  # a labelled scene counts when its water map covers 10 % of the usable pixels
 
 
 def _read(site: str, name: str) -> np.ndarray:
@@ -77,10 +78,14 @@ def stack_quality(site: str, stack_id: str) -> dict:
         n_dates += 1
         n_hv += has_hv
     ds_all = len(ds["time"]) if rows else 0
-    labelled = [r for r in rows if r.get("labelled")]
+    # A label pass is matched by its tile outlines; its swath can still miss the site, which leaves
+    # a scene with no label at all. Only scenes whose map covers at least USABLE_LABEL_SHARE of the
+    # usable NISAR pixels count as usable.
+    labelled = [r for r in rows if r.get("labelled") and 1 - r["label_invalid"] >= USABLE_LABEL_SHARE]
+    empty = [r["date"] for r in rows if r.get("labelled") and 1 - r["label_invalid"] < USABLE_LABEL_SHARE]
     return {
         "site": site, "stack": stack_id, "dates": ds_all, "dates_with_label_files": n_dates,
-        "labelled_scenes": len(labelled),
+        "labelled_scenes": len(labelled), "label_misses_site": empty,
         "label_gap_h_max": max((r["gap_h"] for r in labelled), default=None),
         "valid_mean": round(float(np.mean([r["valid"] for r in labelled])), 3) if labelled else None,
         "changing_ha_total": round(sum(r["changing_ha"] for r in labelled), 1),
@@ -106,9 +111,10 @@ def main() -> None:
                 continue
             q = stack_quality(site, stack_id)
             out.append(q)
-            lab = [r for r in q["rows"] if r.get("labelled")]
-            print(f"{site} {stack_id}: {q['dates']} dates, {q['labelled_scenes']} labelled (gap <= {MAX_GAP_H} h, "
-                  f"max {q['label_gap_h_max']} h), valid {q['valid_mean']}, changing open water {q['changing_ha_total']} ha, "
+            lab = [r for r in q["rows"] if r.get("labelled") and 1 - r["label_invalid"] >= USABLE_LABEL_SHARE]
+            print(f"{site} {stack_id}: {q['dates']} dates, {q['labelled_scenes']} usable labelled scenes (gap <= {MAX_GAP_H} h, "
+                  f"max {q['label_gap_h_max']} h; {len(q['label_misses_site'])} more whose label pass misses the site), "
+                  f"valid {q['valid_mean']}, changing open water {q['changing_ha_total']} ha, "
                   f"label invalid median {np.median([r['label_invalid'] for r in lab]) if lab else None}, "
                   f"built HH {q['built_hh_db_range']} dB, permanent seen as water "
                   f"{[r['permanent_seen_as_water'] for r in lab]}")
