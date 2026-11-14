@@ -443,7 +443,8 @@ export function WaterApp({ story }: { story: Story }) {
 			})
 			map.touchZoomRotate.disableRotation()
 			mapRef.current = map
-			map.on('load', () => {
+			// as soon as the style is read, not on 'load': that one waits for the base tiles of a far server
+			map.once('style.load', () => {
 				if (gone || !map) return
 				const pictures = data.optical.scenes.map((s) => ({ key: s.day, url: `${story.root}/${s.file}` }))
 				const small = window.matchMedia('(max-width: 820px)').matches
