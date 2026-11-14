@@ -4,7 +4,7 @@ The shared data for the CV and ML models: how it lines up, where the stacks are,
 
 ## One grid per site
 
-Every layer of a site sits on one grid: **EPSG:32630** (WGS 84 / UTM 30N), **20 m** pixels, snapped to the 20 m lattice. Take it from the code, never rebuild it by hand:
+Every layer of a site sits on one grid: the UTM zone of the site (**EPSG:32630**, UTM 30N, for the Valencian sites; 32631 for Ebro and Camargue; 32629 for Donana), **20 m** pixels, snapped to the 20 m lattice. Take it from the code, never rebuild it by hand:
 
 ```python
 from pipeline.config import get_site
@@ -19,6 +19,9 @@ grid = site_grid(get_site("albufera"))   # crs, transform, width, height
 | pego_oliva | -0.25, 38.78, 0.06, 39.02 | 738060, 4323460 | 1388 x 1376 | CV |
 | espada | -0.50, 39.78, -0.10, 40.02 | 713340, 4434020 | 1751 x 1385 | CV, ML |
 | lorca | -1.80, 37.55, -1.45, 37.85 | 605560, 4190320 | 1568 x 1688 | Prediction |
+| ebro | 0.56, 40.54, 0.90, 40.82 | 293360, 4521660 (31N) | 1478 x 1593 | CV training |
+| camargue | 4.35, 43.40, 4.75, 43.65 | 608860, 4834500 (31N) | 1643 x 1419 | CV training |
+| donana | -6.42, 36.88, -6.08, 37.20 | 728960, 4121060 (29N) | 1565 x 1820 | CV test |
 
 The box is the area of interest; the grid is that box snapped outward in UTM, so it reaches slightly past it.
 

@@ -58,7 +58,7 @@ from rasterio.io import MemoryFile
 from rio_cogeo.cogeo import cog_translate
 from rio_cogeo.profiles import cog_profiles
 
-from pipeline.config import DATA_DIR, DSWX_LABEL_SITES, REPO_ROOT, STACK_DIR, STACKS
+from pipeline.config import DATA_DIR, DSWX_LABEL_SITES, REPO_ROOT, STACK_DIR, site_stacks
 from pipeline.cv.baseline import BURN_DROP_DB, area_ha, burn_candidate
 from pipeline.cv.data import grid_of, open_stack
 from pipeline.cv.evaluate import (
@@ -289,7 +289,7 @@ def main() -> None:
     label = "+".join(p.stem for p in args.model)
     entries = []
     for site in args.sites:
-        stacks = STACKS[site] + tuple(s for s in EXTRA_TEST_STACKS.get(site, ())
+        stacks = site_stacks(site) + tuple(s for s in EXTRA_TEST_STACKS.get(site, ())
                                       if (STACK_DIR / f"{site}_{s}.nc").exists())
         for stack_id in stacks:
             entries += export_stack(site, stack_id, predictor, args.threshold, args.out_dir,

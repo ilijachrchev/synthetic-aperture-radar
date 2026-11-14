@@ -59,6 +59,31 @@ SITES: dict[str, Site] = {
             models=("cv", "ml"),
             sea_edges=("east",),
         ),
+        # Extra wetlands for the CV model only: rice fields and lagoons where water comes and
+        # goes, labelled by the same same-day Sentinel-1 water maps as Albufera.
+        Site(
+            name="ebro",
+            title="Ebro Delta rice fields and lagoons",
+            bbox=(0.56, 40.54, 0.90, 40.82),
+            crs="EPSG:32631",
+            models=("cv",),
+            sea_edges=("east", "south"),
+        ),
+        Site(
+            name="camargue",
+            title="Camargue, Rhone delta rice fields and lagoons",
+            bbox=(4.35, 43.40, 4.75, 43.65),
+            crs="EPSG:32631",
+            models=("cv",),
+            sea_edges=("south",),
+        ),
+        Site(
+            name="donana",
+            title="Donana marshes and Guadalquivir rice fields",
+            bbox=(-6.42, 36.88, -6.08, 37.20),
+            crs="EPSG:32629",
+            models=("cv",),
+        ),
         Site(
             name="lorca",
             title="Lorca, Alto Guadalentín ground sinking",
@@ -88,6 +113,29 @@ STACKS: dict[str, tuple[str, ...]] = {
 
 # Sites whose CV labels are same-day Sentinel-1 water maps (Espadà uses EFFIS).
 DSWX_LABEL_SITES: tuple[str, ...] = ("albufera", "pego_oliva")
+
+# Extra stacks for the CV model only: more wetlands to train on and a second unseen test
+# site. Each track that has same-day water maps, one frame per pass (two frames of one pass
+# would repeat the same pixels). Frames may cover only part of the box (fetched with
+# --min-coverage 0.15); the rest stays invalid. Not in STACKS, so pipeline.run and the ML
+# model never download them.
+CV_STACKS: dict[str, tuple[str, ...]] = {
+    "ebro": ("058_A_022", "066_D_068", "167_D_068"),
+    "camargue": ("101_A_023", "173_A_024"),
+    "donana": ("023_D_070", "116_A_020", "015_A_020"),
+}
+
+# Every site the CV model can train or be scored on with same-day water maps.
+CV_LABEL_SITES: tuple[str, ...] = DSWX_LABEL_SITES + tuple(CV_STACKS)
+
+
+def site_stacks(site: str) -> tuple[str, ...]:
+    """The stacks of a site: the shared STACKS, else its CV-only stacks."""
+    if site in STACKS:
+        return STACKS[site]
+    if site in CV_STACKS:
+        return CV_STACKS[site]
+    raise KeyError(f"No stacks for site {site!r}")
 
 
 def get_site(name: str) -> Site:

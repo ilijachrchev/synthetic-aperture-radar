@@ -19,8 +19,12 @@ Each scene also keeps the DSWx classes (cls), so every variant is scored alike.
 
 No leakage between training and validation: each site grid is cut into
 BLOCK_PX blocks (about 5 km) and a fixed, seeded share of blocks is held out on
-every date; training crops come only from windows that lie entirely inside
-training blocks. The test site is never loaded for training.
+every date and every track of that site; training crops come only from windows
+that lie entirely inside training blocks. Test sites are never loaded for training.
+
+Memory: a scene keeps only its own HH and HV (float16, steps of about 0.02 dB, far
+below speckle); the four reference channels are one array per stack, shared by
+all its scenes, and appended crop by crop (Scene.crop). Several sites fit in RAM.
 
 Written with SI assistance (Claude Code), reviewed by the team.
 """
@@ -35,7 +39,7 @@ import numpy as np
 import torch
 import xarray as xr
 
-from pipeline.config import STACK_DIR, STACKS
+from pipeline.config import STACK_DIR, site_stacks
 from pipeline.cv.data import dswx_on_grid, open_stack, to_db
 from pipeline.cv.evaluate import (
     DSWX_INUNDATED_VEG, DSWX_INVALID, DSWX_OPEN_WATER, DSWX_RAW, MAX_GAP_H, date_index, dswx_files,
@@ -59,9 +63,38 @@ class Scene:
     site: str
     stack: str
     date: str
-    x: np.ndarray  # (C, H, W) float32 in dB, NaN where not usable; C = len(INPUTS[inputs])
+    x: np.ndarray  # (C, H, W) dB, NaN where not usable; with ref: only the date's HH and HV
     y: np.ndarray  # (H, W) uint8 target of the label mode, IGNORE where not usable
     cls: np.ndarray | None = None  # (H, W) uint8 DSWx-S1 class, IGNORE where not usable or masked
+    ref: np.ndarray | None = None  # (4, H, W) reference_db of the stack, the same array for all its scenes
+
+    @property
+    def shape(self) -> tuple[int, int]:
+        return self.y.shape
+
+    @property
+    def n_channels(self) -> int:
+        return self.x.shape[0] + (0 if self.ref is None else self.ref.shape[0])
+
+    def crop(self, r: int, c: int, size: int) -> np.ndarray:
+        """(C, size, size) float32 inputs of one window; the reference is NaN where the date is not usable."""
+        x = self.x[:, r:r + size, c:c + size].astype("float32")
+        if self.ref is None:
+            return x
+        ref = self.ref[:, r:r + size, c:c + size].astype("float32")
+        ref[:, ~np.isfinite(x).all(axis=0)] = np.nan
+        return np.concatenate([x, ref])
+
+    def full(self) -> np.ndarray:
+        """(C, H, W) float32 inputs of the whole scene."""
+        return self.crop(0, 0, max(self.shape))
+
+
+Region = np.ndarray | dict[str, np.ndarray]  # one mask for every scene, or one per site
+
+
+def region_of(region: Region, scene: Scene) -> np.ndarray:
+    return region[scene.site] if isinstance(region, dict) else region
 
 
 def nan_quantile0(a: np.ndarray, q: float) -> np.ndarray:
@@ -128,15 +161,15 @@ def scene_arrays(ds: xr.Dataset, t: int, water_map: np.ndarray | None = None, re
 
 def load_scenes(site: str, stacks: tuple[str, ...] | None = None, max_gap_h: float = MAX_GAP_H,
                 inputs: str = "current", label_mode: str = "water13") -> list[Scene]:
-    """Every labelled acquisition of a site (same-day water map, HV present)."""
+    """Every labelled acquisition of a site (same-day water map, HV present), stored compactly."""
     if inputs not in INPUTS:
         raise ValueError(f"inputs must be one of {list(INPUTS)}, not {inputs!r}")
     index = {(e["stack_id"], e["date"]): e
              for e in json.loads((DSWX_RAW / site / "index.json").read_text(encoding="utf-8"))}
     scenes = []
-    for stack_id in stacks or STACKS[site]:
+    for stack_id in stacks or site_stacks(site):
         ds = open_stack(STACK_DIR / f"{site}_{stack_id}.nc")
-        reference = reference_db(ds) if inputs == "current+ref" else None
+        reference = reference_db(ds).astype("float16") if inputs == "current+ref" else None
         for day, t in date_index(ds).items():
             entry = index.get((stack_id, day))
             if not entry or entry["hours_from_nisar"] is None or entry["hours_from_nisar"] > max_gap_h:
@@ -144,10 +177,11 @@ def load_scenes(site: str, stacks: tuple[str, ...] | None = None, max_gap_h: flo
             if not dswx_files(entry) or np.isnan(ds["HV"].values[t]).all():
                 continue  # no label tiles, or an HH-only date
             water_map = dswx_on_grid(ds, dswx_files(entry))
-            x, y = scene_arrays(ds, t, water_map, reference, label_mode)
-            usable = np.isfinite(x[:2]).all(axis=0)
+            x, y = scene_arrays(ds, t, water_map, None, label_mode)  # the reference is added per crop
+            usable = np.isfinite(x).all(axis=0)
             cls = np.where(usable & ~np.isin(water_map, DSWX_INVALID), water_map, IGNORE).astype("uint8")
-            scenes.append(Scene(site, stack_id, day, x, y, cls))
+            scenes.append(Scene(site, stack_id, day, x.astype("float16"), y, cls, reference))
+        del ds
     return scenes
 
 
@@ -195,15 +229,25 @@ def validation_blocks(shape: tuple[int, int], share: float = 0.2, seed: int = 0,
     return blocks_mask(shape, choose_validation_blocks(shape, share, seed, block, weight), block)
 
 
-def channel_stats(scenes: list[Scene], region: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
-    """Mean and std of each input channel (clipped dB) over labelled pixels inside region."""
-    stats_mean, stats_std = [], []
-    for c in range(scenes[0].x.shape[0]):
-        values = np.concatenate([np.clip(s.x[c][region & (s.y != IGNORE)], *DB_RANGE) for s in scenes])
-        values = values[np.isfinite(values)]
-        stats_mean.append(values.mean())
-        stats_std.append(max(values.std(), 1e-3))  # a constant channel must not divide by zero
-    return np.array(stats_mean, "float32"), np.array(stats_std, "float32")
+def channel_stats(scenes: list[Scene], region: Region) -> tuple[np.ndarray, np.ndarray]:
+    """Mean and std of each input channel (clipped dB) over labelled pixels inside region.
+
+    Running float64 sums, one scene at a time, so many sites need no big concatenation.
+    """
+    n_ch = scenes[0].n_channels
+    total, total_sq, count = np.zeros(n_ch), np.zeros(n_ch), np.zeros(n_ch)
+    for s in scenes:
+        keep = region_of(region, s) & (s.y != IGNORE)
+        x = s.full()
+        for c in range(n_ch):
+            v = np.clip(x[c][keep], *DB_RANGE)
+            v = v[np.isfinite(v)].astype("float64")
+            total[c] += v.sum()
+            total_sq[c] += (v * v).sum()
+            count[c] += v.size
+    mean = total / count
+    std = np.sqrt(np.maximum(total_sq / count - mean * mean, 0.0))
+    return mean.astype("float32"), np.maximum(std, 1e-3).astype("float32")  # a constant channel must not divide by 0
 
 
 def standardize(x: np.ndarray, mean: np.ndarray, std: np.ndarray) -> np.ndarray:
@@ -212,20 +256,21 @@ def standardize(x: np.ndarray, mean: np.ndarray, std: np.ndarray) -> np.ndarray:
     return np.nan_to_num(z, nan=0.0).astype("float32")
 
 
+def _integral(a: np.ndarray) -> np.ndarray:
+    return np.pad(a.astype(np.int64).cumsum(0).cumsum(1), ((1, 0), (1, 0)))
+
+
+def _box(s: np.ndarray, r: int, c: int, size: int) -> int:
+    return int(s[r + size, c + size] - s[r, c + size] - s[r + size, c] + s[r, c])
+
+
 def windows(allowed: np.ndarray, y: np.ndarray, size: int = TILE_PX, step: int = 32,
             min_labelled: float = 0.3) -> list[tuple[int, int]]:
     """Top-left corners of size x size windows that lie fully inside `allowed` and are labelled enough."""
-    def integral(a: np.ndarray) -> np.ndarray:
-        return np.pad(a.astype(np.int64).cumsum(0).cumsum(1), ((1, 0), (1, 0)))
-
-    inside, labelled = integral(allowed), integral(y != IGNORE)
-
-    def box(s: np.ndarray, r: int, c: int) -> int:
-        return int(s[r + size, c + size] - s[r, c + size] - s[r + size, c] + s[r, c])
-
+    inside, labelled = _integral(allowed), _integral(y != IGNORE)
     h, w = allowed.shape
     return [(r, c) for r in range(0, h - size + 1, step) for c in range(0, w - size + 1, step)
-            if box(inside, r, c) == size * size and box(labelled, r, c) >= min_labelled * size * size]
+            if _box(inside, r, c, size) == size * size and _box(labelled, r, c, size) >= min_labelled * size * size]
 
 
 class CropDataset(torch.utils.data.Dataset):
@@ -239,24 +284,22 @@ class CropDataset(torch.utils.data.Dataset):
     calibration difference between tracks, sites or processing releases.
     """
 
-    def __init__(self, scenes: list[Scene], allowed: np.ndarray, mean: np.ndarray, std: np.ndarray,
-                 samples: int, size: int = TILE_PX, seed: int = 0, focus: np.ndarray | None = None,
+    def __init__(self, scenes: list[Scene], allowed: Region, mean: np.ndarray, std: np.ndarray,
+                 samples: int, size: int = TILE_PX, seed: int = 0, focus: Region | None = None,
                  focus_share: float = 0.0, min_focus_px: int = 200, jitter_db: float = 0.0):
         self.scenes, self.mean, self.std, self.size, self.samples = scenes, mean, std, size, samples
         self.jitter_db = jitter_db
-        self.pool = [(i, rc) for i, s in enumerate(scenes) for rc in windows(allowed, s.y, size)]
+        self.focus_share = focus_share
+        self.pool: list[tuple[int, tuple[int, int]]] = []
+        self.focus_pool: list[tuple[int, tuple[int, int]]] = []
+        for i, s in enumerate(scenes):
+            corners = windows(region_of(allowed, s), s.y, size)
+            self.pool += [(i, rc) for rc in corners]
+            if focus is not None and focus_share > 0:
+                sums = _integral(changing_water(s) & region_of(focus, s))  # one scene at a time
+                self.focus_pool += [(i, (r, c)) for r, c in corners if _box(sums, r, c, size) >= min_focus_px]
         if not self.pool:
             raise ValueError("no training windows: check the split and the labels")
-        self.focus_share = focus_share
-        self.focus_pool: list[tuple[int, tuple[int, int]]] = []
-        if focus is not None and focus_share > 0:
-            sums = [np.pad((changing_water(s) & focus).astype(np.int64).cumsum(0).cumsum(1), ((1, 0), (1, 0)))
-                    for s in scenes]
-            for i, (r, c) in self.pool:
-                s = sums[i]
-                n = s[r + size, c + size] - s[r, c + size] - s[r + size, c] + s[r, c]
-                if n >= min_focus_px:
-                    self.focus_pool.append((i, (r, c)))
         self.rng = np.random.default_rng(seed)
 
     def __len__(self) -> int:
@@ -266,7 +309,7 @@ class CropDataset(torch.utils.data.Dataset):
         pool = self.focus_pool if self.focus_pool and self.rng.random() < self.focus_share else self.pool
         i, (r, c) = pool[int(self.rng.integers(len(pool)))]
         s = self.scenes[i]
-        x = s.x[:, r:r + self.size, c:c + self.size]
+        x = s.crop(r, c, self.size)
         if self.jitter_db:
             x = x + np.float32(self.rng.uniform(-self.jitter_db, self.jitter_db))
         x = standardize(x, self.mean, self.std)
@@ -285,17 +328,17 @@ class TileDataset(torch.utils.data.Dataset):
     scored against the same reference.
     """
 
-    def __init__(self, scenes: list[Scene], allowed: np.ndarray, mean: np.ndarray, std: np.ndarray,
+    def __init__(self, scenes: list[Scene], allowed: Region, mean: np.ndarray, std: np.ndarray,
                  size: int = TILE_PX):
         if any(s.cls is None for s in scenes):
             raise ValueError("validation scenes need their DSWx classes (Scene.cls)")
         self.mean, self.std, self.size = mean, std, size
-        self.items = [(s, rc) for s in scenes for rc in windows(allowed, s.y, size, step=size)]
+        self.items = [(s, rc) for s in scenes for rc in windows(region_of(allowed, s), s.y, size, step=size)]
 
     def __len__(self) -> int:
         return len(self.items)
 
     def __getitem__(self, k: int) -> tuple[torch.Tensor, torch.Tensor]:
         s, (r, c) = self.items[k]
-        x = standardize(s.x[:, r:r + self.size, c:c + self.size], self.mean, self.std)
+        x = standardize(s.crop(r, c, self.size), self.mean, self.std)
         return torch.from_numpy(x), torch.from_numpy(s.cls[r:r + self.size, c:c + self.size].copy())

@@ -4,6 +4,7 @@
     python -m pipeline.cv.evaluate --model data/models/cv_unet.pt          # U-Net vs baseline -> data/metrics/cv_unet.json
     python -m pipeline.cv.evaluate --model data/models/X.pt --val-only     # training-site validation blocks only
     python -m pipeline.cv.evaluate --model data/models/X.pt --sweep 0.3,0.4,0.5  # pick the threshold on them
+    python -m pipeline.cv.evaluate --model X.pt --sites pego_oliva donana  # score these sites too
 
 Checks:
 
@@ -26,9 +27,9 @@ Checks:
    ignition (25 Jul) to each later date vs the EFFIS burnt area, in a 2 km band.
 
 With --model, the U-Net and the baseline are scored on exactly the same pixels:
-on the training site only inside the held-out validation blocks, on the other
-site everywhere (it is the test site; the model never saw it). Model variants
-are chosen with --val-only and --sweep, which never touch the test site.
+on each training site only inside its held-out validation blocks, on every other
+site everywhere (a test site; the model never saw it). Model variants are chosen
+with --val-only and --sweep, which never touch a test site.
 
 Written with SI assistance (Claude Code), reviewed by the team.
 """
@@ -46,7 +47,7 @@ import numpy as np
 import rasterio
 import xarray as xr
 
-from pipeline.config import DATA_DIR, DSWX_LABEL_SITES, RAW_DIR, STACK_DIR, STACKS, get_site
+from pipeline.config import DATA_DIR, DSWX_LABEL_SITES, RAW_DIR, STACK_DIR, get_site, site_stacks
 from pipeline.cv.baseline import BURN_DROP_DB, area_ha, burn_candidate, otsu_threshold_db, water_mask
 from pipeline.cv.data import boxcar_power, dswx_on_grid, open_stack, rasterize_on, to_db
 from pipeline.cv.metrics import confusion, scores
@@ -81,17 +82,29 @@ def date_index(ds: xr.Dataset) -> dict[str, int]:
     return {str(t)[:10]: i for i, t in enumerate(ds["time"].values)}
 
 
-def permanent_water(ds: xr.Dataset, site: str) -> np.ndarray:
-    """Sea and permanent water on the stack grid (from the committed 20 m context layers)."""
+def _permanent_on(site: str, transform, shape: tuple[int, int]) -> np.ndarray:
     out = None
     for name in (f"{site}_worldcover_2021_20m.tif", f"{site}_jrc_occurrence_20m.tif"):
         with rasterio.open(CONTEXT_DIR / name) as src:
-            if src.transform != ds["HH"].rio.transform() or (src.height, src.width) != (ds.sizes["y"], ds.sizes["x"]):
+            if src.transform != transform or (src.height, src.width) != shape:
                 raise ValueError(f"{name} is not on the stack grid: rerun python -m pipeline.context")
             band = src.read(1)
         part = band == WORLDCOVER_WATER if "worldcover" in name else (band >= PERMANENT_OCCURRENCE) & (band != 255)
         out = part if out is None else out | part
     return out
+
+
+def permanent_water(ds: xr.Dataset, site: str) -> np.ndarray:
+    """Sea and permanent water on the stack grid (from the committed 20 m context layers)."""
+    return _permanent_on(site, ds["HH"].rio.transform(), (ds.sizes["y"], ds.sizes["x"]))
+
+
+def site_permanent_water(site: str) -> np.ndarray:
+    """permanent_water on the site grid, without opening a stack."""
+    from pipeline.stack import site_grid
+
+    g = site_grid(get_site(site))
+    return _permanent_on(site, g.transform, (g.height, g.width))
 
 
 def scene_db(power: np.ndarray, valid: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
@@ -155,7 +168,7 @@ def ensemble_predictor(model_paths: list[Path], threshold: float = 0.5) -> Predi
     first = members[0].checkpoint  # type: ignore[attr-defined]
     for member, path in zip(members[1:], model_paths[1:]):
         other = member.checkpoint  # type: ignore[attr-defined]
-        if other["config"]["site"] != first["config"]["site"] or other.get("val_blocks") != first.get("val_blocks"):
+        if train_sites_of(other) != train_sites_of(first) or other.get("val_blocks") != first.get("val_blocks"):
             raise ValueError(f"{path} was validated on other blocks than {model_paths[0]}; the scores would leak")
 
     def probabilities(ds: xr.Dataset, t: int) -> tuple[np.ndarray, np.ndarray]:
@@ -224,10 +237,14 @@ def water_vs_dswx(site: str, stack_id: str, predictor: Predictor = baseline_pred
         truth = dswx == DSWX_OPEN_WATER
         any_water = np.isin(dswx, (DSWX_OPEN_WATER, DSWX_INUNDATED_VEG))
         veg = scoring & (dswx == DSWX_INUNDATED_VEG)
+        c_open, c_any = confusion(pred_open, truth, scoring), confusion(pred_any, any_water, scoring)
         rows.append({
             **row, **info, "pixels": int(scoring.sum()),
-            **scores(confusion(pred_open, truth, scoring)),
-            **{f"any_{k}": v for k, v in scores(confusion(pred_any, any_water, scoring)).items()},
+            **scores(c_open),
+            **{f"any_{k}": v for k, v in scores(c_any).items()},
+            # counts, so dates can be pooled and resampled later
+            "tp": c_open["tp"], "fp": c_open["fp"], "fn": c_open["fn"],
+            "any_tp": c_any["tp"], "any_fp": c_any["fp"], "any_fn": c_any["fn"],
             "label_open_water_ha": round(area_ha(truth & scoring), 1),
             "pred_water_ha": round(area_ha(pred_open & scoring), 1),
             "inundated_veg_ha": round(area_ha(veg), 1),
@@ -280,7 +297,7 @@ def burn_vs_effis() -> list[dict]:
     site = BURN["site"]
     effis = gpd.read_file(LABELS_DIR / "espada_effis_burnt_area.geojson")
     rows = []
-    for stack_id in STACKS[site]:
+    for stack_id in site_stacks(site):
         ds = open_stack(STACK_DIR / f"{site}_{stack_id}.nc")
         crs = ds["HH"].rio.crs
         perm = permanent_water(ds, site)
@@ -317,24 +334,35 @@ def baseline_report() -> dict:
         "created_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "method": "Otsu water threshold on 5x5 filtered HH (dB) per scene; burn = HV drop of "
                   f"{BURN_DROP_DB} dB or more; see pipeline/cv/evaluate.py for the scoring rules",
-        "water_vs_dswx": [row for site in DSWX_LABEL_SITES for stack_id in STACKS[site]
+        "water_vs_dswx": [row for site in DSWX_LABEL_SITES for stack_id in site_stacks(site)
                           for row in water_vs_dswx(site, stack_id)],
         "flood_vs_emsr935": flood_vs_emsr935(),
         "burn_vs_effis": burn_vs_effis(),
     }
 
 
-def training_region(checkpoint: dict) -> np.ndarray:
-    """The held-out validation blocks of a checkpoint's training site."""
+def train_sites_of(checkpoint: dict) -> list[str]:
+    """Training sites of a checkpoint (older ones: the single config site)."""
+    cfg = checkpoint["config"]
+    return list(checkpoint.get("train_sites") or cfg.get("sites") or [cfg["site"]])
+
+
+def training_region(checkpoint: dict, site: str | None = None) -> np.ndarray:
+    """The held-out validation blocks of one training site of a checkpoint (default: its first)."""
     from pipeline.cv.dataset import blocks_mask, validation_blocks
     from pipeline.stack import site_grid
 
     cfg = checkpoint["config"]
-    g = site_grid(get_site(cfg["site"]))
+    site = site or train_sites_of(checkpoint)[0]
+    g = site_grid(get_site(site))
     shape = (g.height, g.width)
-    # The exact held-out blocks are stored in the checkpoint (older ones: rebuild the random draw).
-    if "val_blocks" in checkpoint:
-        return blocks_mask(shape, checkpoint["val_blocks"], cfg["block"])
+    # The exact held-out blocks are stored in the checkpoint (older ones: rebuild the random draw);
+    # several training sites store one list of blocks per site.
+    blocks = checkpoint.get("val_blocks")
+    if isinstance(blocks, dict):
+        return blocks_mask(shape, blocks[site], cfg["block"])
+    if blocks is not None:
+        return blocks_mask(shape, blocks, cfg["block"])
     return validation_blocks(shape, cfg["val_share"], cfg["seed"], cfg["block"])
 
 
@@ -342,44 +370,51 @@ def _built(site: str, stack_id: str) -> bool:
     return (STACK_DIR / f"{site}_{stack_id}.nc").exists()
 
 
-def model_report(model_paths: list[Path], threshold: float, val_only: bool = False) -> dict:
-    """U-Net (or ensemble) and baseline on the same pixels: validation blocks of the training
-    site, and (unless val_only) all of the test site plus the DANA flood checks."""
+def model_report(model_paths: list[Path], threshold: float, val_only: bool = False,
+                 sites: tuple[str, ...] = DSWX_LABEL_SITES) -> dict:
+    """U-Net (or ensemble) and baseline on the same pixels: validation blocks of each training
+    site, and (unless val_only) all of every other site in `sites` plus the DANA flood checks."""
     unet = load_predictor(model_paths, threshold)
     checkpoint = unet.checkpoint  # type: ignore[attr-defined]
     cfg = checkpoint["config"]
+    trained_on = train_sites_of(checkpoint)
     rows = []
-    for site in DSWX_LABEL_SITES:
-        if site == cfg["site"]:
-            region, split, stacks = training_region(checkpoint), "held-out validation blocks of the training site", STACKS[site]
+    for site in dict.fromkeys(trained_on + list(sites)):
+        if site in trained_on:
+            region, split, stacks = training_region(checkpoint, site), "held-out validation blocks of a training site", site_stacks(site)
         elif val_only:
             continue
         else:
             region, split = None, "test site, never seen in training"
-            stacks = STACKS[site] + tuple(s for s in EXTRA_TEST_STACKS.get(site, ()) if _built(site, s))
+            stacks = site_stacks(site) + tuple(s for s in EXTRA_TEST_STACKS.get(site, ()) if _built(site, s))
         for stack_id in stacks:
+            if not _built(site, stack_id):
+                print(f"   {site} {stack_id}: no stack built, not scored")
+                continue
             for name, predictor in (("baseline", baseline_predictor), ("unet", unet)):
                 rows += [{**row, "model": name, "split": split} for row in water_vs_dswx(site, stack_id, predictor, region)]
     floods = [] if val_only else [
         {**check, "baseline": flood_vs_emsr935(baseline_predictor, check), "unet": flood_vs_emsr935(unet, check)}
-        for check in FLOODS if _built(check["site"], check["stack"])]
+        for check in FLOODS if _built(check["site"], check["stack"]) and check["site"] not in trained_on]
     return {
         "created_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "model": [str(p).replace("\\", "/") for p in model_paths], "checkpoint_epoch": checkpoint["epoch"],
-        "train_site": cfg["site"], "inputs": cfg.get("inputs", "current"), "label_mode": cfg.get("label_mode", "water13"),
+        "train_site": cfg["site"], "train_sites": trained_on,
+        "inputs": cfg.get("inputs", "current"), "label_mode": cfg.get("label_mode", "water13"),
         "probability_threshold": threshold, "val_only": val_only,
         "water_vs_dswx": rows, "flood_vs_emsr935": floods,
     }
 
 
 def threshold_sweep(model_paths: list[Path], thresholds: list[float]) -> dict:
-    """Open and any water IoU per probability threshold, on the training site's validation blocks only."""
+    """Open and any water IoU per probability threshold, on the training sites' validation blocks only."""
     unet = load_predictor(model_paths)
     checkpoint = unet.checkpoint  # type: ignore[attr-defined]
-    site, region = checkpoint["config"]["site"], training_region(checkpoint)
+    trained_on = train_sites_of(checkpoint)
     per_date: dict[float, dict[str, list[float]]] = {thr: {"open": [], "any": []} for thr in thresholds}
     pooled = {thr: {"open": np.zeros(3), "any": np.zeros(3)} for thr in thresholds}
-    for stack_id in STACKS[site]:
+    for site, stack_id in ((site, stack_id) for site in trained_on for stack_id in site_stacks(site)):
+        region = training_region(checkpoint, site)
         for ds, _, t, _, dswx, perm in labelled_dates(site, stack_id):
             if dswx is None:
                 continue
@@ -396,7 +431,7 @@ def threshold_sweep(model_paths: list[Path], thresholds: list[float]) -> dict:
                     pooled[thr][k] += (tp, fp, fn)
                     if tp + fp + fn:
                         per_date[thr][k].append(tp / (tp + fp + fn))
-    out = {"model": [str(p).replace("\\", "/") for p in model_paths], "site": site,
+    out = {"model": [str(p).replace("\\", "/") for p in model_paths], "site": ", ".join(trained_on),
            "split": "held-out validation blocks", "rows": []}
     for thr in thresholds:
         row = {"threshold": thr}
@@ -411,7 +446,7 @@ def threshold_sweep(model_paths: list[Path], thresholds: list[float]) -> dict:
 def print_baseline(report: dict) -> None:
     print("1) Water vs same-day Sentinel-1 (dynamic water only)")
     for site in DSWX_LABEL_SITES:
-        for stack_id in STACKS[site]:
+        for stack_id in site_stacks(site):
             rows = [r for r in report["water_vs_dswx"] if r["site"] == site and r["stack"] == stack_id]
             scored = [r for r in rows if "skipped" not in r]
             print(f"   {site} {stack_id}: {len(scored)} of {len(rows)} dates scored, median IoU {_median(scored, 'iou')}, "
@@ -472,6 +507,8 @@ def main() -> None:
     parser.add_argument("--threshold", type=float, default=0.5, help="water probability threshold for the U-Net")
     parser.add_argument("--val-only", action="store_true", help="only the training site's validation blocks")
     parser.add_argument("--sweep", help="comma-separated thresholds to try on the validation blocks")
+    parser.add_argument("--sites", nargs="+", default=list(DSWX_LABEL_SITES),
+                        help="sites to score besides the training sites (default: %(default)s)")
     args = parser.parse_args()
     METRICS_DIR.mkdir(parents=True, exist_ok=True)
     name = args.name or (args.model[0].stem if args.model and len(args.model) == 1 else "cv_ensemble")
@@ -480,7 +517,7 @@ def main() -> None:
         path = METRICS_DIR / f"{name}_sweep.json"
         print_sweep(report)
     elif args.model:
-        report = model_report(args.model, args.threshold, args.val_only)
+        report = model_report(args.model, args.threshold, args.val_only, tuple(args.sites))
         path = METRICS_DIR / f"{name}{'_val' if args.val_only else ''}.json"
         print_comparison(report)
     else:
