@@ -76,7 +76,9 @@ def load(path: str | Path, crid: str = "all") -> MLStack:
     keep = np.ones(len(rows), bool)
     dropped = []
     crids = [r.get("crid", "") for r in rows]
-    if crid != "all" and len(set(crids)) > 1:
+    # Applied even when the stack holds one release, so asking for a release it does not
+    # have fails below instead of silently keeping every date.
+    if crid != "all":
         wanted = Counter(crids).most_common(1)[0][0] if crid == "majority" else crid
         for i, c in enumerate(crids):
             if c != wanted:

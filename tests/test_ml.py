@@ -100,6 +100,15 @@ def test_crid_filter_can_leave_out_the_newer_release(fake_stack_path):
     assert len(data.load(fake_stack_path, crid="P05036").dates) == 1
 
 
+def test_explicit_crid_applies_to_a_single_release_stack(tmp_path):
+    ds = synthetic.make_stack(size=30, new_release_step_db=0)   # every date is P05023
+    path = synthetic.write_stack(ds, tmp_path / "synthetic_066_D_069.nc")
+    assert len(data.load(path, crid="P05023").dates) == 11
+    assert len(data.load(path, crid="majority").dates) == 11
+    with pytest.raises(ValueError, match="no dates left"):
+        data.load(path, crid="P05036")                          # a release the stack does not have
+
+
 def test_load_rejects_a_stack_off_the_site_grid(tmp_path):
     ds = synthetic.make_stack(size=30)
     ds.attrs["site"] = "albufera"  # but on the synthetic grid
@@ -229,3 +238,14 @@ def test_manifest_upsert_replaces_same_key(tmp_path):
     export.upsert_manifest(p, [{"model": "ml", "site": "a", "layer": "class", "date": "d", "v": 2}])
     rows = json.loads(p.read_text())
     assert len(rows) == 2 and rows[-1]["v"] == 2
+
+
+def test_manifest_keeps_both_tracks_and_replaces_a_rerun(tmp_path):
+    p = tmp_path / "manifest.json"
+    base = {"model": "ml", "site": "albufera", "layer": "class", "date": "2026-06-18/2026-10-28"}
+    export.upsert_manifest(p, [{**base, "stack": "066_D_069"}])
+    export.upsert_manifest(p, [{**base, "stack": "058_A_021"}])        # same dates, other track: both stay
+    export.upsert_manifest(p, [{**base, "stack": "066_D_069", "date": "2026-06-18/2026-10-16"}])  # rerun
+    rows = json.loads(p.read_text())
+    assert sorted((r["stack"], r["date"]) for r in rows) == [
+        ("058_A_021", "2026-06-18/2026-10-28"), ("066_D_069", "2026-06-18/2026-10-16")]

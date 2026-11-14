@@ -78,12 +78,20 @@ def write_json(obj, path: Path) -> None:
     path.write_text(json.dumps(obj, indent=2), encoding="utf-8")
 
 
-def upsert_manifest(manifest_path: Path, entries: list[dict]) -> None:
-    """Replace entries with the same (model, site, layer, date); keep the rest."""
+def upsert_manifest(manifest_path: Path, entries: list[dict],
+                    key_fields: tuple[str, ...] = ("model", "site", "stack", "layer")) -> None:
+    """Replace entries with the same key (by default model, site, stack, layer); keep the rest.
+
+    The stack is in the key, so two tracks of one site never replace each other.
+    The date range is not: rerunning a stack over other dates (for example with
+    --crid majority) replaces its entries instead of leaving a stale one that
+    points at the overwritten file. Layers with one file per date can pass
+    key_fields that include "date".
+    """
     existing: list[dict] = []
     if manifest_path.exists():
         existing = json.loads(manifest_path.read_text(encoding="utf-8"))
-    key = lambda e: (e.get("model"), e.get("site"), e.get("layer"), e.get("date"))  # noqa: E731
+    key = lambda e: tuple(e.get(k) for k in key_fields)  # noqa: E731
     new_keys = {key(e) for e in entries}
     merged = [e for e in existing if key(e) not in new_keys] + entries
     write_json(merged, manifest_path)
