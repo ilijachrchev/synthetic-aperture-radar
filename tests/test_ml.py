@@ -443,3 +443,96 @@ def test_command_with_two_tracks_and_early_stopping(tmp_path):
     assert m["feature_names"][-1].endswith("@058_A_021")
     assert m["tree_rule"] == "early stopping" and 1 <= m["trees"] <= 4000
     assert m["overall_accuracy"] > 0.9
+
+
+# --- experiments ----------------------------------------------------------------
+
+def test_seasonal_features_use_calendar_months_and_nan_for_empty_seasons():
+    t = np.array(["2026-06-18", "2026-07-12", "2026-08-17", "2026-09-10"], dtype="datetime64[ns]")
+    hh = _px([-10, -12, -6, -8])
+    hv = _px([-20, -20, -14, -14])
+    Xs, names = features.seasonal_features(hh, hv, t)
+    f = dict(zip(names, Xs[0]))
+    assert f["hh_early"] == pytest.approx(-11) and f["hh_mid"] == pytest.approx(-7)
+    assert f["hv_minus_hh_mid"] == pytest.approx(-7)
+    assert np.isnan(f["hh_late"])          # no October date
+
+
+def test_texture_is_zero_on_a_flat_field_and_high_on_a_checkerboard():
+    flat = np.full((3, 10, 10), -10.0, dtype=np.float32)
+    rough = flat.copy()
+    rough[:, ::2, ::2] = -2.0
+    Xf, names = features.texture_features(flat, flat)
+    Xr, _ = features.texture_features(rough, rough)
+    centre = 5 * 10 + 5
+    assert names == ["hh_texture", "hv_texture"]
+    assert Xf[centre, 0] == pytest.approx(0, abs=1e-5) and Xr[centre, 0] > 2
+
+
+def test_feature_set_adds_groups_and_rejects_unknown_names():
+    hh, hv = _px([-8, -9, -10, -11]), _px([-15, -15, -15, -15])
+    X, usable, names = features.feature_set("base+seasonal+texture", hh, hv, T, -15)
+    assert X.shape == (1, len(names)) == (1, len(features.FEATURE_NAMES) + 9 + 2)
+    with pytest.raises(ValueError):
+        features.feature_set("base+magic", hh, hv, T, -15)
+
+
+def test_corine_orchard_shrink_drops_the_polygon_edge(tmp_path):
+    grid = Grid("EPSG:32630", from_origin(725_000, 4_365_000, 20, 20), 30, 30)
+    wc = np.full((30, 30), 10)                  # all tree cover
+    with rasterio.open(tmp_path / "wc.tif", "w", driver="GTiff", height=30, width=30, count=1,
+                       dtype="uint8", crs=grid.crs, transform=grid.transform, nodata=0) as dst:
+        dst.write(wc.astype("uint8"), 1)
+    clc = _write_geojson(tmp_path / "clc.geojson", [_square(725_000, 4_365_000, 400, {"Code_18": "222"})])
+    full, _ = labels.build_labels(grid, worldcover=tmp_path / "wc.tif", corine=clc)
+    shrunk, _ = labels.build_labels(grid, worldcover=tmp_path / "wc.tif", corine=clc, orchard_shrink_m=40)
+    orch = config.CLASS_INDEX["orchard"]
+    assert (full[:20, :20] == orch).all()
+    assert (shrunk[2:18, 2:18] == orch).all() and shrunk[0, 0] == config.UNLABELED and shrunk[19, 10] != orch
+
+
+def test_experiment_validation_blocks_stay_inside_the_training_area():
+    from pipeline.ml import experiment
+    rng = np.random.default_rng(0)
+    y = rng.integers(0, 3, size=(300, 300)).astype(np.int16)
+    p = experiment.Prepared("x", ("a",), (300, 300), np.zeros((90_000, 1), np.float32), ["f"],
+                            np.ones(90_000, bool), y)
+    train_mask, test_mask = experiment.test_split(p)
+    for seed in experiment.VAL_SEEDS:
+        fit_m, val_m = experiment.val_split(p, train_mask, seed)
+        assert not (val_m & test_mask).any() and not (fit_m & test_mask).any()
+        assert not (fit_m & val_m).any() and val_m.sum() > 0
+    a = experiment.val_split(p, train_mask, 43)[1]
+    b = experiment.val_split(p, train_mask, 44)[1]
+    assert (a != b).any()                   # different seeds, different validation blocks
+
+
+def test_experiment_summary_gives_mean_and_spread():
+    from pipeline.ml import experiment
+    runs = [{"macro_f1": f, "accuracy": 0.9, "per_class_f1": {"burned": f}, "burned_precision": None}
+            for f in (0.70, 0.74, 0.72)]
+    s = experiment._summary(runs)
+    assert s["macro_f1"] == {"mean": 0.72, "spread": 0.04}
+    assert s["burned_precision"] is None
+
+
+def test_orchard_rule_names_the_ground_between_orchard_trees(tmp_path):
+    grid = Grid("EPSG:32630", from_origin(725_000, 4_365_000, 20, 20), 20, 20)
+    wc = np.full((20, 20), 30)                  # grassland
+    wc[::2, ::2] = 10                           # orchard trees in rows
+    wc[0, 1] = 50                               # a farm building
+    with rasterio.open(tmp_path / "wc.tif", "w", driver="GTiff", height=20, width=20, count=1,
+                       dtype="uint8", crs=grid.crs, transform=grid.transform, nodata=0) as dst:
+        dst.write(wc.astype("uint8"), 1)
+    clc = _write_geojson(tmp_path / "clc.geojson", [_square(725_000, 4_365_000, 400, {"Code_18": "222"})])
+    orch, oc = config.CLASS_INDEX["orchard"], config.CLASS_INDEX["other_crops_shrub"]
+    kw = dict(worldcover=tmp_path / "wc.tif", corine=clc)
+    trees, _ = labels.build_labels(grid, **kw)
+    drop, _ = labels.build_labels(grid, **kw, orchard_rule="drop_conflict")
+    poly, _ = labels.build_labels(grid, **kw, orchard_rule="polygon")
+    assert trees[0, 0] == orch and trees[1, 1] == oc
+    assert drop[0, 0] == orch and drop[1, 1] == config.UNLABELED
+    assert poly[0, 0] == orch and poly[1, 1] == orch
+    assert poly[0, 1] == drop[0, 1] == config.CLASS_INDEX["urban"]   # buildings stay urban
+    with pytest.raises(ValueError):
+        labels.build_labels(grid, **kw, orchard_rule="all")

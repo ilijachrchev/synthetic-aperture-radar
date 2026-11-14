@@ -191,3 +191,68 @@ def pixel_features(
     assert X.shape[1] == len(FEATURE_NAMES)
     usable = (n_hh >= config.MIN_VALID_DATES) & (n_hv >= config.MIN_VALID_DATES)
     return X, usable, dark_threshold_db
+
+
+# Extra feature groups for the experiments (pipeline.ml.experiment). Calendar
+# windows, not "first third of the dates", so a feature means the same thing on
+# every track and site (tracks have 9 to 11 dates).
+SEASONS: dict[str, tuple[int, ...]] = {"early": (6, 7), "mid": (8, 9), "late": (10, 11)}  # months
+TEXTURE_PX = 5  # window of the local std; the 2 px split gap covers it
+
+
+def seasonal_features(hh_db: np.ndarray, hv_db: np.ndarray, times: np.ndarray) -> tuple[np.ndarray, list[str]]:
+    """Mean HH, HV and HV-HH (dB) per calendar season; NaN where a season has no seen date."""
+    t, h, w = hh_db.shape
+    hh, hv = hh_db.reshape(t, h * w), hv_db.reshape(t, h * w)
+    months = np.asarray(times).astype("datetime64[M]").astype(int) % 12 + 1
+    cols, names = [], []
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", category=RuntimeWarning)
+        for season, mm in SEASONS.items():
+            sel = np.isin(months, mm)
+            for name, a in (("hh", hh), ("hv", hv), ("hv_minus_hh", hv - hh)):
+                cols.append(np.nanmean(a[sel], axis=0) if sel.any() else np.full(h * w, np.nan))
+                names.append(f"{name}_{season}")
+    return np.stack(cols, axis=1).astype(np.float32), names
+
+
+def texture_features(hh_db: np.ndarray, hv_db: np.ndarray, size: int = TEXTURE_PX) -> tuple[np.ndarray, list[str]]:
+    """Local std (size x size) of the season-mean HH and HV images: fields are
+    smooth, orchards and towns are rough. Pixels with no mean are NaN."""
+    from scipy.ndimage import uniform_filter
+    t, h, w = hh_db.shape
+    cols = []
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", category=RuntimeWarning)
+        for a in (hh_db, hv_db):
+            m = np.nanmean(a, axis=0)
+            ok = np.isfinite(m)
+            v = np.where(ok, m, 0.0)
+            n = uniform_filter(ok.astype(np.float64), size, mode="constant")
+            s1 = uniform_filter(v, size, mode="constant")
+            s2 = uniform_filter(v * v, size, mode="constant")
+            mean = s1 / np.maximum(n, 1e-9)
+            std = np.sqrt(np.maximum(s2 / np.maximum(n, 1e-9) - mean ** 2, 0.0))
+            cols.append(np.where(ok, std, np.nan).ravel())
+    return np.stack(cols, axis=1).astype(np.float32), ["hh_texture", "hv_texture"]
+
+
+FEATURE_SETS = ("base", "base+seasonal", "base+texture", "base+seasonal+texture")
+
+
+def feature_set(name: str, hh_db: np.ndarray, hv_db: np.ndarray, times: np.ndarray,
+                dark_threshold_db: float | None = None) -> tuple[np.ndarray, np.ndarray, list[str]]:
+    """pixel_features plus the named extra groups: returns X, usable, feature names."""
+    if name not in FEATURE_SETS:
+        raise ValueError(f"unknown feature set {name!r}; use one of {FEATURE_SETS}")
+    X, usable, _ = pixel_features(hh_db, hv_db, times, dark_threshold_db=dark_threshold_db)
+    blocks, names = [X], list(FEATURE_NAMES)
+    if "seasonal" in name:
+        Xs, n = seasonal_features(hh_db, hv_db, times)
+        blocks.append(Xs)
+        names += n
+    if "texture" in name:
+        Xt, n = texture_features(hh_db, hv_db)
+        blocks.append(Xt)
+        names += n
+    return np.hstack(blocks), usable, names

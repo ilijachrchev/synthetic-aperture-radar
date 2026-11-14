@@ -29,30 +29,33 @@ def sample_per_class(
     return np.sort(np.concatenate(picked))
 
 
-def _params(seed: int, n_estimators: int, num_leaves: int, min_child_samples: int) -> dict:
-    return dict(n_estimators=n_estimators, learning_rate=0.05, num_leaves=num_leaves,
-                min_child_samples=min_child_samples, subsample=0.8, subsample_freq=1, colsample_bytree=0.8,
-                class_weight="balanced", random_state=seed, verbose=-1)
+def _params(seed: int, n_estimators: int, num_leaves: int, min_child_samples: int, **extra) -> dict:
+    """LightGBM settings; extra overrides the rest (e.g. learning_rate, colsample_bytree)."""
+    return {**dict(n_estimators=n_estimators, learning_rate=0.05, num_leaves=num_leaves,
+                   min_child_samples=min_child_samples, subsample=0.8, subsample_freq=1, colsample_bytree=0.8,
+                   class_weight="balanced", random_state=seed, verbose=-1), **extra}
 
 
 def fit(X: np.ndarray, y: np.ndarray, seed: int = config.SEED, n_estimators: int = 400,
-        num_leaves: int = 31, min_child_samples: int = 40) -> LGBMClassifier:
-    model = LGBMClassifier(**_params(seed, n_estimators, num_leaves, min_child_samples))
+        num_leaves: int = 31, min_child_samples: int = 40, **extra) -> LGBMClassifier:
+    model = LGBMClassifier(**_params(seed, n_estimators, num_leaves, min_child_samples, **extra))
     model.fit(X, y)
     return model
 
 
 def best_tree_count(X: np.ndarray, y: np.ndarray, X_val: np.ndarray, y_val: np.ndarray,
                     seed: int = config.SEED, max_trees: int = 4000, num_leaves: int = 31,
-                    min_child_samples: int = 40, patience: int = 100) -> int:
+                    min_child_samples: int = 40, patience: int = 100, return_model: bool = False,
+                    **extra):
     """Train until the validation loss stops improving for `patience` rounds;
     return the best number of trees. The validation rows come from blocks inside
     the training area, never from the test blocks."""
     from lightgbm import early_stopping, log_evaluation
-    model = LGBMClassifier(**_params(seed, max_trees, num_leaves, min_child_samples))
+    model = LGBMClassifier(**_params(seed, max_trees, num_leaves, min_child_samples, **extra))
     model.fit(X, y, eval_set=[(X_val, y_val)], eval_metric="multi_logloss",
               callbacks=[early_stopping(patience, verbose=False), log_evaluation(0)])
-    return max(1, int(model.best_iteration_))
+    n = max(1, int(model.best_iteration_))
+    return (n, model) if return_model else n
 
 
 def predict_proba_full(model: LGBMClassifier, X: np.ndarray) -> np.ndarray:

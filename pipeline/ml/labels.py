@@ -38,6 +38,8 @@ from pipeline.stack import Grid
 
 from . import config
 
+ORCHARD_RULES = ("trees", "drop_conflict", "polygon")
+ORCHARD_POLYGON_WC = (20, 30, 40)  # shrub, grass, crop: ground between orchard trees
 RICE_SHRINK_M = 60.0  # CORINE rice polygons are shrunk so field edges, paths and canals drop out
 
 
@@ -133,13 +135,27 @@ def build_labels(
     polygons: str | Path | None = None,
     sea: str | Path | None = None,
     corine: str | Path | None = None,
+    orchard_shrink_m: float = 0.0,
+    forest_shrink_m: float = 0.0,
+    orchard_rule: str = "trees",
 ) -> tuple[np.ndarray, np.ndarray]:
     """Return (labels int16 with UNLABELED, sea bool).
 
     sea: a 1 = sea raster (data/context/<site>_sea_20m.tif). Without it the sea
     is computed from WorldCover / JRC with the same shared rule.
     corine: CORINE 2018 polygons with a Code_18 column (pipeline.ml.corine).
+    orchard_shrink_m, forest_shrink_m: shrink the CORINE orchard / forest polygons
+    first (like rice), so 100 m scale edges drop out of the labels.
+    orchard_rule (only with CORINE): which pixels inside CORINE orchard polygons
+    are labelled. "trees" (default): WorldCover trees -> orchard, the rest keeps
+    its WorldCover class (mostly grassland / cropland -> other_crops_shrub, 57 %
+    of all other_crops labels at Albufera lie in orchard polygons).
+    "drop_conflict": as "trees", but non-tree pixels inside orchard polygons are
+    left unlabeled. "polygon": every pixel of an orchard polygon that WorldCover
+    calls trees, shrub, grass or crop -> orchard.
     """
+    if orchard_rule not in ORCHARD_RULES:
+        raise ValueError(f"orchard_rule must be one of {ORCHARD_RULES}")
     shape = (grid.height, grid.width)
     labels = np.full(shape, config.UNLABELED, dtype=np.int16)
     wc = occ = None
@@ -153,8 +169,13 @@ def build_labels(
         if clc is not None:
             trees = wc == config.WORLDCOVER_TREE
             labels[trees] = config.UNLABELED
-            labels[trees & corine_mask(clc, grid, config.CORINE_ORCHARD)] = config.CLASS_INDEX["orchard"]
-            labels[trees & corine_mask(clc, grid, config.CORINE_FOREST)] = config.CLASS_INDEX["forest"]
+            labels[trees & corine_mask(clc, grid, config.CORINE_ORCHARD, orchard_shrink_m)] = config.CLASS_INDEX["orchard"]
+            labels[trees & corine_mask(clc, grid, config.CORINE_FOREST, forest_shrink_m)] = config.CLASS_INDEX["forest"]
+            if orchard_rule != "trees":
+                in_orch = corine_mask(clc, grid, config.CORINE_ORCHARD, orchard_shrink_m)
+                farm = np.isin(wc, list(ORCHARD_POLYGON_WC)) & in_orch
+                labels[farm & ~trees] = (config.UNLABELED if orchard_rule == "drop_conflict"
+                                         else config.CLASS_INDEX["orchard"])
 
     if jrc_occurrence is not None:
         occ = read_on_grid(jrc_occurrence, grid, Resampling.average)
