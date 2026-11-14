@@ -22,3 +22,6 @@ _netrc
 Thumbs.db
 .vscode/
 .idea/
+
+# QGIS side files written next to exported layers
+*.qmd
