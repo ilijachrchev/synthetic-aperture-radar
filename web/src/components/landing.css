@@ -55,7 +55,8 @@
 
 /* ---------- the line and the two buttons, white on the panel in both themes ---------- */
 .hx-head {
-	max-width: 1100px;
+	/* wide enough for the line on one row at its largest size */
+	max-width: 1260px;
 	margin: 0 auto;
 	padding: clamp(104px, 15svh, 150px) 24px 0;
 	text-align: center;
@@ -111,15 +112,15 @@
 	top: 0;
 	height: 100svh;
 	/* the floating navbar keeps the top; the monitor centres in what is left */
-	padding: 76px 0 12px;
+	padding: 72px 0 8px;
 	display: grid;
 	place-items: center;
 	perspective: 2000px;
 	perspective-origin: 50% 0;
 }
 .mon {
-	/* the screen's height plus bezel and stand (about 108px) fits under the navbar */
-	width: min(1120px, 86vw, calc((100svh - 200px) * 1.6));
+	/* a wide 16:9 screen; its height plus bezel and stand (about 92px) fits under the navbar */
+	width: min(1600px, 94vw, calc((100svh - 172px) * 1.7778));
 	margin: 0 auto;
 	transform-origin: 50% 0;
 	will-change: transform;
@@ -132,7 +133,7 @@
 }
 .mon-glass {
 	position: relative;
-	aspect-ratio: var(--ar, 16 / 10);
+	aspect-ratio: var(--ar, 16 / 9);
 	border-radius: clamp(5px, 0.7vw, 10px);
 	overflow: hidden;
 	background: #081217;
@@ -167,14 +168,14 @@
 }
 /* the stand: a short neck and a flat foot, brushed metal by day and dark by night */
 .mon-neck {
-	width: 15%;
-	height: clamp(30px, 4.6vw, 64px);
+	width: 13%;
+	height: clamp(24px, 3.2vw, 46px);
 	margin: 0 auto;
 	background: linear-gradient(90deg, #b9bec3, #e7eaec 45%, #c9cdd1 60%, #a9aeb3);
 	clip-path: polygon(8% 0, 92% 0, 100% 100%, 0 100%);
 }
 .mon-foot {
-	width: 27%;
+	width: 24%;
 	height: clamp(8px, 0.9vw, 12px);
 	margin: 0 auto;
 	border-radius: 0 0 8px 8px;

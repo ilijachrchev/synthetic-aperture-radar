@@ -14,7 +14,7 @@ import { type Chapter, StoryScroll } from './story-scroll'
 export function Monitor({ stories, chapters, track }: { stories: StoryCfg[]; chapters: Chapter[]; track: HTMLElement | null }) {
 	const glass = useRef<HTMLDivElement>(null)
 	const [phone, setPhone] = useState(false)
-	const [size, setSize] = useState({ w: 1440, h: 900 })
+	const [size, setSize] = useState({ w: 1600, h: 900 })
 	const [live, setLive] = useState(false)
 	// the app's season rests while the stories cover it, and the app is not drawn at all once they cover it fully
 	const appShows = useMemo(() => ({ current: true }), [])
@@ -28,8 +28,9 @@ export function Monitor({ stories, chapters, track }: { stories: StoryCfg[]; cha
 		const pick = () => {
 			const p = window.innerWidth < 760
 			setPhone(p)
-			setSize(p ? { w: window.innerWidth, h: Math.round(window.innerHeight * 0.86) } : { w: 1440, h: 900 })
-			setLive(!p)
+			setSize(p ? { w: window.innerWidth, h: Math.round(window.innerHeight * 0.86) } : { w: 1600, h: 900 })
+			// the live app wants its desktop layout, which its own styles give from 900px of window up
+			setLive(window.innerWidth >= 900)
 		}
 		pick()
 		window.addEventListener('resize', pick)
