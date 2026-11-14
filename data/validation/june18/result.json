@@ -1,10 +1,293 @@
 {
- "question": "18 Jun 2026, Albufera rice: who is right, NISAR or Sentinel-1?",
- "referee": "Sentinel-2 L2A 2026-06-08 and 2026-06-23; wet = (LSWI + 0.05 >= EVI) or MNDWI > 0 on both dates",
- "maps": {
-  "nisar_water_ha": 6387.2,
-  "s1_water_ha": 249.6,
-  "rice_ha_scored": 14627.8
+ "question": "18 Jun 2026, Albufera rice: who is right, NISAR or Sentinel-1 (and the app's U-Net map)?",
+ "referee_v2": "optical only: wet before (2026-06-08, Sentinel-2) AND wet after (Landsat 9 2026-06-22, else Sentinel-2 2026-06-23); wet = (LSWI + 0.05 >= EVI) or MNDWI > 0. Unclear points are not imputed",
+ "rule": {
+  "min_share_pass": 0.7,
+  "min_ci_low": 0.6
+ },
+ "v2": {
+  "counts": {
+   "A": {
+    "wet": 20,
+    "dry": 0,
+    "unclear": 5
+   },
+   "B": {
+    "wet": 46,
+    "dry": 3,
+    "unclear": 101
+   },
+   "C": {
+    "wet": 23,
+    "dry": 4,
+    "unclear": 11
+   },
+   "D": {
+    "wet": 46,
+    "dry": 22,
+    "unclear": 82
+   },
+   "E": {
+    "wet": 4,
+    "dry": 133,
+    "unclear": 13
+   }
+  },
+  "b_wet_share": 0.939,
+  "control_E_wet_share": 0.029,
+  "nisar": {
+   "user": 0.94,
+   "producer": 0.517,
+   "bounds_unclear_all_dry": {
+    "user": 0.316,
+    "producer": 0.44
+   },
+   "bounds_unclear_all_wet": {
+    "user": 0.98,
+    "producer": 0.471
+   }
+  },
+  "s1": {
+   "user": 0.921,
+   "producer": 0.02,
+   "bounds_unclear_all_dry": {
+    "user": 0.696,
+    "producer": 0.038
+   },
+   "bounds_unclear_all_wet": {
+    "user": 0.944,
+    "producer": 0.018
+   }
+  },
+  "unet": {
+   "user": 1.0,
+   "producer": 0.036,
+   "bounds_unclear_all_dry": {
+    "user": 0.771,
+    "producer": 0.033
+   },
+   "bounds_unclear_all_wet": {
+    "user": 1.0,
+    "producer": 0.015
+   }
+  },
+  "map_ha": {
+   "nisar": 6387.2,
+   "s1": 249.6,
+   "unet_estimated": 198
+  },
+  "ci95": {
+   "nisar_user": [
+    0.866,
+    1.0
+   ],
+   "nisar_producer": [
+    0.477,
+    0.566
+   ],
+   "s1_user": [
+    0.844,
+    0.981
+   ],
+   "s1_producer": [
+    0.018,
+    0.022
+   ],
+   "unet_user": [
+    1.0,
+    1.0
+   ],
+   "unet_producer": [
+    0.003,
+    0.08
+   ],
+   "b_user": [
+    0.864,
+    1.0
+   ]
+  },
+  "verdict": "NISAR wins: most water only NISAR sees is water by the independent referee"
+ },
+ "v1_8_and_23_jun": {
+  "counts": {
+   "A": {
+    "wet": 19,
+    "dry": 0,
+    "unclear": 6
+   },
+   "B": {
+    "wet": 25,
+    "dry": 5,
+    "unclear": 120
+   },
+   "C": {
+    "wet": 20,
+    "dry": 4,
+    "unclear": 14
+   },
+   "D": {
+    "wet": 31,
+    "dry": 24,
+    "unclear": 95
+   },
+   "E": {
+    "wet": 2,
+    "dry": 133,
+    "unclear": 15
+   }
+  },
+  "b_wet_share": 0.833,
+  "control_E_wet_share": 0.015,
+  "nisar": {
+   "user": 0.836,
+   "producer": 0.533,
+   "bounds_unclear_all_dry": {
+    "user": 0.177,
+    "producer": 0.394
+   },
+   "bounds_unclear_all_wet": {
+    "user": 0.967,
+    "producer": 0.471
+   }
+  },
+  "s1": {
+   "user": 0.911,
+   "producer": 0.023,
+   "bounds_unclear_all_dry": {
+    "user": 0.635,
+    "producer": 0.055
+   },
+   "bounds_unclear_all_wet": {
+    "user": 0.944,
+    "producer": 0.018
+   }
+  },
+  "unet": {
+   "user": 1.0,
+   "producer": 0.067,
+   "bounds_unclear_all_dry": {
+    "user": 0.771,
+    "producer": 0.053
+   },
+   "bounds_unclear_all_wet": {
+    "user": 1.0,
+    "producer": 0.015
+   }
+  },
+  "map_ha": {
+   "nisar": 6387.2,
+   "s1": 249.6,
+   "unet_estimated": 198
+  }
+ },
+ "strict_mndwi_only": {
+  "counts": {
+   "A": {
+    "wet": 7,
+    "dry": 3,
+    "unclear": 15
+   },
+   "B": {
+    "wet": 3,
+    "dry": 26,
+    "unclear": 121
+   },
+   "C": {
+    "wet": 4,
+    "dry": 19,
+    "unclear": 15
+   },
+   "D": {
+    "wet": 10,
+    "dry": 75,
+    "unclear": 65
+   },
+   "E": {
+    "wet": 1,
+    "dry": 142,
+    "unclear": 7
+   }
+  },
+  "b_wet_share": 0.103,
+  "control_E_wet_share": 0.007,
+  "nisar": {
+   "user": 0.114,
+   "producer": 0.428,
+   "bounds_unclear_all_dry": {
+    "user": 0.025,
+    "producer": 0.222
+   },
+   "bounds_unclear_all_wet": {
+    "user": 0.828,
+    "producer": 0.562
+   }
+  },
+  "s1": {
+   "user": 0.419,
+   "producer": 0.061,
+   "bounds_unclear_all_dry": {
+    "user": 0.187,
+    "producer": 0.065
+   },
+   "bounds_unclear_all_wet": {
+    "user": 0.677,
+    "producer": 0.018
+   }
+  },
+  "unet": {
+   "user": 0.151,
+   "producer": 0.024,
+   "bounds_unclear_all_dry": {
+    "user": 0.1,
+    "producer": 0.028
+   },
+   "bounds_unclear_all_wet": {
+    "user": 0.753,
+    "producer": 0.016
+   }
+  },
+  "map_ha": {
+   "nisar": 6387.2,
+   "s1": 249.6,
+   "unet_estimated": 198
+  },
+  "ci95": {
+   "nisar_user": [
+    0.013,
+    0.237
+   ],
+   "nisar_producer": [
+    0.074,
+    0.683
+   ],
+   "s1_user": [
+    0.25,
+    0.567
+   ],
+   "s1_producer": [
+    0.032,
+    0.121
+   ],
+   "unet_user": [
+    0.025,
+    1.0
+   ],
+   "unet_producer": [
+    0.004,
+    0.059
+   ],
+   "b_user": [
+    0.0,
+    0.229
+   ]
+  },
+  "verdict": "NISAR does not pass the pre-registered rule"
+ },
+ "unet_check": {
+  "rice_ha_all_pixels": 167,
+  "rice_ha_from_sample": 198,
+  "frame": "00.webp",
+  "note": "decoded from the baked web frame (all water = open + flooded vegetation)"
  },
  "stratum_ha": {
   "A": 116.2,
@@ -13,95 +296,28 @@
   "D": 8107.2,
   "E": 5661.2
  },
- "counts": {
-  "A": {
-   "wet": 19,
-   "dry": 0,
-   "unclear": 6
-  },
-  "B": {
-   "wet": 25,
-   "dry": 5,
-   "unclear": 120
-  },
-  "C": {
-   "wet": 20,
-   "dry": 4,
-   "unclear": 14
-  },
-  "D": {
-   "wet": 31,
-   "dry": 24,
-   "unclear": 95
-  },
-  "E": {
-   "wet": 2,
-   "dry": 133,
-   "unclear": 15
-  }
- },
- "control_E_wet_share": 0.015,
- "estimates": {
-  "p_wet": {
-   "A": 1.0,
-   "B": 0.833,
-   "C": 0.833,
-   "D": 0.564
-  },
-  "nisar_user": 0.836,
-  "nisar_producer": 0.533,
-  "s1_user": 0.911,
-  "s1_producer": 0.023,
-  "b_user": 0.833,
-  "wet_share": 0.685
- },
- "ci95": {
-  "nisar_user": [
-   0.695,
-   0.962
-  ],
-  "nisar_producer": [
-   0.466,
-   0.606
-  ],
-  "s1_user": [
-   0.822,
-   0.979
-  ],
-  "s1_producer": [
-   0.019,
-   0.027
-  ],
-  "b_user": [
-   0.69,
-   0.962
-  ],
-  "wet_share": [
-   0.584,
-   0.778
-  ]
- },
- "wet_rice_ha": [
-  10023,
-  [
-   8548,
-   11379
-  ]
- ],
- "rule": {
-  "min_share_pass": 0.7,
-  "min_ci_low": 0.6
- },
- "verdict": "NISAR wins: most water only NISAR sees is water by the independent referee",
- "s2_sanity": {
+ "rice_ha_scored": 14627.8,
+ "optical_sanity": {
   "2026-06-08": {
    "median_ndvi": 0.345,
-   "median_b11": 0.1078
+   "median_swir": 0.1078,
+   "clear_points": 513
   },
   "2026-06-23": {
    "median_ndvi": 0.618,
-   "median_b11": 0.1696
+   "median_swir": 0.1696,
+   "clear_points": 513
+  },
+  "2026-06-22": {
+   "median_ndvi": 0.591,
+   "median_swir": 0.1547,
+   "clear_points": 513
   }
  },
- "bias_note": "optical misses water under a closed canopy: the referee is biased against NISAR"
+ "limits": [
+  "optical misses water under a closed canopy: the referee is biased against NISAR",
+  "wet before and after cannot see a drainage of a few days around 18 Jun (eixugo)",
+  "wet mud can trip both the flooding index and NISAR's dark threshold (see strict_mndwi_only)",
+  "DSWx-S1 maps inundated vegetation (class 3) only where its land cover says wetland, so 2 % is the product, not raw C-band"
+ ]
 }
