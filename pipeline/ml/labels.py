@@ -8,12 +8,13 @@ Sources, lowest to highest priority (a later source overwrites an earlier one):
 3. EFFIS burnt area         -> burned
 4. Hand-drawn polygons      -> any class, from a `class` column (GeoJSON or GeoPackage)
 
-The sea is found separately (sea_mask) and is never a label: it would swamp the
-permanent-water class and it is not part of the land story.
+The sea is never a label: it would swamp the permanent-water class and it is
+not part of the land story.
 
-Defaults (default_sources) are the files Ilija's pipeline commits:
+Defaults (default_sources) are the files the shared pipeline commits:
 data/context/<site>_worldcover_2021_20m.tif, data/context/<site>_jrc_occurrence_20m.tif,
-data/labels/<site>_effis_burnt_area.geojson and our data/labels/<site>_drawn.geojson.
+data/context/<site>_sea_20m.tif, data/labels/<site>_effis_burnt_area.geojson,
+and our data/labels/<site>_drawn.geojson.
 
 Written with SI assistance (Claude Code), reviewed by the team.
 """
@@ -28,14 +29,10 @@ import rasterio
 from rasterio.enums import Resampling
 from rasterio.features import rasterize
 from rasterio.warp import reproject
-from scipy.ndimage import binary_dilation, binary_erosion
-from scipy.ndimage import label as connected_components
-
+from pipeline.context import sea_mask as shared_sea_mask
 from pipeline.stack import Grid
 
 from . import config
-
-SEA_CUT_PX = 2  # canals narrower than about 2 x 2 x 20 m = 80 m are cut when finding the sea
 
 
 def default_sources(site: str) -> dict[str, Path | None]:
@@ -45,6 +42,7 @@ def default_sources(site: str) -> dict[str, Path | None]:
         "jrc_occurrence": config.CONTEXT_DIR / f"{site}_jrc_occurrence_20m.tif",
         "effis": config.LABELS_DIR / f"{site}_effis_burnt_area.geojson",
         "polygons": config.LABELS_DIR / f"{site}_drawn.geojson",
+        "sea": config.CONTEXT_DIR / f"{site}_sea_20m.tif",
     }
     return {k: (p if p.exists() else None) for k, p in candidates.items()}
 
@@ -91,16 +89,12 @@ def rasterize_polygons(path: str | Path, grid: Grid, class_name: str | None = No
                      fill=config.UNLABELED, dtype="int16")
 
 
-def sea_mask(worldcover: np.ndarray | None, jrc_occurrence: np.ndarray | None) -> np.ndarray:
-    """Open water connected to the east edge of the grid.
+def sea_mask(worldcover: np.ndarray | None, jrc_occurrence: np.ndarray | None,
+             edges: tuple[str, ...] = ("east",)) -> np.ndarray:
+    """Sea computed from in-memory layers, with the shared rule in pipeline.context.
 
-    Both Valencian sites have the Mediterranean on their east side, so "water
-    touching the east edge" is the sea (plus harbours joined to it). The Albufera
-    lagoon reaches the sea through canals one or two pixels wide, so the water is
-    first shrunk by SEA_CUT_PX pixels (cutting the canals), the east-edge parts are
-    taken, and they are grown back by the same amount inside the original water.
-    On the committed grids this gives about 28 % sea at Albufera with the
-    2,478 ha lagoon kept whole, and 1.8 % at Espadà.
+    Only a fallback: on the site grids the committed data/context/<site>_sea_20m.tif
+    (same rule: thin canals cut so the Albufera lagoon stays inland) is read instead.
     """
     water = None
     if worldcover is not None:
@@ -110,13 +104,7 @@ def sea_mask(worldcover: np.ndarray | None, jrc_occurrence: np.ndarray | None) -
         water = jrc_water if water is None else (water | jrc_water)
     if water is None:
         raise ValueError("sea_mask needs WorldCover or JRC")
-    # border_value=1: the area past the grid edge counts as water, so the shrink
-    # does not peel the sea away from the east edge.
-    core = binary_erosion(water, iterations=SEA_CUT_PX, border_value=1)
-    comps, _ = connected_components(core)
-    east = np.unique(comps[:, -1])
-    east = east[east > 0]
-    return binary_dilation(np.isin(comps, east), iterations=SEA_CUT_PX) & water
+    return shared_sea_mask(water, edges)
 
 
 def build_labels(
@@ -125,8 +113,13 @@ def build_labels(
     jrc_occurrence: str | Path | None = None,
     effis: str | Path | None = None,
     polygons: str | Path | None = None,
+    sea: str | Path | None = None,
 ) -> tuple[np.ndarray, np.ndarray]:
-    """Return (labels int16 with UNLABELED, sea bool)."""
+    """Return (labels int16 with UNLABELED, sea bool).
+
+    sea: a 1 = sea raster (data/context/<site>_sea_20m.tif). Without it the sea
+    is computed from WorldCover / JRC with the same shared rule.
+    """
     shape = (grid.height, grid.width)
     labels = np.full(shape, config.UNLABELED, dtype=np.int16)
     wc = occ = None
@@ -152,9 +145,14 @@ def build_labels(
         drawn = rasterize_polygons(polygons, grid)
         labels[drawn != config.UNLABELED] = drawn[drawn != config.UNLABELED]
 
-    sea = sea_mask(wc, occ) if (wc is not None or occ is not None) else np.zeros(shape, bool)
-    labels[sea] = config.UNLABELED
-    return labels, sea
+    if sea is not None:
+        sea_px = read_on_grid(sea, grid, Resampling.nearest) == 1
+    elif wc is not None or occ is not None:
+        sea_px = sea_mask(wc, occ)
+    else:
+        sea_px = np.zeros(shape, bool)
+    labels[sea_px] = config.UNLABELED
+    return labels, sea_px
 
 
 def label_counts(labels: np.ndarray) -> dict[str, int]:

@@ -43,7 +43,7 @@ No stack yet? Try the whole thing on a **fake** stack in the same format:
 `data/stack/<site>_<stack>.nc` from `pipeline.stack`: HH and HV in linear power (NaN where not valid), `valid`, per-date `granule_ur`, `crid`, `maturity`, `pols`, on the site grid (`site_grid`, EPSG:32630, 20 m). `data.load` converts to dB and refuses a stack that is off its site grid. Tracks are never mixed: run each stack on its own.
 
 - **HH-only date** (2026-09-22 on 058 A): HV is missing that day, but the date still counts for HH.
-- **Newer processing release:** the last date (28 Oct, CRID P05036, VALIDATED) can have a calibration step that looks like change. By default only the most common CRID is kept (`--crid majority`). Use `--crid all` to keep every date. Dates left out are listed in `metrics.json`.
+- **Newer processing release:** the last date (28 Oct, CRID P05036, VALIDATED) comes from a newer release. On stable urban pixels the step into it is only -0.10 to -0.34 dB in HH, inside normal 12-day changes ([DATA.md](../../docs/DATA.md)), so every date is kept by default. `--crid majority` leaves it out; dates left out are listed in `metrics.json`.
 
 ## Labels (`labels.py`)
 
@@ -56,7 +56,7 @@ Default files, used when they exist (later rows overwrite earlier ones):
 | 3 | `data/labels/<site>_effis_burnt_area.geojson` | burned |
 | 4 | `data/labels/<site>_drawn.geojson` (GeoJSON or GeoPackage, `class` column) | anything, mainly **rice paddy** |
 
-**The sea** (water joined to the east edge of the map, with canals cut first so the Albufera lagoon stays inland) is never a label and is not classified. It covers about 28 % of the Albufera grid.
+**The sea** (`data/context/<site>_sea_20m.tif`: water joined to the east edge of the map, with canals cut first so the Albufera lagoon stays inland) is never a label and is not classified. It covers about 28 % of the Albufera grid.
 
 What the committed files give today (20 m pixels):
 

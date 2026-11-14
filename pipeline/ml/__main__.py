@@ -58,7 +58,7 @@ def _cmd_run(args: argparse.Namespace) -> None:
     else:
         found = labels.default_sources(st.site)
         given = {"worldcover": args.worldcover, "jrc_occurrence": args.jrc,
-                 "effis": args.effis, "polygons": args.polygons}
+                 "effis": args.effis, "polygons": args.polygons, "sea": args.sea}
         sources = {k: (Path(v) if v else found[k]) for k, v in given.items()}
         y_map, sea = labels.build_labels(st.grid, **sources)
         sources = {k: (_rel(v) if v else None) for k, v in sources.items()}
@@ -150,13 +150,14 @@ def main(argv: list[str] | None = None) -> None:
     r = sub.add_parser("run", help="features -> train -> score -> export for one stack")
     r.add_argument("--site", required=True, help="albufera or espada (or synthetic)")
     r.add_argument("--stack", required=True, help="track_direction_frame, e.g. 066_D_069")
-    r.add_argument("--crid", default="majority",
-                   help="which processing release to keep: majority (default), all, or e.g. P05023")
+    r.add_argument("--crid", default="all",
+                   help="which processing release to keep: all (default), majority, or e.g. P05023")
     r.add_argument("--worldcover", help="override the default WorldCover file")
     r.add_argument("--jrc", help="override the default JRC occurrence file")
     r.add_argument("--effis", help="override the default EFFIS burnt area file")
     r.add_argument("--polygons", help="hand-drawn GeoJSON/GeoPackage with a `class` column "
                                       "(default data/labels/<site>_drawn.geojson)")
+    r.add_argument("--sea", help="override the default sea mask file (1 = sea)")
     r.add_argument("--truth-var", help="use a label variable inside the stack (fake stacks only)")
     r.add_argument("--stack-dir", default=str(config.STACK_DIR))
     r.add_argument("--out-dir", default=str(config.ML_OUT_DIR))

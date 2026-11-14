@@ -4,8 +4,10 @@ The stack keeps HH and HV in linear power with NaN where not valid; here they
 become dB with NaN for "not seen". HV is checked on its own, so the HH-only
 date of the 058 A stacks still gives HH information.
 
-Dates from a different processing release (CRID) can carry a calibration step
-that looks like real change, so by default only the most common CRID is kept.
+The newest date of the stacks comes from a newer processing release (CRID
+P05036, VALIDATED). Ilija measured the step into it on stable urban pixels:
+-0.10 to -0.34 dB in HH, inside normal 12-day changes (DATA.md), so every date
+is kept by default. crid="majority" or a CRID name keeps only those dates.
 
 Written with SI assistance (Claude Code), reviewed by the team.
 """
@@ -51,8 +53,8 @@ def stack_path(site: str, stack_id: str, stack_dir: Path) -> Path:
     return stack_dir / f"{site}_{stack_id}.nc"
 
 
-def load(path: str | Path, crid: str = "majority") -> MLStack:
-    """Load a stack. crid: "majority" (default), "all", or one CRID such as "P05023"."""
+def load(path: str | Path, crid: str = "all") -> MLStack:
+    """Load a stack. crid: "all" (default), "majority", or one CRID such as "P05023"."""
     ds = open_stack(path)
     for var in ("HH", "HV", "valid"):
         if var not in ds or ds[var].dims != ("time", "y", "x"):

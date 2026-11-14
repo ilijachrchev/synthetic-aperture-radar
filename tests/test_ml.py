@@ -91,12 +91,13 @@ def test_load_converts_to_db_and_keeps_grid(fake_stack_path):
     assert st.synthetic and "truth" in st.extra
 
 
-def test_load_leaves_out_the_newer_release_by_default(fake_stack_path):
-    st = data.load(fake_stack_path)
+def test_crid_filter_can_leave_out_the_newer_release(fake_stack_path):
+    assert len(data.load(fake_stack_path).dates) == 11          # default keeps every date
+    st = data.load(fake_stack_path, crid="majority")
     assert len(st.dates) == 10 and st.dates[-1] == "2026-10-16"
     assert st.dropped[0]["date"] == "2026-10-28" and "P05036" in st.dropped[0]["reason"]
     assert {r["crid"] for r in st.provenance} == {"P05023"}
-    assert len(data.load(fake_stack_path, crid="all").dates) == 11
+    assert len(data.load(fake_stack_path, crid="P05036").dates) == 1
 
 
 def test_load_rejects_a_stack_off_the_site_grid(tmp_path):
@@ -178,7 +179,11 @@ ALBUFERA_WC = config.CONTEXT_DIR / "albufera_worldcover_2021_20m.tif"
 def test_real_albufera_labels_on_the_site_grid():
     grid = site_grid(get_site("albufera"))
     src = labels.default_sources("albufera")
-    y, sea = labels.build_labels(grid, worldcover=src["worldcover"], jrc_occurrence=src["jrc_occurrence"])
+    assert src["sea"] is not None                     # committed by pipeline.context
+    y, sea = labels.build_labels(grid, worldcover=src["worldcover"], jrc_occurrence=src["jrc_occurrence"],
+                                 sea=src["sea"])
+    _, sea_computed = labels.build_labels(grid, worldcover=src["worldcover"], jrc_occurrence=src["jrc_occurrence"])
+    assert (sea != sea_computed).mean() < 0.001       # the file and the shared rule agree
     assert y.shape == (grid.height, grid.width)
     assert 0.2 < sea.mean() < 0.4                     # the Mediterranean, about 30 %
     water = y == config.CLASS_INDEX["permanent_water"]
@@ -197,7 +202,7 @@ def test_command_end_to_end_on_fake_stack(tmp_path):
     run = out_dir / "synthetic_066_D_069"
     m = json.loads((run / "metrics.json").read_text())
     assert m["overall_accuracy"] > 0.9                 # fake classes are easy by design
-    assert m["dates_left_out"][0]["date"] == "2026-10-28"
+    assert len(m["dates"]) == 11 and m["dates_left_out"] == []
     assert m["sea_pixels"] > 0
     assert not manifest.exists()                       # fake runs never touch the manifest
 
