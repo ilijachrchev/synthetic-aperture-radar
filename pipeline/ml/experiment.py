@@ -81,6 +81,7 @@ class Prepared:
     dates: list[str] = field(default_factory=list)
     sources: dict = field(default_factory=dict)
     effis_far: np.ndarray | None = None   # (n,) bool: more than FAR_FROM_FIRE_M from EFFIS
+    effis_in: np.ndarray | None = None    # (n,) bool: inside the EFFIS outline
     y_train: np.ndarray | None = None     # training labels if they differ (e.g. shrunk CORINE); scores
                                           # always use y_map, so a label change cannot move the goalposts
 
@@ -127,13 +128,13 @@ def prepare(site: str, cfg: Config, stack_dir: Path, cache: Path | None = None,
         y_train, _ = labels.build_labels(grid, **found, orchard_shrink_m=cfg.orchard_shrink_m,
                                          forest_shrink_m=cfg.forest_shrink_m, orchard_rule=cfg.orchard_rule)
         y_train = np.where(usable.reshape(shape), y_train, config.UNLABELED).astype(np.int16)
-    far = None
+    far = fire = None
     if found["effis"] is not None:
         fire = labels.rasterize_polygons(found["effis"], grid, class_name="burned") != config.UNLABELED
         far = (distance_transform_edt(~fire) * config.PIXEL_SIZE_M > FAR_FROM_FIRE_M).ravel()
     return Prepared(site, stacks, shape, np.hstack(Xs), names, usable, y_map, dates,
                     {k: (str(v.relative_to(REPO_ROOT).as_posix()) if v else None) for k, v in found.items()},
-                    far, y_train)
+                    far, None if fire is None else fire.ravel(), y_train)
 
 
 def _forbid(cfg: Config, p: Prepared) -> dict:
@@ -187,7 +188,12 @@ def run_val(cfg: Config, p: Prepared, seed: int, full_map: bool = False,
         out["on_own_labels"] = _brief(train.evaluate(
             model, p.X[own], yf[own], forbid={c: f[own] for c, f in forbid.items()}))
     if full_map and p.effis_far is not None:
-        class_map, _ = train.predict_map(model, p.X, p.usable, p.shape, forbid=forbid)
+        # Only pixels the rule allows can come out burned: predict those (same map, much faster).
+        allowed = p.usable.copy()
+        for c, f in forbid.items():
+            if c == config.CLASS_INDEX["burned"]:
+                allowed &= ~f
+        class_map, _ = train.predict_map(model, p.X, allowed, p.shape, forbid=forbid)
         out.update(_burned_area(class_map, p))
     if rules:
         out["rules"] = {}
@@ -213,8 +219,12 @@ def run_val(cfg: Config, p: Prepared, seed: int, full_map: bool = False,
 
 def _burned_area(class_map: np.ndarray, p: Prepared) -> dict:
     burned = (class_map == config.CLASS_INDEX["burned"]).ravel()
-    return {"burned_ha_total": round(float(burned.sum()) * config.PIXEL_HA, 1),
-            "burned_ha_far_from_effis": round(float((burned & p.effis_far).sum()) * config.PIXEL_HA, 1)}
+    out = {"burned_ha_total": round(float(burned.sum()) * config.PIXEL_HA, 1),
+           "burned_ha_far_from_effis": round(float((burned & p.effis_far).sum()) * config.PIXEL_HA, 1)}
+    if p.effis_in is not None:
+        out["burned_ha_inside_effis"] = round(float((burned & p.effis_in).sum()) * config.PIXEL_HA, 1)
+        out["effis_ha"] = round(float(p.effis_in.sum()) * config.PIXEL_HA, 1)
+    return out
 
 
 def _summary(runs: list[dict]) -> dict:
@@ -325,9 +335,69 @@ def validate(version: str, parent: str | None, change: str, cfg: Config, stack_d
     return entry
 
 
+def finalize(version: str, parent: str | None, change: str, cfg: Config, stack_dir: Path,
+             cache: Path | None, out_dir: Path = config.ML_OUT_DIR, manifest: Path = config.MANIFEST,
+             write_maps: bool = True) -> dict:
+    """Finalist only: test blocks once per site, the Pego-Oliva benchmark, maps and model files."""
+    from pipeline.config import get_site
+    from pipeline.stack import site_grid
+
+    from . import __version__, export
+
+    t0 = time.time()
+    entry = {"version": version, "parent": parent, "change": change, "stage": "final",
+             "config": asdict(cfg), "sites": {}}
+    models = {}
+    for site in SITES:
+        p = prepare(site, cfg, stack_dir, cache)
+        res, model, class_map, conf = run_test(cfg, p)
+        models[site] = (model, p)
+        stack_name = "+".join(p.stacks)
+        entry["sites"][site] = {"stacks": list(p.stacks), "dates": p.dates,
+                                **{k: v for k, v in res.items() if k not in ("per_class", "confusion_matrix")}}
+        print(f"{version} {site} TEST: accuracy {res['accuracy']:.4f}, macro F1 {res['macro_f1']:.4f} "
+              + " ".join(f"{c}={v:.3f}" for c, v in res["per_class_f1"].items()), flush=True)
+        if not write_maps:
+            continue
+        d = out_dir / f"{site}_{stack_name}"
+        paths = export.write_outputs(class_map, conf, site_grid(get_site(site)), d)
+        info = {"site": site, "stack": stack_name, "model_version": version, "code_version": __version__,
+                "created_utc": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
+                "config": asdict(cfg), "dates": p.dates, "label_sources": p.sources, "feature_names": p.names,
+                "scores_are": "agreement with the labels (WorldCover, JRC, CORINE, EFFIS, drawn fields) on "
+                              "held-out 1 km test blocks, not ground-truth accuracy",
+                "model_file": "model.txt", "model_classes": [config.CLASSES[int(c)] for c in model.classes_],
+                "class_area_ha": train.class_areas_ha(class_map),
+                "valid_fraction": float(p.usable.mean()), **res}
+        export.write_json(info, d / "metrics.json")
+        export.write_json(train.feature_importance(model, p.names), d / "feature_importance.json")
+        model.booster_.save_model(str(d / "model.txt"))
+        base = {"model": "ml", "site": site, "stack": stack_name, "model_version": version,
+                "date": f"{min(p.dates)}/{max(p.dates)}", "valid_fraction": info["valid_fraction"],
+                "score": {"macro_f1": res["macro_f1"], "overall_accuracy": res["accuracy"]}}
+        rel = lambda q: q.resolve().relative_to(REPO_ROOT).as_posix()  # noqa: E731
+        export.upsert_manifest(manifest, [
+            {**base, "layer": "class", "file": rel(paths["class"]), "classes": config.CLASSES},
+            {**base, "layer": "confidence", "file": rel(paths["confidence"]),
+             "units": "percent, highest class probability"}], key_fields=export.ML_MANIFEST_KEY)
+    train_site, bench_site = BENCHMARK
+    model, tp = models[train_site]
+    bp = prepare(bench_site, cfg, stack_dir, cache, stacks=SITES[train_site])
+    bench = run_benchmark(cfg, tp, bp, model=model)
+    entry["benchmark"] = {k: v for k, v in bench.items() if k != "per_class"}
+    print(f"{version} BENCHMARK {train_site} -> {bench_site}: accuracy {bench['accuracy']:.4f}, "
+          f"macro F1 {bench['macro_f1']:.4f} "
+          + " ".join(f"{c}={v:.3f}" for c, v in bench["per_class_f1"].items()), flush=True)
+    entry.update(seconds=round(time.time() - t0), git_commit=_git_commit(),
+                 created_utc=dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"))
+    append_registry(entry)
+    return entry
+
+
 def main(argv: list[str] | None = None) -> None:
     ap = argparse.ArgumentParser(prog="python -m pipeline.ml.experiment")
-    ap.add_argument("stage", choices=["val"])
+    ap.add_argument("stage", choices=["val", "final"])
+    ap.add_argument("--no-maps", action="store_true", help="final: score only, write no maps")
     ap.add_argument("--version", required=True)
     ap.add_argument("--parent")
     ap.add_argument("--change", default="")
@@ -340,6 +410,10 @@ def main(argv: list[str] | None = None) -> None:
     a = ap.parse_args(argv)
     base = asdict(V1 if a.base == "v1" else Config())
     cfg = Config(**{**base, **json.loads(a.config)})
+    if a.stage == "final":
+        finalize(a.version, a.parent, a.change, cfg, Path(a.stack_dir), Path(a.cache) if a.cache else None,
+                 write_maps=not a.no_maps)
+        return
     validate(a.version, a.parent, a.change, cfg, Path(a.stack_dir), Path(a.cache) if a.cache else None,
              sites=tuple(a.sites.split(",")),
              rules=tuple(float(x) for x in a.rules.split(",")) if a.rules else None)

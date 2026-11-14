@@ -536,3 +536,31 @@ def test_orchard_rule_names_the_ground_between_orchard_trees(tmp_path):
     assert poly[0, 1] == drop[0, 1] == config.CLASS_INDEX["urban"]   # buildings stay urban
     with pytest.raises(ValueError):
         labels.build_labels(grid, **kw, orchard_rule="all")
+
+
+def _toy_prepared(seed=0, n=200):
+    """A fake site: 4 classes in 10 px parcels, feature 0 tells the class, hv_step_drop marks burned."""
+    from pipeline.ml import experiment
+    rng = np.random.default_rng(seed)
+    parcels = rng.integers(0, 4, size=(n // 10, n // 10))
+    cls = np.kron(parcels, np.ones((10, 10), int))
+    code = np.array([config.CLASS_INDEX[c] for c in ("rice_paddy", "urban", "forest", "burned")])
+    y = code[cls].astype(np.int16)
+    names = ["signal", "hv_step_drop", "hv_step_drop@b"]
+    X = np.stack([cls + rng.normal(0, 0.3, cls.shape), np.where(cls == 3, 2.0, 0.0),
+                  np.zeros(cls.shape)], axis=-1).reshape(-1, 3).astype(np.float32)
+    return experiment.Prepared("toy", ("a", "b"), (n, n), X, names, np.ones(n * n, bool), y,
+                               effis_far=(cls != 3).ravel())
+
+
+def test_experiment_val_test_and_benchmark_run_on_a_toy_site():
+    from pipeline.ml import experiment
+    cfg = experiment.Config(max_per_class=2000, num_leaves=15, min_child=10)
+    p = _toy_prepared()
+    r = experiment.run_val(cfg, p, 43, full_map=True, rules=(0, 1.0))
+    assert r["macro_f1"] > 0.95 and r["burned_ha_far_from_effis"] == 0
+    assert set(r["rules"]) == {"0", "1.0"} and r["rules"]["1.0"]["macro_f1"] > 0.95
+    res, model, class_map, conf = experiment.run_test(cfg, p)
+    assert res["macro_f1"] > 0.95 and class_map.shape == (200, 200)
+    bench = experiment.run_benchmark(cfg, p, _toy_prepared(seed=1), model=model)
+    assert bench["macro_f1"] > 0.95 and bench["pixels"] == 200 * 200
