@@ -87,6 +87,8 @@ export function StoryScroll({ chapters }: { chapters: Chapter[] }) {
 	const fits = useRef<Fit[]>([])
 	const shown = useRef<number[]>(chapters.map(() => -1))
 	const scrubs = useMemo(() => chapters.map(() => ({ current: 0 })), [chapters])
+	// which chapters are on screen at all, read by their change layers every frame
+	const shows = useMemo(() => chapters.map((_, i) => ({ current: i === 0 })), [chapters])
 	const progress = useRef(0)
 	const [cur, setCur] = useState(0)
 	const [near, setNear] = useState(false)
@@ -97,7 +99,15 @@ export function StoryScroll({ chapters }: { chapters: Chapter[] }) {
 	useEffect(() => {
 		const el = track.current
 		if (!el) return
-		const io = new IntersectionObserver(([e]) => e.isIntersecting && setNear(true), { rootMargin: '150% 0px' })
+		const io = new IntersectionObserver(
+			([e]) => {
+				if (!e.isIntersecting) return
+				setNear(true)
+				// decode every ground before it flies in, so no chapter waits on a picture
+				el.querySelectorAll<HTMLImageElement>('.st-ground').forEach((im) => im.decode().catch(() => {}))
+			},
+			{ rootMargin: '150% 0px' },
+		)
 		io.observe(el)
 		return () => io.disconnect()
 	}, [])
@@ -141,6 +151,7 @@ export function StoryScroll({ chapters }: { chapters: Chapter[] }) {
 				scene.style.opacity = String(o)
 				scene.style.visibility = o > 0.002 ? 'visible' : 'hidden'
 			}
+			shows[i].current = o > 0.002
 			if (geo) geo.style.transform = `scale(${s})`
 			if (copy) {
 				copy.style.opacity = String(co)
@@ -247,7 +258,7 @@ export function StoryScroll({ chapters }: { chapters: Chapter[] }) {
 									}}
 								>
 									{near ? (
-										<ChangeLayer className="st-change" kind={c.change} frames={c.frames} scrub={scrubs[i]} active={Math.abs(i - cur) <= 1} base={0.94} refCount={c.refCount} revealAt={c.revealAt} epicentre={c.epi} />
+										<ChangeLayer className="st-change" kind={c.change} frames={c.frames} scrub={scrubs[i]} active={Math.abs(i - cur) <= 1} visible={shows[i]} base={0.94} refCount={c.refCount} revealAt={c.revealAt} epicentre={c.epi} />
 									) : null}
 									<span className="st-tag mono">NISAR · track {c.track}</span>
 								</div>
