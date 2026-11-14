@@ -67,7 +67,7 @@
 }
 
 html {
-	background: var(--bg);
+	background: url("/img/grain.png") repeat, var(--bg);
 	-webkit-text-size-adjust: 100%;
 }
 html.lenis,
@@ -78,12 +78,11 @@ html.lenis body {
 	overscroll-behavior: contain;
 }
 body {
-	background: url("/img/grain.png") repeat, var(--bg);
 	color: var(--ink);
 	font-family: var(--font-sans);
 	font-weight: 450;
 	-webkit-font-smoothing: antialiased;
-	transition: background-color 0.45s var(--ease), color 0.45s var(--ease);
+	transition: color 0.45s var(--ease);
 }
 main {
 	overflow-x: clip;
