@@ -46,3 +46,6 @@ AGENTS.md
 
 # copied from node_modules by scripts/copy-maplibre-worker.mjs
 /public/maplibre
+
+# downloaded Sentinel-1 water maps, rebuilt by scripts/bake_water.py
+/.cache

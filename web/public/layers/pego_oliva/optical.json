@@ -1,0 +1,107 @@
+{
+ "scenes": [
+  {
+   "day": "2026-10-08",
+   "file": "optical/2026-10-08.webp",
+   "time_utc": "2026-10-08T11:00:42Z",
+   "platform": "sentinel-2a",
+   "covered": 1.0,
+   "scenes": [
+    {
+     "id": "S2A_30SYH_20261008_1_L2A",
+     "tile": "MGRS-30SYH",
+     "cloud_pct": 32.0
+    },
+    {
+     "id": "S2A_30SYJ_20261008_1_L2A",
+     "tile": "MGRS-30SYJ",
+     "cloud_pct": 2.4
+    },
+    {
+     "id": "S2A_31SBD_20261008_1_L2A",
+     "tile": "MGRS-31SBD",
+     "cloud_pct": 2.6
+    }
+   ]
+  },
+  {
+   "day": "2026-10-18",
+   "file": "optical/2026-10-18.webp",
+   "time_utc": "2026-10-18T11:00:39Z",
+   "platform": "sentinel-2a",
+   "covered": 1.0,
+   "scenes": [
+    {
+     "id": "S2A_30SYH_20261018_1_L2A",
+     "tile": "MGRS-30SYH",
+     "cloud_pct": 99.2
+    },
+    {
+     "id": "S2A_30SYJ_20261018_1_L2A",
+     "tile": "MGRS-30SYJ",
+     "cloud_pct": 100.0
+    }
+   ]
+  },
+  {
+   "day": "2026-10-21",
+   "file": "optical/2026-10-21.webp",
+   "time_utc": "2026-10-21T11:00:29Z",
+   "platform": "sentinel-2b",
+   "covered": 1.0,
+   "scenes": [
+    {
+     "id": "S2B_30SYH_20261021_0_L2A",
+     "tile": "MGRS-30SYH",
+     "cloud_pct": 0.0
+    },
+    {
+     "id": "S2B_30SYJ_20261021_0_L2A",
+     "tile": "MGRS-30SYJ",
+     "cloud_pct": 0.0
+    },
+    {
+     "id": "S2B_31SBC_20261021_0_L2A",
+     "tile": "MGRS-31SBC",
+     "cloud_pct": 0.0
+    },
+    {
+     "id": "S2B_31SBD_20261021_0_L2A",
+     "tile": "MGRS-31SBD",
+     "cloud_pct": 0.0
+    }
+   ]
+  },
+  {
+   "day": "2026-10-28",
+   "file": "optical/2026-10-28.webp",
+   "time_utc": "2026-10-28T11:00:35Z",
+   "platform": "sentinel-2a",
+   "covered": 1.0,
+   "scenes": [
+    {
+     "id": "S2A_30SYH_20261028_1_L2A",
+     "tile": "MGRS-30SYH",
+     "cloud_pct": 17.3
+    },
+    {
+     "id": "S2A_30SYJ_20261028_1_L2A",
+     "tile": "MGRS-30SYJ",
+     "cloud_pct": 25.5
+    }
+   ]
+  }
+ ],
+ "site": "pego_oliva",
+ "width": 3613,
+ "height": 3594,
+ "zoom": 14,
+ "bounds": [
+  -0.2500248,
+  38.7799821,
+  0.0600815,
+  39.0200506
+ ],
+ "source": "Sentinel-2 L2A true colour, Element 84 Earth Search STAC on AWS",
+ "credit": "Contains modified Copernicus Sentinel data 2026"
+}
