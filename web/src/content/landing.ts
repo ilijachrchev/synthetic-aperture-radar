@@ -1,97 +1,131 @@
-// Section copy. Every sentence is taken from the repository README or docs/RESEARCH.md (the team's words) and only
-// shaped into headings and lines. Nothing here claims a result the models have not produced yet.
+// Landing copy. Facts come from the repository README, docs/MODELS.md and the real pass list (src/data/passes.json);
+// headings are those facts set in the 8x grammar: short statements, each ending in a full stop.
 import type { SiteKey } from '@/lib/radar'
 
+export const HERO = {
+	lines: ['Flood. Grow.', 'Burn. Sink.'],
+	accent: ['Sink.'],
+	lead: 'One web app that shows how the land around Valencia changes, seen by NISAR radar, and what is likely to come next.',
+	source: { label: 'NASA-ISRO NISAR, via NASA ASF DAAC', href: 'https://nisar-docs.asf.alaska.edu/' },
+}
+
+export const PASSES = {
+	line1: 'One radar.',
+	/** the second line for each beat of the pinned mosaic; the last one is filled with the real count */
+	beats: ['One pass.', 'Every 12 days.'],
+	para: "NISAR's L-band radar sees through cloud, day or night. It passes over the Albufera every 12 days on each of three tracks.",
+}
+
+export type StoryKey = 'water' | 'fire' | 'sink' | 'quake'
 export type Story = {
-	key: 'water' | 'fire' | 'sink' | 'quake'
+	key: StoryKey
+	tab: string
 	title: string
 	what: string
 	where: string
-	site: SiteKey
-	/** which pass to show: by date (last date of a pass or pair) and track */
-	show: { date: string; track: string }
 	kind: string
+	site: SiteKey
+	/** two passes to compare (before, after) by last date and track; one pass when there is nothing to compare */
+	compare: { site: SiteKey; date: string; track: string }[]
+	note: string
 }
 
-export const STORIES_HEAD = { a: 'Several kinds of surface change,', b: 'not just', accent: 'one.' }
-export const STORIES_LINE = 'Each story comes with the real NISAR passes that cover it.'
+export const STORIES_HEAD = { lines: ['Four stories.', 'One map.'], line: 'Several kinds of surface change, not just one. Each comes with the real NISAR passes that cover it.' }
 
 export const STORIES: Story[] = [
 	{
 		key: 'water',
+		tab: 'Farm water',
 		title: 'Farm water vs storm water',
-		what: 'Rice fields flooded on purpose, next to the DANA "Adam" flood of Oct 2026',
+		what: 'Rice fields flooded on purpose, next to the DANA "Adam" flood of Oct 2026.',
 		where: 'Albufera · Pego-Oliva marsh',
+		kind: 'Radar brightness',
 		site: 'albufera',
-		show: { date: '2026-10-28', track: '066' },
-		kind: 'Radar brightness (GCOV)',
+		compare: [
+			{ site: 'coast', date: '2026-07-12', track: '066' },
+			{ site: 'coast', date: '2026-10-28', track: '066' },
+		],
+		note: 'Flooded paddies read dark: open water sends the pulse away.',
 	},
 	{
 		key: 'fire',
+		tab: 'Fire scar',
 		title: 'Fire scar',
-		what: 'Forest burned in summer 2026',
+		what: 'Forest burned in summer 2026.',
 		where: "Serra d'Espadà",
+		kind: 'Radar brightness',
 		site: 'espada',
-		show: { date: '2026-08-17', track: '058' },
-		kind: 'Radar brightness (GCOV)',
+		compare: [
+			{ site: 'espada', date: '2026-07-24', track: '058' },
+			{ site: 'espada', date: '2026-08-17', track: '058' },
+		],
+		note: 'Burned forest loses its canopy, and its brightness drops.',
 	},
 	{
 		key: 'sink',
+		tab: 'Sinking ground',
 		title: 'Sinking ground',
-		what: 'Land dropping a few cm a year from groundwater pumping',
+		what: 'Land dropping a few cm a year from groundwater pumping.',
 		where: 'Lorca',
+		kind: 'Ground motion pairs',
 		site: 'lorca',
-		show: { date: '2026-08-24', track: '159' },
-		kind: 'Ground motion pairs (GUNW)',
+		compare: [{ site: 'lorca', date: '2026-08-24', track: '159' }],
+		note: 'Colours show motion toward or away from the satellite between two passes.',
 	},
 	{
 		key: 'quake',
+		tab: 'Earthquake',
 		title: 'Earthquake (global)',
-		what: 'Ground moved by the M7.7 quake of 9 Oct 2026',
+		what: 'Ground moved by the M7.7 quake of 9 Oct 2026.',
 		where: 'Panama',
+		kind: 'Ground motion pairs',
 		site: 'panama',
-		show: { date: '2026-10-09', track: '141' },
-		kind: 'Ground motion pairs (GUNW)',
+		compare: [
+			{ site: 'panama', date: '2026-09-27', track: '141' },
+			{ site: 'panama', date: '2026-10-09', track: '141' },
+		],
+		note: 'The pair that spans the quake fills with fringes; the pair before it does not.',
 	},
 ]
 
-export const PASSES_HEAD = { a: 'Every 12-day pass,', b: 'not a single', accent: 'snapshot.' }
-export const PASSES_LINE = 'The map plays every pass of one track over the Valencia coast, June to October. These are the real NISAR previews.'
+export const MACHINE = {
+	lines: ['You never touch', 'a 7 GB file.'],
+	sr: 'How it works: you never touch a 7 GB file.',
+	steps: [
+		{ n: '01', title: 'Fetch', fig: '7 GB', line: 'A full NISAR file is 1 to 7 GB. Harmony cuts out only our sites and layers.' },
+		{ n: '02', title: 'Process', fig: 'dB', line: 'Calibrate to dB, filter speckle, detect change, classify it, forecast.' },
+		{ n: '03', title: 'Bake', fig: 'COG', line: 'Export small Cloud-Optimized GeoTIFFs and JSON.' },
+		{ n: '04', title: 'Show', fig: '0', line: 'Tile servers. The browser reads the COGs directly.' },
+	],
+	after: 'Plain language first, with the radar details one click deeper.',
+}
 
-// What L-band shows over rice (docs/RESEARCH.md, section 5 and the site table). Expectations, not model output.
-export const BEATS = [
-	{ months: [6], title: 'Flooded paddies read dark', line: 'Open water sends the radar pulse away, so it comes back very dark.' },
-	{ months: [7, 8], title: 'The rice grows and turns bright', line: 'Canopy over water bounces the pulse back: the paddies brighten.' },
-	{ months: [9], title: 'Harvest brings a drop', line: 'Cut fields lose their canopy and their brightness.' },
-	{ months: [10, 11], title: 'Winter flooding, on purpose', line: 'The big October water here is the farmers (perellonà), not the storm.' },
-]
+export const MODELS = {
+	lines: ['Three models.', 'Three questions.'],
+	accent: ['questions.'],
+	line: 'Each model answers a different question with NISAR data.',
+	cards: [
+		{ tag: 'CV · surface masks', short: 'Where is the water?', q: 'Where is the water, flooded vegetation or burned ground in this scene?', delivers: 'Mask maps per date + accuracy scores', chips: ['Water', 'Flooded vegetation', 'Burned'] },
+		{ tag: 'ML · change classes', short: 'What kind of land?', q: 'What kind of land is this pixel, and how does it change through the season?', delivers: 'Class map + confusion matrix', chips: ['Rice paddy', 'Permanent water', 'Urban', 'Forest', 'Burned'] },
+		{ tag: 'Prediction · forecasts', short: 'What happens next?', q: 'What happens next, and how sure are we?', delivers: 'Forecasts with ranges + backtest scores', chips: ['Median', '80% range', '95% range'] },
+	],
+}
 
-export const HOW_HEAD = { a: 'How it', accent: 'works.' }
-export const HOW_LINE = 'Plain language first, with the radar details one click deeper.'
-export const STEPS = [
-	{ title: 'Fetch', line: 'Harmony cuts each site and the layers we need out of the NISAR files and returns small COGs. A full file is 1 to 7 GB, so we never download whole files.' },
-	{ title: 'Process', line: 'Calibrate to dB, filter speckle, detect change, classify it, forecast.' },
-	{ title: 'Bake', line: 'Export small Cloud-Optimized GeoTIFFs (COGs) and JSON.' },
-	{ title: 'Show', line: 'The browser reads the COGs directly. No tile server or backend is needed for the demo.' },
-]
-export const MODELS = [
-	{ name: 'CV', line: 'finds water, flooded fields and burned ground in each scene.' },
-	{ name: 'ML', line: 'labels every pixel by how it behaves through the season.' },
-	{ name: 'Prediction', line: 'forecasts sinking and flooding with honest ranges.' },
-]
+export const DATA = {
+	lines: ['Open data.', 'All of it.'],
+	line: "NASA's free and open data first, with partner data to check it.",
+	sources: [
+		{ name: 'NISAR GCOV', from: 'NASA ASF DAAC', href: 'https://nisar-docs.asf.alaska.edu/' },
+		{ name: 'NISAR GUNW', from: 'NASA ASF DAAC', href: 'https://nisar-docs.asf.alaska.edu/' },
+		{ name: 'OPERA DSWx-S1', from: 'NASA JPL', href: 'https://www.jpl.nasa.gov/go/opera/products' },
+		{ name: 'Copernicus EMS', from: 'EMSR935', href: 'https://mapping.emergency.copernicus.eu/activations/EMSR935/' },
+		{ name: 'EGMS', from: 'Ground motion', href: 'https://egms.land.copernicus.eu/' },
+		{ name: 'USGS', from: 'Earthquakes', href: 'https://earthquake.usgs.gov/earthquakes/eventpage/us6000u18k' },
+	],
+}
 
-export const DATA_HEAD = { a: 'Open data,', accent: 'all of it.' }
-export const SOURCES = [
-	{ name: 'NISAR L2 GCOV', what: 'Radar brightness, HH and HV, 20 m', from: 'NASA ASF DAAC', href: 'https://nisar-docs.asf.alaska.edu/' },
-	{ name: 'NISAR L2 GUNW', what: '12-day ground-motion pairs, 80 m', from: 'NASA ASF DAAC', href: 'https://nisar-docs.asf.alaska.edu/' },
-	{ name: 'OPERA DSWx-S1', what: 'Sentinel-1 surface water maps, training labels and an L-band vs C-band comparison', from: 'NASA JPL', href: 'https://www.jpl.nasa.gov/go/opera/products' },
-	{ name: 'Copernicus EMS and EFFIS', what: 'Flood and burnt-area outlines for validation', from: 'Copernicus', href: 'https://mapping.emergency.copernicus.eu/activations/EMSR935/' },
-	{ name: 'EGMS', what: 'Years of ground-motion history', from: 'European Ground Motion Service', href: 'https://egms.land.copernicus.eu/' },
-	{ name: 'USGS', what: 'Earthquake catalog', from: 'U.S. Geological Survey', href: 'https://earthquake.usgs.gov/earthquakes/eventpage/us6000u18k' },
-]
-
-export const CLOSE = {
-	a: 'Maps and stories',
-	accent: 'anyone can follow.',
-	line: 'An open-source, interactive web app that turns NISAR L-band radar data into maps and stories anyone can follow.',
+export const CTA = {
+	lines: ['The surface never', 'stops dancing.'],
+	accent: ['dancing.'],
+	line: 'Earth is in a constant waltz. Pick a story and watch it change, pass by pass.',
 }
