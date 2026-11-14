@@ -31,6 +31,8 @@ cv = [
     "segmentation-models-pytorch>=0.4",
     "torchgeo>=0.7",
 ]
+# Charts for the prediction model (Lorca ground motion, Albufera flooded area).
+prediction = ["matplotlib>=3.8"]
 dev = ["pytest>=8"]
 
 [tool.setuptools.packages.find]
