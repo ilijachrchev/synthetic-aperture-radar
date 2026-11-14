@@ -87,3 +87,22 @@ def test_rain_points_cover_the_site_box():
     lats, lons = {p[0] for p in pts}, {p[1] for p in pts}
     w, s, e, n = get_site("pego_oliva").bbox
     assert min(lats) <= s + 0.05 and max(lats) >= n - 0.05 and min(lons) <= w + 0.05 and max(lons) >= e - 0.05
+
+
+def test_live_rule_uses_only_the_first_three_forecast_days():
+    daily = np.array([0, 10, 20, 500, 500.0])            # the storm arrives on day 3, outside the window
+    assert model.alert_rule_total(daily) == 30
+    assert model.deterministic_level(30, 100) == "green"
+    assert model.deterministic_level(50, 100) == "amber"
+    assert model.deterministic_level(100, 100) == "red"
+    assert model.alert_rule_total(np.array([np.nan, 40, 70.0])) == 110   # an empty run day counts as 0
+
+
+def test_alarms_on_consecutive_passes_are_one_storm():
+    rows = [{"site": "a", "date": "2024-10-31", "rain_3d_max_mm": 150.0, "excess_ha": 111.0, "new_flood": 0},
+            {"site": "a", "date": "2024-11-01", "rain_3d_max_mm": 157.5, "excess_ha": -80.0, "new_flood": 0},
+            {"site": "a", "date": "2025-03-06", "rain_3d_max_mm": 135.0, "excess_ha": 42.0, "new_flood": 1},
+            {"site": "b", "date": "2024-11-01", "rain_3d_max_mm": 140.0, "excess_ha": 198.0, "new_flood": 0}]
+    out = model.storms(rows)
+    assert [(s["site"], len(s["dates"]), s["max_rain_3d_mm"], s["max_excess_ha"], s["new_flood"]) for s in out] == [
+        ("a", 2, 157.5, 111.0, False), ("a", 1, 135.0, 42.0, True), ("b", 1, 140.0, 198.0, False)]

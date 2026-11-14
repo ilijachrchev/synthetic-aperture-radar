@@ -44,7 +44,7 @@
     "observations": "data/prediction/flood/water_albufera.csv",
     "source_type": "open-meteo + dswx-s1",
     "alert": "green",
-    "issued_at_utc": "2026-11-14T11:41:27+00:00"
+    "issued_at_utc": "2026-11-14T12:19:56+00:00"
   },
   {
     "model": "prediction",
@@ -58,6 +58,6 @@
     "observations": "data/prediction/flood/water_pego_oliva.csv",
     "source_type": "open-meteo + dswx-s1",
     "alert": "green",
-    "issued_at_utc": "2026-11-14T11:41:27+00:00"
+    "issued_at_utc": "2026-11-14T12:19:56+00:00"
   }
 ]

@@ -28,7 +28,10 @@ MIN_EXCESS_HA = 50.0
 K_SPREAD = 5.0
 WINDOW_DAYS = 3
 MAX_GAP_DAYS = 12
-ALERT = {"amber": 0.1, "red": 0.5}   # share of ensemble members above the threshold
+ALERT = {"amber": 0.1, "red": 0.5}   # share of ensemble members above the threshold (context only)
+LIVE_DAYS = 3        # the alert looks at the first 3 forecast days (day 0 = the run day)
+AMBER_FRACTION = 0.5 # amber from half the threshold
+STORM_GAP_DAYS = 7   # alarms at one site less than this apart belong to one storm
 
 
 def daily_values(rows: list[dict]) -> tuple[np.ndarray, np.ndarray]:
@@ -92,7 +95,7 @@ def samples(site: str, labels: list[dict], sums: dict[int, float]) -> list[dict]
             continue
         out.append({"site": site, "date": date.fromordinal(cur["day"]).isoformat(),
                     "previous_date": date.fromordinal(prev["day"]).isoformat(),
-                    "rain_3d_max_mm": round(r, 1), "excess_ha": cur["excess_ha"],
+                    "rain_3d_max_mm": round(float(r), 1), "excess_ha": float(cur["excess_ha"]),
                     "new_flood": int(cur["new_flood"])})
     return out
 
@@ -146,6 +149,38 @@ def brier(prob: np.ndarray, obs: np.ndarray, base_rate: float) -> dict:
     ref = float(np.mean((base_rate - obs) ** 2))
     return {"brier": round(bs, 4), "brier_climatology": round(ref, 4),
             "brier_skill": None if ref == 0 else round(1 - bs / ref, 3)}
+
+
+def deterministic_level(total_mm: float, threshold_mm: float) -> str:
+    """The alert from one forecast: red at the threshold, amber from half of it."""
+    if total_mm >= threshold_mm:
+        return "red"
+    return "amber" if total_mm >= AMBER_FRACTION * threshold_mm else "green"
+
+
+def alert_rule_total(daily_mm: np.ndarray) -> float:
+    """The quantity the alert uses: the 3-day total over the first LIVE_DAYS forecast days."""
+    return max_window_total(np.nan_to_num(np.asarray(daily_mm, float))[:LIVE_DAYS])
+
+
+def storms(rows: list[dict], gap_days: int = STORM_GAP_DAYS) -> list[dict]:
+    """Group alarm samples (same site, dates less than gap_days apart) into storms."""
+    out: list[dict] = []
+    for r in sorted(rows, key=lambda r: (r["site"], r["date"])):
+        day = date.fromisoformat(r["date"]).toordinal()
+        last = out[-1] if out else None
+        if last and last["site"] == r["site"] and day - last["_last"] < gap_days:
+            last["dates"].append(r["date"]); last["_last"] = day
+            last["max_rain_3d_mm"] = max(last["max_rain_3d_mm"], r["rain_3d_max_mm"])
+            last["max_excess_ha"] = max(last["max_excess_ha"], r["excess_ha"])
+            last["new_flood"] = last["new_flood"] or bool(r["new_flood"])
+        else:
+            out.append({"site": r["site"], "dates": [r["date"]], "_last": day,
+                        "max_rain_3d_mm": r["rain_3d_max_mm"], "max_excess_ha": r["excess_ha"],
+                        "new_flood": bool(r["new_flood"])})
+    for s in out:
+        del s["_last"]
+    return out
 
 
 def alert_level(share_above: float) -> str:

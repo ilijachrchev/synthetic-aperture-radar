@@ -1,16 +1,20 @@
 """Daily rain per site from Open-Meteo (no key; data CC BY 4.0, credit Open-Meteo and ECMWF).
 
-The same model is used for history, past runs and live forecasts, so a
-threshold fitted on it means the same thing when it is applied:
+The alert uses one product everywhere, ECMWF IFS 9 km (``models=ecmwf_ifs``):
 
-- history: ECMWF IFS 9 km archive (``archive-api``, ``models=ecmwf_ifs``).
-- past runs: the deterministic IFS run started on a given day (``single-runs-api``).
-- live: the 51-member ECMWF IFS 0.25 deg ensemble (``ensemble-api``).
+- history: the IFS archive (``archive-api``),
+- replay: the deterministic run started on a given day (``single-runs-api``),
+- live: today's deterministic run (``api.open-meteo.com/v1/forecast``).
+
+The 51-member ensemble (``ensemble-api``, ``ecmwf_ifs025``) is only 0.25 deg,
+which smooths extremes further, so it is reported as context (share of
+members above the threshold) and does not set the alert (review on #15).
 
 Rain is read on a 0.1 deg lattice of points inside the site box, and the site
 value of a day is the **largest** point value: floods answer to the heaviest
-local rain, and a grid cell already smooths extremes (AEMET measured 634 mm at
-Pego in the Oct 2026 DANA, the IFS cell about 72 mm).
+local rain. Even so the grid smooths extremes. For the Oct 2026 DANA, 18-20 Oct
+at Pego-Oliva: 165.7 mm at the wettest lattice point, 81.2 mm averaged over the
+lattice, against 634 mm at the AEMET Pego station.
 """
 
 from __future__ import annotations
@@ -25,6 +29,7 @@ from pipeline.config import Site
 
 ARCHIVE = "https://archive-api.open-meteo.com/v1/archive"
 SINGLE_RUN = "https://single-runs-api.open-meteo.com/v1/forecast"
+FORECAST = "https://api.open-meteo.com/v1/forecast"
 ENSEMBLE = "https://ensemble-api.open-meteo.com/v1/ensemble"
 STEP_DEG = 0.1
 TIMEOUT_S = 120
@@ -69,6 +74,14 @@ def past_run(site: Site, run: date, days: int = 5) -> dict:
     with np.errstate(all="ignore"):  # the first day of a run can be empty (accumulation starts at 00 UTC)
         daily = np.where(np.all(np.isnan(values), axis=0), np.nan, np.nanmax(np.nan_to_num(values, nan=-1), axis=0))
     return {"run": run.isoformat(), "dates": d, "max_mm": daily}
+
+
+def live_run(site: Site, days: int = 5) -> dict:
+    """Today's deterministic IFS 9 km forecast; site value = max over points."""
+    d, values = _matrix(_get(FORECAST, site, models="ecmwf_ifs", forecast_days=days))
+    with np.errstate(all="ignore"):
+        daily = np.where(np.all(np.isnan(values), axis=0), np.nan, np.nanmax(np.nan_to_num(values, nan=-1), axis=0))
+    return {"dates": d, "max_mm": daily}
 
 
 def ensemble(site: Site, days: int = 7) -> dict:
