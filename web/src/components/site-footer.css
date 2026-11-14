@@ -1,0 +1,243 @@
+/* Ported from 8x.social's footer (measured at 1440: card radius 40px, padding 63px, columns 890/1111/1302, titles
+   15px bold caps with 1.35px tracking, links 17px, bar 15px), recoloured for this site's day and night. */
+.foot8 {
+	position: relative;
+	margin-top: -46px;
+	z-index: 2;
+	--f-card: #fbfafe;
+	--f-ink: #16163a;
+	--f-ink-2: rgb(22 22 58 / 0.74);
+	--f-ink-3: rgb(22 22 58 / 0.6);
+	--f-line: rgb(22 22 58 / 0.12);
+	--f-mark: #ebe8fb;
+}
+[data-theme="dark"] .foot8 {
+	--f-card: #081a4c;
+	--f-ink: #eef3ff;
+	--f-ink-2: rgb(238 243 255 / 0.74);
+	--f-ink-3: rgb(238 243 255 / 0.56);
+	--f-line: rgb(160 190 255 / 0.16);
+	--f-mark: #e5ecf6;
+}
+.foot8-card {
+	position: relative;
+	overflow: hidden;
+	isolation: isolate;
+	border-radius: 40px 40px 0 0;
+	padding: 63px 63px 0;
+	background: var(--f-card);
+	color: var(--f-ink);
+	transition: background-color 0.5s var(--ease), color 0.5s var(--ease);
+}
+.foot8-card::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	z-index: -1;
+	pointer-events: none;
+	background: url("/img/grain.png") repeat;
+	background-size: 160px 160px;
+	opacity: 0.4;
+}
+.foot8-top {
+	display: flex;
+	justify-content: space-between;
+	gap: 48px;
+}
+.foot8-brand {
+	max-width: 400px;
+}
+.foot8-lockup {
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+	font-size: 22px;
+	font-weight: 700;
+	letter-spacing: -0.03em;
+}
+.foot8-line {
+	margin: 22px 0 0;
+	font-size: 17px;
+	line-height: 1.5;
+	color: var(--f-ink-2);
+}
+.foot8-social {
+	list-style: none;
+	margin: 26px 0 0;
+	padding: 0;
+	display: flex;
+	gap: 16px;
+}
+.foot8-social a {
+	display: grid;
+	place-items: center;
+	width: 28px;
+	height: 28px;
+	color: var(--f-ink-2);
+	transition: color 0.2s var(--ease);
+}
+.foot8-social a:hover {
+	color: var(--f-ink);
+}
+.foot8-links {
+	display: flex;
+	gap: 92px;
+}
+.foot8-title {
+	margin: 0 0 18px;
+	font-size: 14px;
+	font-weight: 700;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: var(--f-ink-3);
+}
+.foot8-group ul {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: grid;
+	gap: 16px;
+}
+.foot8-group a {
+	font-size: 17px;
+	color: var(--f-ink);
+	opacity: 0.92;
+	transition: opacity 0.2s var(--ease);
+}
+.foot8-group a:hover {
+	opacity: 1;
+	text-decoration: underline;
+	text-underline-offset: 4px;
+}
+.foot8-bar {
+	margin-top: 60px;
+	padding-top: 20px;
+	border-top: 1px solid var(--f-line);
+	display: flex;
+	justify-content: space-between;
+	gap: 20px;
+	flex-wrap: wrap;
+	font-size: 15px;
+	color: var(--f-ink-3);
+}
+.foot8-bar p {
+	margin: 0;
+}
+.foot8-bar ul {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: flex;
+	gap: 24px;
+}
+
+/* The land rises into place and the wordmark climbs out of the bottom as the footer arrives. */
+.foot8-land {
+	position: relative;
+	margin: 18px -63px 0;
+	height: clamp(300px, 38vw, 600px);
+	-webkit-mask-image: linear-gradient(to bottom, transparent, #000 14%);
+	mask-image: linear-gradient(to bottom, transparent, #000 14%);
+}
+.foot8-canvas {
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+.foot8-mark {
+	position: absolute;
+	left: 63px;
+	right: 63px;
+	bottom: 0.06em;
+	overflow: hidden;
+	font-size: clamp(40px, 9.05vw, 180px);
+	line-height: 1.16;
+	font-weight: 700;
+	letter-spacing: -0.045em;
+	white-space: nowrap;
+	color: var(--f-mark);
+	text-align: center;
+	pointer-events: none;
+}
+.foot8-mark span {
+	display: block;
+}
+@supports (animation-timeline: view()) {
+	.foot8-card {
+		animation: foot8-sheet linear both;
+		animation-timeline: view();
+		animation-range: entry 0% entry 60%;
+	}
+	.foot8-land {
+		animation: foot8-rise linear both;
+		animation-timeline: view();
+		animation-range: entry 10% entry 100%;
+	}
+	.foot8-mark span {
+		animation: foot8-climb linear both;
+		animation-timeline: view();
+		animation-range: entry 40% entry 100%;
+	}
+}
+@keyframes foot8-sheet {
+	from {
+		transform: translate3d(0, 90px, 0);
+	}
+}
+@keyframes foot8-rise {
+	from {
+		transform: translate3d(0, 28%, 0);
+		opacity: 0.4;
+	}
+}
+@keyframes foot8-climb {
+	from {
+		transform: translate3d(0, 85%, 0);
+	}
+}
+
+@media (max-width: 1100px) {
+	.foot8-top {
+		flex-direction: column;
+	}
+	.foot8-links {
+		gap: 56px;
+		flex-wrap: wrap;
+	}
+}
+@media (max-width: 640px) {
+	.foot8-card {
+		padding: 40px 20px 0;
+		border-radius: 30px 30px 0 0;
+	}
+	.foot8-land {
+		margin: 18px -20px 0;
+	}
+	.foot8-links {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 36px 24px;
+	}
+	.foot8-mark {
+		left: 20px;
+		right: 20px;
+		white-space: normal;
+		font-size: 13vw;
+		line-height: 1.02;
+		bottom: 0.3em;
+	}
+	.foot8-bar {
+		flex-direction: column;
+	}
+	.foot8-bar ul {
+		flex-direction: column;
+		gap: 6px;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.foot8-card,
+	.foot8-land,
+	.foot8-mark span {
+		animation: none !important;
+	}
+}
