@@ -6,6 +6,7 @@ Written with SI assistance (Claude Code), reviewed by the team.
 from __future__ import annotations
 
 import numpy as np
+from rasterio.features import sieve
 from scipy.ndimage import uniform_filter
 from lightgbm import LGBMClassifier
 from sklearn.metrics import accuracy_score, cohen_kappa_score, confusion_matrix, precision_recall_fscore_support
@@ -50,6 +51,21 @@ def predict_proba_full(model: LGBMClassifier, X: np.ndarray) -> np.ndarray:
     proba = np.zeros((X.shape[0], len(config.CLASSES)), dtype=np.float32)
     proba[:, model.classes_.astype(int)] = model.predict_proba(X)
     return proba
+
+
+def sieve_small_patches(class_map: np.ndarray, min_px: int) -> np.ndarray:
+    """Patches smaller than min_px pixels take the class of their largest neighbour
+    (GDAL sieve, 8-connected). Nodata pixels are masked: never filled, never used.
+
+    The majority filter leaves specks whose neighbours are mixed (no class gets
+    5 votes): after it, 155 single-pixel water patches were left at Espadà.
+    """
+    if min_px <= 1:
+        return class_map
+    valid = class_map != config.NODATA_U8
+    out = sieve(class_map, size=min_px, mask=valid, connectivity=8)
+    out[~valid] = config.NODATA_U8
+    return out
 
 
 def majority_filter(class_map: np.ndarray, size: int = 3, min_votes: int = 5) -> np.ndarray:
@@ -119,7 +135,8 @@ def feature_importance(model: LGBMClassifier) -> list[dict]:
 def burned_rule(X: np.ndarray, min_hv_drop_db: float | None) -> dict[int, np.ndarray]:
     """Rows where "burned" is not allowed: HV did not drop by min_hv_drop_db and stay down.
 
-    The CV baseline rule (HV step drop >= 1.5 dB) agrees with EFFIS at precision
+    Default 1.0 dB (precision 0.98, recall 0.77 on espada 058_A_022; 1.5 dB gives
+    0.99 and 0.57). The CV baseline rule (HV step drop >= 1.5 dB) agrees with EFFIS at precision
     0.94 to 0.99 (Ilija, PR #7). Without it the model learned burned as a static
     kind of forest and over-predicted it by 70 % at Espadà.
     """

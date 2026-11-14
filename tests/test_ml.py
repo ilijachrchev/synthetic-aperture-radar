@@ -391,3 +391,15 @@ def test_majority_filter_clears_specks_and_keeps_shapes_and_nodata():
     assert (out[11:17, 11:17] == config.CLASS_INDEX["permanent_water"]).all()
     assert (out[0:3, 15:20] == config.NODATA_U8).all()         # nodata never filled
     assert np.array_equal(train.majority_filter(m, size=1), m)
+
+
+def test_sieve_removes_specks_with_mixed_neighbours():
+    m = np.full((12, 12), config.CLASS_INDEX["forest"], np.uint8)
+    m[:, 6:] = config.CLASS_INDEX["orchard"]
+    m[4:8, 4:8] = config.CLASS_INDEX["other_crops_shrub"]     # a 16 px field: stays
+    m[1, 6] = config.CLASS_INDEX["permanent_water"]            # speck between forest and orchard
+    m[0, 0] = config.NODATA_U8
+    out = train.sieve_small_patches(m, 5)
+    assert out[1, 6] != config.CLASS_INDEX["permanent_water"]
+    assert (out[4:8, 4:8] == config.CLASS_INDEX["other_crops_shrub"]).all()
+    assert out[0, 0] == config.NODATA_U8

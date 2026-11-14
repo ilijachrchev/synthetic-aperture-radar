@@ -101,10 +101,11 @@ def _cmd_run(args: argparse.Namespace) -> None:
     class_map, confidence = train.predict_map(model, X, usable, st.shape, forbid=forbid)
     raw = train.evaluate(None, None, y[te], pred=class_map.ravel()[te])
     class_map = train.majority_filter(class_map, size=args.majority)
+    class_map = train.sieve_small_patches(class_map, args.min_patch_px)
     metrics = train.evaluate(None, None, y[te], pred=class_map.ravel()[te])
-    metrics["before_majority_filter"] = {k: raw[k] for k in ("overall_accuracy", "macro_f1", "kappa")}
+    metrics["before_specks_cleanup"] = {k: raw[k] for k in ("overall_accuracy", "macro_f1", "kappa")}
     print(f"test: accuracy {metrics['overall_accuracy']:.3f}, macro F1 {metrics['macro_f1']:.3f}, "
-          f"kappa {metrics['kappa']:.3f}  (before the {args.majority}x{args.majority} majority filter: "
+          f"kappa {metrics['kappa']:.3f}  (before the specks clean-up: "
           f"{raw['overall_accuracy']:.3f} / {raw['macro_f1']:.3f} / {raw['kappa']:.3f})")
 
     # Outputs.
@@ -121,7 +122,7 @@ def _cmd_run(args: argparse.Namespace) -> None:
         "water_threshold_hh_db": dark_db, "water_threshold_rule": dark_rule,
         "speckle_filter_px": args.filter_px,
         "burned_min_hv_drop_db": args.burned_min_hv_drop if args.burned_min_hv_drop > 0 else None,
-        "majority_filter_px": args.majority,
+        "majority_filter_px": args.majority, "min_patch_px": args.min_patch_px,
         "scores_are": "agreement with the labels (WorldCover, JRC, CORINE, EFFIS, drawn fields) "
                       "on held-out 1 km blocks, not ground-truth accuracy",
         "split": {"block_px": args.block_px, "gap_px": config.GAP_PX,
@@ -188,10 +189,12 @@ def main(argv: list[str] | None = None) -> None:
     r.add_argument("--corine", help="override the default CORINE 2018 polygons (python -m pipeline.ml.corine)")
     r.add_argument("--filter-px", type=int, default=data.FILTER_PX,
                    help=f"speckle filter window in pixels, 0 = off (default {data.FILTER_PX})")
-    r.add_argument("--burned-min-hv-drop", type=float, default=1.5,
+    r.add_argument("--burned-min-hv-drop", type=float, default=1.0,
                    help="only call a pixel burned if HV dropped this many dB and stayed down; 0 = off")
     r.add_argument("--majority", type=int, default=3,
                    help="majority filter window on the class map (clears single-pixel specks); 1 = off")
+    r.add_argument("--min-patch-px", type=int, default=5,
+                   help="patches smaller than this many pixels take their largest neighbour's class; 1 = off")
     r.add_argument("--truth-var", help="use a label variable inside the stack (fake stacks only)")
     r.add_argument("--stack-dir", default=str(config.STACK_DIR))
     r.add_argument("--out-dir", default=str(config.ML_OUT_DIR))
