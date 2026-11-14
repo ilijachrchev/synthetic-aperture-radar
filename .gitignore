@@ -10,9 +10,11 @@ data/raw/
 data/interim/
 data/stack/
 
-# Credentials: never commit them
+# Credentials and local login config: never commit them
 .netrc
 _netrc
+.dodsrc
+.urs_cookies
 
 # OS and editors
 .DS_Store
