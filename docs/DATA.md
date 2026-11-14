@@ -67,6 +67,7 @@ Not in git: they are large (an estimated 100 to 200 MB each) and can be rebuilt.
 | `data/context/<site>_worldcover_2021_20m.tif` | ESA WorldCover 2021 on the site grid: 10 tree, 20 shrub, 30 grass, 40 crop, 50 built, 60 bare, 80 water, 90 herbaceous wetland, 0 no data | CV, ML |
 | `data/context/<site>_jrc_occurrence_20m.tif` | JRC Global Surface Water v1.5, share of time a pixel was water 1984 to 2024 (0 to 100 %, 255 no data), on the site grid | ML |
 | `data/labels/pego_oliva_emsr935_flood.geojson` | Copernicus EMS EMSR935 flood outline, DANA "Adam" (imagery 20 to 21 Oct) | CV |
+| `data/labels/pego_oliva_emsr935_aoi.geojson` | The two EMSR935 mapped areas: inside them every flooded pixel was outlined, so a flood map is scored only there | CV |
 | `data/labels/pego_oliva_generalitat_footprint.geojson` | Official DANA river-flood footprint, 1,022.8 ha | CV |
 | `data/labels/espada_effis_burnt_area.geojson` | EFFIS burnt area of the Serra d'Espadà fire | CV, ML |
 | `data/catalog/<site>.json` | Every NISAR file over the site | all |

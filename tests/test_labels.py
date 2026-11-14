@@ -4,7 +4,23 @@ import geopandas as gpd
 import pandas as pd
 from shapely.geometry import GeometryCollection, LineString, Polygon
 
-from pipeline.labels import clean_text, make_polygonal, polygonal_part, simplify_m, to_wgs84_grid
+from pipeline.labels import clean_text, emsr_aois, make_polygonal, polygonal_part, simplify_m, to_wgs84_grid
+
+
+def test_emsr_aois_from_dashboard_record():
+    record = {
+        "code": "EMSR935",
+        "aois": [
+            {"number": "1", "name": "Moraira", "products": [{"id": 1, "type": "DEL"}],
+             "extent": "POLYGON ((0 38, 0.1 38, 0.1 38.1, 0 38.1, 0 38))"},
+            {"number": "2", "name": "Gandia", "products": "[not a list]",
+             "extent": "POLYGON ((-0.2 38.9, -0.1 38.9, -0.1 39, -0.2 39, -0.2 38.9))"},
+        ],
+    }
+    aoi = emsr_aois(record)
+    assert aoi["aoi"].tolist() == ["AOI01", "AOI02"]
+    assert aoi["products"].tolist() == ["DEL", ""]
+    assert aoi.crs.to_epsg() == 4326 and aoi.is_valid.all()
 
 
 EN, EM = chr(0x2013), chr(0x2014)

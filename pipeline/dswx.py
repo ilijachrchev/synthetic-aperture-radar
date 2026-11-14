@@ -173,7 +173,8 @@ def download(site: Site, index: list[dict[str, Any]]) -> None:
         todo = [u for u in urls if not (acq_dir / u.rsplit("/", 1)[-1]).exists()]
         if todo:
             earthaccess.download(todo, local_path=str(acq_dir))
-        entry["files"] = [str((acq_dir / u.rsplit("/", 1)[-1]).relative_to(DSWX_RAW)) for u in urls]
+        # POSIX-style relative paths, so the index works on Windows, Linux and Colab alike
+        entry["files"] = [(acq_dir / u.rsplit("/", 1)[-1]).relative_to(DSWX_RAW).as_posix() for u in urls]
         print(f"  {entry['stack_id']} {entry['date']}: {len(urls)} WTR tile(s), {entry['hours_from_nisar']} h")
     out = DSWX_RAW / site.name / "index.json"
     out.write_text(json.dumps(index, indent=1), encoding="utf-8")

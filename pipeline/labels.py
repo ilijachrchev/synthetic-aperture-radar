@@ -7,6 +7,11 @@ Writes small GeoJSON files (WGS84) to data/labels/:
     republished by the Valencian cartographic institute (ICV). Classes
     flooded_area and flood_trace. Our NISAR "after" pass is 28 Oct, so this
     is a maximum-extent reference, not same-day truth.
+- pego_oliva_emsr935_aoi.geojson
+    The two EMSR935 areas of interest (AOI01 Moraira, delineation; AOI02
+    Gandia, grading), from the Copernicus rapid mapping dashboard API. Inside
+    them every flooded pixel was outlined, so they bound where a flood map can
+    be scored.
 - pego_oliva_generalitat_footprint.geojson
     Official river-flood footprint of DANA "Adam" (Generalitat Valenciana),
     one polygon of 1,022.8 ha, from surveyed flood marks.
@@ -35,6 +40,7 @@ from shapely.geometry.base import BaseGeometry
 
 from pipeline.config import LABELS_DIR
 
+RAPID_MAPPING_API = "https://rapidmapping.emergency.copernicus.eu/backend/dashboard-api/public-activations/"
 ICV_WFS = "https://terramapas.icv.gva.es/2702_DANAAdam2026"
 ICV_CRS = "EPSG:25830"  # ETRS89 / UTM 30N, the service's native CRS
 EFFIS_API = "https://api.effis.emergency.copernicus.eu/rest/2/burntareas/current/"
@@ -89,6 +95,33 @@ def emsr935_classes(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
         crs=gdf.crs,
     )
     return out
+
+
+def emsr_aois(activation: dict) -> gpd.GeoDataFrame:
+    """AOI polygons of one Copernicus EMS activation record (rapid mapping dashboard API)."""
+    rows = []
+    for a in activation.get("aois") or []:
+        products = a.get("products")
+        types = sorted({p.get("type") for p in products}) if isinstance(products, list) else []
+        rows.append({
+            "aoi": f"AOI{int(a['number']):02d}",
+            "name": a["name"],
+            "products": "+".join(t for t in types if t),
+            "source": f"Copernicus EMS {activation.get('code')} areas of interest",
+            "geometry": shapely.from_wkt(a["extent"]),
+        })
+    return gpd.GeoDataFrame(rows, geometry="geometry", crs="EPSG:4326")
+
+
+def fetch_emsr935_aois() -> gpd.GeoDataFrame:
+    """Where EMSR935 was mapped. Inside these areas every flooded pixel was outlined,
+    so a pixel without an outline counts as not flooded when scoring a flood map."""
+    resp = requests.get(RAPID_MAPPING_API, params={"code": "EMSR935"}, timeout=TIMEOUT_S)
+    resp.raise_for_status()
+    results = [r for r in resp.json().get("results", []) if r.get("code") == "EMSR935"]
+    if len(results) != 1:
+        raise RuntimeError(f"EMSR935 not found exactly once in the rapid mapping API (got {len(results)})")
+    return emsr_aois(results[0])
 
 
 def fetch_espada_burn() -> gpd.GeoDataFrame:
@@ -199,6 +232,7 @@ def main() -> None:
     flood = emsr935_classes(fetch_wfs_layer("ms:CEMS.AreaInundada"))
     flood = add_area_ha(make_polygonal(simplify_m(flood, 2.0)))
     save(flood, "pego_oliva_emsr935_flood")
+    save(add_area_ha(make_polygonal(fetch_emsr935_aois())), "pego_oliva_emsr935_aoi")
 
     footprint = fetch_wfs_layer("ms:ZonasInundadas.HuellaInundacion")
     footprint = footprint.rename(columns={"Descripcion": "description", "Area_ha": "official_area_ha"})
