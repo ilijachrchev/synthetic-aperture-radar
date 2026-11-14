@@ -24,6 +24,9 @@ export type Story = {
 	change: { kind: 'water' | 'fire' | 'sink' | 'quake'; legend: string; event?: string; epicentre?: [number, number] }
 }
 
+// Not shown since 14 Nov 2026. The landing, the navbar and the footer now take their stories from content/stories.ts:
+// the three that have a 3D map page (flood, fire, rice). The four below belonged to the 2D explorer, which is
+// retired. They are kept for their copy: Lorca and Panama have no 3D page yet.
 export const STORIES_HEAD = { title: 'Four stories', line: 'Scroll, and each season plays out on the real NISAR passes, over the ground around them.' }
 
 export const STORIES: Story[] = [

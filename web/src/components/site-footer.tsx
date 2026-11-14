@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { SITE } from '@/content/site'
+import { DANA, FIRE, RICE } from '@/content/stories'
 import { Mark } from './brand'
 import { HalftoneLand } from './halftone-land'
 import './site-footer.css'
@@ -13,17 +14,16 @@ const COLUMNS = [
 		links: [
 			{ label: 'Overview', href: '/' },
 			{ label: 'Stories', href: '/#stories' },
-			{ label: 'Open the map', href: '/map' },
+			{ label: 'Open the map', href: DANA.path },
 		],
 	},
 	{
 		title: 'The map',
 		links: [
-			{ label: 'Albufera', href: '/map?story=water' },
-			{ label: 'Pego-Oliva marsh', href: '/map?story=water' },
-			{ label: "Serra d'Espadà", href: '/map?story=fire' },
-			{ label: 'Lorca', href: '/map?story=sink' },
-			{ label: 'Panama', href: '/map?story=quake' },
+			// the places that have a 3D page. Lorca and Panama have none yet, so they are not listed
+			{ label: 'Pego-Oliva marsh', href: DANA.path },
+			{ label: "Serra d'Espadà", href: FIRE.path },
+			{ label: 'Albufera', href: RICE.path },
 		],
 	},
 	{

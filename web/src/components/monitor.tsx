@@ -1,84 +1,180 @@
 'use client'
 
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { MapApp, type StoryCfg } from './map/map-app'
-import { type Chapter, StoryScroll } from './story-scroll'
+import { useGSAP } from '@gsap/react'
+import gsap from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { ArrowUpRight } from 'lucide-react'
+import Link from 'next/link'
+import { useEffect, useRef, useState } from 'react'
+import { storyNav } from '@/lib/story-nav'
+import { lenisRef } from './smooth'
+
+gsap.registerPlugin(ScrollTrigger, useGSAP)
+
+/** One story as the monitor plays it: a film of its real 3D page (scripts/landing_films.py), and the page it opens. */
+export type Film = {
+	key: string
+	tab: string
+	title: string
+	place: string
+	/** the 3D page of the story */
+	path: string
+	src: string
+	/** the first frame, shown until the film starts */
+	poster: string
+	/** a frame from late in the film, for people who ask for less motion */
+	still: string
+}
+
+/** the share of the track before the first story takes the navbar, and the hold after the last */
+const LEAD = 0.08
+const TAIL = 0.05
+const clamp = (v: number) => Math.min(1, Math.max(0, v))
 
 /**
- * The dashboard on a monitor, and the stories playing on the same screen. The monitor is pinned while the page
- * scrolls through its track: first the live app (it plays the season by itself; a picture stands in until it is
- * ready), then the four stories fade in over it and play under the reader's scroll. Both are laid out at the screen's
- * own size and drawn scaled into it, like a real display. On a phone the monitor becomes a portrait screen at the
- * phone's own size, so the stories keep their phone layout and stay readable; there a picture of the app stands in.
+ * The app on a monitor: the screen plays the real 3D story pages. The monitor is pinned while the page scrolls
+ * through its track, and the scroll picks the story: the flood first, then the others. Each film is the page itself
+ * telling its story (the Earth, one move down onto the place, the radar passes), recorded from the running app, so
+ * nothing on the screen is a stand-in. A film only loads when its story is near and only plays while the monitor is
+ * on screen. People who ask for less motion get a still frame of each story. The button opens the story's page.
  */
-export function Monitor({ stories, chapters, track }: { stories: StoryCfg[]; chapters: Chapter[]; track: HTMLElement | null }) {
+export function Monitor({ films, track }: { films: Film[]; track: HTMLElement | null }) {
 	const glass = useRef<HTMLDivElement>(null)
-	const [phone, setPhone] = useState(false)
-	const [size, setSize] = useState({ w: 1600, h: 900 })
-	const [live, setLive] = useState(false)
-	// the app's season rests while the stories cover it, and the app is not drawn at all once they cover it fully
-	const appShows = useMemo(() => ({ current: true }), [])
-	const appEl = useRef<HTMLDivElement>(null)
-	const cover = (o: number) => {
-		appShows.current = o < 0.999
-		if (appEl.current) appEl.current.style.visibility = o >= 0.999 ? 'hidden' : 'visible'
-	}
+	const videos = useRef<(HTMLVideoElement | null)[]>([])
+	const bar = useRef<HTMLSpanElement>(null)
+	const curRef = useRef(0)
+	// the furthest film that has been given its file: the one on screen and the next
+	const reach = useRef(-1)
+	const [cur, setCur] = useState(0)
+	const [seen, setSeen] = useState(false)
+	const [near, setNear] = useState(false)
+	const [calm, setCalm] = useState(false)
+	const N = films.length
 
 	useEffect(() => {
-		const pick = () => {
-			const p = window.innerWidth < 760
-			setPhone(p)
-			setSize(p ? { w: window.innerWidth, h: Math.round(window.innerHeight * 0.86) } : { w: 1600, h: 900 })
-			// the live app wants its desktop layout, which its own styles give from 900px of window up
-			setLive(window.innerWidth >= 900)
-		}
-		pick()
-		window.addEventListener('resize', pick)
-		return () => window.removeEventListener('resize', pick)
-	}, [])
-
-	useEffect(() => {
+		setCalm(window.matchMedia('(prefers-reduced-motion: reduce)').matches)
 		const el = glass.current
 		if (!el) return
-		const fit = () => el.style.setProperty('--k', String(el.clientWidth / size.w))
-		fit()
-		const ro = new ResizeObserver(fit)
-		ro.observe(el)
-		return () => ro.disconnect()
-	}, [size.w])
+		const on = new IntersectionObserver(([e]) => setSeen(e.isIntersecting && e.intersectionRatio > 0.3), { threshold: [0, 0.3, 0.6] })
+		// start fetching the first film when the monitor is about a screen away
+		const close = new IntersectionObserver(([e]) => e.isIntersecting && setNear(true), { rootMargin: '100% 0px' })
+		on.observe(el)
+		close.observe(el)
+		return () => {
+			on.disconnect()
+			close.disconnect()
+		}
+	}, [])
 
-	const layer = { width: size.w, height: size.h }
+	// the track's scroll picks the story
+	useGSAP(
+		() => {
+			if (!track) return
+			const drive = (raw: number) => {
+				const p = clamp((raw - LEAD) / (1 - LEAD - TAIL))
+				const c = Math.min(N - 1, Math.floor(p * N))
+				if (bar.current) bar.current.style.transform = `scaleX(${p})`
+				if (c !== curRef.current) {
+					curRef.current = c
+					setCur(c)
+				}
+				storyNav.set(raw < LEAD * 0.6 ? -1 : c)
+			}
+			const st = ScrollTrigger.create({ trigger: track, start: 'top top', end: 'bottom bottom', onUpdate: (self) => drive(self.progress), onRefresh: (self) => drive(self.progress) })
+			drive(st.progress)
+			return () => st.kill()
+		},
+		{ dependencies: [track, N] },
+	)
+
+	// the navbar takes the reader to a story (or back to the top) through here
+	useEffect(() => {
+		storyNav.register((i) => {
+			const scroll = (y: number) => {
+				if (lenisRef.current) lenisRef.current.scrollTo(y, { duration: 1.6 })
+				else window.scrollTo({ top: y, behavior: 'smooth' })
+			}
+			if (i < 0) return scroll(0)
+			if (!track) return
+			const top = track.getBoundingClientRect().top + window.scrollY
+			const span = track.offsetHeight - window.innerHeight
+			scroll(top + (LEAD + ((i + 0.1) / N) * (1 - LEAD - TAIL)) * span)
+		})
+	}, [track, N])
+
+	// the story on screen plays while the monitor is in view; the others rest at their start
+	useEffect(() => {
+		const timers: number[] = []
+		videos.current.forEach((v, i) => {
+			if (!v) return
+			if (i === cur && seen && !calm) v.play().catch(() => {})
+			else {
+				v.pause()
+				// once it has faded out it goes back to its first frame, so it starts from the top next time
+				if (i !== cur) timers.push(window.setTimeout(() => curRef.current !== i && (v.currentTime = 0), 800))
+			}
+		})
+		return () => timers.forEach((t) => window.clearTimeout(t))
+	}, [cur, seen, calm, near])
+
+	if (near && !calm) reach.current = Math.max(reach.current, Math.min(N - 1, cur + 1))
+	const film = films[cur]
 	return (
-		<div className="mon" data-device={phone ? 'phone' : 'monitor'} style={{ '--ar': `${size.w} / ${size.h}` } as React.CSSProperties}>
+		<div className="mon">
 			<div className="mon-body">
 				<div ref={glass} className="mon-glass">
-					<img className="mon-shot mon-day" src={phone ? '/img/app/app-phone-light.webp' : '/img/app/app-light.webp'} alt="The map app: the Albufera radar over a satellite map, with the stories, the story card and the season timeline" />
-					<img className="mon-shot mon-night" src={phone ? '/img/app/app-phone-dark.webp' : '/img/app/app-dark.webp'} alt="" />
-					{live ? (
-						<div ref={appEl} className="mon-layer mon-app" style={layer}>
-							<MapApp stories={stories} embed visible={appShows} />
-						</div>
-					) : null}
-					<div className="mon-layer" style={layer}>
-						<StoryScroll chapters={chapters} trigger={track} lead={0.1} tail={0.05} onScreen={cover} />
+					{films.map((f, i) => (
+						<video
+							key={f.key}
+							ref={(n) => void (videos.current[i] = n)}
+							className="mon-film"
+							data-on={i === cur || undefined}
+							src={i <= reach.current ? f.src : undefined}
+							poster={calm ? f.still : f.poster}
+							muted
+							loop
+							playsInline
+							preload="auto"
+							aria-label={`${f.title}, ${f.place}: the story playing on its 3D map page`}
+						/>
+					))}
+					<div className="mon-over">
+						<span className="mono mon-count">
+							{String(cur + 1).padStart(2, '0')} / {String(N).padStart(2, '0')}
+						</span>
+						<Link href={film.path} className="mon-go">
+							Open this story <ArrowUpRight size={16} strokeWidth={2.4} />
+						</Link>
 					</div>
+					<span ref={bar} className="mon-progress" aria-hidden />
 				</div>
 			</div>
 			<div className="mon-neck" aria-hidden />
 			<div className="mon-foot" aria-hidden />
+			{/* on a phone the screen is small: the story is named under the monitor, with a button a thumb can hit */}
+			<div className="mon-note">
+				<p className="mono">
+					{String(cur + 1).padStart(2, '0')} / {String(N).padStart(2, '0')} · {film.tab}
+				</p>
+				<p className="display mon-note-title">{film.title}</p>
+				<p>{film.place}</p>
+				<Link href={film.path} className="mon-go">
+					Open this story <ArrowUpRight size={16} strokeWidth={2.4} />
+				</Link>
+			</div>
 		</div>
 	)
 }
 
 /** The monitor's track: the page scrolls through it while the monitor stays pinned in the middle of the screen. */
-export function MonitorStage({ stories, chapters }: { stories: StoryCfg[]; chapters: Chapter[] }) {
+export function MonitorStage({ films }: { films: Film[] }) {
 	// held as state, so the stories hook onto the track once it is in the page
 	const [track, setTrack] = useState<HTMLDivElement | null>(null)
 	return (
-		<div ref={setTrack} id="stories" className="hx-track" style={{ '--n': chapters.length } as React.CSSProperties}>
+		<div ref={setTrack} id="stories" className="hx-track" style={{ '--n': films.length } as React.CSSProperties}>
 			<div className="hx-sticky">
 				<div className="mon-in">
-					<Monitor stories={stories} chapters={chapters} track={track} />
+					<Monitor films={films} track={track} />
 				</div>
 			</div>
 		</div>

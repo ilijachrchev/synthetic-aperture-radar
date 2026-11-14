@@ -8,7 +8,7 @@ import { SplitText } from 'gsap/SplitText'
 gsap.registerPlugin(ScrollTrigger, SplitText, useGSAP)
 
 /**
- * The landing's motion around the monitor (the stories on its screen run in story-scroll.tsx), on GSAP. The line rises
+ * The landing's motion around the monitor (the films on its screen run in monitor.tsx), on GSAP. The line rises
  * word by word, its two buttons follow, and the monitor rises in below them, its top half in view; scrolling tips it
  * up flat until it pins in the middle of the screen. Transform and opacity only; the scroll is Lenis (smooth.tsx).
  */

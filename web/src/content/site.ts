@@ -22,6 +22,6 @@ export const HERO = {
 	lead: 'One web app that shows how the land around Valencia changes, and',
 	leadAccent: 'what is likely to come next.',
 	seenBy: ['Seen by NASA-ISRO NISAR,', 'one pass every 12 days'],
-	primary: { label: 'Open the map', href: '/map' },
+	primary: { label: 'Open the map', href: '/flood' },
 	secondary: { label: 'How it works', href: '/#how' },
 } as const

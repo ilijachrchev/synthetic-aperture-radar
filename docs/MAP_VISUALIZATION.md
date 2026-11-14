@@ -341,4 +341,15 @@ python scripts/make_storyboard.py --real 04_after=out/after.png --mock m1_sink=m
 - Both scripts fall back to the Chrome or Edge of the computer when Playwright has no browser of its own, so nothing has to be downloaded.
 - `make_storyboard.py` writes the frames at 1,920 px and stamps every mockup with a visible mark.
 
+The landing page plays the films on its monitor (`web/src/components/monitor.tsx`): the story on screen plays, the scroll picks the story, and a button opens its page.
+
+```bash
+python scripts/landing_films.py                                  # encode the recordings in web/.cache/film
+python scripts/landing_films.py --record http://localhost:3000   # record the three stories first
+```
+
+- It writes `web/public/films/<page>.mp4` (1,280 x 720, 4 to 5 MB each), the first frame as `<page>.jpg` and a late frame as `<page>-still.jpg` for people who ask for less motion.
+- Run it again after the layers are baked again: a film shows the numbers of the day it was recorded.
+- The old 2D explorer at `/map` is retired. `/map?story=fire` opens `/fire`; `/map` and every other old address open `/flood` (redirects in `web/next.config.ts`). The old value stays in the address, so `?story` plays the film only when it has no value.
+
 <sub>Drafted with an SI assistant (Claude Code). Frames marked mockup are SI-generated and watermarked. Decisions on the idea and the look stay with the team.</sub>

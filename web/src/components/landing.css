@@ -133,38 +133,111 @@
 }
 .mon-glass {
 	position: relative;
-	aspect-ratio: var(--ar, 16 / 9);
+	/* the button on the screen is sized against the screen */
+	container-type: inline-size;
+	aspect-ratio: 16 / 9;
 	border-radius: clamp(5px, 0.7vw, 10px);
 	overflow: hidden;
 	background: #081217;
 }
-.mon-shot {
+/* the films of the story pages: one on top of the other, the story on screen faded in */
+.mon-film {
 	position: absolute;
 	inset: 0;
 	width: 100%;
 	height: 100%;
 	object-fit: cover;
+	opacity: 0;
+	transition: opacity 0.7s var(--ease);
+}
+.mon-film[data-on] {
+	opacity: 1;
+}
+/* over the film, where its own page leaves room: which story this is, and the way into it */
+.mon-over {
+	position: absolute;
+	z-index: 2;
+	right: 2.2%;
+	bottom: 8%;
+	display: flex;
+	align-items: center;
+	gap: clamp(8px, 1.1cqw, 16px);
+}
+.mon-count {
+	font-size: clamp(10px, 1.05cqw, 15px);
+	color: rgb(244 249 255 / 0.82);
+	text-shadow: 0 1px 2px rgb(0 0 0 / 0.8);
+}
+.mon-go {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.5em;
+	height: clamp(30px, 3.3cqw, 48px);
+	padding: 0 clamp(12px, 1.5cqw, 22px);
+	border-radius: 999px;
+	background: #f4f9ff;
+	color: #071018;
+	font-size: clamp(12px, 1.12cqw, 16px);
+	font-weight: 700;
+	text-decoration: none;
+	white-space: nowrap;
+	box-shadow: 0 10px 30px rgb(0 0 0 / 0.35);
+	transition: transform 0.25s var(--ease);
+}
+.mon-go:hover {
+	transform: translateY(-1px);
+}
+/* under the monitor on a phone: the story by name, and the way into it */
+.mon-note {
 	display: none;
 }
-:root:not([data-theme="dark"]) .mon-day,
-[data-theme="dark"] .mon-night {
-	display: block;
-}
-/* the app and the stories are laid out at the screen's own size and drawn scaled into it */
-.mon-layer {
-	position: absolute;
-	left: 0;
-	top: 0;
-	transform: scale(var(--k, 0.75));
-	transform-origin: 0 0;
-}
-.mon-app {
-	animation: mon-in 0.8s var(--ease) 0.6s both;
-}
-@keyframes mon-in {
-	from {
-		opacity: 0;
+@media (max-width: 760px) {
+	.mon-over {
+		display: none;
 	}
+	.mon-note {
+		display: grid;
+		justify-items: center;
+		gap: 6px;
+		margin-top: 22px;
+		text-align: center;
+		color: var(--ink);
+	}
+	.mon-note p {
+		margin: 0;
+		font-size: 14px;
+		color: var(--ink-2);
+	}
+	.mon-note .mono {
+		font-size: 12px;
+		color: var(--muted);
+	}
+	.mon-note .mon-note-title {
+		font-size: 34px;
+		line-height: 1;
+		color: var(--ink);
+	}
+	.mon-note .mon-go {
+		height: 48px;
+		margin-top: 12px;
+		padding: 0 22px;
+		background: var(--btn);
+		color: var(--on-btn);
+		font-size: 15px;
+		box-shadow: none;
+	}
+}
+/* how far the reader is through the stories */
+.mon-progress {
+	position: absolute;
+	z-index: 2;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	height: 3px;
+	background: var(--accent);
+	transform: scaleX(0);
+	transform-origin: 0 50%;
 }
 /* the stand: a short neck and a flat foot, brushed metal by day and dark by night */
 .mon-neck {
@@ -189,21 +262,6 @@
 	background: linear-gradient(180deg, #353c43, #1b2025);
 }
 
-/* a phone: the monitor becomes a portrait screen at the phone's own size, with no stand */
-.mon[data-device="phone"] {
-	width: min(86vw, calc((100svh - 110px) * 0.53));
-}
-.mon[data-device="phone"] .mon-body {
-	padding: 7px;
-	border-radius: 30px;
-}
-.mon[data-device="phone"] .mon-glass {
-	border-radius: 24px;
-}
-.mon[data-device="phone"] .mon-neck,
-.mon[data-device="phone"] .mon-foot {
-	display: none;
-}
 
 @media (max-width: 900px) {
 	.hx-line {
