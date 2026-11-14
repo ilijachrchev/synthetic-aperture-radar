@@ -1,0 +1,302 @@
+// Real satellite pictures of one place on chosen days, drawn as a MapLibre custom layer so the app can fade from
+// one day to the next, dim them under the radar layer and cut them along a swipe line.
+// The pictures are Sentinel-2 true colour, untouched (scripts/fetch_optical.py). A cloudy day stays cloudy.
+// With 3D terrain on, the layer is drawn into the terrain tiles instead (renderToTerrainTile), so the picture lies
+// on the relief; the swipe line belongs to the screen and only works on the flat map.
+import type { CustomLayerInterface, CustomRenderMethodInput, Map as MapLibreMap } from 'maplibre-gl'
+import { type Bounds, QUAD_VERT, TILE_VERT, buildProgram, quadMatrix, tileRect, unitQuad, withClip } from './gl-quad'
+
+const FRAG = `#version 300 es
+precision highp float;
+in vec2 v_uv;
+out vec4 fragColor;
+uniform sampler2D u_tex;
+uniform float u_alpha;
+uniform float u_sat;
+uniform float u_bright;
+uniform float u_feather;
+void main() {
+	vec3 c = texture(u_tex, v_uv).rgb;
+	float l = dot(c, vec3(0.299, 0.587, 0.114));
+	vec3 rgb = mix(vec3(l), c, u_sat) * u_bright;
+	// the picture melts into the base map at its edges instead of ending in a hard rectangle
+	float rim = min(min(v_uv.x, 1.0 - v_uv.x), min(v_uv.y, 1.0 - v_uv.y));
+	float a = u_alpha * smoothstep(0.0, u_feather, rim);
+	fragColor = vec4(rgb * a, a);
+}`
+
+type Shot = { key: string; tex: WebGLTexture }
+type Prog = { program: WebGLProgram; u: Record<string, WebGLUniformLocation | null> }
+type TerrainTile = Parameters<NonNullable<CustomLayerInterface['renderToTerrainTile']>>[1]
+
+export class PictureLayer {
+	readonly id: string
+	readonly layer: CustomLayerInterface
+	private bounds: Bounds
+	private map: MapLibreMap | null = null
+	/** the layer drawn by the camera, and the same layer drawn into one terrain tile */
+	private flat: Prog | null = null
+	private draped: Prog | null = null
+	private vao: WebGLVertexArrayObject | null = null
+	private buffer: WebGLBuffer | null = null
+	private revision = 0
+	/** how far the new picture has faded in over the old one, and how visible the layer is, worked out once a frame */
+	private mixIn = 1
+	private shown = 0
+	private front: Shot | null = null
+	private back: Shot | null = null
+	private fadeStart = 0
+	private fadeMs = 700
+	private pending: { key: string; bitmap: ImageBitmap } | null = null
+	private wanted: string | null = null
+	private urls = new Map<string, string>()
+	private cache = new Map<string, Promise<ImageBitmap>>()
+	private clip: [number, number] = [0, 1]
+	private opacity = 1
+	private opacityFrom = 1
+	private opacityTo = 1
+	private opacityStart = 0
+	private sat = 1
+	private bright = 1
+	private dim = new Map<string, [number, number]>()
+	private dimmed = false
+	private alpha = 1
+	private feather: number
+	private maxSize: number
+	private gone = false
+	/** called when a picture is on screen */
+	onShow: ((key: string) => void) | null = null
+
+	/** `feather` is how far in from its edges the picture melts into the base map, as a share of its size. A tilted
+	 *  view shows the whole rectangle of the picture, and wants more of it than the plan view (0.05). */
+	constructor(opts: { id: string; bounds: Bounds; pictures: { key: string; url: string }[]; maxSize?: number; feather?: number }) {
+		this.id = opts.id
+		this.feather = opts.feather ?? 0.05
+		this.bounds = opts.bounds
+		this.maxSize = opts.maxSize ?? 4096
+		for (const p of opts.pictures) this.urls.set(p.key, p.url)
+		this.layer = {
+			id: this.id,
+			type: 'custom',
+			renderingMode: '2d',
+			onAdd: (map, gl) => {
+				this.map = map
+				const make = (vert: string): Prog => {
+					const program = buildProgram(gl, vert, FRAG)
+					const u: Prog['u'] = {}
+					for (const n of ['u_matrix', 'u_rect', 'u_clip', 'u_tex', 'u_alpha', 'u_sat', 'u_bright', 'u_feather']) u[n] = gl.getUniformLocation(program, n)
+					return { program, u }
+				}
+				this.flat = make(QUAD_VERT)
+				this.draped = make(TILE_VERT)
+				const q = unitQuad(gl, this.flat.program)
+				this.vao = q.vao
+				this.buffer = q.buffer
+				if (this.wanted) this.show(this.wanted)
+			},
+			onRemove: (_map, gl) => {
+				this.gone = true
+				for (const s of [this.front, this.back]) if (s) gl.deleteTexture(s.tex)
+				for (const p of [this.flat, this.draped]) if (p) gl.deleteProgram(p.program)
+				if (this.buffer) gl.deleteBuffer(this.buffer)
+				if (this.vao) gl.deleteVertexArray(this.vao)
+				this.pending?.bitmap.close()
+				this.map = null
+			},
+			prerender: (gl) => this.prerender(gl),
+			render: (gl, input) => this.render(gl, input),
+			renderToTerrainTile: (gl, tile) => this.renderTile(gl, tile),
+			terrainTileRevision: 0,
+		}
+	}
+
+	/** fetch and decode a picture ahead of time */
+	preload(key: string) {
+		const url = this.urls.get(key)
+		if (!url) return null
+		let job = this.cache.get(key)
+		if (!job) {
+			job = fetch(url)
+				.then((r) => {
+					if (!r.ok) throw new Error(`${url}: ${r.status}`)
+					return r.blob()
+				})
+				.then(async (blob) => {
+					const full = await createImageBitmap(blob)
+					const big = Math.max(full.width, full.height)
+					if (big <= this.maxSize) return full
+					const k = this.maxSize / big
+					const small = await createImageBitmap(full, { resizeWidth: Math.round(full.width * k), resizeHeight: Math.round(full.height * k), resizeQuality: 'high' })
+					full.close()
+					return small
+				})
+			this.cache.set(key, job)
+		}
+		return job
+	}
+
+	/** fade to the picture of a day; null fades the layer out */
+	show(key: string | null, fadeMs = 700) {
+		if (key === this.wanted && (key === null || this.front?.key === key || this.pending?.key === key)) return
+		this.wanted = key
+		this.fadeMs = fadeMs
+		if (key === null) {
+			this.fadeTo(0, fadeMs)
+			return
+		}
+		this.fadeTo(1, fadeMs)
+		if (this.front?.key === key) return
+		const job = this.preload(key)
+		if (!job) return
+		job.then((bitmap) => {
+			if (this.gone || this.wanted !== key) return
+			this.pending = { key, bitmap }
+			this.cache.delete(key) // the bitmap is consumed by the upload; a later show fetches from the browser cache
+			this.touch()
+		}).catch((err) => console.error('picture failed to load', err))
+	}
+
+	private fadeTo(to: number, ms: number) {
+		if (to === this.opacityTo) return
+		this.opacityFrom = this.opacity
+		this.opacityTo = to
+		this.opacityStart = performance.now()
+		this.fadeMs = ms
+		this.touch()
+	}
+
+	/** What the layer draws has changed. Draped over terrain the tiles are kept as textures, and MapLibre only
+	 *  draws them again when this number moves. */
+	private touch() {
+		this.layer.terrainTileRevision = ++this.revision
+		this.map?.triggerRepaint()
+	}
+
+	/** saturation and brightness of every picture, 1 is the picture as it is */
+	setTone(sat: number, bright: number) {
+		this.sat = sat
+		this.bright = bright
+		this.touch()
+	}
+
+	/** how far one picture steps back while radar water sits on it (a sky full of cloud steps back more) */
+	setDim(key: string, sat: number, bright: number) {
+		this.dim.set(key, [sat, bright])
+	}
+
+	/** switch the stepping back on or off; each picture keeps its own, so a fade never flashes */
+	setDimmed(on: boolean) {
+		this.dimmed = on
+		this.touch()
+	}
+
+	setClip(x0: number, x1: number) {
+		this.clip = [x0, x1]
+		this.touch()
+	}
+
+	/** an extra multiplier on the whole layer, used to let it go when the map is seen from far out */
+	setAlpha(alpha: number) {
+		this.alpha = alpha
+		this.touch()
+	}
+
+	/** how far in from its edges the picture melts into the base map (see the constructor) */
+	setFeather(feather: number) {
+		this.feather = feather
+		this.touch()
+	}
+
+	/** the day on screen */
+	current() {
+		return this.front?.key ?? null
+	}
+
+	/** Runs once a frame on both paths, before anything is drawn: a decoded picture goes on the card, the fades move
+	 *  on, and a fade that is still running asks for the next frame. */
+	private prerender(gl: WebGL2RenderingContext) {
+		const now = performance.now()
+		if (this.pending) {
+			const { key, bitmap } = this.pending
+			this.pending = null
+			const tex = gl.createTexture()!
+			gl.activeTexture(gl.TEXTURE0)
+			gl.bindTexture(gl.TEXTURE_2D, tex)
+			gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false)
+			gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false)
+			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, bitmap)
+			gl.generateMipmap(gl.TEXTURE_2D)
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR)
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+			bitmap.close()
+			if (this.back) gl.deleteTexture(this.back.tex)
+			this.back = this.front
+			this.front = { key, tex }
+			this.fadeStart = now
+			this.onShow?.(key)
+		}
+		const k = Math.min(1, (now - this.opacityStart) / Math.max(1, this.fadeMs))
+		this.opacity = this.opacityFrom + (this.opacityTo - this.opacityFrom) * k
+		this.mixIn = this.back ? Math.min(1, (now - this.fadeStart) / Math.max(1, this.fadeMs)) : 1
+		if (this.mixIn >= 1 && this.back) {
+			gl.deleteTexture(this.back.tex)
+			this.back = null
+		}
+		this.shown = this.opacity * this.alpha
+		if (this.mixIn < 1 || k < 1) this.touch()
+	}
+
+	/** the old picture, then the new one over it as far as it has faded in */
+	private draw(gl: WebGL2RenderingContext, p: Prog, clipped: boolean) {
+		gl.uniform1i(p.u.u_tex, 0)
+		gl.uniform1f(p.u.u_feather, Math.max(0.001, this.feather))
+		const tone = (key: string) => {
+			const d = this.dimmed ? this.dim.get(key) : undefined
+			gl.uniform1f(p.u.u_sat, this.sat * (d ? d[0] : 1))
+			gl.uniform1f(p.u.u_bright, this.bright * (d ? d[1] : 1))
+		}
+		gl.enable(gl.BLEND)
+		gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA)
+		gl.bindVertexArray(this.vao)
+		gl.activeTexture(gl.TEXTURE0)
+		const ease = (x: number) => x * x * (3 - 2 * x)
+		const both = () => {
+			if (this.back) {
+				gl.bindTexture(gl.TEXTURE_2D, this.back.tex)
+				tone(this.back.key)
+				gl.uniform1f(p.u.u_alpha, this.shown)
+				gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4)
+			}
+			gl.bindTexture(gl.TEXTURE_2D, this.front!.tex)
+			tone(this.front!.key)
+			gl.uniform1f(p.u.u_alpha, this.shown * ease(this.mixIn))
+			gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4)
+		}
+		if (clipped) withClip(gl, this.clip, both)
+		else both()
+		gl.bindVertexArray(null)
+	}
+
+	/** the flat map: one rectangle through the camera of the map */
+	private render(gl: WebGL2RenderingContext, input: CustomRenderMethodInput) {
+		// a Mercator matrix: on the globe (far out, without terrain) the layer waits until the globe has turned flat
+		if (input.shaderData.variantName !== 'mercator') return
+		if (!this.flat || !this.front || this.shown <= 0.001) return
+		gl.useProgram(this.flat.program)
+		gl.uniformMatrix4fv(this.flat.u.u_matrix, false, quadMatrix(input.defaultProjectionData.mainMatrix as unknown as ArrayLike<number>, this.bounds))
+		this.draw(gl, this.flat, true)
+	}
+
+	/** 3D terrain: the part of one terrain tile that the picture covers */
+	private renderTile(gl: WebGL2RenderingContext, tile: TerrainTile) {
+		const at = tileRect(this.bounds, tile.tileID)
+		if (!at || !this.draped || !this.front || this.shown <= 0.001) return
+		gl.useProgram(this.draped.program)
+		gl.uniform4fv(this.draped.u.u_rect, at.rect)
+		gl.uniform4fv(this.draped.u.u_clip, at.clip)
+		gl.disable(gl.CULL_FACE)
+		this.draw(gl, this.draped, false)
+	}
+}
