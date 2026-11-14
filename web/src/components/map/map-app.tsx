@@ -55,7 +55,11 @@ function Fader({ src, alt }: { src: string; alt: string }) {
  * What to do: one dock at the bottom holds every command (step back, play the season, step on, compare) above the
  * pass timeline. What it is: one small card on the right, with the pass's record in NASA's catalogue as its proof.
  */
-export function MapApp({ stories }: { stories: StoryCfg[] }) {
+/**
+ * embed: the app shown inside the landing's hero. The map does not take the wheel or drags (the page scrolls past it),
+ * the season plays by itself, the address and the keyboard are left alone, and the rail offers the full map.
+ */
+export function MapApp({ stories, embed = false }: { stories: StoryCfg[]; embed?: boolean }) {
 	const mapEl = useRef<HTMLDivElement>(null)
 	const mapRef = useRef<MapLibreMap | null>(null)
 	const ov = useRef<HTMLDivElement>(null)
@@ -112,14 +116,16 @@ export function MapApp({ stories }: { stories: StoryCfg[] }) {
 			setView('change')
 			setSide('b')
 			setPlaying(false)
-			try {
-				history.replaceState(null, '', `/map?story=${s.key}`)
-			} catch {}
+			if (!embed)
+				try {
+					history.replaceState(null, '', `/map?story=${s.key}`)
+				} catch {}
 		},
-		[stories],
+		[stories, embed],
 	)
 
 	useEffect(() => {
+		if (embed) return
 		const k = new URLSearchParams(window.location.search).get('story')
 		const i = stories.findIndex((s) => s.key === k)
 		if (i > 0) choose(i)
@@ -132,6 +138,8 @@ export function MapApp({ stories }: { stories: StoryCfg[] }) {
 		const box = map.getContainer()
 		// read everything first so a frame lays out once: the map's offset and the panels a marker must not sit under
 		const o = box.getBoundingClientRect()
+		// the app can be drawn scaled (inside the landing's hero): screen pixels per map pixel
+		const k = o.width / (box.clientWidth || 1)
 		const panels = box.parentElement ? [...box.parentElement.querySelectorAll<HTMLElement>(':scope > .mp-rail, :scope > .mp-card, :scope > .mp-dock')].map((el) => el.getBoundingClientRect()) : []
 		const [w, s, e, nn] = place.box
 		const tl = map.project([w, nn])
@@ -157,9 +165,9 @@ export function MapApp({ stories }: { stories: StoryCfg[] }) {
 			const pt = map.project(p.c)
 			el.style.transform = `translate3d(${pt.x}px, ${pt.y}px, 0)`
 			// a marker is an icon above its point and a name below it; one that would sit under a panel steps away
-			const x = pt.x + o.left
-			const y = pt.y + o.top
-			el.toggleAttribute('data-under', panels.some((r) => x + 50 > r.left && x - 50 < r.right && y + 26 > r.top && y - 46 < r.bottom))
+			const x = o.left + pt.x * k
+			const y = o.top + pt.y * k
+			el.toggleAttribute('data-under', panels.some((r) => x + 50 * k > r.left && x - 50 * k < r.right && y + 26 * k > r.top && y - 46 * k < r.bottom))
 		})
 	}, [place.box, allPlaces])
 
@@ -194,12 +202,14 @@ export function MapApp({ stories }: { stories: StoryCfg[] }) {
 				minZoom: 1.5,
 				dragRotate: false,
 				pitchWithRotate: false,
+				interactive: !embed,
 				attributionControl: { compact: true },
 			})
-			map.touchZoomRotate.disableRotation()
+			if (!embed) map.touchZoomRotate.disableRotation()
 			mapRef.current = map
 			map.on('load', () => {
 				setReady(true)
+				if (embed) setPlaying(true)
 				map?.getContainer().querySelector('.maplibregl-ctrl-attrib')?.classList.remove('maplibregl-compact-show')
 			})
 		})()
@@ -280,6 +290,7 @@ export function MapApp({ stories }: { stories: StoryCfg[] }) {
 		[compare, side, n],
 	)
 	useEffect(() => {
+		if (embed) return
 		const on = (e: KeyboardEvent) => {
 			if (e.key === 'ArrowLeft') step(-1)
 			else if (e.key === 'ArrowRight') step(1)
@@ -291,7 +302,7 @@ export function MapApp({ stories }: { stories: StoryCfg[] }) {
 		}
 		window.addEventListener('keydown', on)
 		return () => window.removeEventListener('keydown', on)
-	}, [step])
+	}, [step, embed])
 
 	const toggleCompare = () => {
 		setPlaying(false)
@@ -337,7 +348,7 @@ export function MapApp({ stories }: { stories: StoryCfg[] }) {
 	const idx = compare && side === 'b' && b != null ? b : a
 
 	return (
-		<div className="mp" data-overview={overview || undefined}>
+		<div className="mp" data-overview={overview || undefined} data-embed={embed || undefined}>
 			<div ref={mapEl} className="mp-map" />
 			<div className="mp-wash" aria-hidden />
 
@@ -400,9 +411,15 @@ export function MapApp({ stories }: { stories: StoryCfg[] }) {
 					))}
 				</ul>
 				<div className="mp-rail-foot">
-					<Link href="/" className="mp-back">
-						<ArrowLeft size={15} strokeWidth={2} /> Landing
-					</Link>
+					{embed ? (
+						<Link href="/map" className="mp-back">
+							Open the full map <ArrowUpRight size={15} strokeWidth={2} />
+						</Link>
+					) : (
+						<Link href="/" className="mp-back">
+							<ArrowLeft size={15} strokeWidth={2} /> Landing
+						</Link>
+					)}
 					<ThemeSwitch />
 				</div>
 			</aside>
@@ -410,7 +427,7 @@ export function MapApp({ stories }: { stories: StoryCfg[] }) {
 			{!overview && (
 				<aside className="mp-card">
 					<p className="mp-kind">{story.kind}</p>
-					<h1 className="display">{story.title}</h1>
+					{embed ? <h2 className="display">{story.title}</h2> : <h1 className="display">{story.title}</h1>}
 					<p className="mp-what">{story.what}</p>
 					{view === 'change' && !showB && (
 						<p className="mp-legend">
