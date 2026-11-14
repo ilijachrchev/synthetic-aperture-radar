@@ -734,6 +734,18 @@
 	.fl-keys {
 		display: none;
 	}
+	.fl-foot {
+		flex-wrap: wrap;
+	}
+	.fl-foot > .fl-attrib {
+		order: 5;
+		flex-basis: 100%;
+		text-align: left;
+		white-space: normal;
+	}
+	.fl-picnote {
+		flex: 1 1 auto;
+	}
 }
 @media (prefers-reduced-motion: reduce) {
 	.fl:not([data-ready])::after {
@@ -836,4 +848,54 @@
 .fl[data-cinema] .fl-dock-top {
 	min-height: 0;
 	padding: 2px 2px 0;
+}
+
+/* ---------------------------------------------------------------- rain on the picture, as hard as the data says
+   Two sheets of short slanted streaks. Each sheet slides by exactly one tile along its own slant, so the loop has
+   no seam, and only transforms move. */
+.fl-rain {
+	position: absolute;
+	inset: 0;
+	z-index: 1;
+	overflow: hidden;
+	pointer-events: none;
+	opacity: 0;
+	transition: opacity 0.6s linear;
+}
+.fl-rain::before,
+.fl-rain::after {
+	content: "";
+	position: absolute;
+	inset: -240px -60px;
+	will-change: transform;
+}
+.fl-rain::before {
+	background-image: linear-gradient(100deg, transparent 43%, rgb(214 230 255 / 0.34) 50%, transparent 57%);
+	background-size: 12px 68px;
+	-webkit-mask-image: repeating-linear-gradient(180deg, #000 0 22px, transparent 22px 68px);
+	mask-image: repeating-linear-gradient(180deg, #000 0 22px, transparent 22px 68px);
+	animation: fl-rain-a 0.3s linear infinite;
+}
+.fl-rain::after {
+	background-image: linear-gradient(100deg, transparent 45%, rgb(214 230 255 / 0.24) 50%, transparent 55%);
+	background-size: 20px 113px;
+	-webkit-mask-image: repeating-linear-gradient(180deg, transparent 0 60px, #000 60px 98px, transparent 98px 113px);
+	mask-image: repeating-linear-gradient(180deg, transparent 0 60px, #000 60px 98px, transparent 98px 113px);
+	animation: fl-rain-b 0.44s linear infinite;
+}
+@keyframes fl-rain-a {
+	to {
+		transform: translate3d(-12px, 68px, 0);
+	}
+}
+@keyframes fl-rain-b {
+	to {
+		transform: translate3d(-20px, 113px, 0);
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.fl-rain::before,
+	.fl-rain::after {
+		animation: none;
+	}
 }

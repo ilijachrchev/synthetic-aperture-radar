@@ -18,7 +18,7 @@ void main() {
 	vec3 rgb = mix(vec3(l), c, u_sat) * u_bright;
 	// the picture melts into the base map at its edges instead of ending in a hard rectangle
 	float rim = min(min(v_uv.x, 1.0 - v_uv.x), min(v_uv.y, 1.0 - v_uv.y));
-	float a = u_alpha * smoothstep(0.0, 0.018, rim);
+	float a = u_alpha * smoothstep(0.0, 0.05, rim);
 	fragColor = vec4(rgb * a, a);
 }`
 
@@ -186,7 +186,7 @@ export class PictureLayer {
 			gl.bindTexture(gl.TEXTURE_2D, tex)
 			gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false)
 			gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false)
-			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, bitmap)
+			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, bitmap)
 			gl.generateMipmap(gl.TEXTURE_2D)
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR)
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)

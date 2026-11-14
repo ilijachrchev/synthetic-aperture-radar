@@ -1,7 +1,8 @@
 """Take real screenshots of the flood page at chosen moments, for the storyboard and for checking the picture.
 
-    python scripts/shoot_flood.py OUT_DIR --url http://localhost:3220/flood
-    python scripts/shoot_flood.py OUT_DIR --shots before peak --size 1920x1080
+    python scripts/shoot_flood.py OUT_DIR
+    python scripts/shoot_flood.py OUT_DIR --shots nisar_before ems_peak --size 1920x1080 --cinema
+    python scripts/shoot_flood.py OUT_DIR --story rice
 
 Every frame is the running app drawing real data: nothing is composited afterwards. A shot is a moment on the time
 axis plus what is switched on; the page exposes window.__flood for exactly this (see flood-app.tsx).
@@ -39,11 +40,26 @@ SHOTS = {
 }
 
 
+# the rice season at the Albufera (page /rice): one radar series, no outlines
+RICE_SHOTS = {
+    "rice_june": {"at": "2026-06-18T18:53:21Z"},
+    "rice_summer": {"at": "2026-08-29T18:53:18Z"},
+    "rice_filling": {"at": "2026-10-11T12:00:00Z"},
+    "rice_october": {"at": "2026-10-28T18:53:18Z"},
+    "rice_october_close": {"at": "2026-10-28T18:53:18Z", "camera": {"center": [-0.33, 39.27], "zoom": 12.6}},
+}
+STORIES = {
+    "flood": {"shots": SHOTS, "camera": {"center": MARSH, "zoom": 12.45}, "series": NISAR},
+    "rice": {"shots": RICE_SHOTS, "camera": {"center": [-0.318, 39.288], "zoom": 11.3}, "series": NISAR},
+}
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("out")
-    ap.add_argument("--url", default="http://localhost:3220/flood")
-    ap.add_argument("--shots", nargs="*", default=list(SHOTS))
+    ap.add_argument("--story", default="flood", choices=sorted(STORIES))
+    ap.add_argument("--base", default="http://localhost:3220")
+    ap.add_argument("--shots", nargs="*")
     ap.add_argument("--size", default="1440x900")
     ap.add_argument("--scale", type=float, default=1.0)
     ap.add_argument("--palette", default="2")
@@ -52,6 +68,9 @@ def main():
     args = ap.parse_args()
     w, h = (int(v) for v in args.size.split("x"))
     os.makedirs(args.out, exist_ok=True)
+    story = STORIES[args.story]
+    shots = args.shots or list(story["shots"])
+    url = f"{args.base}/{args.story}?still"
 
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=not args.headed, args=["--use-angle=d3d11", "--enable-gpu", "--ignore-gpu-blocklist"])
@@ -60,16 +79,16 @@ def main():
         page.on("console", lambda m: errors.append(m.text) if m.type == "error" else None)
         page.on("pageerror", lambda e: errors.append(str(e)))
         page.add_init_script(f"try {{ localStorage.setItem('palette', '{args.palette}') }} catch (e) {{}}")
-        page.goto(args.url, wait_until="domcontentloaded")
+        page.goto(url, wait_until="domcontentloaded")
         page.wait_for_function("window.__flood && document.querySelector('.fl[data-ready]')", timeout=90000)
-        for name in args.shots:
-            shot = SHOTS[name]
+        for name in shots:
+            shot = story["shots"][name]
             page.evaluate("__flood.compare(false); __flood.water(true); __flood.outlines(true); __flood.exact(false); __flood.optical('auto')")
-            want = shot.get("series", NISAR)
+            want = shot.get("series", story["series"])
             page.evaluate(f"__flood.cinema({'true' if args.cinema else 'false'})")
             page.evaluate(f"__flood.series({json.dumps(want)})")
             page.wait_for_function(f"window.__flood && __flood.current === {json.dumps(want)}", timeout=30000)
-            cam = shot.get("camera", {"center": MARSH, "zoom": 12.45})
+            cam = shot.get("camera", story["camera"])
             page.evaluate(f"__flood.camera({json.dumps(cam['center'])}, {cam['zoom']})")
             page.evaluate(f"__flood.seek({json.dumps(shot['at'])})")
             if shot.get("js"):

@@ -1,0 +1,124 @@
+{
+ "scenes": [
+  {
+   "day": "2026-06-30",
+   "file": "optical/2026-06-30.webp",
+   "time_utc": "2026-06-30T11:00:31Z",
+   "platform": "sentinel-2a",
+   "covered": 1.0,
+   "cloud_pct": 0.4,
+   "main_scene": "S2A_30SYJ_20260630_1_L2A",
+   "scenes": [
+    {
+     "id": "S2A_30SYJ_20260630_1_L2A",
+     "tile": "MGRS-30SYJ",
+     "cloud_pct": 0.4,
+     "share": 1.0
+    }
+   ]
+  },
+  {
+   "day": "2026-07-28",
+   "file": "optical/2026-07-28.webp",
+   "time_utc": "2026-07-28T11:00:16Z",
+   "platform": "sentinel-2c",
+   "covered": 1.0,
+   "cloud_pct": 0.0,
+   "main_scene": "S2C_30SYJ_20260728_0_L2A",
+   "scenes": [
+    {
+     "id": "S2C_30SYJ_20260728_0_L2A",
+     "tile": "MGRS-30SYJ",
+     "cloud_pct": 0.0,
+     "share": 1.0
+    }
+   ]
+  },
+  {
+   "day": "2026-08-29",
+   "file": "optical/2026-08-29.webp",
+   "time_utc": "2026-08-29T11:00:29Z",
+   "platform": "sentinel-2a",
+   "covered": 1.0,
+   "cloud_pct": 0.0,
+   "main_scene": "S2A_30SYJ_20260829_1_L2A",
+   "scenes": [
+    {
+     "id": "S2A_30SYJ_20260829_1_L2A",
+     "tile": "MGRS-30SYJ",
+     "cloud_pct": 0.0,
+     "share": 1.0
+    },
+    {
+     "id": "S2A_31SBD_20260829_1_L2A",
+     "tile": "MGRS-31SBD",
+     "cloud_pct": 0.0,
+     "share": 0.0
+    }
+   ]
+  },
+  {
+   "day": "2026-09-08",
+   "file": "optical/2026-09-08.webp",
+   "time_utc": "2026-09-08T11:00:29Z",
+   "platform": "sentinel-2a",
+   "covered": 1.0,
+   "cloud_pct": 0.0,
+   "main_scene": "S2A_30SYJ_20260908_1_L2A",
+   "scenes": [
+    {
+     "id": "S2A_30SYJ_20260908_1_L2A",
+     "tile": "MGRS-30SYJ",
+     "cloud_pct": 0.0,
+     "share": 1.0
+    }
+   ]
+  },
+  {
+   "day": "2026-10-08",
+   "file": "optical/2026-10-08.webp",
+   "time_utc": "2026-10-08T11:00:27Z",
+   "platform": "sentinel-2a",
+   "covered": 1.0,
+   "cloud_pct": 2.4,
+   "main_scene": "S2A_30SYJ_20261008_1_L2A",
+   "scenes": [
+    {
+     "id": "S2A_30SYJ_20261008_1_L2A",
+     "tile": "MGRS-30SYJ",
+     "cloud_pct": 2.4,
+     "share": 1.0
+    }
+   ]
+  },
+  {
+   "day": "2026-10-21",
+   "file": "optical/2026-10-21.webp",
+   "time_utc": "2026-10-21T11:00:14Z",
+   "platform": "sentinel-2b",
+   "covered": 1.0,
+   "cloud_pct": 0.0,
+   "main_scene": "S2B_30SYJ_20261021_0_L2A",
+   "scenes": [
+    {
+     "id": "S2B_30SYJ_20261021_0_L2A",
+     "tile": "MGRS-30SYJ",
+     "cloud_pct": 0.0,
+     "share": 1.0
+    }
+   ]
+  }
+ ],
+ "site": "albufera",
+ "width": 2680,
+ "height": 4518,
+ "zoom": 14,
+ "bounds": [
+  -0.4500103,
+  39.1499649,
+  -0.2199841,
+  39.4500462
+ ],
+ "source": "Sentinel-2 L2A true colour, Element 84 Earth Search STAC on AWS",
+ "credit": "Contains modified Copernicus Sentinel data 2026"
+}

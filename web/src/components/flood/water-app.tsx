@@ -305,7 +305,7 @@ export function WaterApp({ story }: { story: Story }) {
 			const emsHa = (data.outlines.ems.features[0] as { properties: { area_ha: number } }).properties.area_ha
 			list.push({ from: days.ems0, text: `Copernicus EMS maps ${ha(emsHa)} ha of flood from other satellites. No ${series.sensor} pass has come by yet.` })
 		}
-		list.push({ from: model.times[afterI] - 3 * HOUR, text: `${utcDay(model.times[afterI], false)}, first ${series.sensor} pass after the storm: ${ha(after[0])} ha of ${what}, ${times} times more than before.` })
+		list.push({ from: model.times[afterI] - 3 * HOUR, text: `${utcDay(model.times[afterI], false)}, first ${series.sensor} pass after the storm: ${ha(after[0])} ha of ${what}, ${times} times as much as before.` })
 		if (last > afterI && days.storm1 !== null) {
 			const weeks = Math.round((model.last - days.storm1) / (7 * DAY))
 			list.push({ from: model.times[afterI] + 30 * HOUR, text: 'Radar keeps passing, cloud or not. The water gives ground slowly.' })
@@ -392,6 +392,8 @@ export function WaterApp({ story }: { story: Story }) {
 				e.caption.textContent = beats[beat]?.text ?? ''
 				e.caption.animate([{ opacity: 0, transform: 'translateY(6px)' }, { opacity: 1, transform: 'none' }], { duration: 420, easing: 'cubic-bezier(0.16, 1, 0.3, 1)' })
 			}
+			// rain falls on the picture when the weather model says it rains, harder when it rains harder
+			if (e.rain) e.rain.style.opacity = String(Math.min(0.85, model.rainAt(T) / 14))
 			const x = X(T)
 			if (head.current) head.current.style.transform = `translate3d(${x}px, 0, 0)`
 			if (e.tag) {
@@ -531,7 +533,9 @@ export function WaterApp({ story }: { story: Story }) {
 		if (!map || !mapReady) return
 		const fit = () => {
 			const wide = window.innerWidth > 1180
-			map.setPadding({ top: 70, left: 0, right: wide ? 330 : 0, bottom: (dock.current?.offsetHeight ?? 240) + 20 })
+			// on a phone the readout sits above the dock, so the free part of the map is the top
+			const side = window.innerWidth <= 720 ? (document.querySelector<HTMLElement>('.fl-side')?.offsetHeight ?? 0) + 12 : 0
+			map.setPadding({ top: 70, left: 0, right: wide ? 330 : 0, bottom: (dock.current?.offsetHeight ?? 240) + 20 + side })
 			if (!st.current.playing && map.getZoom() > 9) map.jumpTo({ center: story.camera.center, zoom: window.innerWidth < 720 ? story.camera.zoom - 1.3 : story.camera.zoom })
 		}
 		fit()
@@ -610,7 +614,8 @@ export function WaterApp({ story }: { story: Story }) {
 	// toggles
 	useEffect(() => {
 		st.current.playing = playing
-		water.current?.setFlow(playing ? 1 : 0)
+		const calm = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+		water.current?.setFlow(playing && !calm ? 1 : 0)
 	}, [playing, ready])
 	useEffect(() => {
 		st.current.zoomFade = -1
@@ -814,12 +819,20 @@ export function WaterApp({ story }: { story: Story }) {
 		}
 	}, [data, active, seek, tell])
 
-	// ?story plays the film once the page is ready
+	// once the page is ready it plays by itself: ?story plays the film, otherwise the passes run once
 	const told = useRef(false)
 	useEffect(() => {
-		if (!ready || told.current || !new URLSearchParams(window.location.search).has('story')) return
+		if (!ready || told.current) return
 		told.current = true
-		tell()
+		const q = new URLSearchParams(window.location.search)
+		if (q.has('story')) {
+			tell()
+			return
+		}
+		// people who ask for less motion, and scripts that take stills (?still), get a still picture
+		if (q.has('still') || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+		const id = window.setTimeout(() => setPlaying(true), 1100)
+		return () => window.clearTimeout(id)
 	}, [ready, tell])
 
 	const dragSwipe = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
@@ -852,6 +865,7 @@ export function WaterApp({ story }: { story: Story }) {
 	return (
 		<div className="fl" data-ready={ready || undefined} data-far={far || undefined} data-cinema={cinema || undefined}>
 			<div ref={mapEl} className="fl-map" />
+			{story.storm && <div ref={set('rain')} className="fl-rain" aria-hidden />}
 			{compare && (
 				<div ref={swipe} className="fl-swipe" onPointerDown={dragSwipe}>
 					<span className="fl-swipe-tag" data-side="left">

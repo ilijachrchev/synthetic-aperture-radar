@@ -91,7 +91,7 @@ export const RICE: Story = {
 	kind: 'season',
 	series: ['nisar_066_D_069'],
 	window: { from: '2026-06-14T00:00:00Z', to: '2026-11-01T00:00:00Z' },
-	camera: { center: [-0.335, 39.3], zoom: 11.55 },
+	camera: { center: [-0.318, 39.288], zoom: 11.3 },
 	otherNisar: [],
 	places: [
 		{ name: 'València', at: [-0.3763, 39.4699] },

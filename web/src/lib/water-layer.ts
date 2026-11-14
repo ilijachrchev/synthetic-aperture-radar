@@ -165,7 +165,11 @@ void main() {
 	}
 
 	vec2 fc = gl_FragCoord.xy;
-	float between = 1.0 - u_obs;
+	// only what the two passes disagree on is an estimate: water that both passes have is as sure between them
+	float inA = clamp(0.5 - anyA / max(fwidth(anyA), texel * 0.35), 0.0, 1.0);
+	float inB = clamp(0.5 - anyB / max(fwidth(anyB), texel * 0.35), 0.0, 1.0);
+	float between = (1.0 - u_obs) * (1.0 - inA * inB);
+	float shifting = (1.0 - u_obs) * smoothstep(0.5, 2.0, abs(anyB - anyA));
 
 	// fill: open water is a clean wash, flooded vegetation is a lighter wash under fine dots
 	vec3 cOpen = mix(u_cOpen * vec3(0.9, 0.82, 0.86), u_cOpen, fresh);
@@ -192,13 +196,14 @@ void main() {
 	// shoreline: one crisp line, strong on a body of water that moved, faint on specks, dashed on an estimate
 	float weight = mix(0.2, 1.0, mass) * mix(0.55, 1.0, moved);
 	float dash = smoothstep(0.42, 0.58, abs(fract((fc.x - fc.y) / 11.0) - 0.5) * 2.0);
-	float line = clamp(1.55 - abs(px), 0.0, 1.0) * weight * mix(1.0, dash, between);
+	float line = clamp(1.55 - abs(px), 0.0, 1.0) * weight * mix(1.0, dash, shifting);
 	float halo = exp(-max(px, 0.0) / 7.0) * step(0.0, px) * mass * moved * (0.34 + 0.5 * u_flash);
 
 	// forecast: no solid water, only stripes inside the likely extent and a dashed outline
 	float stripes = smoothstep(0.34, 0.46, abs(fract((fc.x + fc.y) / 12.0) - 0.5));
 	fill = mix(fill, water * (0.1 + 0.34 * (1.0 - stripes)), u_forecast);
 	line = mix(line, clamp(1.55 - abs(px), 0.0, 1.0) * dash, u_forecast);
+	// (the forecast outline is always dashed)
 	halo *= 1.0 - u_forecast;
 	ripple *= 1.0 - u_forecast;
 
@@ -376,7 +381,7 @@ export class WaterLayer {
 		gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false)
 		gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false)
 		gl.pixelStorei(gl.UNPACK_COLORSPACE_CONVERSION_WEBGL, gl.NONE)
-		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, job.bitmap)
+		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, job.bitmap)
 		gl.generateMipmap(gl.TEXTURE_2D)
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR)
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)

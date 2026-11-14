@@ -6,7 +6,11 @@
 
 </div>
 
-Written 14 Nov 2026 on branch `feat/map-viz`. The prototype is the page `/flood` of the web app (`web/`).
+Written 14 Nov 2026 on branch `feat/map-viz`. The prototype is two pages of the web app (`web/`): `/flood` and `/rice`.
+
+![The NISAR pass of 28 Oct 2026 over the Pego-Oliva marsh, drawn over the real Sentinel-2 picture of that day](storyboard/05_after.jpg)
+
+<sub>A real frame of the prototype: NISAR water of 28 Oct 2026 over the Sentinel-2 picture of the same day, the Copernicus EMS outline in pink.</sub>
 
 Every fact below was checked that day against the source named beside it. Three marks say how:
 
@@ -90,7 +94,7 @@ What this means for the story:
 | Cloudflare Pages | 25 MiB per file, and it answers range requests with a full 200 [doc, rechecked], so COG readers fail there |
 | Hugging Face datasets | Range and CORS worked in a test; one report of failures in January 2026 |
 
-Baked frames are fetched whole, so the page works on any of them. The site layers of the marsh weigh 12 MB in the repo.
+Baked frames are fetched whole, so the page works on any of them. The layers weigh 12 MB for the marsh and 11 MB for the Albufera in the repo.
 
 ## 4. Real imagery and how to credit it
 
@@ -154,6 +158,8 @@ The shader (`web/src/lib/water-layer.ts`) mixes the fields of the pass before an
 - **Specks stay quiet.** The shoreline is drawn strong on a body of water that moved and faint on single pixels, so radar speckle does not sparkle.
 - **Ripples** run outward where water gains ground and inward where it gives it back, only while the series plays.
 - **A pass pulses.** When the playhead reaches a real pass the shoreline flashes once.
+- **Only the doubt is hatched.** Water that both passes have stays solid between them; the hatching and the dashes mark only what the two passes disagree on.
+- **Rain falls** on the picture in the hours the weather model has rain, harder when it rains harder.
 - Where a pass did not see a pixel, the last state that was seen is kept, so a shoreline never moves only because a pass missed it.
 
 The first and last day rasters of the CV export are not used: this method needs only the per-date layers and also handles ground that floods, drains and floods again.
@@ -163,7 +169,7 @@ The first and last day rasters of the CV export are not used: this method needs 
 | Story | Data | What moves | State |
 |---|---|---|---|
 | **DANA flood, Pego-Oliva** | NISAR water 066 D, Sentinel-1 water, four Sentinel-2 pictures, EMS, footprint, depths, rain | Water rises with the rain, the outline of the peak appears, the pass confirms, Sentinel-1 shows the fall | **Built**: `/flood` |
-| **Rice season, Albufera** | NISAR water 066 D, 11 passes from 18 Jun to 28 Oct | Paddies fill and drain. New water is measured against the water that is always there (the lagoon). | Same engine, needs its page. Mockup below. |
+| **Rice season, Albufera** | NISAR water 066 D, 11 passes from 18 Jun to 28 Oct, six clear Sentinel-2 pictures | From June to September the map hardly moves (about 2,470 ha, the lagoon). From 4 Oct the paddies fill: 7,325 ha on 28 Oct. New water is measured against the 2,371 ha every pass has. | **Built**: `/rice` |
 | **Burn scar, Serra d'Espadà** | Burn layer per pass (asked from the CV session), EFFIS outline | The scar burns in between 24 Jul and 17 Aug with an ember edge, then stays dark. NASA FIRMS hot spots could time the spread [not checked]. | Mockup below |
 | **Sinking ground, Lorca** | `data/prediction/lorca`: LOR1 since 2020, forecast for 12, 24 and 36 days with 80 % and 95 % ranges | A ring at the station, the line falling on a chart, then the forecast as a band that widens | Mockup below |
 | **Rain to flood, after today** | A probability raster per forecast day (planned) | Stripes for the likely extent, a second outline for the range, a "today" line on the axis | Shader mode exists (`forecast: 1`), needs data. Mockup below. |
@@ -176,29 +182,30 @@ Frames marked **real** are screenshots of the running app on real data (`web/scr
 
 | # | Time | Shot | Camera | On screen | Frame |
 |---|---|---|---|---|---|
-| 1 | 0.0 to 3.0 s | The storm from space | 39.3 N 0.6 W, zoom 6.4, slow push to 6.95 | NASA VIIRS picture of 18 Oct, coast lines, a ring on the marsh. Caption: the rain total, "The optical satellite sees only cloud." | real, [01](storyboard/01_space.jpg) |
-| 2 | 3.0 to 6.5 s | Down to the marsh | Fly to 38.87 N 0.066 W, zoom 12.45, 3.4 s | The clear picture of 8 Oct, NISAR water of 16 Oct: 113 ha. Chip "NISAR radar pass". | real, [02](storyboard/02_before.jpg) |
-| 3 | 6.5 to 9.0 s | The rain | Still | Playhead runs into 18 Oct. Rain bars fall on the axis, the picture turns to cloud, water rises hatched. Chip "Between passes, an estimate". | real, [03](storyboard/03_rain.jpg) |
-| 4 | 9.0 to 11.0 s | The peak, seen by others | Still | 21 Oct: the clear picture shows the flood in true colour, the Copernicus outline draws in pink: 1,118 ha. | real, [04](storyboard/04_peak.jpg) |
-| 5 | 11.0 to 13.5 s | The pass | Still | 28 Oct: the shoreline pulses, hatching goes, 447 ha, "+334 ha since 16 Oct". | real, [05](storyboard/05_after.jpg) |
-| 6 | 13.5 to 17.0 s | The check | Still | Swipe from right to left: before on the left, radar water over the 21 Oct picture on the right. | real, [06](storyboard/06_compare.jpg) |
-| 7 | 17.0 to 19.5 s | Sentinel-1 fills the gap | Still | Switch to Sentinel-1: 22 Oct, 524 ha, then the fall to 250 ha by 10 Nov. | real, [07](storyboard/07_sentinel1.jpg) |
-| 8 | 19.5 to 22.5 s | Farm water | Cut to the Albufera, zoom 11.6 | Paddies fill and drain through the season. "Rice fields are flooded on purpose." | mockup, [08](storyboard/08_rice_mock.jpg) |
-| 9 | 22.5 to 25.0 s | Fire | Cut to Serra d'Espadà, zoom 11.2 | The scar burns in with an ember edge inside the EFFIS line. | mockup, [09](storyboard/09_fire_mock.jpg) |
-| 10 | 25.0 to 27.5 s | Sinking | Cut to Lorca, zoom 11.5 | Ring on LOR1, the chart falls, the forecast band opens. | mockup, [10](storyboard/10_sink_mock.jpg) |
-| 11 | 27.5 to 30.0 s | What comes next | Back to the marsh | "Today" line, the forecast in stripes with its range. End card: name, link, team, credits. | mockup, [11](storyboard/11_forecast_mock.jpg) |
+| 1 | 0.0 to 3.0 s | The storm from space | 39.3 N 0.6 W, zoom 6.4, slow push to 6.95 | NASA VIIRS picture of 18 Oct, coast lines, a ring on the marsh. Caption: the rain total, "The optical satellite sees only cloud." | real<br><a href="storyboard/01_space.jpg"><img src="storyboard/01_space.jpg" width="230" alt="frame 01"></a> |
+| 2 | 3.0 to 6.5 s | Down to the marsh | Fly to 38.87 N 0.066 W, zoom 12.45, 3.4 s | The clear picture of 8 Oct, NISAR water of 16 Oct: 113 ha. Chip "NISAR radar pass". | real<br><a href="storyboard/02_before.jpg"><img src="storyboard/02_before.jpg" width="230" alt="frame 02"></a> |
+| 3 | 6.5 to 9.0 s | The rain | Still | Playhead runs into 18 Oct. Rain bars fall on the axis, the picture turns to cloud, water rises hatched. Chip "Between passes, an estimate". | real<br><a href="storyboard/03_rain.jpg"><img src="storyboard/03_rain.jpg" width="230" alt="frame 03"></a> |
+| 4 | 9.0 to 11.0 s | The peak, seen by others | Still | 21 Oct: the clear picture shows the flood in true colour, the Copernicus outline draws in pink: 1,118 ha. | real<br><a href="storyboard/04_peak.jpg"><img src="storyboard/04_peak.jpg" width="230" alt="frame 04"></a> |
+| 5 | 11.0 to 13.5 s | The pass | Still | 28 Oct: the shoreline pulses, hatching goes, 447 ha, "+334 ha since 16 Oct". | real<br><a href="storyboard/05_after.jpg"><img src="storyboard/05_after.jpg" width="230" alt="frame 05"></a> |
+| 6 | 13.5 to 17.0 s | The check | Still | Swipe from right to left: before on the left, radar water over the 21 Oct picture on the right. | real<br><a href="storyboard/06_compare.jpg"><img src="storyboard/06_compare.jpg" width="230" alt="frame 06"></a> |
+| 7 | 17.0 to 19.5 s | Sentinel-1 fills the gap | Still | Switch to Sentinel-1: 22 Oct, 524 ha, then the fall to 250 ha by 10 Nov. | real<br><a href="storyboard/07_sentinel1.jpg"><img src="storyboard/07_sentinel1.jpg" width="230" alt="frame 07"></a> |
+| 8 | 19.5 to 22.5 s | Farm water | Cut to the Albufera, 39.288 N 0.318 W, zoom 11.3 | The season plays: the lagoon stays, the paddies fill in October. "Rice fields are flooded on purpose: farm water, not storm water." | real<br><a href="storyboard/08_rice.jpg"><img src="storyboard/08_rice.jpg" width="230" alt="frame 08"></a> |
+| 9 | 22.5 to 25.0 s | Fire | Cut to Serra d'Espadà, zoom 11.2 | The scar burns in with an ember edge inside the EFFIS line. | mockup<br><a href="storyboard/09_fire_mock.jpg"><img src="storyboard/09_fire_mock.jpg" width="230" alt="frame 09"></a> |
+| 10 | 25.0 to 27.5 s | Sinking | Cut to Lorca, zoom 11.5 | Ring on LOR1, the chart falls, the forecast band opens. | mockup<br><a href="storyboard/10_sink_mock.jpg"><img src="storyboard/10_sink_mock.jpg" width="230" alt="frame 10"></a> |
+| 11 | 27.5 to 30.0 s | What comes next | Back to the marsh | "Today" line, the forecast in stripes with its range. End card: name, link, team, credits. | mockup<br><a href="storyboard/11_forecast_mock.jpg"><img src="storyboard/11_forecast_mock.jpg" width="230" alt="frame 11"></a> |
 
-Shots 1 to 6 already play by themselves: open `/flood?story`. `web/scripts/record_flood.py` records them as a film file and as frames.
+Shots 1 to 6 already play by themselves: open `/flood?story`. Shot 8 does too: `/rice?story`. `web/scripts/record_flood.py` records them as a film file and as frames.
 
 ### The live app
 
-1. The page opens on the last NISAR pass before the storm, paused, the caption says what is on screen. [a1](storyboard/a1_app.jpg)
+1. The page opens on the last NISAR pass before the storm and plays the passes once by itself (not for people who ask for less motion). The caption always says what is on screen. [a1](storyboard/a1_app.jpg)
 2. Play, or drag the time axis. The axis is the control: rain on top, the water the picture shows as an area, every pass as a mark, NISAR passes as diamonds, picture days as squares, the Copernicus days as a pink bar.
 3. The readout always says what the picture is: a pass (with the satellite) or an estimate.
 4. One switch changes the radar: NISAR, L band, or Sentinel-1, C band. [a3](storyboard/a3_sentinel1_three_weeks.jpg)
 5. "Exact pixels" shows the radar pixels as delivered. [a2](storyboard/a2_exact_pixels.jpg)
 6. "Compare" swipes, "From space" flies out to the storm, "Sources" lists every credit.
 7. Space plays and pauses, the arrow keys step from pass to pass.
+8. The rice season is the same page with another story: [summer](storyboard/a5_rice_summer.jpg), [the paddies filling](storyboard/a4_rice_filling.jpg), [28 Oct close up](storyboard/a6_rice_close.jpg).
 
 ### References looked at
 
@@ -224,6 +231,7 @@ The bake picks up every CV water layer listed in `data/manifest.json` by itself.
 - FIRMS hot spots for the fire: access and dates [not checked].
 - Phones: the layout adapts, the layers were only tested on a desktop graphics card.
 - The film recording runs in a headless browser; a final cut should be recorded on a real screen.
+- Frame rate: 60 a second at rest and 59 to 60 while playing on a laptop graphics card (RTX 4070), measured in a headless browser. One frame runs long (about 0.1 s) each time a new Sentinel-2 picture is put on the graphics card.
 - Open for Ilija: which of the three palettes; whether the dock is the right weight; one page per story or one page with a story switch.
 
 ## 10. Run it
@@ -234,7 +242,7 @@ pnpm install
 pnpm dev
 ```
 
-Then open `http://localhost:3000/flood` (or `/flood?story` for the film).
+Then open `http://localhost:3000/flood` or `/rice` (add `?story` for the film, `?still` for a page that does not play by itself).
 
 Rebuild the layers (Python with rasterio, scipy, geopandas, earthaccess; the pipeline environment has them):
 
@@ -242,7 +250,11 @@ Rebuild the layers (Python with rasterio, scipy, geopandas, earthaccess; the pip
 python scripts/bake_water.py --site pego_oliva --start 2026-10-16 --end 2026-11-10 --stacks 066_D_069 --data-root ../data
 python scripts/fetch_optical.py --site pego_oliva --days 2026-10-08 2026-10-18 2026-10-21 2026-10-28
 python scripts/bake_context.py --data-root ../data
+python scripts/bake_water.py --site albufera --start 2026-06-18 --end 2026-10-28 --no-s1 --stacks 066_D_069 --data-root ../data
+python scripts/fetch_optical.py --site albufera --days 2026-06-30 2026-07-28 2026-08-29 2026-09-08 2026-10-08 2026-10-21
 python scripts/shoot_flood.py out --cinema --size 1920x1080
+python scripts/shoot_flood.py out --story rice --cinema --size 1920x1080
+python scripts/record_flood.py out --url "http://localhost:3000/flood?story"
 ```
 
 <sub>Drafted with an SI assistant (Claude Code). Frames marked mockup are SI-generated and watermarked. Decisions on the idea and the look stay with the team.</sub>

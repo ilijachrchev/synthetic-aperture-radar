@@ -58,6 +58,11 @@ export function floodModel(series: WaterSeries, rain: RainFile | null) {
 		const k = Math.floor((T - rainT[0]) / HOUR)
 		return prefix[k] + ((T - rainT[k]) / HOUR) * rainMm[k + 1]
 	}
+	/** rain of the hour T falls in, in mm */
+	const rainAt = (T: number) => {
+		if (!rainT.length || T <= rainT[0] - HOUR || T > rainT[rainT.length - 1]) return 0
+		return rainMm[Math.max(0, Math.ceil((T - rainT[0]) / HOUR))] ?? 0
+	}
 	const pairRain = times.slice(0, -1).map((t, i) => rainUpTo(times[i + 1]) - rainUpTo(t))
 	// in a storm gap: the moment the rain is over
 	const rainEnd = times.slice(0, -1).map((t, i) => {
@@ -126,7 +131,7 @@ export function floodModel(series: WaterSeries, rain: RainFile | null) {
 		return rows[rows.length - 1]
 	}
 
-	return { times, first, last, rainT, rainMm, rainUpTo, pairRain, rainEnd, viewAt, areaAt, areaOfPass, before }
+	return { times, first, last, rainT, rainMm, rainUpTo, rainAt, pairRain, rainEnd, viewAt, areaAt, areaOfPass, before }
 }
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
