@@ -1,0 +1,143 @@
+{
+  "schema_version": 1,
+  "id": "prediction-flood-alert",
+  "issued_at_utc": "2026-11-14T11:41:27+00:00",
+  "forecast_origin": "2026-11-14",
+  "what": "Alert that new flood water appears on the next Sentinel-1 pass, from the largest 3-day rain total",
+  "threshold_mm_3d": 100.0,
+  "threshold_rule": "Published anchor, fixed before looking at our data: Camarasa-Belmonte (2016), J. Hydrol. 541, 99-115, doi:10.1016/j.jhydrol.2016.03.019",
+  "threshold_fitted_mm_3d": 7.0,
+  "why_not_fitted": "Only 4 new-flood labels in training, 3 after 7-29 mm of rain (water management or radar noise); the best-Peirce threshold then alarms on almost any rain. See metrics.json.",
+  "alert_rule": "share of ECMWF ensemble members whose largest 3-day total in the next 3 days reaches the threshold: red >= 0.5, amber >= 0.1",
+  "rain_source": "Open-Meteo: ECMWF IFS 9 km archive (history), IFS single runs (replay), ECMWF IFS 0.25 deg 51-member ensemble (live); site value = max over a 0.1 deg lattice",
+  "label_rule": {
+    "baseline_days": 30,
+    "min_excess_ha": 50.0,
+    "k_spread": 5.0,
+    "window_days": 3,
+    "max_gap_days": 12
+  },
+  "holdout": {
+    "sites": [
+      "albufera",
+      "pego_oliva"
+    ],
+    "start": "2026-10-15",
+    "end": "2026-11-15",
+    "event": "DANA Adam, 18-19 Oct 2026 (EMSR935 at Pego-Oliva)"
+  },
+  "live": {
+    "albufera": {
+      "window": "2026-11-14 to 2026-11-16",
+      "members": 51,
+      "share_above_threshold": 0.0,
+      "alert": "green",
+      "max_3d_mm": {
+        "median": 0.2,
+        "p90": 1.0,
+        "max": 3.3
+      }
+    },
+    "pego_oliva": {
+      "window": "2026-11-14 to 2026-11-16",
+      "members": 51,
+      "share_above_threshold": 0.0,
+      "alert": "green",
+      "max_3d_mm": {
+        "median": 0.4,
+        "p90": 1.6,
+        "max": 3.4
+      }
+    }
+  },
+  "dana_replay_pego_oliva": [
+    {
+      "run": "2026-10-15",
+      "forecast_days": [
+        "2026-10-15",
+        "2026-10-16",
+        "2026-10-17",
+        "2026-10-18",
+        "2026-10-19"
+      ],
+      "daily_max_mm": [
+        0.0,
+        0.7,
+        4.1,
+        68.9,
+        55.7
+      ],
+      "max_3d_mm": 128.7,
+      "alert": "red"
+    },
+    {
+      "run": "2026-10-16",
+      "forecast_days": [
+        "2026-10-16",
+        "2026-10-17",
+        "2026-10-18",
+        "2026-10-19",
+        "2026-10-20"
+      ],
+      "daily_max_mm": [
+        0.0,
+        3.3,
+        79.3,
+        128.8,
+        1.6
+      ],
+      "max_3d_mm": 211.4,
+      "alert": "red"
+    },
+    {
+      "run": "2026-10-17",
+      "forecast_days": [
+        "2026-10-17",
+        "2026-10-18",
+        "2026-10-19",
+        "2026-10-20",
+        "2026-10-21"
+      ],
+      "daily_max_mm": [
+        0.0,
+        41.2,
+        21.3,
+        2.1,
+        0.0
+      ],
+      "max_3d_mm": 64.6,
+      "alert": "amber"
+    },
+    {
+      "run": "2026-10-18",
+      "forecast_days": [
+        "2026-10-18",
+        "2026-10-19",
+        "2026-10-20",
+        "2026-10-21",
+        "2026-10-22"
+      ],
+      "daily_max_mm": [
+        0.0,
+        68.6,
+        1.0,
+        0.1,
+        0.9
+      ],
+      "max_3d_mm": 69.7,
+      "alert": "amber"
+    }
+  ],
+  "logistic": {
+    "a": -6.7204,
+    "b": 0.7429,
+    "form": "p = 1 / (1 + exp(-(a + b ln(1 + rain_mm))))"
+  },
+  "caveats": [
+    "Gridded rain misses extremes: the IFS cell saw about 72 mm in the DANA, AEMET Pego 634 mm.",
+    "Few flood events since Aug 2024, so the threshold is loose and the probability is not calibrated.",
+    "The 100 mm anchor comes from station totals; ours is the wettest IFS grid point, a different product.",
+    "Local rain only: river water from upstream and sea surge (both mattered in 2024 and 2026) are not inputs.",
+    "Label = new water on the next radar pass; floods that drain between passes are missed."
+  ]
+}

@@ -31,5 +31,33 @@
     "units": "ha",
     "issued_at_utc": "2026-11-14T11:33:20+00:00",
     "data_cutoff": "2026-11-10"
+  },
+  {
+    "model": "prediction",
+    "site": "albufera",
+    "stack": "open-meteo-ifs",
+    "layer": "flood_alert",
+    "date": "2026-11-14",
+    "id": "prediction-flood-alert-albufera",
+    "file": "data/prediction/flood/forecast.json",
+    "metrics": "data/prediction/flood/metrics.json",
+    "observations": "data/prediction/flood/water_albufera.csv",
+    "source_type": "open-meteo + dswx-s1",
+    "alert": "green",
+    "issued_at_utc": "2026-11-14T11:41:27+00:00"
+  },
+  {
+    "model": "prediction",
+    "site": "pego_oliva",
+    "stack": "open-meteo-ifs",
+    "layer": "flood_alert",
+    "date": "2026-11-14",
+    "id": "prediction-flood-alert-pego_oliva",
+    "file": "data/prediction/flood/forecast.json",
+    "metrics": "data/prediction/flood/metrics.json",
+    "observations": "data/prediction/flood/water_pego_oliva.csv",
+    "source_type": "open-meteo + dswx-s1",
+    "alert": "green",
+    "issued_at_utc": "2026-11-14T11:41:27+00:00"
   }
 ]
