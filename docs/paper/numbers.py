@@ -146,11 +146,48 @@ def rows() -> list[tuple[str, str, str]]:
         for k in ("b_user", "nisar_producer", "nisar_user", "s1_producer"):
             lo, hi = v1c["ci95"][k]
             add(f"v1.ci95.{k}", f"{lo:.2f}–{hi:.2f}", f"{src1} ci95.{k}")
+        add("v1.wet_share", f"{v1c['estimates']['wet_share']:.2f}", f"{src1} estimates.wet_share")
         ha, (lo, hi) = v1c["wet_rice_ha"]
         add("v1.wet_rice_ha", f"{ha:,}", f"{src1} wet_rice_ha")
         add("v1.wet_rice_ha_ci", f"{lo:,}–{hi:,}", f"{src1} wet_rice_ha interval")
     except Exception as e:
         add("v1.unavailable", f"commit 54fdc99 not found ({type(e).__name__})", "-")
+
+    # Threshold sweep on the fixed sample points (pipeline/validation/june18_sweep.py)
+    sw = load("data/validation/june18/threshold_sweep.json")
+    src_sw = "data/validation/june18/threshold_sweep.json"
+    add("sweep.check", sw["check_agreement_at_-15"], f"{src_sw} check_agreement_at_-15")
+    for t, row in sw["by_threshold"].items():
+        k = t.lstrip("-")
+        add(f"sweep.{k}.mapped", f"{row['mapped_share_of_rice_points_weighted']:.2f}", f"{src_sw} by_threshold.{t}.mapped_share")
+        for lab in ("v1", "strict"):
+            r_ = row[lab]
+            add(f"sweep.{k}.{lab}.producer", f"{r_['producer']:.2f} ({r_['producer_ci95'][0]:.2f}–{r_['producer_ci95'][1]:.2f})",
+                f"{src_sw} by_threshold.{t}.{lab}.producer")
+            add(f"sweep.{k}.{lab}.user", f"{r_['user']:.2f} ({r_['user_ci95'][0]:.2f}–{r_['user_ci95'][1]:.2f})",
+                f"{src_sw} by_threshold.{t}.{lab}.user")
+    # Tipping point: unclear B points that would have to be wet for the rule to hold on all 150
+    import math
+    for tag, cnt in (("v1", r["v1_8_and_23_jun"]["counts"]["B"]), ("v2", r["v2"]["counts"]["B"])):
+        n_b = cnt["wet"] + cnt["dry"] + cnt["unclear"]
+        need = max(0, math.ceil(r["rule"]["min_share_pass"] * n_b - cnt["wet"]))
+        add(f"{tag}.b_tipping", f"{need} of {cnt['unclear']}", f"derived from {src_r} counts.B and rule.min_share_pass")
+    jul = [d for d in load("data/prediction/nisar_check.json")["albufera_rice"]["dates"] if d["date"] == "2026-07-24"][0]
+    add("alb.066.jul24_dark", f"{jul['nisar_dark_pct']['-15']} %", "data/prediction/nisar_check.json albufera_rice.dates[2026-07-24].nisar_dark_pct.-15")
+
+    # DANA, every method on the same pixels (Ilija's CV benchmark, docs/CV_BENCHMARK.md on main, #32)
+    try:
+        md = subprocess.run(["git", "-C", str(ROOT), "show", "origin/main:docs/CV_BENCHMARK.md"],
+                            capture_output=True, text=True, check=True, encoding="utf-8").stdout
+        sec = md[md.index("### The DANA flood"):]
+        for name, key in (("v1, threshold 0.3", "unet_v1"), ("Sentinel-1 map", "s1"), ("NISAR -15 dB threshold", "thr15"),
+                          ("NISAR Otsu", "otsu")):
+            line = next(l for l in sec.splitlines() if l.startswith(f"| {name} |"))
+            c = [x.strip().strip("*") for x in line.strip("|").split("|")]
+            add(f"bench.dana.{key}", f"IoU {c[1]}, precision {c[2]}, recall {c[3]}",
+                "origin/main:docs/CV_BENCHMARK.md §10, DANA table")
+    except Exception as e:
+        add("bench.unavailable", f"CV_BENCHMARK.md not found ({type(e).__name__})", "-")
 
     # Rain-driven floods in the NISAR period before the DANA (training labels)
     ev = list(csv.DictReader(open(ROOT / "data/prediction/flood/events.csv", encoding="utf-8")))
