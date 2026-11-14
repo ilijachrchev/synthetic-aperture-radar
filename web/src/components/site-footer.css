@@ -12,8 +12,15 @@
 	/* the wordmark reads against the land under it: ink by day, the night ground by night */
 	--f-mark: var(--ink);
 }
+/* by night the footer's words are white, the wordmark over the mountains included */
 [data-theme="dark"] .foot8 {
-	--f-mark: var(--bg);
+	--f-ink: #ffffff;
+	--f-ink-2: rgb(255 255 255 / 0.84);
+	--f-ink-3: rgb(255 255 255 / 0.84);
+	--f-mark: #ffffff;
+}
+[data-theme="dark"] .foot8-mark {
+	text-shadow: 0 2px 30px rgb(0 0 0 / 0.35);
 }
 .foot8-card {
 	position: relative;
