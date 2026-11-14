@@ -51,31 +51,58 @@ def test_bracket_label():
 
 
 def _pts(spec):
-    return [{"stratum": s, "label": lab} for s, labs in spec.items() for lab in labs]
+    """spec: stratum -> list of (map_value, label)."""
+    return [{"stratum": s, "nisar": m, "label": lab} for s, rows in spec.items() for m, lab in rows]
 
 
-def test_estimates_weighted():
-    pts = _pts({"A": ["wet"] * 10, "B": ["wet"] * 8 + ["dry"] * 2, "C": ["dry"] * 10, "D": ["wet"] * 1 + ["dry"] * 9})
+def test_map_accuracy_weighted():
+    pts = _pts({"A": [(1, "wet")] * 10, "B": [(1, "wet")] * 8 + [(1, "dry")] * 2,
+                "C": [(0, "dry")] * 10, "D": [(0, "wet")] * 1 + [(0, "dry")] * 9})
     w = {"A": 0.1, "B": 0.4, "C": 0.05, "D": 0.45}
-    e = v.estimates(pts, w)
-    assert e["b_user"] == pytest.approx(0.8)
-    assert e["nisar_user"] == pytest.approx((0.1 * 1 + 0.4 * 0.8) / 0.5)
+    m = v.map_accuracy(pts, w, "nisar")
     wet = 0.1 + 0.32 + 0 + 0.045
-    assert e["wet_share"] == pytest.approx(wet)
-    assert e["nisar_producer"] == pytest.approx(0.42 / wet)
-    assert e["s1_producer"] == pytest.approx(0.1 / wet)
+    assert m["user"] == pytest.approx(0.42 / 0.5)
+    assert m["producer"] == pytest.approx(0.42 / wet)
+    assert m["wet_share"] == pytest.approx(wet)
 
 
-def test_estimates_ignore_unclear():
-    pts = _pts({"B": ["wet", "unclear", "unclear", "dry"]})
-    assert v.estimates(pts, {"B": 1.0})["b_user"] == pytest.approx(0.5)
+def test_map_accuracy_leaves_out_unclear_and_bounds():
+    pts = _pts({"B": [(1, "wet"), (1, "unclear"), (1, "unclear"), (1, "dry")]})
+    assert v.map_accuracy(pts, {"B": 1.0}, "nisar")["user"] == pytest.approx(0.5)
+    assert v.map_accuracy(pts, {"B": 1.0}, "nisar", unclear_as="dry")["user"] == pytest.approx(0.25)
+    assert v.map_accuracy(pts, {"B": 1.0}, "nisar", unclear_as="wet")["user"] == pytest.approx(0.75)
+
+
+def test_map_accuracy_any_map_on_same_points():
+    # a second map that is not the strata: water only on the first two B points
+    pts = _pts({"B": [(1, "wet"), (1, "wet"), (1, "dry"), (1, "dry")]})
+    for q, u in zip(pts, (1, 0, 1, 0)):
+        q["unet"] = u
+    m = v.map_accuracy(pts, {"B": 1.0}, "unet")
+    assert m["user"] == pytest.approx(0.5) and m["producer"] == pytest.approx(0.5)
 
 
 def test_bootstrap_brackets_estimate():
-    pts = _pts({"A": ["wet"] * 30, "B": ["wet"] * 21 + ["dry"] * 9, "C": ["dry"] * 30, "D": ["dry"] * 30})
-    w = {"A": 0.25, "B": 0.25, "C": 0.25, "D": 0.25}
-    ci = v.bootstrap(pts, w, reps=300, seed=3)
+    pts = _pts({"A": [(1, "wet")] * 30, "B": [(1, "wet")] * 21 + [(1, "dry")] * 9,
+                "C": [(0, "dry")] * 30, "D": [(0, "dry")] * 30})
+    ci = v.bootstrap(pts, {s: 0.25 for s in "ABCD"}, keys=("nisar",), reps=300, seed=3)
     assert ci["b_user"][0] < 0.7 < ci["b_user"][1]
+
+
+def test_closest_after_prefers_first_clear_look():
+    wet, ok = v.closest_after([1, 0, 0], [1, 0, 0], [0, 1, 0], [1, 1, 0])
+    assert wet.tolist() == [True, True, False] and ok.tolist() == [True, True, False]
+
+
+def test_strict_is_open_water_only():
+    # dense wet crop: LSWI rule fires, MNDWI does not
+    args = (0.03, 0.05, 0.05, 0.20, 0.12)
+    assert bool(v.wet_on_date(*args)) and not bool(v.wet_on_date(*args, strict=True))
+
+
+def test_decode_distance_sign():
+    d = v.decode_distance(np.array([100, 128, 160], dtype="uint8"))
+    assert d[0] < 0 and d[1] == 0 and d[2] > 0
 
 
 def test_verdict_rule():
