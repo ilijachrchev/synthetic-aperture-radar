@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sar-pipeline"
+version = "0.1.0"
+description = "Data pipeline and models for the NISAR surface-change app (NASA Space Apps 2026, Dancing with the SARs)"
+requires-python = ">=3.11"
+dependencies = [
+    "numpy>=2.0",
+    "requests>=2.32",
+    "pyproj>=3.6",
+    "shapely>=2.0",
+    "geopandas>=1.0",
+    "pyogrio>=0.10",
+    "rasterio>=1.4",
+    "rioxarray>=0.17",
+    "xarray>=2024.10",
+    "h5netcdf>=1.4",
+    "h5py>=3.11",  # h5netcdf's backend; not pulled in automatically since h5netcdf 1.8
+    "scikit-image>=0.24",
+    "earthaccess>=0.14",
+    "harmony-py>=1.0",
+]
+
+[project.optional-dependencies]
+# Deep learning stack for the CV U-Net. Installed only when needed (large download).
+cv = [
+    "torch>=2.5",
+    "segmentation-models-pytorch>=0.4",
+    "torchgeo>=0.7",
+]
+dev = ["pytest>=8"]
+
+[tool.setuptools.packages.find]
+include = ["pipeline*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

@@ -6,7 +6,7 @@
 
 NASA Space Apps Challenge 2026 · Valencia, Spain · Challenge: [Dancing with the SARs](https://www.spaceappschallenge.org/2026/challenges/dancing-with-the-sars/)
 
-[Challenge brief](docs/INSTRUCTIONS.md) · [Resources](docs/RESOURCES.md) · [Research](docs/RESEARCH.md) · [Models](docs/MODELS.md)
+[Challenge brief](docs/INSTRUCTIONS.md) · [Resources](docs/RESOURCES.md) · [Research](docs/RESEARCH.md) · [Models](docs/MODELS.md) · [Data](docs/DATA.md)
 
 </div>
 
@@ -77,14 +77,54 @@ flowchart LR
 - **EGMS** (European Ground Motion Service): years of ground-motion history.
 - **USGS** earthquake catalog.
 
-## Repository layout (planned)
+## Repository layout
 
 ```
-web/        Next.js app
-pipeline/   notebooks and scripts: fetch, process, bake
-data/       manifest and small derived files (large files are hosted elsewhere)
-docs/       challenge brief, resources, research
+pipeline/        Python package: catalog, labels, context, nisar_fetch, dswx, stack, run, cv/
+tests/           checks for every pipeline module (pytest)
+data/catalog/    NISAR file lists per site (committed)
+data/labels/     flood and burn outlines used to score the models (committed)
+data/context/    land cover and water history on the site grids, Lorca GNSS, Panama quake (committed)
+data/raw/        downloads: NISAR subsets, water maps, land cover (not committed)
+data/stack/      one NetCDF stack per site and track (not committed)
+docs/            challenge brief, resources, research, models
+web/             Next.js app (to come)
 ```
+
+## Run the pipeline
+
+Python 3.11 or newer. Commands are for Windows; on macOS or Linux use `.venv/bin/python`.
+
+```bash
+python -m venv .venv
+.venv\Scripts\python -m pip install -e ".[dev]"
+```
+
+Save your free [Earthdata login](https://urs.earthdata.nasa.gov/) once. It asks for your username and password and stores them in a `.netrc` file in your home folder (never in this repo):
+
+```bash
+.venv\Scripts\python -c "import earthaccess; earthaccess.login(strategy='interactive', persist=True)"
+```
+
+Then build everything the models use (NISAR subsets, water labels, all six stacks) with one command. It skips what is already on disk, so it is safe to re-run:
+
+```bash
+.venv\Scripts\python -m pipeline.run
+```
+
+Or step by step (each one checks its own output):
+
+```bash
+.venv\Scripts\python -m pipeline.catalog --all
+.venv\Scripts\python -m pipeline.labels
+.venv\Scripts\python -m pipeline.context
+.venv\Scripts\python -m pipeline.nisar_fetch --site albufera --stack 066_D_069
+.venv\Scripts\python -m pipeline.dswx --site albufera
+.venv\Scripts\python -m pipeline.stack --site albufera --stack 066_D_069
+.venv\Scripts\python -m pytest -q
+```
+
+`catalog`, `labels` and `context` need no login. `nisar_fetch` and `dswx` take `--dry-run` to show what they would download.
 
 ## Team
 

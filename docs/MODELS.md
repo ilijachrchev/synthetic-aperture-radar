@@ -108,16 +108,19 @@ CV and ML read the same NISAR stack but answer different questions. Prediction u
 
 Agree on these two before anyone builds, so nobody waits on anybody.
 
-**1. One NISAR stack** (read by CV and ML). Built once per site with **Harmony** (Earthdata Search or the `harmony-py` client): it cuts the site out of each NISAR file and returns COGs of `HHHH`, `HVHV`, `mask` and `numberOfLooks`, reprojected to **EPSG:32630** (UTM 30N; every Spanish site we use lies west of 0°). No HDF5 parsing on our side.
+**1. One NISAR stack** (read by CV and ML). Built once per site and track (tracks have different geometry, so they are never mixed):
 
-- Snap every date to the same grid (same origin, 20 m pixels) before stacking.
-- Keep linear power for filtering and averaging; convert to dB at the end (10·log10, not 20).
-- A valid pixel is finite, positive and inside the scene on every date it is compared on. The GCOV `mask` describes how radar samples were averaged; it is not a water mask.
-- Reading the HDF5 files directly instead? GDAL older than 3.13 needs the NETCDF driver to place them on the map.
+- `pipeline.nisar_fetch`: **Harmony** cuts the site out of each NISAR file and returns COGs of `HHHH`, `HVHV`, `mask` and `numberOfLooks` in the file's native grid. No HDF5 parsing on our side.
+- `pipeline.stack`: reprojects every date **once** onto the site grid, **EPSG:32630** (UTM 30N) with 20 m pixels snapped to the 20 m lattice. Power is resampled bilinearly in linear units, the mask by nearest neighbour. Resampling only once keeps the data closest to what NISAR delivered.
+- Power stays linear in the stack; convert to dB where you need it (10·log10, not 20).
+- A pixel is valid only if the GCOV `mask` is 1 to 5 (fully focused; 0 means partially focused, 255 is outside the radar footprint, per the GCOV spec JPL D-102274 Rev F), HH is finite and positive, and every source pixel under the bilinear kernel was valid. The `mask` is not a water mask.
+- Reading the HDF5 files directly instead? GDAL older than 3.13 needs the NETCDF driver to place them on the map (rasterio here ships GDAL 3.12).
 
 ```
-data/stack/<site>.nc    dims: time × y × x    vars: HH, HV (dB), valid    attrs per date: granule, crid, track, frame
+data/stack/<site>_<track>.nc    dims: time × y × x    vars: HH, HV (linear power), valid, looks    per date: granule_ur, crid, maturity, pols
 ```
+
+Exact grids per site, where to download the stacks, and the labels already on those grids: [DATA.md](DATA.md).
 
 **2. One output format** (written by all three). Analysis runs on EPSG:32630; display layers are 8-bit Cloud-Optimized GeoTIFFs, web-optimized (`rio cogeo create --web-optimized`), plus one entry per layer in `data/manifest.json` that says exactly which NISAR file it came from. Example entry (values are placeholders):
 
