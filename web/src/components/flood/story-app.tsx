@@ -167,7 +167,7 @@ export function StoryApp({ story }: { story: Story }) {
 	const head = useRef<HTMLDivElement>(null)
 	const el = useRef<Record<string, HTMLElement | null>>({})
 	const labels = useRef<Record<string, { box: HTMLElement; value: HTMLElement; at: [number, number] }>>({})
-	const st = useRef({ T: 0, playing: false, dwell: 0, now: 0, shown: Number.NaN, beat: -1, zoomFade: -1, hold: false, columns: 0, sky: '', lit: 0 })
+	const st = useRef({ T: 0, playing: false, dwell: 0, now: 0, shown: Number.NaN, beat: -1, zoomFade: -1, hold: false, columns: 0, sky: '', lit: 0, up: false })
 	const speed = useRef(1)
 	/** true once the style of the map is read: before that the map takes no sky, no terrain, no layers */
 	const styled = useRef(false)
@@ -344,9 +344,9 @@ export function StoryApp({ story }: { story: Story }) {
 			const pool = scenesFor(opt.current.photo)
 			const scene = pool.filter((x) => Date.parse(x.time_utc) <= T).pop() ?? pool[0]
 			if (scene) pic.current?.show(scene.day)
-			// and the next picture is fetched before the playhead gets there
+			// and, once the first view is complete, the next picture is fetched before the playhead gets there
 			const next = pool.find((x) => Date.parse(x.time_utc) > T)
-			if (next) pic.current?.preload(next.day)
+			if (next && s.up && pic.current?.current()) pic.current.preload(next.day)
 
 			const e = el.current
 			const put = (node: HTMLElement | null | undefined, text: string) => {
@@ -655,22 +655,29 @@ export function StoryApp({ story }: { story: Story }) {
 		return () => cancelAnimationFrame(raf)
 	}, [active, apply, story, days])
 
-	// Once the first view is up, the rest of the story comes in without hurry: every pass of the series and every
-	// picture it may show, so playing it, or a click on the strip, never waits for a file.
+	// Once the first view is complete (its picture on screen too: on a slow line nothing may get in its way), the
+	// rest of the story comes in without hurry: every pass of the series and every picture it may show, so playing
+	// it, or a click on the strip, never waits for a file. A little later the first views of the other stories, so
+	// the switch between them is quick.
 	useEffect(() => {
+		st.current.up = ready
 		if (!ready || !data) return
-		const id = window.setTimeout(() => {
+		let id = 0
+		let stop = () => {}
+		const rest = () => {
+			if (!pic.current?.current()) {
+				id = window.setTimeout(rest, 250)
+				return
+			}
 			water.current?.preloadAll()
 			for (const s of scenesFor(opt.current.photo)) pic.current?.preload(s.day)
-		}, 500)
-		// and a little later the first views of the other stories, so the switch between them is quick
-		let stop = () => {}
-		const later = window.setTimeout(() => {
-			stop = whenIdle(() => STORIES.filter((s) => s.key !== story.key).forEach((s) => warmStory(s)), 4000)
-		}, 4000)
+			id = window.setTimeout(() => {
+				stop = whenIdle(() => STORIES.filter((s) => s.key !== story.key).forEach((s) => warmStory(s)), 4000)
+			}, 4000)
+		}
+		id = window.setTimeout(rest, 500)
 		return () => {
 			window.clearTimeout(id)
-			window.clearTimeout(later)
 			stop()
 		}
 	}, [ready, data, scenesFor, story])
