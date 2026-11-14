@@ -1,13 +1,15 @@
 """Shared ``data/manifest.json`` writer for the prediction outputs.
 
 The manifest is one JSON list with one entry per output, keyed by
-``(model, site, layer, date)``, the same format and key as
-``pipeline.ml.export.upsert_manifest`` and the example in docs/MODELS.md. Every
-model can then read and write the same file.
+``(model, site, stack, layer)``, the same format and default key as
+``pipeline.ml.export.upsert_manifest``. Every model can then read and write the
+same file.
 
-A forecast's ``date`` is its forecast origin, so a re-run on the same day
-replaces the entry and a forecast issued on a later day is added next to it:
-the manifest keeps a record of what was forecast when.
+For a forecast, ``stack`` names the input series (``gnss_LOR1``, ``egms_ortho_vertical_<pid>``,
+``dswx-s1``) and ``date`` is the forecast origin, kept as a field but not in the
+key: each output directory holds one forecast that a re-run overwrites, so a
+re-run must replace its entry, never leave one pointing at the overwritten file.
+The record of what was forecast when is the git history of forecast.json.
 """
 
 from __future__ import annotations
@@ -15,7 +17,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-KEY_FIELDS = ("model", "site", "layer", "date")
+KEY_FIELDS = ("model", "site", "stack", "layer")
 
 
 def _key(entry: dict) -> tuple:
@@ -35,7 +37,7 @@ def read(path: Path) -> list[dict]:
 
 
 def upsert(path: Path, entries: list[dict]) -> None:
-    """Replace entries with the same (model, site, layer, date); keep every other entry."""
+    """Replace entries with the same (model, site, stack, layer); keep every other entry."""
     for entry in entries:
         missing = [k for k in KEY_FIELDS if not entry.get(k)]
         if missing:

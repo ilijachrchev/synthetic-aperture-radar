@@ -72,7 +72,8 @@ def _intervals(calibration: list[dict], name: str, lead: int, value: float) -> d
 
 def _update_manifest(path: Path, forecast: dict, output: Path, has_plot: bool) -> None:
     entry = {"model": "prediction", "site": forecast["site"],
-             "layer": f"vertical_motion_{forecast['point_id']}", "date": forecast["forecast_origin"],
+             "stack": f"{forecast['source']['type']}_{forecast['point_id']}", "layer": "vertical_motion",
+             "date": forecast["forecast_origin"],
              "id": forecast["id"], "point_id": forecast["point_id"], "file": (output / "forecast.json").as_posix(),
              "metrics": (output / "metrics.json").as_posix(),
              "observations": (output / "observations.csv").as_posix(),

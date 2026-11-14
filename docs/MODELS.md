@@ -9,7 +9,7 @@
 | | Model | Owner | Question it answers | Delivers |
 |:---:|---|---|---|---|
 | 🖼️ | [**CV**: surface masks](#cv-model) | **Ilija Chrchev** (`@ilijachrchev`) | Where is the water, flooded vegetation or burned ground in this scene? | Mask maps per date + accuracy scores |
-| 🧮 | [**ML**: change classes](#ml-model) | **Luka** | What kind of land is this pixel, and how does it change through the season? | Class map + confusion matrix |
+| 🧮 | [**ML**: change classes](#ml-model) | **Luka Georgieski** | What kind of land is this pixel, and how does it change through the season? | Class map + confusion matrix |
 | 📈 | [**Prediction**: forecasts](#prediction-model) | **Zhivko Stoimchev** (`@zstoimchev`) | What happens next, and how sure are we? | Forecasts with ranges + backtest scores |
 
 ## How they fit together
@@ -18,7 +18,7 @@
 flowchart LR
     G["NISAR GCOV<br/>HH · HV · 20 m"] --> S["Shared NISAR stack<br/>per site, every date"]
     S --> CV["🖼️ CV model<br/>Ilija Chrchev"]
-    S --> ML["🧮 ML model<br/>Luka"]
+    S --> ML["🧮 ML model<br/>Luka Georgieski"]
     U["NISAR GUNW<br/>ground motion"] -. planned validation .-> P["📈 Prediction model<br/>Zhivko Stoimchev"]
     E["EGMS history"] -. import pending .-> P
     N["GNSS LOR1<br/>implemented baseline"] --> P
@@ -57,7 +57,7 @@ CV and ML read the same NISAR stack but answer different questions. Prediction u
 
 ## ML model
 
-**Owner:** Luka
+**Owner:** Luka Georgieski · code in [`pipeline/ml/`](../pipeline/ml/)
 
 > 🧮 Labels every pixel by how it behaves through the season: what kind of land it is and what changed.
 

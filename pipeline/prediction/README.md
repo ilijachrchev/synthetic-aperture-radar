@@ -31,7 +31,7 @@ The default output directory is `data/prediction/lorca/`:
 | `backtest.csv` | Every rolling prediction, observed target, training dates, model, error, and split |
 | `chart.png`, `chart.svg` | Standalone figures for inspection or presentation |
 
-The run also upserts one entry in `data/manifest.json`, the shared list format keyed by `(model, site, layer, date)` that the CV and ML models use (`layer` is `vertical_motion_<point>`, `date` the forecast origin), preserving every other entry. Prediction entries identify their actual source type and do not invent a NISAR granule ID. Paths are repository-relative when the default output directory is used. Copy the manifest and referenced files into the web app's public assets while retaining their relative paths.
+The run also upserts one entry in `data/manifest.json`, the shared list format keyed by `(model, site, stack, layer)` that the CV and ML models use (`stack` is `<source>_<point>`, e.g. `gnss_LOR1`; `layer` is `vertical_motion`; `date` records the forecast origin), preserving every other entry. A re-run replaces its entry; git history keeps earlier forecasts. Prediction entries identify their actual source type and do not invent a NISAR granule ID. Paths are repository-relative when the default output directory is used. Copy the manifest and referenced files into the web app's public assets while retaining their relative paths.
 
 Use a separate `--output` directory for each point/source. The command refuses to overwrite an existing output that belongs to a different point, site, or source type.
 

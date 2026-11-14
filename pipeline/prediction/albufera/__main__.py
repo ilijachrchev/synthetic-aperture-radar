@@ -182,7 +182,8 @@ def cmd_forecast(args: argparse.Namespace) -> dict:
 
 def update_manifest(path: Path, forecast_json: dict, out: Path, has_plot: bool) -> None:
     entry = {
-        "model": "prediction", "site": SITE, "layer": "flooded_area", "date": forecast_json["forecast_origin"],
+        "model": "prediction", "site": SITE, "stack": "dswx-s1", "layer": "flooded_area",
+        "date": forecast_json["forecast_origin"],
         "id": forecast_json["id"],
         "file": rel(out / "forecast.json"), "metrics": rel(out / "metrics.json"),
         "observations": rel(AREA_CSV), "chart": rel(out / "chart.png") if has_plot else None,
