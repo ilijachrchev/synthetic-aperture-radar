@@ -4,15 +4,15 @@
 	position: relative;
 	margin-top: -46px;
 	z-index: 2;
-	--f-card: #fbfafe;
-	--f-ink: #16163a;
-	--f-ink-2: rgb(22 22 58 / 0.74);
-	--f-ink-3: rgb(22 22 58 / 0.6);
-	--f-line: rgb(22 22 58 / 0.12);
-	--f-mark: #ebe8fb;
+	--f-card: #fbfcff;
+	--f-ink: #082058;
+	--f-ink-2: rgb(8 32 88 / 0.74);
+	--f-ink-3: rgb(8 32 88 / 0.6);
+	--f-line: rgb(8 32 88 / 0.12);
+	--f-mark: #e4eeff;
 }
 [data-theme="dark"] .foot8 {
-	--f-card: #081a4c;
+	--f-card: #0d2a6e;
 	--f-ink: #eef3ff;
 	--f-ink-2: rgb(238 243 255 / 0.74);
 	--f-ink-3: rgb(238 243 255 / 0.56);
@@ -51,9 +51,7 @@
 	display: inline-flex;
 	align-items: center;
 	gap: 10px;
-	font-size: 22px;
-	font-weight: 700;
-	letter-spacing: -0.03em;
+	font-size: 28px;
 }
 .foot8-line {
 	margin: 22px 0 0;
@@ -85,9 +83,10 @@
 }
 .foot8-title {
 	margin: 0 0 18px;
-	font-size: 14px;
+	font-family: var(--font-display);
+	font-size: 15px;
 	font-weight: 700;
-	letter-spacing: 0.1em;
+	letter-spacing: 0.09em;
 	text-transform: uppercase;
 	color: var(--f-ink-3);
 }
@@ -150,10 +149,14 @@
 	right: 63px;
 	bottom: 0.06em;
 	overflow: hidden;
-	font-size: clamp(40px, 9.05vw, 180px);
-	line-height: 1.16;
-	font-weight: 700;
-	letter-spacing: -0.045em;
+	font-family: var(--font-display);
+	font-size: min(8.95vw, 170px);
+	line-height: 1;
+	font-weight: 900;
+	font-stretch: 62%;
+	font-variation-settings: "wdth" 62;
+	text-transform: uppercase;
+	letter-spacing: -0.004em;
 	white-space: nowrap;
 	color: var(--f-mark);
 	text-align: center;

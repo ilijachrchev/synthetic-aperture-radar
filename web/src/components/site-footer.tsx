@@ -70,7 +70,7 @@ export function SiteFooter() {
 					<div className="foot8-brand">
 						<Link href="/" className="foot8-lockup">
 							<Mark size={26} />
-							<span>{SITE.name}</span>
+							<span className="display">{SITE.name}</span>
 						</Link>
 						<p className="foot8-line">Watching Earth&apos;s surface flood, grow, burn and sink, seen by NASA-ISRO NISAR radar.</p>
 						<ul className="foot8-social">
