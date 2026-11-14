@@ -33,15 +33,26 @@ def test_coherence_of_a_date_prefers_the_pair_that_ends_on_it(tmp_path, monkeypa
     monkeypatch.setattr(coh_mod, "COHERENCE_DIR", tmp_path)
     folder = tmp_path / "s_000_A_000"
     folder.mkdir()
-    for name in ("2026-06-06_2026-06-30", "2026-06-18_2026-06-30", "2026-06-30_2026-07-12", "2026-06-18_2026-07-24"):
+    for name in ("2026-06-18_2026-06-30", "2026-06-06_2026-06-30", "2026-06-30_2026-07-12", "2026-06-18_2026-07-24",
+                 "2026-07-24_2026-08-05"):
         (folder / f"{name}.tif").write_bytes(b"")
     # ending on the date wins, and of those the shortest pair (latest reference date)
     assert coh_mod.coherence_path("s", "000_A_000", "2026-06-30").stem == "2026-06-18_2026-06-30"
-    # no pair ends on the first date: the pair that starts on it, with the earliest secondary date
-    assert coh_mod.coherence_path("s", "000_A_000", "2026-06-18").stem == "2026-06-18_2026-06-30"
+    # after a gap the ending pair is longer (24 days here), never a future one
+    assert coh_mod.coherence_path("s", "000_A_000", "2026-07-24").stem == "2026-06-18_2026-07-24"
+    # no pair ends on 18 Jun, and it is not the first date of the pairs (6 Jun is): none
+    assert coh_mod.coherence_path("s", "000_A_000", "2026-06-18") is None
     assert coh_mod.coherence_path("s", "000_A_000", "2026-08-01") is None
     out = coh_mod.coherence_for("s", "000_A_000", "2026-08-01", (3, 4))
     assert out.shape == (3, 4) and np.isnan(out).all()
+    # the first date of the stack's pairs takes the pair that starts on it, the earliest secondary first
+    assert coh_mod.coherence_path("s", "000_A_000", "2026-06-06").stem == "2026-06-06_2026-06-30"
+    (folder / "2026-06-06_2026-06-30.tif").unlink()
+    assert coh_mod.coherence_path("s", "000_A_000", "2026-06-18").stem == "2026-06-18_2026-06-30"
+    # a failed download in the middle (no 30 Jun to 12 Jul pair): 12 Jul gets nothing
+    (folder / "2026-06-30_2026-07-12.tif").unlink()
+    (folder / "2026-07-12_2026-07-24.tif").write_bytes(b"")
+    assert coh_mod.coherence_path("s", "000_A_000", "2026-07-12") is None
 
 
 def _stack(h: int = 6, w: int = 5) -> xr.Dataset:

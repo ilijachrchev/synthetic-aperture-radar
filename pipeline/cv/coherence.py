@@ -130,16 +130,20 @@ def read_coherence(path: Path) -> np.ndarray:
 
 
 def coherence_path(site: str, stack_id: str, day: str) -> Path | None:
-    """The pair that describes one acquisition (pre-registered in docs/CV_BENCHMARK.md).
+    """The pair that describes one acquisition (docs/CV_BENCHMARK.md, section 6).
 
-    The pair that ends on the date, with the latest reference date (the 12-day pair; only the
-    past is needed, as in real use); else, for the first date of a stack or after a gap, the
-    pair that starts on it, with the earliest secondary date; else None.
+    The pair that ends on the date, with the latest reference date: only the past is needed, as in
+    real use; normally 12 days, 24 or 36 days after a missing acquisition. Only for the first date
+    of the stack's pairs, the pair that starts on it, with the earliest secondary date. Else None:
+    a later date never borrows a future pair (for example after a failed download).
     """
     folder = COHERENCE_DIR / f"{site}_{stack_id}"
     ending = sorted(folder.glob(f"*_{day}.tif"))
     if ending:
         return ending[-1]
+    pairs = sorted(folder.glob("*_*.tif"))
+    if not pairs or day > min(p.stem.split("_")[0] for p in pairs):
+        return None
     starting = sorted(folder.glob(f"{day}_*.tif"))
     return starting[0] if starting else None
 

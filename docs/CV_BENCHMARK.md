@@ -55,7 +55,7 @@ Judged by an independent optical answer key, how well does each method map chang
    - the optical label cleanup: training labels that a clear same-date answer key contradicts are dropped, in training and in validation scoring. Contradicts means Sentinel-1 open water where optical sees no water, or Sentinel-1 no water where optical sees open water. Inundated vegetation is kept.
 7. **U-Net v2 with spot filter**: v2, keeping only connected water regions that hold at least one pixel with probability of at least s.
 
-Coherence of a date: the pair that ends on that date, with the latest reference date (the 12-day pair; only the past is used, as in real use). For the first date of a stack, the pair that starts on it, with the earliest secondary date. Otherwise none (the U-Net sees the channel mean).
+Coherence of a date: the pair that ends on that date, with the latest reference date; only the past is used, as in real use. That pair is normally 12 days long, but 24 or 36 days after a missing acquisition (14 dates, around the 27 Jul to 10 Aug gap; 6 of them at the test sites), and dry land loses more coherence over a longer pair. Only for the first date of a stack's pairs: the pair that starts on it, with the earliest secondary date. Otherwise none (the U-Net sees the channel mean).
 
 Found before training: 14 of the 132 dates with HV have no pair, all of them the newest dates (23 Oct to 6 Nov), after NISAR's switch to validated processing on 21 Oct, for which no GUNW pairs are published yet. They include 28 Oct, the DANA after-flood date. So that v2 does not break where coherence is missing, 15 % of its training crops have the coherence channel blanked (`--coh-dropout 0.15`), and its results are also reported split by whether the date has coherence.
 
@@ -65,12 +65,12 @@ Training of v2: `--sites albufera ebro camargue --label-mode three --jitter-db 1
 
 ## 7. Free parameters
 
-Each is chosen on the training sites' validation blocks only ("all dates" set), by the highest pooled IoU of changing open water against the answer key. Ties go to the value listed first. Nothing is chosen on a test site.
+Each is chosen on the training sites' validation blocks only ("all dates" set), by the highest pooled IoU of changing open water against the answer key, on the exact counts. Ties go to the lowest value. Nothing is chosen on a test site.
 
 | Parameter | Grid |
 |---|---|
-| c, method 4 | 0.25, 0.3, 0.35, 0.4, 0.45, 0.5 |
-| threshold, U-Nets (v1 re-tuned, v2, ablations) | 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.5 |
+| c, method 4 | 0.25, 0.3, 0.35, 0.4, 0.45, 0.5 (extended with 0.15 and 0.2, section 11) |
+| threshold, U-Nets (v1 re-tuned, v2, ablations) | 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.5 (extended with 0.05 and 0.1, section 11) |
 | s, spot filter (at v2's threshold) | 0.5, 0.6, 0.7 |
 
 The checkpoint epoch of each v2 model is chosen as for v1: pooled IoU of changing open water on the validation blocks against the (here cleaned) Sentinel-1 labels.
@@ -78,9 +78,9 @@ The checkpoint epoch of each v2 model is chosen as for v1: pooled IoU of changin
 ## 8. Metrics
 
 - Per test site, and for the training sites' validation blocks: pooled IoU, precision and recall of changing open water, and false water as a share of the answer key's dry ground. Each for all land types together and per land type.
-- 95 % intervals: 2000 bootstrap draws of dates, resampled within each stack, seed 0. Paired differences on the same draws: v2 minus v1; v2 minus Sentinel-1; v1 minus Sentinel-1; method 4 minus method 2; v2 with spot filter minus v2; each ablation minus v1's seed 0 model.
-- The test sites again, split into dates with and without a coherence pair.
-- The DANA flood: water gain IoU, precision, recall and the before-flood control, for methods 1 to 7.
+- 95 % intervals for IoU, precision, recall and false-water share: 2000 bootstrap draws of dates, resampled within each stack, seed 0. Paired differences on the same draws: v2 minus v1; v2 minus Sentinel-1; v1 minus Sentinel-1; method 4 minus method 2; v2 with spot filter minus v2; each ablation minus v1's seed 0 model. A stack with a single scored date adds no spread. Where no stack of a group has two dates, no interval is given and no "better" claim is made.
+- The test sites again, split into dates with and without a coherence pair. Each test stack has at most one scored date without coherence, so that split is descriptive only.
+- The DANA flood: water gain IoU, precision, recall and the before-flood control, for every method on the same pixels (inside the mapped areas, usable for every method on both dates). 16 Oct has a coherence pair and 28 Oct has none, so a coherence method would build its before and after maps differently. The coherence methods are therefore also run with coherence withheld on both dates, and only those rows are compared. For method 4 that is the NISAR threshold itself.
 - "Better" means the 95 % interval of the paired difference lies above zero. Otherwise: no clear difference.
 - Results are reported as they come, including those that favour Sentinel-1 or v1.
 
@@ -116,6 +116,14 @@ Not yet run.
 
 ## 11. Changes after the first score
 
-None yet.
+1. **Grids extended once, downwards (14 Nov, 21:05, training sites only, before any test site was scored).** On the training sites' validation blocks the best coherence cut and the best v1 threshold were both the lowest value of the first grid (c 0.25 with IoU 0.391, v1 0.15 with 0.267), so a better value could lie below. Each grid got two lower values: c 0.15 and 0.2, thresholds 0.05 and 0.1. Result: c stays at 0.25, now inside the grid (0.15: 0.376, 0.2: 0.385, 0.25: 0.391, 0.3: 0.384). v1 is still best at the lowest threshold tried, 0.05 (IoU 0.313); its score keeps rising as the threshold drops, so its probabilities run far below the optical water. The grids are not extended again.
+2. **Fixes from an independent code review (14 Nov, 21:30, before any test site was scored against the answer key).** The review found no leak of test data. It found five problems in how results would be reported, all fixed:
+   - intervals that collapse to their point when no stack has two dates (the split by coherence);
+   - a DANA check that built before and after differently for coherence methods, and scored methods on slightly different pixels (Sentinel-1's masked pixels; 29 U-Net pixels);
+   - "the 12-day pair" stated in this protocol where 14 dates use a longer pair (now stated in section 6);
+   - a future pair that could be borrowed by any date without an ending pair, not only the first date (it never happened; now impossible);
+   - caches that were not tied to the exact checkpoints (now a manifest with the checksum of each model, checked before counting).
+
+   The remaining fixes: ties are judged on exact counts, intervals are given for every metric, and dates without an optical image are listed as skipped. To measure the DANA problems, the reviewer ran the DANA check at Pego-Oliva for methods 1 to 4 and v1 with the parameters already chosen. No parameter was changed after that, and no test-site score against the answer key was computed.
 
 Written with SI assistance (Claude Code), reviewed by the team.

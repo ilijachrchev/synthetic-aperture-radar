@@ -44,7 +44,7 @@ from pipeline.cv.data import open_stack
 from pipeline.cv.dataset import optical_classes
 from pipeline.cv.evaluate import (
     CONTEXT_DIR, DSWX_INUNDATED_VEG, DSWX_INVALID, DSWX_OPEN_WATER, EXTRA_TEST_STACKS, METRICS_DIR, _built,
-    baseline_water, date_index, flood_vs_emsr935, labelled_dates, load_predictor, permanent_water, scene_db,
+    baseline_water, date_index, labelled_dates, load_predictor, permanent_water, scene_db,
     training_region,
 )
 
@@ -67,8 +67,10 @@ COUNTS_PATH = DATA_DIR / "interim" / "cv_optical_counts.json"
 
 MIN_CLEAR_SHARE = 0.10
 DARK_DB = -15.0
-C_GRID = (0.25, 0.3, 0.35, 0.4, 0.45, 0.5)            # coherence cut of the dark-and-low-coherence rule
-TH_GRID = (0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.5)       # U-Net probability thresholds
+# Grids of docs/CV_BENCHMARK.md section 7, each extended once downwards (section 11): on the training
+# sites the best value was the lowest one of the first grid, for both.
+C_GRID = (0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5)            # coherence cut of the dark-and-low-coherence rule
+TH_GRID = (0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.5)       # U-Net probability thresholds
 H_GRID = (0.5, 0.6, 0.7)                               # spot filter: a water region needs one pixel this sure
 V1_THRESHOLD = 0.3                                     # pre-registered in docs/CV_RESULTS.md
 STRATA = ("cropland", "grass_shrub_wetland", "bare", "other")
@@ -112,17 +114,53 @@ def cache_set(name: str, sites: tuple[str, ...] = tuple(CV_LABEL_SITES)) -> None
     v1_blocks = torch.load(MODEL_SETS["v1"][0], map_location="cpu", weights_only=False)["val_blocks"]
     if unet.checkpoint.get("val_blocks") != v1_blocks:  # type: ignore[attr-defined]
         raise ValueError(f"{name}: its validation blocks differ from v1's; the benchmark would leak")
+    files = []
     for site in sites:
         for stack_id in stacks_of(site):
             ds = open_stack(STACK_DIR / f"{site}_{stack_id}.nc")
             for day, t in hv_dates(ds).items():
                 out = cache_path(name, site, stack_id, day)
+                files.append(out.name)
                 if out.exists():
                     continue
                 p_open, p_any = unet.probabilities(ds, t)  # type: ignore[attr-defined]
                 out.parent.mkdir(parents=True, exist_ok=True)
                 np.savez_compressed(out, p_open=_q(p_open), p_any=_q(p_any))
             print(f"{name}: {site} {stack_id} cached", flush=True)
+    # The manifest ties the cache to the exact checkpoints; --count refuses a set without one or
+    # whose checkpoints changed since (a model retrained or still training).
+    manifest = {"created_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"), "sites": list(sites),
+                "files": sorted(files), "models": [model_fingerprint(p) for p in MODEL_SETS[name]]}
+    _save(CACHE_DIR / name / "manifest.json", manifest)
+
+
+def model_fingerprint(path: Path) -> dict:
+    import hashlib
+
+    import torch
+
+    digest = hashlib.sha256(Path(path).read_bytes()).hexdigest()
+    epoch = torch.load(path, map_location="cpu", weights_only=False).get("epoch")
+    return {"path": Path(path).as_posix(), "sha256": digest, "epoch": epoch}
+
+
+def complete_sets(sites: list[str]) -> list[str]:
+    """Model sets whose cache is complete for these sites and made from the checkpoints on disk now."""
+    ok = []
+    for name, paths in MODEL_SETS.items():
+        path = CACHE_DIR / name / "manifest.json"
+        if not path.exists():
+            if (CACHE_DIR / name).exists():
+                print(f"{name}: cache without a manifest (incomplete), not counted")
+            continue
+        manifest = json.loads(path.read_text(encoding="utf-8"))
+        if [m["sha256"] for m in manifest["models"]] != [model_fingerprint(p)["sha256"] for p in paths]:
+            raise SystemExit(f"{name}: its checkpoints changed after caching; rerun --cache {name}")
+        missing = [s for s in sites if s not in manifest["sites"]]
+        if missing:
+            raise SystemExit(f"{name}: not cached for {missing}; rerun --cache {name}")
+        ok.append(name)
+    return ok
 
 
 def load_cached(name: str, site: str, stack_id: str, day: str) -> tuple[np.ndarray, np.ndarray] | None:
@@ -171,8 +209,8 @@ def _methods(site: str, stack_id: str, day: str, ds, t: int, sets: list[str]) ->
         m[f"nisar_dark_lowcoh@{c}"] = dark & ~(coh >= c)  # no pair: the darkness rule alone
     for name in sets:
         cached = load_cached(name, site, stack_id, day)
-        if cached is None:
-            continue
+        if cached is None:  # complete_sets checked the manifest: a missing file is an error, not a skip
+            raise SystemExit(f"{name}: no cached probabilities for {site} {stack_id} {day}")
         p_open = np.nan_to_num(cached[0], nan=0.0)
         for th in TH_GRID:
             m[f"{name}@{th}"] = p_open >= th
@@ -194,6 +232,7 @@ def count_site(site: str, sets: list[str]) -> list[dict]:
         for day, t in hv_dates(ds).items():
             optical = optical_classes(site, stack_id, day)
             if optical is None:
+                rows.append({"site": site, "stack": stack_id, "date": day, "skipped": "no optical image within 1 day"})
                 continue
             valid = ds["valid"].values[t].astype(bool)
             _, ok_f = scene_db(ds["HH"].values[t], ds["valid"].values[t])
@@ -245,22 +284,30 @@ def select(rows: list[dict]) -> dict:
     train = [r for r in rows if r.get("set") == "all_dates" and r["site"] in TRAINING_SITES]
 
     def iou(name: str) -> float:
+        """Unrounded pooled IoU, so ties are judged on the exact counts; -1 when not counted."""
         sel = [r for r in train if r["method"] == name]
-        return pooled(_sum(sel, STRATA))["iou"] or -1.0 if sel else -1.0
+        if not sel:
+            return -1.0
+        tn, fn, fp, tp = _sum(sel, STRATA).sum(axis=0)
+        return float(tp / (tp + fp + fn)) if tp + fp + fn else -1.0
 
     out: dict[str, dict] = {"rule": "highest pooled IoU of changing open water on the training sites' validation "
                                     "blocks against the optical answer key; ties to the value listed first"}
-    coh = [{"c": c, "iou": iou(f"nisar_dark_lowcoh@{c}")} for c in C_GRID]
-    out["nisar_dark_lowcoh"] = {**max(coh, key=lambda d: d["iou"]), "grid": coh}
+    def best(grid: list[dict]) -> dict:
+        """The first entry with the highest exact IoU (grids run from the lowest value up), IoU rounded for the record."""
+        top = max(grid, key=lambda d: d["iou"])
+        return {**{k: (round(v, 4) if k == "iou" else v) for k, v in top.items()},
+                "grid": [{**g, "iou": round(g["iou"], 4)} for g in grid]}
+
+    out["nisar_dark_lowcoh"] = best([{"c": c, "iou": iou(f"nisar_dark_lowcoh@{c}")} for c in C_GRID])
     for name in MODEL_SETS:
         grid = [{"threshold": th, "iou": iou(f"{name}@{th}")} for th in TH_GRID]
         if max(g["iou"] for g in grid) < 0:
             continue  # not trained or not cached yet
-        out[name] = {**max(grid, key=lambda d: d["iou"]), "grid": grid}
+        out[name] = best(grid)
     if "v2" in out:
         th = out["v2"]["threshold"]
-        spot = [{"threshold": th, "sure": h, "iou": iou(f"v2_spot@{th}+{h}")} for h in H_GRID]
-        out["v2_spot"] = {**max(spot, key=lambda d: d["iou"]), "grid": spot}
+        out["v2_spot"] = best([{"threshold": th, "sure": h, "iou": iou(f"v2_spot@{th}+{h}")} for h in H_GRID])
     return out
 
 
@@ -294,7 +341,10 @@ def score(rows: list[dict], choice: dict) -> list[dict]:
             dates = sorted({(r["site"], r["stack"], r["date"]) for r in here})
             if not dates:
                 continue
-            w = bootstrap_weights([f"{s} {k}" for s, k, _ in dates], N_BOOT, SEED)
+            strata_of = [f"{s} {k}" for s, k, _ in dates]
+            # Dates are resampled within their stack; a stack with one date adds no spread, and when no
+            # stack has two dates every draw is the point itself: then no interval and no "better" claim.
+            w = bootstrap_weights(strata_of, N_BOOT, SEED) if max(map(strata_of.count, strata_of)) >= 2 else None
             for strata_name, strata in [("all", STRATA)] + [(s, (s,)) for s in STRATA]:
                 per_method: dict[str, np.ndarray] = {}
                 for table_name, key in names.items():
@@ -302,19 +352,28 @@ def score(rows: list[dict], choice: dict) -> list[dict]:
                     if len(by_date) != len(dates):
                         continue  # not scored on this set (Sentinel-1 on all_dates) or not trained yet
                     per_method[table_name] = _sum([by_date[d] for d in dates], strata)
-                entry = {"group": group, "set": set_name, "land": strata_name, "dates": len(dates), "methods": {}}
+                entry = {"group": group, "set": set_name, "land": strata_name, "dates": len(dates),
+                         "stacks": len(set(strata_of)),
+                         "intervals": "95 %, dates resampled within each stack" if w is not None
+                                      else "not computed: no stack has two scored dates", "methods": {}}
                 draws = {}
                 for table_name, c in per_method.items():
+                    entry["methods"][table_name] = pooled(c)
+                    if w is None:
+                        continue
                     tn, fn, fp, tp = (w @ c).T
                     with np.errstate(invalid="ignore", divide="ignore"):
                         draws[table_name] = tp / (tp + fp + fn)
-                    entry["methods"][table_name] = {**pooled(c), "iou_95": interval(draws[table_name])}
+                        entry["methods"][table_name].update({
+                            "iou_95": interval(draws[table_name]), "precision_95": interval(tp / (tp + fp)),
+                            "recall_95": interval(tp / (tp + fn)),
+                            "false_water_share_of_dry_95": interval(fp / (fp + tn))})
                 entry["paired_iou_difference_95"] = {
                     f"{a} - {b}": {"point": round(entry["methods"][a]["iou"] - entry["methods"][b]["iou"], 4)
                                    if entry["methods"][a]["iou"] is not None and entry["methods"][b]["iou"] is not None
                                    else None,
-                                   "interval": interval(draws[a] - draws[b])}
-                    for a, b in PAIRS if a in draws and b in draws}
+                                   "interval": interval(draws[a] - draws[b]) if a in draws and b in draws else None}
+                    for a, b in PAIRS if a in entry["methods"] and b in entry["methods"]}
                 out.append(entry)
     return out
 
@@ -362,23 +421,76 @@ def sentinel1_predictor(site: str, stack_id: str):
     return predict
 
 
-def flood_checks(choice: dict) -> dict:
-    """The DANA flood (track 066 D, 16 to 28 Oct) against the human-drawn EMSR935 outline."""
-    from pipeline.cv.evaluate import FLOOD, baseline_predictor
+def withheld_predictor(name: str, threshold: float, sure: float | None = None):
+    """A "+coh" model set run with coherence withheld on every date (the channel mean), so before and
+    after a flood are built the same way when only one of the two dates has a pair."""
+    unet = load_predictor(MODEL_SETS[name], use_coherence=False)
 
-    preds = {"nisar_otsu": baseline_predictor, "nisar_threshold_15db": threshold_predictor,
-             "nisar_dark_lowcoh": dark_lowcoh_predictor(choice["nisar_dark_lowcoh"]["c"]),
-             "sentinel1_dswx": sentinel1_predictor(FLOOD["site"], FLOOD["stack"]),
+    def predict(ds, t):
+        p_open, p_any = unet.probabilities(ds, t)  # type: ignore[attr-defined]
+        ok = np.isfinite(p_open)
+        p_open, p_any = np.nan_to_num(p_open, nan=0.0), np.nan_to_num(p_any, nan=0.0)
+        water_open, water_any = p_open >= threshold, p_any >= threshold
+        if sure is not None:
+            water_open, water_any = spot_filter(water_open, p_open >= sure), spot_filter(water_any, p_any >= sure)
+        return {"open": ok & water_open, "any": ok & water_any}, ok, {}
+    return predict
+
+
+def flood_table(choice: dict) -> dict:
+    """The DANA flood (track 066 D, 16 to 28 Oct) against the human-drawn EMSR935 outline (imagery 20
+    to 21 Oct), water = open water plus flooded vegetation, as in docs/CV_RESULTS.md, but every method
+    on the same pixels: inside the mapped areas, not permanent water, not flood traces, and usable
+    for every method on both dates. 16 Oct has a coherence pair and 28 Oct has none, so the coherence
+    methods are also run with coherence withheld on both dates: only those rows compare fairly."""
+    import geopandas as gpd
+
+    from pipeline.cv.baseline import area_ha
+    from pipeline.cv.data import rasterize_on
+    from pipeline.cv.evaluate import FLOOD, LABELS_DIR, baseline_predictor, masks
+    from pipeline.cv.metrics import confusion, scores
+
+    site, stack_id = FLOOD["site"], FLOOD["stack"]
+    preds = {"sentinel1_dswx": sentinel1_predictor(site, stack_id),
+             "nisar_threshold_15db": threshold_predictor, "nisar_otsu": baseline_predictor,
+             "nisar_dark_lowcoh, coherence as available (16 Oct only)":
+                 dark_lowcoh_predictor(choice["nisar_dark_lowcoh"]["c"]),
              "v1_preregistered_0.3": cached_predictor("v1", V1_THRESHOLD)}
-    for name in ("v1", "v2"):
-        if name in choice:
-            preds[name] = cached_predictor(name, choice[name]["threshold"])
+    if "v1" in choice:
+        preds["v1"] = cached_predictor("v1", choice["v1"]["threshold"])
+    if "v2" in choice:
+        th = choice["v2"]["threshold"]
+        preds["v2, coherence as available (16 Oct only)"] = cached_predictor("v2", th)
+        preds["v2, coherence withheld on both dates"] = withheld_predictor("v2", th)
     if "v2_spot" in choice:
-        preds["v2_spot"] = cached_predictor("v2", choice["v2_spot"]["threshold"], choice["v2_spot"]["sure"])
-    out = {}
+        th, sure = choice["v2_spot"]["threshold"], choice["v2_spot"]["sure"]
+        preds["v2_spot, coherence as available (16 Oct only)"] = cached_predictor("v2", th, sure)
+        preds["v2_spot, coherence withheld on both dates"] = withheld_predictor("v2", th, sure)
+
+    ds = open_stack(STACK_DIR / f"{site}_{stack_id}.nc")
+    days = date_index(ds)
+    maps = {}
     for name, p in preds.items():
-        r = flood_vs_emsr935(p, FLOOD)
-        out[name] = {k: r[k] for k in ("water_gain", "water_after", "control_water_before")}
+        before, ok_before, _ = p(ds, days[FLOOD["before"]])
+        after, ok_after, _ = p(ds, days[FLOOD["after"]])
+        maps[name] = (masks(before)[1], masks(after)[1], ok_before & ok_after)
+    outlines = gpd.read_file(LABELS_DIR / "pego_oliva_emsr935_flood.geojson")
+    flooded = rasterize_on(ds, outlines[outlines["class"] == "flooded_area"]).astype(bool)
+    trace = rasterize_on(ds, outlines[outlines["class"] == "flood_trace"]).astype(bool)
+    mapped = rasterize_on(ds, gpd.read_file(LABELS_DIR / "pego_oliva_emsr935_aoi.geojson")).astype(bool)
+    region = mapped & ~permanent_water(ds, site) & ~trace
+    for _, _, ok in maps.values():
+        region &= ok
+    out = {"site": site, "stack": stack_id, "before": FLOOD["before"], "after": FLOOD["after"],
+           "label": "EMSR935 flooded_area, imagery 20 to 21 Oct 2026, inside the mapped AOIs",
+           "region_ha": round(area_ha(region), 1), "label_ha": round(area_ha(flooded & region), 1),
+           "note": ("thresholds chosen for open water are applied to any water here; the dark and low "
+                    "coherence rule with coherence withheld on both dates is the NISAR threshold itself"),
+           "methods": {}}
+    for name, (before, after, _) in maps.items():
+        out["methods"][name] = {k: {**scores(confusion(m, flooded, region)), "pred_ha": round(area_ha(m & region), 1)}
+                                for k, m in {"water_gain": after & ~before, "water_after": after,
+                                             "control_water_before": before}.items()}
     return out
 
 
@@ -400,8 +512,8 @@ def main() -> None:
         for name in args.cache:
             cache_set(name, tuple(args.sites))
     if args.count:
-        sets = [n for n in MODEL_SETS if (CACHE_DIR / n).exists()]
-        print(f"model sets with cached probabilities: {sets}")
+        sets = complete_sets(args.sites)
+        print(f"model sets with complete caches from the current checkpoints: {sets}")
         rows = [r for site in args.sites for r in count_site(site, sets)]
         _save(COUNTS_PATH, {"created_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
                             "sites": args.sites, "model_sets": sets, "rows": rows})
@@ -418,7 +530,7 @@ def main() -> None:
         result = {"created_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
                   "protocol": "docs/CV_BENCHMARK.md", "choice": choice, "methods": chosen_methods(choice),
                   "skipped_dates": [r for r in counts["rows"] if "skipped" in r],
-                  "tables": score(counts["rows"], choice), "dana_flood_emsr935": flood_checks(choice)}
+                  "tables": score(counts["rows"], choice), "dana_flood_emsr935": flood_table(choice)}
         _save(METRICS_DIR / "cv_optical_benchmark.json", result)
 
 

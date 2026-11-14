@@ -60,3 +60,17 @@ def test_paired_difference_uses_the_same_draws():
     t = next(e for e in tables if e["group"] == "donana" and e["land"] == "all")
     diff = t["paired_iou_difference_95"]["nisar_dark_lowcoh - nisar_threshold_15db"]
     assert diff["point"] > 0 and diff["interval"][0] > 0   # always one more hit on every date: clear gain
+
+
+def test_no_interval_when_no_stack_has_two_dates():
+    rows = []
+    for stack in ("s1", "s2"):                     # one scored date per stack, as on dates without coherence
+        for key, tp in (("nisar_threshold_15db", 5), ("nisar_otsu", 4), ("nisar_dark_lowcoh@0.3", 9),
+                        ("v1@0.3", 5)):
+            rows.append(_row("donana", stack, "d1", key, 100, 5, 5, tp))
+    tables = bo.score(rows, {"nisar_dark_lowcoh": {"c": 0.3}})
+    t = next(e for e in tables if e["group"] == "donana" and e["land"] == "all")
+    assert t["intervals"].startswith("not computed")
+    assert "iou_95" not in t["methods"]["nisar_dark_lowcoh"]
+    diff = t["paired_iou_difference_95"]["nisar_dark_lowcoh - nisar_threshold_15db"]
+    assert diff["point"] > 0 and diff["interval"] is None   # a point, but no claim of "better"

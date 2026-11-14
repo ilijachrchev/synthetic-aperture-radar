@@ -125,11 +125,12 @@ def baseline_predictor(ds: xr.Dataset, t: int) -> tuple[np.ndarray, np.ndarray, 
     return pred, ok, {"threshold_db": round(threshold, 2)}
 
 
-def unet_predictor(model_path: str | Path, threshold: float = 0.5) -> Predictor:
+def unet_predictor(model_path: str | Path, threshold: float = 0.5, use_coherence: bool = True) -> Predictor:
     """Predictor backed by a trained U-Net checkpoint (needs the cv extra: torch).
 
     The returned function also carries .checkpoint and .probabilities(ds, t),
-    which gives the (open water, any water) probability maps.
+    which gives the (open water, any water) probability maps. use_coherence=False
+    withholds coherence from a "+coh" model, as on a date with no pair.
     """
     from pipeline.cv.coherence import coherence_for
     from pipeline.cv.dataset import reference_db, scene_arrays, uses_coherence, uses_reference
@@ -147,8 +148,9 @@ def unet_predictor(model_path: str | Path, threshold: float = 0.5) -> Predictor:
                 references[key] = reference_db(ds)
             reference = references[key]
         if uses_coherence(inputs):
-            coherence = coherence_for(key[0], key[1], str(ds["time"].values[t])[:10],
-                                      (ds.sizes["y"], ds.sizes["x"]))
+            shape = (ds.sizes["y"], ds.sizes["x"])
+            coherence = (coherence_for(key[0], key[1], str(ds["time"].values[t])[:10], shape) if use_coherence
+                         else np.full(shape, np.nan, dtype="float32"))
         x, _ = scene_arrays(ds, t, reference=reference, coherence=coherence)
         return water_probabilities(predict_scene(model, x, mean, std, tile=checkpoint["config"]["tile"]))
 
@@ -162,13 +164,13 @@ def unet_predictor(model_path: str | Path, threshold: float = 0.5) -> Predictor:
     return predict
 
 
-def ensemble_predictor(model_paths: list[Path], threshold: float = 0.5) -> Predictor:
+def ensemble_predictor(model_paths: list[Path], threshold: float = 0.5, use_coherence: bool = True) -> Predictor:
     """Mean of several U-Nets' (open, any) water probabilities.
 
     All members must come from the same training site and validation blocks,
     otherwise one member's training pixels would be scored as held out.
     """
-    members = [unet_predictor(p, threshold) for p in model_paths]
+    members = [unet_predictor(p, threshold, use_coherence) for p in model_paths]
     first = members[0].checkpoint  # type: ignore[attr-defined]
     for member, path in zip(members[1:], model_paths[1:]):
         other = member.checkpoint  # type: ignore[attr-defined]
@@ -190,11 +192,11 @@ def ensemble_predictor(model_paths: list[Path], threshold: float = 0.5) -> Predi
     return predict
 
 
-def load_predictor(model_paths: list[Path], threshold: float = 0.5) -> Predictor:
+def load_predictor(model_paths: list[Path], threshold: float = 0.5, use_coherence: bool = True) -> Predictor:
     """One checkpoint, or the ensemble of several."""
     if len(model_paths) == 1:
-        return unet_predictor(model_paths[0], threshold)
-    return ensemble_predictor(model_paths, threshold)
+        return unet_predictor(model_paths[0], threshold, use_coherence)
+    return ensemble_predictor(model_paths, threshold, use_coherence)
 
 
 def masks(pred: np.ndarray | dict[str, np.ndarray]) -> tuple[np.ndarray, np.ndarray]:
