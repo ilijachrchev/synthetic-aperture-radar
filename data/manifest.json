@@ -793,5 +793,81 @@
     "layer": "confidence",
     "file": "data/ml/espada_167_D_068/confidence.tif",
     "units": "percent, highest class probability"
+  },
+  {
+    "model": "ml",
+    "site": "albufera",
+    "stack": "066_D_069+058_A_021",
+    "model_version": "v2d",
+    "date": "2026-06-18/2026-10-28",
+    "valid_fraction": 0.6802423224568138,
+    "score": {
+      "macro_f1": 0.8338,
+      "overall_accuracy": 0.8228
+    },
+    "layer": "class",
+    "file": "data/ml/albufera_066_D_069+058_A_021/class.tif",
+    "classes": [
+      "rice_paddy",
+      "permanent_water",
+      "urban",
+      "forest",
+      "burned",
+      "other_crops_shrub",
+      "orchard"
+    ]
+  },
+  {
+    "model": "ml",
+    "site": "albufera",
+    "stack": "066_D_069+058_A_021",
+    "model_version": "v2d",
+    "date": "2026-06-18/2026-10-28",
+    "valid_fraction": 0.6802423224568138,
+    "score": {
+      "macro_f1": 0.8338,
+      "overall_accuracy": 0.8228
+    },
+    "layer": "confidence",
+    "file": "data/ml/albufera_066_D_069+058_A_021/confidence.tif",
+    "units": "percent, highest class probability"
+  },
+  {
+    "model": "ml",
+    "site": "espada",
+    "stack": "058_A_022+167_D_068",
+    "model_version": "v2d",
+    "date": "2026-06-18/2026-10-28",
+    "valid_fraction": 0.9269224187519458,
+    "score": {
+      "macro_f1": 0.8146,
+      "overall_accuracy": 0.7926
+    },
+    "layer": "class",
+    "file": "data/ml/espada_058_A_022+167_D_068/class.tif",
+    "classes": [
+      "rice_paddy",
+      "permanent_water",
+      "urban",
+      "forest",
+      "burned",
+      "other_crops_shrub",
+      "orchard"
+    ]
+  },
+  {
+    "model": "ml",
+    "site": "espada",
+    "stack": "058_A_022+167_D_068",
+    "model_version": "v2d",
+    "date": "2026-06-18/2026-10-28",
+    "valid_fraction": 0.9269224187519458,
+    "score": {
+      "macro_f1": 0.8146,
+      "overall_accuracy": 0.7926
+    },
+    "layer": "confidence",
+    "file": "data/ml/espada_058_A_022+167_D_068/confidence.tif",
+    "units": "percent, highest class probability"
   }
 ]

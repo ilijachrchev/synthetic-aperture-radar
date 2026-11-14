@@ -121,6 +121,21 @@ All four ML stacks, built with `python -m pipeline.run` and run with the default
 
 Default layer per site: **albufera 066_D_069** and **espada 058_A_022** (the most dates, including the VALIDATED 28 Oct pass).
 
+## Experiments and the v2d model (`experiment.py`)
+
+`python -m pipeline.ml.experiment val --version v2x --parent v2 --change "..." --config '{"feature_set": "base+texture"}'`
+scores one change on validation blocks cut from the training area, with 3
+seeds (43, 44, 45), and appends a line to `data/ml/experiments/registry.jsonl`.
+The test blocks (seed 42) are only used by `... experiment final`, once per
+finalist; that stage also scores the Pego-Oliva benchmark (trained on Albufera,
+never seen) and writes the maps. What was tried and why it was kept or dropped:
+`data/ml/experiments/LOG.md`.
+
+**v2d** (both tracks per pixel + texture), agreement with the label maps on
+the test blocks: Albufera accuracy 0.823 / macro F1 0.834, Espadà 0.793 /
+0.815; Pego-Oliva benchmark 0.611 / 0.596 (v1: 0.530 / 0.523). Maps in
+`data/ml/albufera_066_D_069+058_A_021/` and `data/ml/espada_058_A_022+167_D_068/`.
+
 ## Status
 
 - [x] Reads the shared stack format; tested on a fake stack and on the real label files

@@ -1,0 +1,273 @@
+{
+  "site": "albufera",
+  "stack": "066_D_069+058_A_021",
+  "model_version": "v2d",
+  "code_version": "0.3.0",
+  "created_utc": "2026-11-14T16:43:58+00:00",
+  "config": {
+    "tracks": 2,
+    "max_per_class": 60000,
+    "num_leaves": 63,
+    "min_child": 30,
+    "trees": 0,
+    "learning_rate": 0.05,
+    "colsample": 0.8,
+    "subsample": 0.8,
+    "reg_lambda": 0.0,
+    "burned_min_hv_drop": 1.0,
+    "feature_set": "base+texture",
+    "orchard_shrink_m": 0.0,
+    "forest_shrink_m": 0.0,
+    "orchard_rule": "trees",
+    "filter_px": 5
+  },
+  "dates": [
+    "2026-06-18",
+    "2026-06-30",
+    "2026-07-12",
+    "2026-07-24",
+    "2026-08-17",
+    "2026-08-29",
+    "2026-09-10",
+    "2026-09-22",
+    "2026-10-04",
+    "2026-10-16",
+    "2026-10-28",
+    "2026-06-18",
+    "2026-06-30",
+    "2026-07-12",
+    "2026-07-24",
+    "2026-08-17",
+    "2026-08-29",
+    "2026-09-10",
+    "2026-09-22",
+    "2026-10-04",
+    "2026-10-16"
+  ],
+  "label_sources": {
+    "worldcover": "data/context/albufera_worldcover_2021_20m.tif",
+    "jrc_occurrence": "data/context/albufera_jrc_occurrence_20m.tif",
+    "effis": null,
+    "polygons": "data/labels/albufera_drawn.geojson",
+    "sea": "data/context/albufera_sea_20m.tif",
+    "corine": "data/labels/albufera_clc2018.geojson"
+  },
+  "feature_names": [
+    "hh_mean",
+    "hh_std",
+    "hh_min",
+    "hh_max",
+    "hv_mean",
+    "hv_std",
+    "hv_min",
+    "hv_max",
+    "hv_minus_hh_mean",
+    "hv_minus_hh_std",
+    "hh_variability",
+    "hv_variability",
+    "hh_drop_size",
+    "hh_drop_doy",
+    "hh_rise_size",
+    "hh_rise_doy",
+    "hv_drop_size",
+    "hv_drop_doy",
+    "hv_rise_size",
+    "hv_rise_doy",
+    "dark_fraction",
+    "n_valid_hh",
+    "n_valid_hv",
+    "hh_late_minus_early",
+    "hv_late_minus_early",
+    "hh_step_drop",
+    "hh_step_doy",
+    "hv_step_drop",
+    "hv_step_doy",
+    "hh_texture",
+    "hv_texture",
+    "hh_mean@058_A_021",
+    "hh_std@058_A_021",
+    "hh_min@058_A_021",
+    "hh_max@058_A_021",
+    "hv_mean@058_A_021",
+    "hv_std@058_A_021",
+    "hv_min@058_A_021",
+    "hv_max@058_A_021",
+    "hv_minus_hh_mean@058_A_021",
+    "hv_minus_hh_std@058_A_021",
+    "hh_variability@058_A_021",
+    "hv_variability@058_A_021",
+    "hh_drop_size@058_A_021",
+    "hh_drop_doy@058_A_021",
+    "hh_rise_size@058_A_021",
+    "hh_rise_doy@058_A_021",
+    "hv_drop_size@058_A_021",
+    "hv_drop_doy@058_A_021",
+    "hv_rise_size@058_A_021",
+    "hv_rise_doy@058_A_021",
+    "dark_fraction@058_A_021",
+    "n_valid_hh@058_A_021",
+    "n_valid_hv@058_A_021",
+    "hh_late_minus_early@058_A_021",
+    "hv_late_minus_early@058_A_021",
+    "hh_step_drop@058_A_021",
+    "hh_step_doy@058_A_021",
+    "hv_step_drop@058_A_021",
+    "hv_step_doy@058_A_021",
+    "hh_texture@058_A_021",
+    "hv_texture@058_A_021"
+  ],
+  "scores_are": "agreement with the labels (WorldCover, JRC, CORINE, EFFIS, drawn fields) on held-out 1 km test blocks, not ground-truth accuracy",
+  "model_file": "model.txt",
+  "model_classes": [
+    "rice_paddy",
+    "permanent_water",
+    "urban",
+    "forest",
+    "other_crops_shrub",
+    "orchard"
+  ],
+  "class_area_ha": {
+    "rice_paddy": 14813.64,
+    "permanent_water": 2374.6,
+    "urban": 7594.64,
+    "forest": 655.4,
+    "burned": 0.0,
+    "other_crops_shrub": 13893.56,
+    "orchard": 8754.0
+  },
+  "valid_fraction": 0.6802423224568138,
+  "trees": 284,
+  "test_pixels": 371609,
+  "accuracy": 0.8228,
+  "macro_f1": 0.8338,
+  "per_class_f1": {
+    "rice_paddy": 0.9778,
+    "permanent_water": 0.9971,
+    "urban": 0.8433,
+    "forest": 0.8492,
+    "other_crops_shrub": 0.7281,
+    "orchard": 0.6075
+  },
+  "burned_precision": null,
+  "per_class": {
+    "rice_paddy": {
+      "precision": 0.9741420400381315,
+      "recall": 0.9814789617333258,
+      "f1": 0.9777967378866832,
+      "support": 124939
+    },
+    "permanent_water": {
+      "precision": 0.9968365080433466,
+      "recall": 0.9974407327586207,
+      "f1": 0.9971385288671941,
+      "support": 14848
+    },
+    "urban": {
+      "precision": 0.8212511370792807,
+      "recall": 0.8664820967146548,
+      "f1": 0.8432605259376347,
+      "support": 54180
+    },
+    "forest": {
+      "precision": 0.7810828877005348,
+      "recall": 0.9303343949044586,
+      "f1": 0.8492005813953488,
+      "support": 2512
+    },
+    "burned": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 0
+    },
+    "other_crops_shrub": {
+      "precision": 0.8230994152046783,
+      "recall": 0.6526829946904297,
+      "f1": 0.7280517610748786,
+      "support": 129389
+    },
+    "orchard": {
+      "precision": 0.507736801926126,
+      "recall": 0.756105026125358,
+      "f1": 0.6075164460683138,
+      "support": 45741
+    }
+  },
+  "confusion_matrix": {
+    "labels": [
+      "rice_paddy",
+      "permanent_water",
+      "urban",
+      "forest",
+      "burned",
+      "other_crops_shrub",
+      "orchard"
+    ],
+    "rows_are": "reference",
+    "matrix": [
+      [
+        122625,
+        9,
+        59,
+        0,
+        0,
+        2114,
+        132
+      ],
+      [
+        1,
+        14810,
+        0,
+        0,
+        0,
+        37,
+        0
+      ],
+      [
+        93,
+        0,
+        46946,
+        34,
+        0,
+        5872,
+        1235
+      ],
+      [
+        0,
+        0,
+        119,
+        2337,
+        0,
+        48,
+        8
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        3155,
+        38,
+        9192,
+        398,
+        0,
+        84450,
+        32156
+      ],
+      [
+        6,
+        0,
+        848,
+        223,
+        0,
+        10079,
+        34585
+      ]
+    ]
+  }
+}
