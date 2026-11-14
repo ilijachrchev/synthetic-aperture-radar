@@ -6,7 +6,7 @@
 
 NASA Space Apps Challenge 2026 · Valencia, Spain · Challenge: [Dancing with the SARs](https://www.spaceappschallenge.org/2026/challenges/dancing-with-the-sars/)
 
-[Challenge brief](docs/INSTRUCTIONS.md) · [Resources](docs/RESOURCES.md) · [Research](docs/RESEARCH.md) · [Models](docs/MODELS.md)
+[Challenge brief](docs/INSTRUCTIONS.md) · [Resources](docs/RESOURCES.md) · [Research](docs/RESEARCH.md) · [Models](docs/MODELS.md) · [Data](docs/DATA.md)
 
 </div>
 
@@ -80,11 +80,11 @@ flowchart LR
 ## Repository layout
 
 ```
-pipeline/        Python package: catalog, labels, context, nisar_fetch, dswx, stack, cv/
+pipeline/        Python package: catalog, labels, context, nisar_fetch, dswx, stack, run, cv/
 tests/           checks for every pipeline module (pytest)
 data/catalog/    NISAR file lists per site (committed)
 data/labels/     flood and burn outlines used to score the models (committed)
-data/context/    small helper tables: Lorca GNSS, Panama quake (committed)
+data/context/    land cover and water history on the site grids, Lorca GNSS, Panama quake (committed)
 data/raw/        downloads: NISAR subsets, water maps, land cover (not committed)
 data/stack/      one NetCDF stack per site and track (not committed)
 docs/            challenge brief, resources, research, models
@@ -106,7 +106,13 @@ Save your free [Earthdata login](https://urs.earthdata.nasa.gov/) once. It asks 
 .venv\Scripts\python -c "import earthaccess; earthaccess.login(strategy='interactive', persist=True)"
 ```
 
-Then, per step (each one checks its own output):
+Then build everything the models use (NISAR subsets, water labels, all six stacks) with one command. It skips what is already on disk, so it is safe to re-run:
+
+```bash
+.venv\Scripts\python -m pipeline.run
+```
+
+Or step by step (each one checks its own output):
 
 ```bash
 .venv\Scripts\python -m pipeline.catalog --all

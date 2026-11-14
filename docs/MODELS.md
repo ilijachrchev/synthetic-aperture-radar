@@ -120,6 +120,8 @@ Agree on these two before anyone builds, so nobody waits on anybody.
 data/stack/<site>_<track>.nc    dims: time × y × x    vars: HH, HV (linear power), valid, looks    per date: granule_ur, crid, maturity, pols
 ```
 
+Exact grids per site, where to download the stacks, and the labels already on those grids: [DATA.md](DATA.md).
+
 **2. One output format** (written by all three). Analysis runs on EPSG:32630; display layers are 8-bit Cloud-Optimized GeoTIFFs, web-optimized (`rio cogeo create --web-optimized`), plus one entry per layer in `data/manifest.json` that says exactly which NISAR file it came from. Example entry (values are placeholders):
 
 ```json
