@@ -19,6 +19,7 @@ import numpy as np
 from skimage.filters import threshold_otsu
 
 PIXEL_HA = 20.0 * 20.0 / 10_000.0  # one 20 m pixel = 0.04 ha
+BURN_DROP_DB = 1.5  # HV drop that counts as a candidate burn (starting point, to tune on EFFIS)
 
 CHANGE_CLASSES = {
     0: "not_observed",
@@ -50,7 +51,8 @@ def flooded_vegetation(hh_before: np.ndarray, hh_after: np.ndarray, hv_before: n
     return valid_both.astype(bool) & (d_hh >= rise_db) & (np.abs(d_hv) <= hv_flat_db)
 
 
-def burn_candidate(hv_before: np.ndarray, hv_after: np.ndarray, land_both: np.ndarray, drop_db: float = 1.5) -> np.ndarray:
+def burn_candidate(hv_before: np.ndarray, hv_after: np.ndarray, land_both: np.ndarray,
+                   drop_db: float = BURN_DROP_DB) -> np.ndarray:
     """Candidate burned ground: HV down by drop_db or more on pixels that are land on both dates."""
     return land_both.astype(bool) & ((hv_after - hv_before) <= -drop_db)
 
