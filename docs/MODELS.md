@@ -19,7 +19,7 @@ flowchart LR
     G["NISAR GCOV<br/>HH · HV · 20 m"] --> S["Shared NISAR stack<br/>per site, every date"]
     S --> CV["🖼️ CV model<br/>Ilija Chrchev"]
     S --> ML["🧮 ML model<br/>Luka Georgieski"]
-    U["NISAR GUNW<br/>ground motion"] -. planned check .-> P["📈 Prediction model<br/>Zhivko Stoimchev"]
+    U["NISAR GUNW<br/>ground motion"] -. check .-> P["📈 Prediction model<br/>Zhivko Stoimchev"]
     E["EGMS history"] -. import pending .-> P
     N["GNSS LOR1"] --> P
     R["Rain: ECMWF IFS<br/>Open-Meteo"] --> P
@@ -87,7 +87,7 @@ CV and ML read the same NISAR stack but answer different questions. Prediction u
 
 | | Forecast | Data | Held-out result | NISAR check |
 |---|---|---|---|---|
-| **A** | [Lorca ground sinking](../pipeline/prediction/README.md) | GNSS LOR1 (NGL), daily since 2009 | Selection on 2023 picks persistence ("no further change"). On the 2025 test, linear trend beats persistence by 14 % at 24 days and 8 % at 36 days, trend + annual cycle by 8 % and 1 %. Reported, not switched to. Sinking slowed from about 95 to about 40 mm/yr after 2023 | Not done (GUNW, see below) |
+| **A** | [Lorca ground sinking](../pipeline/prediction/README.md) | GNSS LOR1 (NGL), daily since 2009 | Selection on 2023 picks persistence ("no further change"). On the 2025 test, linear trend beats persistence by 14 % at 24 days and 8 % at 36 days, trend + annual cycle by 8 % and 1 %. Reported, not switched to. Sinking slowed from about 95 to about 40 mm/yr after 2023 | ⚠️ Not yet: 13 GUNW pairs, Jun–Oct. Descending −53 vs GNSS −48 mm/yr, ascending +18 vs −35; per-date atmosphere ≈ 6–13 mm ≈ the signal so far. Descending should resolve the rate at 3σ by about mid-Nov |
 | **B** | [Albufera rice-field flooded area](../pipeline/prediction/albufera/README.md) | DSWx-S1, 413 passes since Aug 2024; CORINE rice mask, 14,791 ha | Climatology beats persistence by +42 / +60 / +64 % at 16 / 28 / 40 days on the 2026 season; 80 % ranges hold 73–80 % | ✅ NISAR and DSWx-S1 rise together in the autumn flooding |
 | **C** | [Rain-threshold flood alert](../pipeline/prediction/flood/README.md) | IFS 9 km rain (Open-Meteo) + DSWx-S1, Albufera and Pego-Oliva | Held-out DANA: 2 of 2 caught, 0 false alarms in the surrounding weeks (too few events for a skill claim). Replay: amber 2–3 days ahead, never red | ✅ NISAR new water lies 87 % inside the official DANA outline |
 
@@ -100,7 +100,7 @@ CV and ML read the same NISAR stack but answer different questions. Prediction u
 
 **Still open:**
 - **Lorca with EGMS** (2020–2025, gap-free; needs an EU Login download, see the prediction README). This is the fair test of trend vs persistence.
-- **Lorca vs NISAR GUNW** (track 167 D): about half a day and risky (HDF5 metadata, ionosphere, line of sight vs vertical). Planned, not started.
+- **Lorca vs NISAR GUNW:** built (`pipeline/prediction/lorca_gunw.py`); re-run as new 12-day pairs reach CMR. See the Lorca README for the numbers and the one post-hoc change (plane + height detrend).
 - **Verifying the committed Albufera forecast** once the 26 Nov, 8 Dec and 20 Dec passes are published.
 
 ---

@@ -1,0 +1,218 @@
+{
+ "issued_at_utc": "2026-11-14T14:20:12+00:00",
+ "method": "1. Read, straight from each GUNW HDF5 over HTTP (h5py range reads, no full\n   download), the Lorca box of: unwrapped phase, coherence, connected\n   components, ionosphere phase screen and mask (80 m UTM 30N grid), plus the\n   troposphere phase screens and line-of-sight vectors from the metadata cubes.\n2. Valid pixel: valid subswath in both dates, not water, coherence >= 0.3, in\n   the largest connected component of that pair.\n3. Corrections: the ionosphere screen and the wet + hydrostatic troposphere\n   screens (cubes interpolated at the Copernicus GLO-30 height + 50 m geoid)\n   are subtracted only if doing so lowers the median spatial spread of the\n   referenced phase over the pairs. The choice is written to the output.\n4. Phase to line of sight (towards the satellite positive):\n   d = -lambda / (4 pi) * phase; to vertical: d / up component of the LOS\n   vector (horizontal motion assumed zero, the usual reading of this bowl).\n5. Each pair is referenced to the median of the valid pixels in the box (the\n   bowl is a small part of it), then pairs are summed in time order; a pixel\n   counts only if valid in every pair.\n6. LOR1: median of the valid pixels within 3 x 3 cells (240 m). GNSS: mean of\n   the daily vertical within +-3 days of each date, minus the first date.",
+ "dem": "Copernicus GLO-30 (c) DLR e.V. 2010-2014 and (c) Airbus 2014-2018, provided under COPERNICUS by the EU and ESA",
+ "detrend_note": "Added after the first run: without it both tracks show opposite 30-40 mm ramps over the box (atmosphere/orbit), not ground motion. Results without it are kept under without_detrend.",
+ "stacks": {
+  "167_D_069": {
+   "stack": "167_D_069",
+   "pairs": 7,
+   "dates": [
+    "2026-06-25",
+    "2026-07-07",
+    "2026-07-19",
+    "2026-08-24",
+    "2026-09-05",
+    "2026-09-17",
+    "2026-09-29",
+    "2026-10-11"
+   ],
+   "span_days": 108,
+   "granules": [
+    "NISAR_L2_PR_GUNW_023_167_D_069_024_2000_SH_20260625T190141_20260625T190216_20260707T190140_20260707T190215_P05023_N_F_J_001",
+    "NISAR_L2_PR_GUNW_024_167_D_069_025_2000_SH_20260707T190140_20260707T190215_20260719T190140_20260719T190214_P05023_N_F_J_001",
+    "NISAR_L2_PR_GUNW_025_167_D_069_028_2000_SH_20260719T190140_20260719T190214_20260824T190138_20260824T190212_P05023_N_F_J_001",
+    "NISAR_L2_PR_GUNW_028_167_D_069_029_2000_SH_20260824T190138_20260824T190212_20260905T190137_20260905T190212_P05023_N_F_J_001",
+    "NISAR_L2_PR_GUNW_029_167_D_069_030_2000_SH_20260905T190137_20260905T190212_20260917T190137_20260917T190212_P05023_N_F_J_001",
+    "NISAR_L2_PR_GUNW_030_167_D_069_031_2000_SH_20260917T190137_20260917T190212_20260929T190137_20260929T190212_P05023_N_F_J_001",
+    "NISAR_L2_PR_GUNW_031_167_D_069_032_2000_SH_20260929T190137_20260929T190212_20261011T190137_20261011T190212_P05023_N_F_J_001"
+   ],
+   "correction_scores_median_spread_rad": {
+    "none": 0.634,
+    "ionosphere": 0.68,
+    "ionosphere+troposphere": 0.57
+   },
+   "correction_used": "ionosphere+troposphere",
+   "detrend_plane_and_height": true,
+   "valid_in_all_pairs_share": 0.864,
+   "los_up_component_median": 0.732,
+   "lor1": {
+    "nisar_vertical_mm": [
+     0.0,
+     0.29,
+     7.94,
+     -7.47,
+     -0.21,
+     -0.62,
+     -19.25,
+     -11.81
+    ],
+    "gnss_vertical_mm": [
+     0.0,
+     -1.59,
+     -3.64,
+     -5.02,
+     -7.6,
+     -9.11,
+     -14.21,
+     -14.99
+    ],
+    "nisar_rate_mm_yr": -53.3,
+    "gnss_rate_mm_yr": -47.9,
+    "rms_difference_mm": 6.18
+   },
+   "noise": {
+    "map_p05_p95_mm": [
+     -28.7,
+     28.8
+    ]
+   },
+   "most_negative_5x5_cell": {
+    "note": "at the noise level, not a detected bowl",
+    "min_5x5_mm": -91.2,
+    "min_rate_mm_yr": -308.5,
+    "x": 636920.0,
+    "y": 4170360.0,
+    "km_from_lor1": 21.2,
+    "p05_mm": -28.7,
+    "p50_mm": 0.9
+   },
+   "detectability": {
+    "assumption": "per-date noise = RMS(NISAR - GNSS) at LOR1, independent between dates; GNSS rate holds",
+    "rate_1sigma_now_mm_yr": 21.1,
+    "days_of_record_for_3_sigma": 144,
+    "date_for_3_sigma": "2026-11-16"
+   }
+  },
+  "159_A_021": {
+   "stack": "159_A_021",
+   "pairs": 6,
+   "dates": [
+    "2026-06-25",
+    "2026-07-07",
+    "2026-07-19",
+    "2026-08-12",
+    "2026-08-24",
+    "2026-09-05",
+    "2026-09-17"
+   ],
+   "span_days": 84,
+   "granules": [
+    "NISAR_L2_PR_GUNW_023_159_A_021_024_2000_SH_20260625T051507_20260625T051542_20260707T051506_20260707T051541_P05023_N_F_J_001",
+    "NISAR_L2_PR_GUNW_024_159_A_021_025_2000_SH_20260707T051506_20260707T051541_20260719T051505_20260719T051540_P05023_N_F_J_001",
+    "NISAR_L2_PR_GUNW_025_159_A_021_027_2000_SH_20260719T051505_20260719T051540_20260812T051504_20260812T051539_P05023_N_F_J_001",
+    "NISAR_L2_PR_GUNW_027_159_A_021_028_2000_SH_20260812T051504_20260812T051539_20260824T051503_20260824T051538_P05023_N_F_J_001",
+    "NISAR_L2_PR_GUNW_028_159_A_021_029_2000_SH_20260824T051503_20260824T051538_20260905T051503_20260905T051538_P05023_N_F_J_002",
+    "NISAR_L2_PR_GUNW_029_159_A_021_030_2000_SH_20260905T051503_20260905T051538_20260917T051503_20260917T051538_P05023_N_F_J_001"
+   ],
+   "correction_scores_median_spread_rad": {
+    "none": 0.619,
+    "ionosphere": 0.459,
+    "ionosphere+troposphere": 0.578
+   },
+   "correction_used": "ionosphere",
+   "detrend_plane_and_height": true,
+   "valid_in_all_pairs_share": 0.853,
+   "los_up_component_median": 0.747,
+   "lor1": {
+    "nisar_vertical_mm": [
+     0.0,
+     6.53,
+     9.18,
+     3.79,
+     17.6,
+     7.88,
+     2.93
+    ],
+    "gnss_vertical_mm": [
+     0.0,
+     -1.59,
+     -3.64,
+     -1.99,
+     -5.02,
+     -7.6,
+     -9.11
+    ],
+    "nisar_rate_mm_yr": 18.0,
+    "gnss_rate_mm_yr": -35.0,
+    "rms_difference_mm": 12.87
+   },
+   "noise": {
+    "map_p05_p95_mm": [
+     -24.3,
+     25.3
+    ]
+   },
+   "most_negative_5x5_cell": {
+    "note": "at the noise level, not a detected bowl",
+    "min_5x5_mm": -59.2,
+    "min_rate_mm_yr": -257.5,
+    "x": 607880.0,
+    "y": 4158920.0,
+    "km_from_lor1": 12.3,
+    "p05_mm": -24.3,
+    "p50_mm": 0.0
+   },
+   "detectability": {
+    "assumption": "per-date noise = RMS(NISAR - GNSS) at LOR1, independent between dates; GNSS rate holds",
+    "rate_1sigma_now_mm_yr": 60.7,
+    "days_of_record_for_3_sigma": 288,
+    "date_for_3_sigma": "2027-04-09"
+   }
+  }
+ },
+ "without_detrend": {
+  "167_D_069": {
+   "lor1": {
+    "nisar_vertical_mm": [
+     0.0,
+     6.02,
+     -3.09,
+     -1.14,
+     -5.72,
+     -2.2,
+     -27.49,
+     -22.63
+    ],
+    "gnss_vertical_mm": [
+     0.0,
+     -1.59,
+     -3.64,
+     -5.02,
+     -7.6,
+     -9.11,
+     -14.21,
+     -14.99
+    ],
+    "nisar_rate_mm_yr": -81.2,
+    "gnss_rate_mm_yr": -47.9,
+    "rms_difference_mm": 6.7
+   }
+  },
+  "159_A_021": {
+   "lor1": {
+    "nisar_vertical_mm": [
+     0.0,
+     10.79,
+     -1.08,
+     -6.54,
+     8.24,
+     -1.18,
+     2.39
+    ],
+    "gnss_vertical_mm": [
+     0.0,
+     -1.59,
+     -3.64,
+     -1.99,
+     -5.02,
+     -7.6,
+     -9.11
+    ],
+    "nisar_rate_mm_yr": -8.6,
+    "gnss_rate_mm_yr": -35.0,
+    "rms_difference_mm": 8.7
+   }
+  }
+ }
+}
