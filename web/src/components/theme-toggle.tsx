@@ -48,7 +48,7 @@ export function ThemeToggle({ className = '' }: { className?: string }) {
 			onClick={toggle}
 			aria-label={dark ? 'Switch to day' : 'Switch to night'}
 			title={dark ? 'Day' : 'Night'}
-			className={`grid size-10 place-items-center rounded-full border border-[var(--glass-line)] bg-[var(--glass)] text-[var(--hero-ink)] backdrop-blur-md transition-colors duration-300 hover:bg-[var(--glass-strong)] ${className}`}
+			className={`grid size-10 place-items-center rounded-full bg-[var(--pill-glass)] text-[var(--ink)] shadow-[inset_0_0_0_1px_var(--line-strong)] transition-colors duration-300 hover:bg-[var(--glass)] ${className}`}
 		>
 			{dark ? <Sun size={17} strokeWidth={1.8} /> : <Moon size={17} strokeWidth={1.8} />}
 		</button>

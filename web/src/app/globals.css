@@ -1,78 +1,67 @@
 @import "tailwindcss";
 
-/* Type: Inter Tight for display and text (the references' neo-grotesque), Instrument Serif for the one italic accent
-   per screen, DM Mono for small technical labels (tracks, coordinates, dates). */
 @theme {
-	--font-sans: var(--font-inter-tight), ui-sans-serif, system-ui, sans-serif;
-	--font-serif: var(--font-instrument-serif), ui-serif, Georgia, serif;
-	--font-mono: var(--font-dm-mono), ui-monospace, "SFMono-Regular", Consolas, monospace;
-	--ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
-	--ease-in-out-quart: cubic-bezier(0.76, 0, 0.24, 1);
+	--font-sans: var(--font-hanken), ui-sans-serif, system-ui, sans-serif;
+	--font-display: var(--font-archivo), "Arial Narrow", sans-serif;
+	--font-mono: var(--font-geist-mono), ui-monospace, Consolas, monospace;
 }
 
-/* Day: the morning photo's lilac white (#E8E7F5 to #F4F3F9, measured), navy ink, a violet accent.
-   Night: the dusk photo's indigo ground and its pink clouds (#F0B0AE, measured) as the accent. */
+/* Grounds and inks measured on 8x.social: the light middle (#e4eeff, ink #0b0b0c, navy #082058) by day, the navy
+   hero (#082058 with its #102c70 glow) by night. One ground per theme for the whole page. The accent is their
+   text gradient, darkened at its pale end by day so it holds on the light ground. */
 :root {
 	color-scheme: light;
-	--bg: #efedf7;
-	--bg-2: #e7e4f2;
-	--surface: #ffffff;
-	--ink: #16163a;
-	--ink-2: #34355c;
-	--muted: #5c5d7e;
-	--line: rgb(22 22 58 / 0.12);
-	--line-strong: rgb(22 22 58 / 0.22);
-	--accent: #5f50d8;
-	--pill-bg: #16163a;
-	--pill-fg: #ffffff;
-	--glass: rgb(255 255 255 / 0.46);
-	--glass-strong: rgb(255 255 255 / 0.7);
-	--glass-line: rgb(255 255 255 / 0.75);
-	--hero-ink: #16163a;
-	--hero-muted: rgb(22 22 58 / 0.66);
-	--chart: rgb(22 22 58 / 0.8);
-	--chart-grid: rgb(22 22 58 / 0.14);
-	--shadow: 0 1px 2px rgb(22 22 58 / 0.06), 0 12px 32px rgb(22 22 58 / 0.08);
+	--bg: #e4eeff;
+	--bg-glow: rgb(176 200 255 / 0.55);
+	--ink: #0b0b0c;
+	--navy: #082058;
+	--ink-2: rgb(11 11 12 / 0.74);
+	--muted: rgb(11 11 12 / 0.56);
+	--line: rgb(8 32 88 / 0.12);
+	--line-strong: rgb(8 32 88 / 0.22);
+	--card: #ffffff;
+	--card-line: rgb(8 32 88 / 0.08);
+	--glass: rgb(255 255 255 / 0.55);
+	--glass-line: rgb(255 255 255 / 0.85);
+	--pill-glass: rgb(8 32 88 / 0.06);
+	--accent: #2d6bff;
+	--accent-grad: linear-gradient(17deg, #1f4fe0, #2d6bff 34%, #5e93ff 70%, #8fb6ff);
+	--ghost-ring: rgb(8 32 88 / 0.3);
+	--shadow: 0 1px 2px rgb(8 32 88 / 0.06), 0 18px 44px -18px rgb(8 32 88 / 0.35);
 	--ease: cubic-bezier(0.16, 1, 0.3, 1);
 }
 [data-theme="dark"] {
 	color-scheme: dark;
-	--bg: #061235;
-	--bg-2: #0a1a48;
-	--surface: #0c1e54;
-	--ink: #eef3ff;
-	--ink-2: #c9d6f2;
-	--muted: #95a7cf;
-	--line: rgb(160 190 255 / 0.14);
-	--line-strong: rgb(160 190 255 / 0.26);
-	--accent: #8fb1ff;
-	--pill-bg: #ffffff;
-	--pill-fg: #061235;
-	--glass: rgb(8 24 70 / 0.4);
-	--glass-strong: rgb(8 24 70 / 0.66);
-	--glass-line: rgb(170 200 255 / 0.18);
-	--hero-ink: #ffffff;
-	--hero-muted: rgb(255 255 255 / 0.76);
-	--chart: rgb(255 255 255 / 0.94);
-	--chart-grid: rgb(170 200 255 / 0.2);
-	--shadow: 0 1px 2px rgb(0 4 20 / 0.5), 0 14px 36px rgb(0 4 20 / 0.45);
+	--bg: #082058;
+	--bg-glow: rgb(16 44 112 / 0.75);
+	--ink: #ffffff;
+	--ink-2: rgb(255 255 255 / 0.8);
+	--muted: rgb(255 255 255 / 0.6);
+	--line: rgb(255 255 255 / 0.12);
+	--line-strong: rgb(255 255 255 / 0.24);
+	--card: #0d2a6e;
+	--card-line: rgb(255 255 255 / 0.1);
+	--glass: rgb(8 24 70 / 0.45);
+	--glass-line: rgb(255 255 255 / 0.16);
+	--pill-glass: rgb(255 255 255 / 0.06);
+	--accent: #86b4ff;
+	--accent-grad: linear-gradient(17deg, #3d7bff, #5e93ff 34%, #86b4ff 62%, #c4d8fe 88%, #cfc8ff);
+	--ghost-ring: rgb(255 255 255 / 0.36);
+	--shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 24px 60px -24px rgb(0 0 0 / 0.6);
 }
 
 html {
 	background: var(--bg);
 	-webkit-text-size-adjust: 100%;
 }
-[data-theme="dark"] body {
-	background:
-		radial-gradient(70% 40% at 50% 0%, rgb(14 48 140 / 0.55), transparent 70%),
-		radial-gradient(60% 30% at 80% 55%, rgb(14 48 140 / 0.35), transparent 70%),
-		var(--bg);
-}
 body {
-	background: var(--bg);
+	background:
+		radial-gradient(70% 45% at 50% 0%, var(--bg-glow), transparent 70%),
+		radial-gradient(50% 35% at 85% 60%, var(--bg-glow), transparent 70%),
+		var(--bg);
 	color: var(--ink);
 	font-family: var(--font-sans);
-	font-feature-settings: "ss01", "cv11";
+	font-weight: 450;
 	-webkit-font-smoothing: antialiased;
 	transition: background-color 0.5s var(--ease), color 0.5s var(--ease);
 }
@@ -88,89 +77,129 @@ body {
 	transform: scale(0.975);
 }
 
-/* A faint baked grain so no ground ever sits flat (public/img/grain.png, painted once, normal blending). */
-.grain {
-	position: relative;
-	isolation: isolate;
+/* Display type, as both 8x sites set it: Archivo 900 at wdth 62, capitals, line-height .86, tracking -0.004em. */
+.display {
+	font-family: var(--font-display);
+	font-weight: 900;
+	font-stretch: 62%;
+	font-variation-settings: "wdth" 62;
+	text-transform: uppercase;
+	line-height: 0.86;
+	letter-spacing: -0.004em;
+	text-wrap: balance;
 }
-.grain::after {
-	content: "";
-	position: absolute;
-	inset: 0;
-	z-index: -1;
-	pointer-events: none;
-	background: url("/img/grain.png") repeat;
-	background-size: 160px 160px;
-	opacity: 0.5;
+.accent {
+	background: var(--accent-grad);
+	-webkit-background-clip: text;
+	background-clip: text;
+	color: transparent;
 }
-[data-theme="dark"] .grain::after {
-	opacity: 0.35;
+.lead {
+	font-size: clamp(18px, 1.7vw, 24px);
+	font-weight: 500;
+	letter-spacing: -0.01em;
+	line-height: 1.38;
+	color: var(--ink-2);
 }
-
-/* Theme switch: a circle of the new light grows from the switch (theme-toggle.tsx drives the clip-path). */
-::view-transition-old(root),
-::view-transition-new(root) {
-	animation: none;
-	mix-blend-mode: normal;
+.eyebrow {
+	font-size: 15px;
+	font-weight: 600;
+	letter-spacing: 0.025em;
+	text-transform: uppercase;
+	color: var(--muted);
 }
-
-/* Scroll-linked reveals from the mahoraga kit: compositor only, no script, everything visible without support. */
-@supports (animation-timeline: view()) {
-	[data-reveal] {
-		animation-timing-function: linear;
-		animation-fill-mode: both;
-		animation-timeline: view();
-		animation-range: entry calc(var(--r, 0) * 1%) entry calc(75% + var(--r, 0) * 1%);
-	}
-	[data-reveal="rise"] {
-		animation-name: reveal-rise;
-	}
-	[data-reveal="open"] {
-		animation-name: reveal-open;
-		animation-range: entry 0% cover 45%;
-	}
-	[data-reveal="line"] {
-		animation-name: reveal-line;
-		transform-origin: left;
-		animation-range: entry 0% cover 40%;
-	}
-}
-@keyframes reveal-rise {
-	from {
-		opacity: 0;
-		transform: translate3d(0, 48px, 0) scale(0.98);
-	}
-}
-@keyframes reveal-open {
-	from {
-		clip-path: inset(10% 8% 10% 8% round 48px);
-	}
-	to {
-		clip-path: inset(0 0 0 0 round 28px);
-	}
-}
-@keyframes reveal-line {
-	from {
-		transform: scaleX(0);
-	}
+.mono {
+	font-family: var(--font-mono);
+	font-variant-numeric: tabular-nums;
 }
 
-/* Arrival motion for the hero: lines rise in once on load. */
-.anim-rise {
-	animation: rise-in 1s var(--ease) both;
-	animation-delay: var(--d, 0ms);
+/* Pills, measured: primary 56px, blue gradient with a lilac glow in its corner and an icon dot; ghost 56px with a
+   1px inset ring. */
+.pill {
+	display: inline-flex;
+	align-items: center;
+	gap: 12px;
+	height: 56px;
+	padding: 0 22px 0 8px;
+	border-radius: 999px;
+	font-size: 17px;
+	font-weight: 600;
+	white-space: nowrap;
+	color: #fff;
+	background:
+		radial-gradient(90% 140% at 100% 0, rgb(167 155 255 / 0.55), rgb(167 155 255 / 0) 60%),
+		linear-gradient(100deg, #2350ff, #2b5fff);
+	box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.3), inset 0 -1px 0 rgb(8 32 88 / 0.35), 0 10px 30px -12px rgb(35 80 255 / 0.7);
+	transition: transform 0.26s var(--ease), box-shadow 0.26s var(--ease);
 }
-@keyframes rise-in {
-	from {
-		opacity: 0;
-		transform: translate3d(0, 0.45em, 0);
-	}
+.pill:hover {
+	transform: translateY(-1px);
+}
+.pill-dot {
+	display: grid;
+	place-items: center;
+	width: 40px;
+	height: 40px;
+	border-radius: 999px;
+	background: #fff;
+	color: #2350ff;
+}
+.pill-ghost {
+	display: inline-flex;
+	align-items: center;
+	gap: 12px;
+	height: 56px;
+	padding: 0 22px;
+	border-radius: 999px;
+	font-size: 17px;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--ink);
+	background: var(--pill-glass);
+	box-shadow: inset 0 0 0 1px var(--ghost-ring);
+	transition: background-color 0.26s var(--ease);
+}
+.pill-ghost:hover {
+	background: color-mix(in oklab, var(--pill-glass) 60%, var(--ghost-ring));
+}
+.pill-ghost .mono {
+	padding-left: 12px;
+	border-left: 1px solid var(--line-strong);
+	font-size: 14px;
+	color: var(--muted);
+}
+
+/* Words lift out of their own masks one after another (8x.business's titles). Hidden only once a script runs and
+   only until the heading is in view; reduced motion shows them at rest. */
+.wd {
+	display: inline-block;
+	overflow: hidden;
+	vertical-align: top;
+	padding: 0.08em 0.02em 0.06em;
+	margin: -0.08em -0.02em -0.06em;
+}
+.wd > span {
+	display: inline-block;
+	transition: transform 0.9s var(--ease);
+	transition-delay: var(--d, 0ms);
+}
+.js [data-words]:not([data-in]) .wd > span {
+	transform: translate3d(0, 108%, 0);
+}
+.js [data-rise] {
+	transition: opacity 0.8s var(--ease), transform 0.9s var(--ease);
+	transition-delay: var(--d, 0ms);
+}
+.js [data-rise]:not([data-in]) {
+	opacity: 0;
+	transform: translate3d(0, 28px, 0);
 }
 
 @media (prefers-reduced-motion: reduce) {
-	[data-reveal],
-	.anim-rise {
-		animation: none !important;
+	.js [data-words] .wd > span,
+	.js [data-rise] {
+		transform: none !important;
+		opacity: 1 !important;
 	}
 	*,
 	*::before,
