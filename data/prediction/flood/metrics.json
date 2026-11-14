@@ -1,0 +1,355 @@
+{
+  "issued_at_utc": "2026-11-14T12:19:56+00:00",
+  "threshold_mm_3d": 100.0,
+  "base_rate_train": 0.0079,
+  "samples": {
+    "train": 504,
+    "test": 17,
+    "train_events": 4,
+    "test_events": 2
+  },
+  "scores": {
+    "train": {
+      "n": 504,
+      "events": 4,
+      "hits": 1,
+      "misses": 3,
+      "false_alarms": 16,
+      "correct_negatives": 484,
+      "hit_rate": 0.25,
+      "false_alarm_rate": 0.032,
+      "false_alarm_ratio": 0.941,
+      "peirce_skill": 0.218,
+      "brier": 0.0078,
+      "brier_climatology": 0.0079,
+      "brier_skill": 0.009
+    },
+    "test": {
+      "n": 17,
+      "events": 2,
+      "hits": 2,
+      "misses": 0,
+      "false_alarms": 0,
+      "correct_negatives": 15,
+      "hit_rate": 1.0,
+      "false_alarm_rate": 0.0,
+      "false_alarm_ratio": 0.0,
+      "peirce_skill": 1.0,
+      "brier": 0.104,
+      "brier_climatology": 0.1158,
+      "brier_skill": 0.103
+    },
+    "fitted_threshold": {
+      "threshold_mm_3d": 7.0,
+      "train": {
+        "n": 504,
+        "events": 4,
+        "hits": 4,
+        "misses": 0,
+        "false_alarms": 218,
+        "correct_negatives": 282,
+        "hit_rate": 1.0,
+        "false_alarm_rate": 0.436,
+        "false_alarm_ratio": 0.982,
+        "peirce_skill": 0.564
+      },
+      "test": {
+        "n": 17,
+        "events": 2,
+        "hits": 2,
+        "misses": 0,
+        "false_alarms": 5,
+        "correct_negatives": 10,
+        "hit_rate": 1.0,
+        "false_alarm_rate": 0.333,
+        "false_alarm_ratio": 0.714,
+        "peirce_skill": 0.667
+      }
+    },
+    "train_by_site": {
+      "albufera": {
+        "n": 252,
+        "events": 2,
+        "hits": 0,
+        "misses": 2,
+        "false_alarms": 9,
+        "correct_negatives": 241,
+        "hit_rate": 0.0,
+        "false_alarm_rate": 0.036,
+        "false_alarm_ratio": 1.0,
+        "peirce_skill": -0.036
+      },
+      "pego_oliva": {
+        "n": 252,
+        "events": 2,
+        "hits": 1,
+        "misses": 1,
+        "false_alarms": 7,
+        "correct_negatives": 243,
+        "hit_rate": 0.5,
+        "false_alarm_rate": 0.028,
+        "false_alarm_ratio": 0.875,
+        "peirce_skill": 0.472
+      }
+    },
+    "train_storms": {
+      "alarm_samples": 17,
+      "storms": 11,
+      "storms_with_new_flood_label": 1,
+      "storms_with_rise_over_90_ha_but_no_label": 5,
+      "list": [
+        {
+          "site": "albufera",
+          "dates": [
+            "2024-10-31",
+            "2024-11-01"
+          ],
+          "max_rain_3d_mm": 157.5,
+          "max_excess_ha": 110.52,
+          "new_flood": false
+        },
+        {
+          "site": "albufera",
+          "dates": [
+            "2025-03-06",
+            "2025-03-07"
+          ],
+          "max_rain_3d_mm": 135.1,
+          "max_excess_ha": 42.24,
+          "new_flood": false
+        },
+        {
+          "site": "albufera",
+          "dates": [
+            "2025-03-24"
+          ],
+          "max_rain_3d_mm": 116.5,
+          "max_excess_ha": -37.18,
+          "new_flood": false
+        },
+        {
+          "site": "albufera",
+          "dates": [
+            "2025-10-02"
+          ],
+          "max_rain_3d_mm": 136.1,
+          "max_excess_ha": -93.6,
+          "new_flood": false
+        },
+        {
+          "site": "albufera",
+          "dates": [
+            "2025-10-14"
+          ],
+          "max_rain_3d_mm": 182.7,
+          "max_excess_ha": -72.79,
+          "new_flood": false
+        },
+        {
+          "site": "albufera",
+          "dates": [
+            "2026-10-04",
+            "2026-10-05"
+          ],
+          "max_rain_3d_mm": 124.6,
+          "max_excess_ha": -46.74,
+          "new_flood": false
+        },
+        {
+          "site": "pego_oliva",
+          "dates": [
+            "2024-10-31",
+            "2024-11-01"
+          ],
+          "max_rain_3d_mm": 140.4,
+          "max_excess_ha": 198.46,
+          "new_flood": false
+        },
+        {
+          "site": "pego_oliva",
+          "dates": [
+            "2025-03-06",
+            "2025-03-07",
+            "2025-03-12"
+          ],
+          "max_rain_3d_mm": 142.0,
+          "max_excess_ha": 207.6,
+          "new_flood": false
+        },
+        {
+          "site": "pego_oliva",
+          "dates": [
+            "2025-03-24"
+          ],
+          "max_rain_3d_mm": 116.9,
+          "max_excess_ha": 125.7,
+          "new_flood": false
+        },
+        {
+          "site": "pego_oliva",
+          "dates": [
+            "2025-10-02"
+          ],
+          "max_rain_3d_mm": 104.4,
+          "max_excess_ha": 90.18,
+          "new_flood": false
+        },
+        {
+          "site": "pego_oliva",
+          "dates": [
+            "2025-10-14"
+          ],
+          "max_rain_3d_mm": 121.0,
+          "max_excess_ha": 317.61,
+          "new_flood": true
+        }
+      ]
+    }
+  },
+  "dana_passes_pego_oliva": [
+    {
+      "date": "2026-10-16",
+      "platform": "S1C",
+      "flooded_ha": "213.96",
+      "observed_fraction": "0.9964",
+      "flooded_in_emsr935_ha": "78.68",
+      "flooded_in_generalitat_ha": "6.8"
+    },
+    {
+      "date": "2026-10-16",
+      "platform": "S1D",
+      "flooded_ha": "454.6",
+      "observed_fraction": "1.0",
+      "flooded_in_emsr935_ha": "234.16",
+      "flooded_in_generalitat_ha": "2.76"
+    },
+    {
+      "date": "2026-10-17",
+      "platform": "S1D",
+      "flooded_ha": "429.4",
+      "observed_fraction": "1.0",
+      "flooded_in_emsr935_ha": "217.12",
+      "flooded_in_generalitat_ha": "6.96"
+    },
+    {
+      "date": "2026-10-17",
+      "platform": "S1C",
+      "flooded_ha": "407.6",
+      "observed_fraction": "0.9984",
+      "flooded_in_emsr935_ha": "204.04",
+      "flooded_in_generalitat_ha": "9.72"
+    },
+    {
+      "date": "2026-10-22",
+      "platform": "S1D",
+      "flooded_ha": "646.52",
+      "observed_fraction": "0.9961",
+      "flooded_in_emsr935_ha": "389.76",
+      "flooded_in_generalitat_ha": "8.44"
+    },
+    {
+      "date": "2026-10-23",
+      "platform": "S1C",
+      "flooded_ha": "708.48",
+      "observed_fraction": "1.0",
+      "flooded_in_emsr935_ha": "402.16",
+      "flooded_in_generalitat_ha": "5.48"
+    },
+    {
+      "date": "2026-10-23",
+      "platform": "S1D",
+      "flooded_ha": "769.24",
+      "observed_fraction": "0.9983",
+      "flooded_in_emsr935_ha": "461.12",
+      "flooded_in_generalitat_ha": "8.04"
+    },
+    {
+      "date": "2026-10-28",
+      "platform": "S1C",
+      "flooded_ha": "622.56",
+      "observed_fraction": "0.9953",
+      "flooded_in_emsr935_ha": "389.36",
+      "flooded_in_generalitat_ha": "7.32"
+    },
+    {
+      "date": "2026-10-28",
+      "platform": "S1D",
+      "flooded_ha": "705.92",
+      "observed_fraction": "1.0",
+      "flooded_in_emsr935_ha": "407.72",
+      "flooded_in_generalitat_ha": "5.6"
+    },
+    {
+      "date": "2026-10-29",
+      "platform": "S1C",
+      "flooded_ha": "685.12",
+      "observed_fraction": "0.9983",
+      "flooded_in_emsr935_ha": "417.68",
+      "flooded_in_generalitat_ha": "7.88"
+    },
+    {
+      "date": "2026-11-03",
+      "platform": "S1D",
+      "flooded_ha": "505.24",
+      "observed_fraction": "0.7466",
+      "flooded_in_emsr935_ha": "325.76",
+      "flooded_in_generalitat_ha": "7.48"
+    },
+    {
+      "date": "2026-11-03",
+      "platform": "S1C",
+      "flooded_ha": "575.04",
+      "observed_fraction": "1.0",
+      "flooded_in_emsr935_ha": "359.12",
+      "flooded_in_generalitat_ha": "3.96"
+    },
+    {
+      "date": "2026-11-04",
+      "platform": "S1C",
+      "flooded_ha": "473.96",
+      "observed_fraction": "1.0",
+      "flooded_in_emsr935_ha": "280.12",
+      "flooded_in_generalitat_ha": "3.76"
+    },
+    {
+      "date": "2026-11-04",
+      "platform": "S1D",
+      "flooded_ha": "656.64",
+      "observed_fraction": "0.9983",
+      "flooded_in_emsr935_ha": "401.88",
+      "flooded_in_generalitat_ha": "6.0"
+    },
+    {
+      "date": "2026-11-09",
+      "platform": "S1C",
+      "flooded_ha": "511.12",
+      "observed_fraction": "0.9963",
+      "flooded_in_emsr935_ha": "294.12",
+      "flooded_in_generalitat_ha": "6.44"
+    },
+    {
+      "date": "2026-11-09",
+      "platform": "S1D",
+      "flooded_ha": "686.04",
+      "observed_fraction": "1.0",
+      "flooded_in_emsr935_ha": "370.12",
+      "flooded_in_generalitat_ha": "3.2"
+    },
+    {
+      "date": "2026-11-10",
+      "platform": "S1D",
+      "flooded_ha": "438.6",
+      "observed_fraction": "1.0",
+      "flooded_in_emsr935_ha": "224.24",
+      "flooded_in_generalitat_ha": "5.92"
+    },
+    {
+      "date": "2026-11-10",
+      "platform": "S1C",
+      "flooded_ha": "574.52",
+      "observed_fraction": "0.9983",
+      "flooded_in_emsr935_ha": "322.68",
+      "flooded_in_generalitat_ha": "7.2"
+    }
+  ]
+}
