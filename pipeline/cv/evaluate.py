@@ -1,28 +1,34 @@
 """Score CV water and burn maps on real data, against labels the models never see.
 
-    python -m pipeline.cv.evaluate                                   # baseline -> data/metrics/cv_baseline.json
-    python -m pipeline.cv.evaluate --model data/models/cv_unet.pt    # U-Net vs baseline -> data/metrics/cv_unet.json
+    python -m pipeline.cv.evaluate                                         # baseline -> data/metrics/cv_baseline.json
+    python -m pipeline.cv.evaluate --model data/models/cv_unet.pt          # U-Net vs baseline -> data/metrics/cv_unet.json
+    python -m pipeline.cv.evaluate --model data/models/X.pt --val-only     # training-site validation blocks only
+    python -m pipeline.cv.evaluate --model data/models/X.pt --sweep 0.3,0.4,0.5  # pick the threshold on them
 
 Checks:
 
 1. Water, per acquisition, vs the same-day Sentinel-1 water map (OPERA DSWx-S1),
    only where that map is at most MAX_GAP_H hours from the NISAR pass. Scored
    twice: against open water only, and against open water plus inundated
-   vegetation (what the U-Net is trained on, keys prefixed any_). Scored on dynamic water: the sea and permanent water (WorldCover
-   water, or JRC occurrence of 90 % or more) are left out, because they are easy
-   and would inflate the score. Also reported: how much of the map's "inundated
-   vegetation" a model finds (L-band sees flooded vegetation bright, not dark).
-2. The DANA "Adam" flood at Pego-Oliva (track 066 D, 16 Oct before, 28 Oct after)
-   vs the Copernicus EMS EMSR935 outline (imagery 20 to 21 Oct), scored inside the
-   official mapped areas. Flood traces (no water left to see) and permanent water
-   are left out. The label is 7 days older than the NISAR pass, so it is an upper
-   bound on the water that was still there.
+   vegetation (keys prefixed any_). Scored on dynamic water: the sea and
+   permanent water (WorldCover water, or JRC occurrence of 90 % or more) are left
+   out, because they are easy and would inflate the score. Also reported: how
+   much of the map's "inundated vegetation" a model finds (L-band sees flooded
+   vegetation bright, not dark).
+2. The DANA "Adam" flood at Pego-Oliva vs the Copernicus EMS EMSR935 outline
+   (imagery 20 to 21 Oct), scored inside the official mapped areas, with flood
+   traces (no water left to see) and permanent water left out. Two NISAR pairs
+   (FLOODS): track 066 D, 16 Oct before and 28 Oct after (7 days after the
+   imagery, so the label is an upper bound on the water still there), and track
+   167 D, 11 Oct before and 23 Oct after (2 to 3 days after the imagery; that
+   frame covers about 63 % of the site box, so it is an extra test stack only).
 3. Baseline only: the Serra d'Espadà burn, HV drop from the last date before
    ignition (25 Jul) to each later date vs the EFFIS burnt area, in a 2 km band.
 
 With --model, the U-Net and the baseline are scored on exactly the same pixels:
 on the training site only inside the held-out validation blocks, on the other
-site everywhere (it is the test site; the model never saw it).
+site everywhere (it is the test site; the model never saw it). Model variants
+are chosen with --val-only and --sweep, which never touch the test site.
 
 Written with SI assistance (Claude Code), reviewed by the team.
 """
@@ -33,7 +39,7 @@ import argparse
 import json
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Callable
+from typing import Callable, Iterator
 
 import geopandas as gpd
 import numpy as np
@@ -56,11 +62,18 @@ WORLDCOVER_WATER = 80
 DSWX_OPEN_WATER, DSWX_INUNDATED_VEG = 1, 3
 DSWX_INVALID = (250, 251, 255)
 
-FLOOD = {"site": "pego_oliva", "stack": "066_D_069", "before": "2026-10-16", "after": "2026-10-28"}
+FLOODS = [
+    {"site": "pego_oliva", "stack": "066_D_069", "before": "2026-10-16", "after": "2026-10-28"},
+    {"site": "pego_oliva", "stack": "167_D_069", "before": "2026-10-11", "after": "2026-10-23"},
+]
+FLOOD = FLOODS[0]
+# Test-site stacks that cover only part of the site box (not shared STACKS); scored when built.
+EXTRA_TEST_STACKS = {"pego_oliva": ("167_D_069",)}
 BURN = {"site": "espada", "ignition": "2026-07-25", "band_m": 2000.0}
 
 # A predictor maps (stack, time index) to (water mask, usable pixels, extra info for the report).
-Predictor = Callable[[xr.Dataset, int], tuple[np.ndarray, np.ndarray, dict]]
+# The mask is one array, or {"open": ..., "any": ...} for models that tell flooded vegetation apart.
+Predictor = Callable[[xr.Dataset, int], tuple[np.ndarray | dict[str, np.ndarray], np.ndarray, dict]]
 
 
 def date_index(ds: xr.Dataset) -> dict[str, int]:
@@ -100,20 +113,41 @@ def baseline_predictor(ds: xr.Dataset, t: int) -> tuple[np.ndarray, np.ndarray, 
 
 
 def unet_predictor(model_path: str | Path, threshold: float = 0.5) -> Predictor:
-    """Predictor backed by a trained U-Net checkpoint (needs the cv extra: torch)."""
-    from pipeline.cv.dataset import scene_arrays
-    from pipeline.cv.predict import load_model, predict_scene
+    """Predictor backed by a trained U-Net checkpoint (needs the cv extra: torch).
+
+    The returned function also carries .checkpoint and .probabilities(ds, t),
+    which gives the (open water, any water) probability maps.
+    """
+    from pipeline.cv.dataset import reference_db, scene_arrays
+    from pipeline.cv.predict import load_model, model_spec, predict_scene, water_probabilities
 
     model, mean, std, checkpoint = load_model(model_path)
+    inputs = model_spec(checkpoint["config"])[0]
+    references: dict[tuple[str, str], np.ndarray] = {}
 
-    def predict(ds: xr.Dataset, t: int) -> tuple[np.ndarray, np.ndarray, dict]:
-        x, _ = scene_arrays(ds, t)
-        prob = predict_scene(model, x, mean, std, tile=checkpoint["config"]["tile"])
-        ok = np.isfinite(prob)
-        return ok & (prob >= threshold), ok, {}
+    def probabilities(ds: xr.Dataset, t: int) -> tuple[np.ndarray, np.ndarray]:
+        reference = None
+        if inputs == "current+ref":
+            key = (str(ds.attrs.get("site")), str(ds.attrs.get("stack_id")))
+            if key not in references:
+                references[key] = reference_db(ds)
+            reference = references[key]
+        x, _ = scene_arrays(ds, t, reference=reference)
+        return water_probabilities(predict_scene(model, x, mean, std, tile=checkpoint["config"]["tile"]))
+
+    def predict(ds: xr.Dataset, t: int) -> tuple[dict[str, np.ndarray], np.ndarray, dict]:
+        p_open, p_any = probabilities(ds, t)
+        ok = np.isfinite(p_open)
+        return {"open": ok & (p_open >= threshold), "any": ok & (p_any >= threshold)}, ok, {}
 
     predict.checkpoint = checkpoint  # type: ignore[attr-defined]
+    predict.probabilities = probabilities  # type: ignore[attr-defined]
     return predict
+
+
+def masks(pred: np.ndarray | dict[str, np.ndarray]) -> tuple[np.ndarray, np.ndarray]:
+    """(open water, any water) masks of a prediction; a single mask counts for both."""
+    return (pred["open"], pred["any"]) if isinstance(pred, dict) else (pred, pred)
 
 
 def dswx_files(entry: dict) -> list[Path]:
@@ -121,24 +155,31 @@ def dswx_files(entry: dict) -> list[Path]:
     return [DSWX_RAW / Path(f.replace("\\", "/")) for f in entry.get("files") or []]
 
 
-def water_vs_dswx(site: str, stack_id: str, predictor: Predictor = baseline_predictor,
-                  region: np.ndarray | None = None) -> list[dict]:
-    """Per-date scores of a predictor vs same-day DSWx-S1 open water, on dynamic water (and region)."""
+def labelled_dates(site: str, stack_id: str) -> Iterator[tuple[xr.Dataset, str, int, dict, np.ndarray | None, np.ndarray]]:
+    """(stack, date, time index, index entry, same-day DSWx on the grid or None if too far in time, permanent water)."""
     ds = open_stack(STACK_DIR / f"{site}_{stack_id}.nc")
     perm = permanent_water(ds, site)
     index = {(e["stack_id"], e["date"]): e
              for e in json.loads((DSWX_RAW / site / "index.json").read_text(encoding="utf-8"))}
-    rows = []
     for day, t in date_index(ds).items():
         entry = index.get((stack_id, day))
         if not entry or not dswx_files(entry):
             continue
+        close = entry["hours_from_nisar"] is not None and entry["hours_from_nisar"] <= MAX_GAP_H
+        yield ds, day, t, entry, (dswx_on_grid(ds, dswx_files(entry)) if close else None), perm
+
+
+def water_vs_dswx(site: str, stack_id: str, predictor: Predictor = baseline_predictor,
+                  region: np.ndarray | None = None) -> list[dict]:
+    """Per-date scores of a predictor vs same-day DSWx-S1 open water, on dynamic water (and region)."""
+    rows = []
+    for ds, day, t, entry, dswx, perm in labelled_dates(site, stack_id):
         row = {"site": site, "stack": stack_id, "date": day, "gap_h": entry["hours_from_nisar"]}
-        if entry["hours_from_nisar"] is None or entry["hours_from_nisar"] > MAX_GAP_H:
+        if dswx is None:
             rows.append({**row, "skipped": f"label is {entry['hours_from_nisar']} h from NISAR"})
             continue
-        dswx = dswx_on_grid(ds, dswx_files(entry))
         pred, ok, info = predictor(ds, t)
+        pred_open, pred_any = masks(pred)
         scoring = ok & ~np.isin(dswx, DSWX_INVALID) & ~perm
         if region is not None:
             scoring &= region
@@ -146,26 +187,28 @@ def water_vs_dswx(site: str, stack_id: str, predictor: Predictor = baseline_pred
             rows.append({**row, "skipped": "no usable pixels for this model on this date"})
             continue
         truth = dswx == DSWX_OPEN_WATER
-        any_water = np.isin(dswx, (DSWX_OPEN_WATER, DSWX_INUNDATED_VEG))  # what the U-Net is trained on
+        any_water = np.isin(dswx, (DSWX_OPEN_WATER, DSWX_INUNDATED_VEG))
         veg = scoring & (dswx == DSWX_INUNDATED_VEG)
         rows.append({
             **row, **info, "pixels": int(scoring.sum()),
-            **scores(confusion(pred, truth, scoring)),
-            **{f"any_{k}": v for k, v in scores(confusion(pred, any_water, scoring)).items()},
+            **scores(confusion(pred_open, truth, scoring)),
+            **{f"any_{k}": v for k, v in scores(confusion(pred_any, any_water, scoring)).items()},
             "label_open_water_ha": round(area_ha(truth & scoring), 1),
-            "pred_water_ha": round(area_ha(pred & scoring), 1),
+            "pred_water_ha": round(area_ha(pred_open & scoring), 1),
             "inundated_veg_ha": round(area_ha(veg), 1),
-            "inundated_veg_found": round(float(pred[veg].mean()), 3) if veg.any() else None,
+            "inundated_veg_found": round(float(pred_any[veg].mean()), 3) if veg.any() else None,
         })
     return rows
 
 
-def flood_vs_emsr935(predictor: Predictor = baseline_predictor) -> dict:
-    site, stack_id = FLOOD["site"], FLOOD["stack"]
+def flood_vs_emsr935(predictor: Predictor = baseline_predictor, check: dict = FLOOD) -> dict:
+    """One NISAR before/after pair vs the EMSR935 flood outline; water = open water plus flooded vegetation."""
+    site, stack_id = check["site"], check["stack"]
     ds = open_stack(STACK_DIR / f"{site}_{stack_id}.nc")
     days = date_index(ds)
-    water_before, ok_before, info_before = predictor(ds, days[FLOOD["before"]])
-    water_after, ok_after, info_after = predictor(ds, days[FLOOD["after"]])
+    pred_before, ok_before, info_before = predictor(ds, days[check["before"]])
+    pred_after, ok_after, info_after = predictor(ds, days[check["after"]])
+    water_before, water_after = masks(pred_before)[1], masks(pred_after)[1]
     perm = permanent_water(ds, site)
 
     outlines = gpd.read_file(LABELS_DIR / "pego_oliva_emsr935_flood.geojson")
@@ -175,9 +218,10 @@ def flood_vs_emsr935(predictor: Predictor = baseline_predictor) -> dict:
     region = mapped & ok_before & ok_after & ~perm & ~trace
 
     out = {
-        "site": site, "stack": stack_id, "before": FLOOD["before"], "after": FLOOD["after"],
+        "site": site, "stack": stack_id, "before": check["before"], "after": check["after"],
         "label": "EMSR935 flooded_area, imagery 20 to 21 Oct 2026, inside the mapped AOIs",
         "region_px": int(region.sum()), "label_ha": round(area_ha(flooded & region), 1),
+        "label_ha_in_mapped_areas": round(area_ha(flooded & mapped & ~perm & ~trace), 1),
         "before_info": info_before, "after_info": info_after,
     }
     for name, pred in {
@@ -245,34 +289,87 @@ def baseline_report() -> dict:
     }
 
 
-def model_report(model_path: Path, threshold: float) -> dict:
-    """U-Net and baseline on the same pixels: validation blocks on the training site, all of the test site."""
+def training_region(checkpoint: dict) -> np.ndarray:
+    """The held-out validation blocks of a checkpoint's training site."""
     from pipeline.cv.dataset import blocks_mask, validation_blocks
     from pipeline.stack import site_grid
 
+    cfg = checkpoint["config"]
+    g = site_grid(get_site(cfg["site"]))
+    shape = (g.height, g.width)
+    # The exact held-out blocks are stored in the checkpoint (older ones: rebuild the random draw).
+    if "val_blocks" in checkpoint:
+        return blocks_mask(shape, checkpoint["val_blocks"], cfg["block"])
+    return validation_blocks(shape, cfg["val_share"], cfg["seed"], cfg["block"])
+
+
+def _built(site: str, stack_id: str) -> bool:
+    return (STACK_DIR / f"{site}_{stack_id}.nc").exists()
+
+
+def model_report(model_path: Path, threshold: float, val_only: bool = False) -> dict:
+    """U-Net and baseline on the same pixels: validation blocks of the training site, and (unless
+    val_only) all of the test site plus the DANA flood checks."""
     unet = unet_predictor(model_path, threshold)
     checkpoint = unet.checkpoint  # type: ignore[attr-defined]
     cfg = checkpoint["config"]
     rows = []
     for site in DSWX_LABEL_SITES:
-        region, split = None, "test site, never seen in training"
         if site == cfg["site"]:
-            g = site_grid(get_site(site))
-            shape = (g.height, g.width)
-            # The exact held-out blocks are stored in the checkpoint (older ones: rebuild the random draw).
-            region = (blocks_mask(shape, checkpoint["val_blocks"], cfg["block"]) if "val_blocks" in checkpoint
-                      else validation_blocks(shape, cfg["val_share"], cfg["seed"], cfg["block"]))
-            split = "held-out validation blocks of the training site"
-        for stack_id in STACKS[site]:
+            region, split, stacks = training_region(checkpoint), "held-out validation blocks of the training site", STACKS[site]
+        elif val_only:
+            continue
+        else:
+            region, split = None, "test site, never seen in training"
+            stacks = STACKS[site] + tuple(s for s in EXTRA_TEST_STACKS.get(site, ()) if _built(site, s))
+        for stack_id in stacks:
             for name, predictor in (("baseline", baseline_predictor), ("unet", unet)):
                 rows += [{**row, "model": name, "split": split} for row in water_vs_dswx(site, stack_id, predictor, region)]
+    floods = [] if val_only else [
+        {**check, "baseline": flood_vs_emsr935(baseline_predictor, check), "unet": flood_vs_emsr935(unet, check)}
+        for check in FLOODS if _built(check["site"], check["stack"])]
     return {
         "created_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-        "model": str(model_path).replace("\\", "/"), "checkpoint_epoch": unet.checkpoint["epoch"],  # type: ignore[attr-defined]
-        "train_site": cfg["site"], "probability_threshold": threshold,
-        "water_vs_dswx": rows,
-        "flood_vs_emsr935": {"baseline": flood_vs_emsr935(baseline_predictor), "unet": flood_vs_emsr935(unet)},
+        "model": str(model_path).replace("\\", "/"), "checkpoint_epoch": checkpoint["epoch"],
+        "train_site": cfg["site"], "inputs": cfg.get("inputs", "current"), "label_mode": cfg.get("label_mode", "water13"),
+        "probability_threshold": threshold, "val_only": val_only,
+        "water_vs_dswx": rows, "flood_vs_emsr935": floods,
     }
+
+
+def threshold_sweep(model_path: Path, thresholds: list[float]) -> dict:
+    """Open and any water IoU per probability threshold, on the training site's validation blocks only."""
+    unet = unet_predictor(model_path)
+    checkpoint = unet.checkpoint  # type: ignore[attr-defined]
+    site, region = checkpoint["config"]["site"], training_region(checkpoint)
+    per_date: dict[float, dict[str, list[float]]] = {thr: {"open": [], "any": []} for thr in thresholds}
+    pooled = {thr: {"open": np.zeros(3), "any": np.zeros(3)} for thr in thresholds}
+    for stack_id in STACKS[site]:
+        for ds, _, t, _, dswx, perm in labelled_dates(site, stack_id):
+            if dswx is None:
+                continue
+            p_open, p_any = unet.probabilities(ds, t)  # type: ignore[attr-defined]
+            scoring = np.isfinite(p_open) & ~np.isin(dswx, DSWX_INVALID) & ~perm & region
+            if not scoring.any():
+                continue
+            truths = {"open": dswx == DSWX_OPEN_WATER, "any": np.isin(dswx, (DSWX_OPEN_WATER, DSWX_INUNDATED_VEG))}
+            probs = {"open": p_open, "any": p_any}
+            for thr in thresholds:
+                for k in ("open", "any"):
+                    pred, truth = (probs[k] >= thr) & scoring, truths[k] & scoring
+                    tp, fp, fn = int((pred & truth).sum()), int((pred & ~truth).sum()), int((~pred & truth).sum())
+                    pooled[thr][k] += (tp, fp, fn)
+                    if tp + fp + fn:
+                        per_date[thr][k].append(tp / (tp + fp + fn))
+    out = {"model": str(model_path).replace("\\", "/"), "site": site, "split": "held-out validation blocks", "rows": []}
+    for thr in thresholds:
+        row = {"threshold": thr}
+        for k in ("open", "any"):
+            tp, fp, fn = pooled[thr][k]
+            row[f"{k}_median_iou"] = round(float(np.median(per_date[thr][k])), 4) if per_date[thr][k] else None
+            row[f"{k}_pooled_iou"] = round(tp / (tp + fp + fn), 4) if tp + fp + fn else None
+        out["rows"].append(row)
+    return out
 
 
 def print_baseline(report: dict) -> None:
@@ -314,23 +411,38 @@ def print_comparison(report: dict) -> None:
         print(f"   {site} {stack_id} [{split}], {len(dates)} dates")
         print(f"      open water:          {line(('iou', 'f1', 'precision', 'recall'))}")
         print(f"      open + flooded veg.: {line(('any_iou', 'any_f1', 'any_precision', 'any_recall'))}")
-    print("2) DANA flood vs EMSR935 (baseline -> U-Net)")
-    flood = report["flood_vs_emsr935"]
-    for name in ("water_after", "water_gain", "control_water_before"):
-        b, u = flood["baseline"][name], flood["unet"][name]
-        print(f"   {name}: " + ", ".join(f"{k} {b[k]} -> {u[k]}" for k in ("iou", "f1", "precision", "recall"))
-              + f", {b['pred_ha']} -> {u['pred_ha']} ha (label {flood['unet']['label_ha']} ha)")
+    for flood in report["flood_vs_emsr935"]:
+        print(f"2) DANA flood vs EMSR935, {flood['stack']} {flood['before']} -> {flood['after']} "
+              f"(baseline -> U-Net; label {flood['unet']['label_ha']} ha in the scored region)")
+        for name in ("water_after", "water_gain", "control_water_before"):
+            b, u = flood["baseline"][name], flood["unet"][name]
+            print(f"   {name}: " + ", ".join(f"{k} {b[k]} -> {u[k]}" for k in ("iou", "f1", "precision", "recall"))
+                  + f", {b['pred_ha']} -> {u['pred_ha']} ha")
+
+
+def print_sweep(sweep: dict) -> None:
+    print(f"threshold sweep on {sweep['site']} {sweep['split']} ({sweep['model']})")
+    print("   threshold | open water: median IoU, pooled IoU | any water: median IoU, pooled IoU")
+    for r in sweep["rows"]:
+        print(f"   {r['threshold']:9.2f} | {r['open_median_iou']}, {r['open_pooled_iou']} | "
+              f"{r['any_median_iou']}, {r['any_pooled_iou']}")
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--model", type=Path, help="U-Net checkpoint to score against the baseline")
     parser.add_argument("--threshold", type=float, default=0.5, help="water probability threshold for the U-Net")
+    parser.add_argument("--val-only", action="store_true", help="only the training site's validation blocks")
+    parser.add_argument("--sweep", help="comma-separated thresholds to try on the validation blocks")
     args = parser.parse_args()
     METRICS_DIR.mkdir(parents=True, exist_ok=True)
-    if args.model:
-        report = model_report(args.model, args.threshold)
-        path = METRICS_DIR / "cv_unet.json"
+    if args.model and args.sweep:
+        report = threshold_sweep(args.model, [float(v) for v in args.sweep.split(",")])
+        path = METRICS_DIR / f"{args.model.stem}_sweep.json"
+        print_sweep(report)
+    elif args.model:
+        report = model_report(args.model, args.threshold, args.val_only)
+        path = METRICS_DIR / f"{args.model.stem}{'_val' if args.val_only else ''}.json"
         print_comparison(report)
     else:
         report = baseline_report()
