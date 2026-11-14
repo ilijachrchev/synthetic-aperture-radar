@@ -403,3 +403,25 @@ def test_sieve_removes_specks_with_mixed_neighbours():
     assert out[1, 6] != config.CLASS_INDEX["permanent_water"]
     assert (out[4:8, 4:8] == config.CLASS_INDEX["other_crops_shrub"]).all()
     assert out[0, 0] == config.NODATA_U8
+
+
+def test_crosscheck_marks_only_overlapping_classes_reliable(tmp_path):
+    from pipeline.ml import crosscheck
+    grid = Grid("EPSG:32630", from_origin(725_000, 4_365_000, 20, 20), 20, 20)
+    a = np.full((20, 20), config.CLASS_INDEX["orchard"], np.uint8)
+    a[:10] = config.CLASS_INDEX["rice_paddy"]
+    b = a.copy()
+    b[10:, :10] = config.CLASS_INDEX["urban"]          # half of the orchard disagrees
+    b[0, 0] = config.NODATA_U8                         # not classified in one map: ignored
+    for stack, m in (("A", a), ("B", b)):
+        d = tmp_path / f"site_{stack}"
+        d.mkdir()
+        with rasterio.open(d / "class_utm.tif", "w", driver="GTiff", height=20, width=20, count=1,
+                           dtype="uint8", crs=grid.crs, transform=grid.transform, nodata=255) as dst:
+            dst.write(m, 1)
+        per_class = {n: {"f1": 0.5} for n in config.CLASSES}
+        (d / "metrics.json").write_text(json.dumps({"overall_accuracy": 0.8, "macro_f1": 0.7, "per_class": per_class}))
+    r = crosscheck.compare("site", "A", "B", ml_dir=tmp_path)
+    assert r["reliable_classes"] == ["rice_paddy"]
+    assert r["classes"]["orchard"]["overlap_iou"] == pytest.approx(0.5)
+    assert r["pixels_agree"] == pytest.approx(299 / 399, abs=1e-3)
