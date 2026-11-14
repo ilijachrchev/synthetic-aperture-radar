@@ -125,7 +125,9 @@ def cache_set(name: str, sites: tuple[str, ...] = tuple(CV_LABEL_SITES)) -> None
                     continue
                 p_open, p_any = unet.probabilities(ds, t)  # type: ignore[attr-defined]
                 out.parent.mkdir(parents=True, exist_ok=True)
-                np.savez_compressed(out, p_open=_q(p_open), p_any=_q(p_any))
+                tmp = out.with_name(out.stem + ".part.npz")  # a stopped run never leaves a half file behind
+                np.savez_compressed(tmp, p_open=_q(p_open), p_any=_q(p_any))
+                tmp.replace(out)
             print(f"{name}: {site} {stack_id} cached", flush=True)
     # The manifest ties the cache to the exact checkpoints; --count refuses a set without one or
     # whose checkpoints changed since (a model retrained or still training).

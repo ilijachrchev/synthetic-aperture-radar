@@ -124,6 +124,7 @@ Not yet run.
    - a future pair that could be borrowed by any date without an ending pair, not only the first date (it never happened; now impossible);
    - caches that were not tied to the exact checkpoints (now a manifest with the checksum of each model, checked before counting).
 
-   The remaining fixes: ties are judged on exact counts, intervals are given for every metric, and dates without an optical image are listed as skipped. To measure the DANA problems, the reviewer ran the DANA check at Pego-Oliva for methods 1 to 4 and v1 with the parameters already chosen. No parameter was changed after that, and no test-site score against the answer key was computed.
+   The remaining fixes: ties are judged on exact counts, intervals are given for every metric, and dates without an optical image are listed as skipped.
+3. **One check run dropped (14 Nov, 23:39, before any test site was scored).** The cleanup-only check run (`cv_v2b_clean_s0`) was stopped after 5 minutes so the results come sooner. Its half-trained checkpoint was deleted and it is not reported. The coherence-only check run and every v2 model finished as planned. To measure the DANA problems, the reviewer ran the DANA check at Pego-Oliva for methods 1 to 4 and v1 with the parameters already chosen. No parameter was changed after that, and no test-site score against the answer key was computed.
 
 Written with SI assistance (Claude Code), reviewed by the team.
