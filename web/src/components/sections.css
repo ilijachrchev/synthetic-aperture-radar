@@ -1,0 +1,423 @@
+/* Landing sections on one ground: centred two-line headings with one serif accent, one idea per section, numbered
+   points on hairlines, the radar itself as the closing picture. */
+.sec {
+	max-width: 1320px;
+	margin: 0 auto;
+	padding: 128px 28px 0;
+	scroll-margin-top: 24px;
+}
+.sec-head {
+	text-align: center;
+	max-width: 900px;
+	margin: 0 auto 56px;
+}
+.sec-title {
+	margin: 0;
+	font-size: clamp(38px, 5vw, 70px);
+	font-weight: 600;
+	letter-spacing: -0.04em;
+	line-height: 1;
+	text-wrap: balance;
+}
+.sec-title em {
+	font-family: var(--font-serif);
+	font-style: italic;
+	font-weight: 400;
+	letter-spacing: -0.01em;
+	color: var(--accent);
+}
+.sec-line {
+	margin: 20px auto 0;
+	max-width: 560px;
+	font-size: 18px;
+	line-height: 1.5;
+	color: var(--muted);
+}
+
+/* Stories: four cards, the real radar on top, the 3D icon standing on its lower edge. */
+.stories {
+	display: grid;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	gap: 18px;
+}
+.story {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	border-radius: 26px;
+	background: var(--surface);
+	border: 1px solid var(--line);
+	overflow: hidden;
+	box-shadow: var(--shadow);
+	transition: transform 0.42s var(--ease), box-shadow 0.42s var(--ease);
+}
+.story:hover {
+	transform: translateY(-4px);
+}
+.story-radar {
+	position: relative;
+	aspect-ratio: 5 / 4;
+	background: #160a17;
+	overflow: hidden;
+}
+.story-radar img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	transition: transform 1.2s var(--ease);
+}
+.story:hover .story-radar img {
+	transform: scale(1.06);
+}
+.story-pass {
+	position: absolute;
+	left: 14px;
+	top: 12px;
+	padding: 4px 9px;
+	border-radius: 999px;
+	font-family: var(--font-mono);
+	font-size: 11px;
+	color: #fff;
+	background: rgb(10 8 24 / 0.5);
+	backdrop-filter: blur(8px);
+	-webkit-backdrop-filter: blur(8px);
+}
+.story-icon {
+	position: absolute;
+	right: 10px;
+	top: 0;
+	/* percentage margins follow the card's width; the radar above is 4:5 of it, so this stands the icon on its edge */
+	margin-top: calc(80% - 92px);
+	width: 132px;
+	height: 132px;
+	filter: drop-shadow(0 14px 18px rgb(22 22 58 / 0.22));
+	pointer-events: none;
+}
+.story-body {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	padding: 22px 22px 22px;
+	flex: 1;
+}
+.story-body h3 {
+	margin: 0;
+	padding-right: 112px;
+	font-size: 21px;
+	font-weight: 600;
+	letter-spacing: -0.02em;
+	line-height: 1.15;
+}
+.story-body p {
+	margin: 0;
+	color: var(--muted);
+	font-size: 15px;
+	line-height: 1.5;
+}
+.story-body dl {
+	margin: auto 0 0;
+	padding-top: 14px;
+	border-top: 1px solid var(--line);
+	display: grid;
+	gap: 6px;
+}
+.story-body dl div {
+	display: flex;
+	justify-content: space-between;
+	gap: 12px;
+	font-size: 13px;
+}
+.story-body dt {
+	color: var(--muted);
+}
+.story-body dd {
+	margin: 0;
+	text-align: right;
+	font-family: var(--font-mono);
+	font-size: 12px;
+}
+
+/* How it works: four numbered points on hairlines, then the three models in one line each. */
+.steps {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: grid;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	gap: 28px;
+}
+.steps li {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+.step-n {
+	font-family: var(--font-mono);
+	font-size: 13px;
+	color: var(--accent);
+}
+.step-rule {
+	display: block;
+	height: 1px;
+	background: var(--line-strong);
+}
+.steps h3 {
+	margin: 6px 0 0;
+	font-size: 26px;
+	font-weight: 600;
+	letter-spacing: -0.03em;
+}
+.steps p {
+	margin: 0;
+	color: var(--muted);
+	font-size: 16px;
+	line-height: 1.55;
+}
+.models {
+	margin-top: 64px;
+	display: grid;
+	grid-template-columns: 220px 1fr;
+	gap: 24px;
+	align-items: start;
+	padding: 28px 30px;
+	border-radius: 24px;
+	background: var(--surface);
+	border: 1px solid var(--line);
+}
+.models-lead {
+	margin: 0;
+	font-size: 18px;
+	font-weight: 600;
+	letter-spacing: -0.02em;
+}
+.models ul {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 24px;
+	color: var(--muted);
+	font-size: 16px;
+	line-height: 1.5;
+}
+.models b {
+	color: var(--ink);
+	font-weight: 600;
+}
+
+/* Data: rows on hairlines, each one a link out to the source. */
+.sources {
+	list-style: none;
+	margin: 0 auto;
+	padding: 0;
+	max-width: 1080px;
+	border-top: 1px solid var(--line);
+}
+.sources a {
+	display: grid;
+	grid-template-columns: 240px 1fr 220px 20px;
+	gap: 20px;
+	align-items: center;
+	padding: 20px 6px;
+	border-bottom: 1px solid var(--line);
+	transition: background-color 0.26s var(--ease), padding 0.26s var(--ease);
+}
+.sources a:hover {
+	background: color-mix(in oklab, var(--surface) 70%, transparent);
+	padding-left: 14px;
+	padding-right: 14px;
+}
+.sources b {
+	font-size: 18px;
+	font-weight: 600;
+	letter-spacing: -0.02em;
+}
+.sources span {
+	color: var(--muted);
+	font-size: 15px;
+}
+.sources i {
+	font-style: normal;
+	font-family: var(--font-mono);
+	font-size: 12px;
+	color: var(--muted);
+	text-align: right;
+}
+
+/* Close: the latest radar pass of the coast on its own plum ground, the copy on the left. */
+.close {
+	position: relative;
+	margin: 128px 12px 0;
+	min-height: 640px;
+	border-radius: 30px;
+	overflow: hidden;
+	isolation: isolate;
+	color: #fff;
+	background: radial-gradient(120% 90% at 85% 40%, #2a1230, #12071a 70%);
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	align-items: center;
+}
+.close-radar {
+	position: absolute;
+	right: 4%;
+	top: 50%;
+	height: 118%;
+	width: auto;
+	max-width: none;
+	transform: translateY(-50%) rotate(-6deg);
+	z-index: -1;
+	filter: drop-shadow(0 30px 60px rgb(0 0 0 / 0.5));
+}
+.close-copy {
+	padding: 64px 56px;
+	max-width: 620px;
+}
+.close h2 {
+	margin: 0;
+	font-size: clamp(40px, 5vw, 72px);
+	font-weight: 600;
+	letter-spacing: -0.04em;
+	line-height: 1;
+}
+.close h2 em {
+	font-family: var(--font-serif);
+	font-style: italic;
+	font-weight: 400;
+	letter-spacing: -0.01em;
+	color: #f2b4b0;
+}
+.close p {
+	margin: 22px 0 0;
+	max-width: 460px;
+	font-size: 18px;
+	line-height: 1.5;
+	color: rgb(255 255 255 / 0.75);
+}
+.close-buttons {
+	margin-top: 30px;
+	display: flex;
+	gap: 10px;
+	flex-wrap: wrap;
+}
+.close-pill {
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+	height: 46px;
+	padding: 0 8px 0 22px;
+	border-radius: 999px;
+	background: #fff;
+	color: #12071a;
+	font-weight: 500;
+}
+.close-pill span {
+	display: grid;
+	place-items: center;
+	width: 32px;
+	height: 32px;
+	border-radius: 999px;
+	background: #12071a;
+	color: #fff;
+}
+.close-ghost {
+	display: inline-flex;
+	align-items: center;
+	height: 46px;
+	padding: 0 22px;
+	border-radius: 999px;
+	border: 1px solid rgb(255 255 255 / 0.25);
+	font-weight: 500;
+}
+
+.foot {
+	max-width: 1320px;
+	margin: 0 auto;
+	padding: 56px 28px 40px;
+}
+.foot-row {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 20px;
+	flex-wrap: wrap;
+	padding-bottom: 24px;
+	border-bottom: 1px solid var(--line);
+}
+.foot-row nav {
+	display: flex;
+	gap: 26px;
+	font-size: 15px;
+	color: var(--muted);
+}
+.foot-row nav a:hover {
+	color: var(--ink);
+}
+.foot-notes {
+	margin-top: 20px;
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 28px;
+	font-size: 13px;
+	line-height: 1.55;
+	color: var(--muted);
+}
+.foot-notes p {
+	margin: 0;
+}
+
+@media (max-width: 1100px) {
+	.stories {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+	.steps {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		row-gap: 40px;
+	}
+	.models {
+		grid-template-columns: 1fr;
+	}
+	.sources a {
+		grid-template-columns: 200px 1fr 20px;
+	}
+	.sources i {
+		display: none;
+	}
+}
+@media (max-width: 760px) {
+	.sec {
+		padding: 96px 16px 0;
+	}
+	.stories,
+	.steps,
+	.models ul,
+	.foot-notes {
+		grid-template-columns: minmax(0, 1fr);
+	}
+	.sources a {
+		grid-template-columns: 1fr 20px;
+		gap: 4px 12px;
+	}
+	.sources span {
+		grid-column: 1;
+	}
+	.sources svg {
+		grid-row: 1;
+		grid-column: 2;
+	}
+	.close {
+		grid-template-columns: 1fr;
+		min-height: 720px;
+		align-items: end;
+	}
+	.close-radar {
+		right: 50%;
+		top: 32%;
+		height: 70%;
+		transform: translate(50%, -50%) rotate(-6deg);
+	}
+	.close-copy {
+		padding: 40px 24px;
+	}
+}

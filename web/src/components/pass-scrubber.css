@@ -1,0 +1,231 @@
+/* A tall section whose stage sticks for the length of the scroll; each step of scroll is one more pass. */
+.scrub {
+	position: relative;
+	height: calc(100svh + var(--steps) * 16svh);
+	margin-top: 96px;
+}
+.scrub-stage {
+	position: sticky;
+	top: 0;
+	height: 100svh;
+	max-width: 1320px;
+	margin: 0 auto;
+	padding: 0 28px;
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+	gap: 56px;
+	align-items: center;
+}
+.scrub-title {
+	text-align: left;
+	font-size: clamp(36px, 4.2vw, 62px);
+}
+.scrub-line {
+	margin: 18px 0 0;
+	max-width: 460px;
+	font-size: 17px;
+	line-height: 1.5;
+	color: var(--muted);
+}
+.scrub-beats {
+	list-style: none;
+	margin: 36px 0 0;
+	padding: 0;
+	border-top: 1px solid var(--line);
+}
+.scrub-beats li {
+	display: grid;
+	gap: 3px;
+	padding: 14px 0 14px 18px;
+	border-bottom: 1px solid var(--line);
+	position: relative;
+	opacity: 0.42;
+	transition: opacity 0.42s var(--ease);
+}
+.scrub-beats li::before {
+	content: "";
+	position: absolute;
+	left: 0;
+	top: 21px;
+	width: 7px;
+	height: 7px;
+	border-radius: 99px;
+	background: var(--ink);
+	transform: scale(0.6);
+	transition: transform 0.42s var(--ease), background-color 0.42s var(--ease);
+}
+.scrub-beats li[data-on] {
+	opacity: 1;
+}
+.scrub-beats li[data-on]::before {
+	transform: scale(1);
+	background: var(--accent);
+	box-shadow: 0 0 0 4px color-mix(in oklab, var(--accent) 22%, transparent);
+}
+.scrub-beats b {
+	font-size: 17px;
+	font-weight: 600;
+	letter-spacing: -0.015em;
+}
+.scrub-beats span {
+	font-size: 15px;
+	color: var(--muted);
+	line-height: 1.45;
+}
+
+.scrub-frame {
+	margin: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 14px;
+	min-width: 0;
+}
+.scrub-window {
+	position: relative;
+	aspect-ratio: 441 / 551;
+	max-height: calc(100svh - 190px);
+	margin: 0 auto;
+	width: auto;
+	height: calc(100svh - 190px);
+	border-radius: 28px;
+	overflow: hidden;
+	background: #160a17;
+	box-shadow: var(--shadow);
+}
+.scrub-window img {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	opacity: 0;
+	transition: opacity 0.5s var(--ease);
+}
+.scrub-window img[data-on] {
+	opacity: 1;
+}
+.scrub-mark {
+	position: absolute;
+	transform: translate(-7px, -7px);
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	font-size: 12px;
+	font-weight: 500;
+	color: #fff;
+	text-shadow: 0 1px 3px rgb(0 0 0 / 0.7);
+	pointer-events: none;
+}
+.scrub-mark i {
+	width: 14px;
+	height: 14px;
+	border-radius: 99px;
+	border: 1.5px solid #fff;
+	box-shadow: 0 0 0 3px rgb(0 0 0 / 0.25);
+}
+.scrub-corner {
+	position: absolute;
+	width: 18px;
+	height: 18px;
+	border: 0 solid rgb(255 255 255 / 0.7);
+}
+.scrub-corner.tl {
+	top: 14px;
+	left: 14px;
+	border-top-width: 1.5px;
+	border-left-width: 1.5px;
+}
+.scrub-corner.tr {
+	top: 14px;
+	right: 14px;
+	border-top-width: 1.5px;
+	border-right-width: 1.5px;
+}
+.scrub-corner.bl {
+	bottom: 14px;
+	left: 14px;
+	border-bottom-width: 1.5px;
+	border-left-width: 1.5px;
+}
+.scrub-corner.br {
+	bottom: 14px;
+	right: 14px;
+	border-bottom-width: 1.5px;
+	border-right-width: 1.5px;
+}
+.scrub-readout {
+	display: grid;
+	grid-template-columns: auto 1fr auto;
+	align-items: baseline;
+	gap: 6px 16px;
+	width: 100%;
+	max-width: calc((100svh - 190px) * 441 / 551);
+	margin: 0 auto;
+	font-family: var(--font-mono);
+	font-size: 12px;
+	color: var(--muted);
+}
+.scrub-date {
+	font-family: var(--font-sans);
+	font-size: 22px;
+	font-weight: 600;
+	letter-spacing: -0.02em;
+	color: var(--ink);
+	font-variant-numeric: tabular-nums;
+}
+.scrub-count {
+	font-variant-numeric: tabular-nums;
+}
+.scrub-bar {
+	grid-column: 1 / -1;
+	height: 2px;
+	border-radius: 2px;
+	background: var(--line);
+	overflow: hidden;
+}
+.scrub-bar span {
+	display: block;
+	height: 100%;
+	background: var(--accent);
+	transform-origin: left;
+}
+
+@media (max-width: 900px) {
+	.scrub {
+		height: calc(100svh + var(--steps) * 12svh);
+	}
+	.scrub-stage {
+		grid-template-columns: minmax(0, 1fr);
+		grid-template-rows: auto 1fr;
+		align-content: center;
+		gap: 18px;
+		padding: 16px;
+	}
+	.scrub-title {
+		font-size: 34px;
+	}
+	.scrub-line {
+		font-size: 15px;
+		margin-top: 10px;
+	}
+	.scrub-beats {
+		display: none;
+	}
+	.scrub-window {
+		height: calc(100svh - 330px);
+		max-height: none;
+	}
+	.scrub-readout {
+		max-width: calc((100svh - 330px) * 441 / 551);
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.scrub {
+		height: auto;
+	}
+	.scrub-stage {
+		position: static;
+		height: auto;
+		padding-block: 40px;
+	}
+}
