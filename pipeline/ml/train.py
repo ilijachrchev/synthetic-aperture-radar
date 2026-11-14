@@ -29,21 +29,30 @@ def sample_per_class(
     return np.sort(np.concatenate(picked))
 
 
-def fit(X: np.ndarray, y: np.ndarray, seed: int = config.SEED) -> LGBMClassifier:
-    model = LGBMClassifier(
-        n_estimators=400,
-        learning_rate=0.05,
-        num_leaves=31,
-        min_child_samples=40,
-        subsample=0.8,
-        subsample_freq=1,
-        colsample_bytree=0.8,
-        class_weight="balanced",
-        random_state=seed,
-        verbose=-1,
-    )
+def _params(seed: int, n_estimators: int, num_leaves: int, min_child_samples: int) -> dict:
+    return dict(n_estimators=n_estimators, learning_rate=0.05, num_leaves=num_leaves,
+                min_child_samples=min_child_samples, subsample=0.8, subsample_freq=1, colsample_bytree=0.8,
+                class_weight="balanced", random_state=seed, verbose=-1)
+
+
+def fit(X: np.ndarray, y: np.ndarray, seed: int = config.SEED, n_estimators: int = 400,
+        num_leaves: int = 31, min_child_samples: int = 40) -> LGBMClassifier:
+    model = LGBMClassifier(**_params(seed, n_estimators, num_leaves, min_child_samples))
     model.fit(X, y)
     return model
+
+
+def best_tree_count(X: np.ndarray, y: np.ndarray, X_val: np.ndarray, y_val: np.ndarray,
+                    seed: int = config.SEED, max_trees: int = 4000, num_leaves: int = 31,
+                    min_child_samples: int = 40, patience: int = 100) -> int:
+    """Train until the validation loss stops improving for `patience` rounds;
+    return the best number of trees. The validation rows come from blocks inside
+    the training area, never from the test blocks."""
+    from lightgbm import early_stopping, log_evaluation
+    model = LGBMClassifier(**_params(seed, max_trees, num_leaves, min_child_samples))
+    model.fit(X, y, eval_set=[(X_val, y_val)], eval_metric="multi_logloss",
+              callbacks=[early_stopping(patience, verbose=False), log_evaluation(0)])
+    return max(1, int(model.best_iteration_))
 
 
 def predict_proba_full(model: LGBMClassifier, X: np.ndarray) -> np.ndarray:
@@ -125,25 +134,34 @@ def evaluate(model: LGBMClassifier | None, X: np.ndarray | None, y: np.ndarray,
     }
 
 
-def feature_importance(model: LGBMClassifier) -> list[dict]:
+def feature_importance(model: LGBMClassifier, names: list[str] | None = None) -> list[dict]:
+    names = names or FEATURE_NAMES
     gain = model.booster_.feature_importance(importance_type="gain")
     share = gain / gain.sum() if gain.sum() > 0 else gain
     order = np.argsort(-share)
-    return [{"feature": FEATURE_NAMES[i], "gain_share": float(share[i])} for i in order]
+    return [{"feature": names[i], "gain_share": float(share[i])} for i in order]
 
 
-def burned_rule(X: np.ndarray, min_hv_drop_db: float | None) -> dict[int, np.ndarray]:
+def burned_rule(X: np.ndarray, min_hv_drop_db: float | None,
+                names: list[str] | None = None) -> dict[int, np.ndarray]:
     """Rows where "burned" is not allowed: HV did not drop by min_hv_drop_db and stay down.
 
     Default 1.0 dB (precision 0.98, recall 0.77 on espada 058_A_022; 1.5 dB gives
     0.99 and 0.57). The CV baseline rule (HV step drop >= 1.5 dB) agrees with EFFIS at precision
     0.94 to 0.99 (Ilija, PR #7). Without it the model learned burned as a static
     kind of forest and over-predicted it by 70 % at Espadà.
+
+    With two tracks combined (names with "@<stack>" columns), a drop seen by
+    EITHER track counts: on espada validation blocks that kept precision 0.92 at
+    recall 0.71, against 0.93 / 0.64 for the first track only and 0.94 / 0.51
+    for both tracks.
     """
     if min_hv_drop_db is None:
         return {}
-    drop = X[:, FEATURE_NAMES.index("hv_step_drop")]
-    return {config.CLASS_INDEX["burned"]: ~(np.nan_to_num(drop, nan=0.0) >= min_hv_drop_db)}
+    names = names or FEATURE_NAMES
+    cols = [i for i, n in enumerate(names) if n.split("@")[0] == "hv_step_drop"]
+    drop = np.nanmax(np.nan_to_num(X[:, cols], nan=0.0), axis=1)
+    return {config.CLASS_INDEX["burned"]: ~(drop >= min_hv_drop_db)}
 
 
 def _apply_rules(proba: np.ndarray, forbid: dict[int, np.ndarray] | None, rows: np.ndarray) -> np.ndarray:

@@ -425,3 +425,21 @@ def test_crosscheck_marks_only_overlapping_classes_reliable(tmp_path):
     assert r["reliable_classes"] == ["rice_paddy"]
     assert r["classes"]["orchard"]["overlap_iou"] == pytest.approx(0.5)
     assert r["pixels_agree"] == pytest.approx(299 / 399, abs=1e-3)
+
+
+def test_command_with_two_tracks_and_early_stopping(tmp_path):
+    stack_dir, out_dir, manifest = tmp_path / "stack", tmp_path / "ml", tmp_path / "manifest.json"
+    a = synthetic.make_stack(size=120, parcel_px=10, seed=1)
+    b = synthetic.make_stack(size=120, parcel_px=10, seed=1, looks=6)   # same ground, other noise
+    b.attrs["stack_id"] = "058_A_021"
+    synthetic.write_stack(a, stack_dir / "synthetic_066_D_069.nc")
+    synthetic.write_stack(b, stack_dir / "synthetic_058_A_021.nc")
+    main(["run", "--site", "synthetic", "--stack", "066_D_069", "--with-stack", "058_A_021",
+          "--truth-var", "truth", "--stack-dir", str(stack_dir), "--out-dir", str(out_dir),
+          "--manifest", str(manifest), "--block-px", "20", "--max-per-class", "3000"])
+    m = json.loads((out_dir / "synthetic_066_D_069+058_A_021" / "metrics.json").read_text())
+    assert m["stack"] == "066_D_069+058_A_021"
+    assert len(m["feature_names"]) == 2 * len(features.FEATURE_NAMES)
+    assert m["feature_names"][-1].endswith("@058_A_021")
+    assert m["tree_rule"] == "early stopping" and 1 <= m["trees"] <= 4000
+    assert m["overall_accuracy"] > 0.9

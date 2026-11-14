@@ -48,6 +48,18 @@ def _cmd_run(args: argparse.Namespace) -> None:
           f"{st.grid.width}x{st.grid.height} px{tag}")
     for d in st.dropped:
         print(f"  left out {d['date']}: {d['reason']}")
+    st2 = path2 = None
+    if args.with_stack:
+        # A second track of the same site: each pixel gets the features of both
+        # viewing angles. Same site grid is checked by data.load (site_grid).
+        path2 = data.stack_path(args.site, args.with_stack, Path(args.stack_dir))
+        if not path2.exists():
+            sys.exit(f"no stack at {path2}")
+        st2 = data.load(path2, crid=args.crid, filter_px=args.filter_px)
+        if st2.grid != st.grid:
+            sys.exit(f"{path2.name} is not on the same grid as {path.name}")
+        print(f"with stack {path2.name}: {len(st2.dates)} dates {st2.dates[0]} to {st2.dates[-1]}")
+    stack_name = f"{args.stack}+{args.with_stack}" if st2 is not None else args.stack
 
     # Labels and sea.
     if args.truth_var:
@@ -78,10 +90,18 @@ def _cmd_run(args: argparse.Namespace) -> None:
     # sea there is no clear water mode and Otsu lands among vegetation (PR #7).
     dark_db, dark_rule = features.water_threshold(st.hh_db)
     X, usable, dark_db = features.pixel_features(st.hh_db, st.hv_db, st.times, dark_threshold_db=dark_db)
+    feature_names = list(features.FEATURE_NAMES)
+    if st2 is not None:
+        dark2, _ = features.water_threshold(st2.hh_db)
+        X2, usable2, _ = features.pixel_features(st2.hh_db, st2.hv_db, st2.times, dark_threshold_db=dark2)
+        X = np.hstack([X, X2])
+        usable &= usable2
+        feature_names += [f"{n}@{args.with_stack}" for n in features.FEATURE_NAMES]
     usable &= ~sea.ravel()
     print(f"features: {X.shape[1]} per pixel, {usable.mean():.1%} of pixels classified, "
           f"water threshold {dark_db:.1f} dB ({dark_rule}), speckle filter {args.filter_px or 'off'}")
-    forbid = train.burned_rule(X, None if args.burned_min_hv_drop <= 0 else args.burned_min_hv_drop)
+    forbid = train.burned_rule(X, None if args.burned_min_hv_drop <= 0 else args.burned_min_hv_drop,
+                               feature_names)
 
     # Spatial split, train, score.
     labels_usable = np.where(usable.reshape(st.shape), y_map, config.UNLABELED)
@@ -94,7 +114,21 @@ def _cmd_run(args: argparse.Namespace) -> None:
     print(f"train pixels {tr.size}, test pixels {te.size} (1 test block = {args.block_px} px square)")
     if tr.size == 0 or te.size == 0:
         sys.exit("not enough labelled pixels in train or test blocks")
-    model = train.fit(X[tr], y[tr], seed=args.seed)
+    # How many trees: train until a validation set stops improving. The validation
+    # blocks are cut from the training area (balanced, like the test split), so
+    # the test blocks are never looked at while choosing.
+    if args.trees > 0:
+        n_trees = args.trees
+    else:
+        lab_train = np.where(train_mask, labels_usable, config.UNLABELED)
+        fit_m, val_m = split.split_blocks(st.shape, block_px=args.block_px, seed=args.seed + 1, labels=lab_train)
+        fit_rows = train.sample_per_class(y, labelled & (fit_m & train_mask).ravel(), args.max_per_class, args.seed)
+        val_rows = np.flatnonzero(labelled & (val_m & train_mask).ravel())
+        n_trees = train.best_tree_count(X[fit_rows], y[fit_rows], X[val_rows], y[val_rows], seed=args.seed,
+                                        num_leaves=args.num_leaves, min_child_samples=args.min_child)
+        print(f"early stopping on {val_rows.size} validation pixels: {n_trees} trees")
+    model = train.fit(X[tr], y[tr], seed=args.seed, n_estimators=n_trees,
+                      num_leaves=args.num_leaves, min_child_samples=args.min_child)
 
     # Map, then the specks clean-up; the scores come from the final map, so they
     # describe exactly what the app shows. The filter sees predictions, not labels.
@@ -109,15 +143,16 @@ def _cmd_run(args: argparse.Namespace) -> None:
           f"{raw['overall_accuracy']:.3f} / {raw['macro_f1']:.3f} / {raw['kappa']:.3f})")
 
     # Outputs.
-    out_dir = Path(args.out_dir) / f"{st.site}_{args.stack}"
+    out_dir = Path(args.out_dir) / f"{st.site}_{stack_name}"
     paths = export.write_outputs(class_map, confidence, st.grid, out_dir)
-    importance = train.feature_importance(model)
+    importance = train.feature_importance(model, feature_names)
     run_info = {
-        "site": st.site, "stack": args.stack, "synthetic": st.synthetic,
+        "site": st.site, "stack": stack_name, "synthetic": st.synthetic,
         "created_utc": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
         "code_version": __version__,
-        "stack_file": _rel(path),
+        "stack_file": _rel(path), "with_stack_file": _rel(path2) if st2 is not None else None,
         "dates": st.dates, "dates_left_out": st.dropped, "crid_rule": args.crid,
+        "with_stack_dates": st2.dates if st2 is not None else None,
         "label_sources": sources,
         "water_threshold_hh_db": dark_db, "water_threshold_rule": dark_rule,
         "speckle_filter_px": args.filter_px,
@@ -130,10 +165,11 @@ def _cmd_run(args: argparse.Namespace) -> None:
                   "test_share_per_class": {
                       n: round(float((labels_usable[test_mask] == i).sum() / max(1, (labels_usable == i).sum())), 3)
                       for i, n in enumerate(config.CLASSES)}},
-        "train_pixels": int(tr.size),
+        "train_pixels": int(tr.size), "trees": n_trees, "tree_rule": "fixed" if args.trees > 0 else "early stopping",
+        "num_leaves": args.num_leaves, "min_child_samples": args.min_child, "max_per_class": args.max_per_class,
         "model_file": "model.txt",
         "model_classes": [config.CLASSES[int(c)] for c in model.classes_],
-        "feature_names": features.FEATURE_NAMES,
+        "feature_names": feature_names,
         "label_pixels": counts,
         "sea_pixels": int(sea.sum()),
         "class_area_ha": train.class_areas_ha(class_map),
@@ -151,9 +187,11 @@ def _cmd_run(args: argparse.Namespace) -> None:
     if st.synthetic:
         print("fake stack: manifest left untouched")
     else:
+        all_dates = st.dates + (st2.dates if st2 is not None else [])
         base = {
-            "model": "ml", "site": st.site, "stack": args.stack, "date": f"{st.dates[0]}/{st.dates[-1]}",
-            "source": st.provenance, "valid_fraction": run_info["valid_fraction"],
+            "model": "ml", "site": st.site, "stack": stack_name,
+            "date": f"{min(all_dates)}/{max(all_dates)}",
+            "source": st.provenance + (st2.provenance if st2 is not None else []), "valid_fraction": run_info["valid_fraction"],
             "score": {"macro_f1": metrics["macro_f1"], "overall_accuracy": metrics["overall_accuracy"]},
         }
         export.upsert_manifest(Path(args.manifest), [
@@ -193,6 +231,13 @@ def main(argv: list[str] | None = None) -> None:
                    help="only call a pixel burned if HV dropped this many dB and stayed down; 0 = off")
     r.add_argument("--majority", type=int, default=3,
                    help="majority filter window on the class map (clears single-pixel specks); 1 = off")
+    r.add_argument("--with-stack", help="a second track of the same site, e.g. 058_A_021: each pixel gets "
+                                        "the features of both viewing angles")
+    r.add_argument("--trees", type=int, default=0,
+                   help="number of trees; 0 (default) = train until a validation set inside the training "
+                        "area stops improving (early stopping)")
+    r.add_argument("--num-leaves", type=int, default=config.NUM_LEAVES)
+    r.add_argument("--min-child", type=int, default=config.MIN_CHILD_SAMPLES)
     r.add_argument("--min-patch-px", type=int, default=5,
                    help="patches smaller than this many pixels take their largest neighbour's class; 1 = off")
     r.add_argument("--truth-var", help="use a label variable inside the stack (fake stacks only)")

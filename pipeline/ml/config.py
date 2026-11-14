@@ -46,7 +46,9 @@ BLOCK_PX = 50          # 50 px * 20 m = 1 km blocks for the spatial split
 GAP_PX = 2             # drop training pixels this close to a test block
 TEST_FRACTION = 0.25
 MIN_VALID_DATES = 3    # pixels with fewer valid HH or HV dates are not classified
-MAX_TRAIN_PER_CLASS = 20_000
+MAX_TRAIN_PER_CLASS = 60_000   # more pixels helped a little (val macro F1 +0.5 to +0.8 points)
+NUM_LEAVES = 63                # bigger trees helped with both tracks combined
+MIN_CHILD_SAMPLES = 30
 SEED = 42
 
 # Label rules.
