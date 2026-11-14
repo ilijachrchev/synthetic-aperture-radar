@@ -21,23 +21,32 @@ python -m pipeline.prediction.albufera all --as-of 2026-11-14
 
 ## First real run (forecast made 14 Nov 2026, data to 10 Nov)
 
-| Target | Forecast | 80 % range | Model |
-|---|---:|---:|---|
-| 26 Nov 2026 | 4,351 ha | 3,194–5,507 | climatology |
-| 8 Dec 2026 | 4,183 ha | 2,983–5,383 | climatology |
-| 20 Dec 2026 | 4,707 ha | 3,475–5,939 | climatology |
+| Target | From 14 Nov | Real lead (from last data, 10 Nov) | Forecast | 80 % range | Model |
+|---|---:|---:|---:|---:|---|
+| 26 Nov 2026 | +12 d | 16 d | 4,351 ha | 3,194–5,507 | climatology |
+| 8 Dec 2026 | +24 d | 28 d | 4,183 ha | 2,983–5,383 | climatology |
+| 20 Dec 2026 | +36 d | 40 d | 4,707 ha | 3,475–5,939 | climatology |
 
-Held-out test season, mean absolute error in hectares (skill = error reduction vs persistence):
+The model and the ranges are chosen at the real leads (16, 28, 40 days; `effective_lead_days` in `forecast.json`), not the nominal 12, 24, 36.
+
+Held-out test season, mean absolute error in hectares (skill = error reduction vs persistence), at the backtest leads and at the real leads of this forecast:
 
 | Lead | Persistence | Climatology | Climatology + anomaly | 80 % range hit |
 |---:|---:|---:|---:|---:|
 | 12 d | 776 | 565 (+27 %) | 498 (+36 %) | 80 % |
+| **16 d** | 996 | 583 (+42 %) | 580 (+42 %) | 80 % |
 | 24 d | 1,386 | 651 (+53 %) | 600 (+57 %) | 77 % |
+| **28 d** | 1,690 | 671 (+60 %) | 638 (+62 %) | 77 % |
 | 36 d | 1,828 | 768 (+58 %) | 759 (+59 %) | 73 % |
+| **40 d** | 2,187 | 791 (+64 %) | 784 (+64 %) | 73 % |
 
 The test season holds 11 to 15 forecasts per lead, so these numbers are rough. Selection preferred plain climatology at every lead; the anomaly model did slightly better on the test season. That is reported, not acted on: switching now would be choosing on the test.
 
 Outputs: `data/prediction/albufera/` (`forecast.json`, `metrics.json`, `backtest.csv`, `water_area.csv`, `chart.png`/`.svg`, `rice_mask.tif`/`.json`) and a `data/manifest.json` entry (`stack: dswx-s1`, `layer: flooded_area`).
+
+## NISAR link (next)
+
+The CV water maps from NISAR (tracks 066 D and 058 A, Jun–Oct 2026) will be on `feat/cv-unet` (Ilija). Comparing NISAR water inside this rice mask with the DSWx series on shared dates gives the forecast its NISAR check; it comes after that branch is merged.
 
 ## Caveats
 
