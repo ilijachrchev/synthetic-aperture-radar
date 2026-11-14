@@ -14,7 +14,7 @@ export type ChangeKind = 'water' | 'fire' | 'sink' | 'quake'
  * public previews, not the project's models; the app says so beside it.
  */
 
-type Fields = { w: number; h: number; v: Float32Array[]; a: Uint8Array[]; perm: Uint8Array | null }
+type Fields = { w: number; h: number; v: Float32Array[]; a: Uint8Array[]; perm: Uint8Array | null; rgb: Uint8ClampedArray[] | null }
 
 const smooth = (e0: number, e1: number, x: number) => {
 	const t = Math.min(1, Math.max(0, (x - e0) / (e1 - e0)))
@@ -48,13 +48,13 @@ function blur(src: Float32Array, w: number, h: number, r: number) {
 }
 const BLUR: Record<ChangeKind, number> = { water: 1, fire: 2, sink: 2, quake: 1 }
 
-/** A cyclic ramp through the app's own colours for fringes: navy, mint, white, coral, back to navy. */
+/** A cyclic ramp through the Lagoon colours for fringes: abyss, deep, glow, white, back to the abyss. */
 const STOPS = [
-	[12, 22, 51],
-	[61, 219, 164],
-	[244, 251, 255],
-	[255, 107, 87],
-	[12, 22, 51],
+	[6, 15, 19],
+	[0, 131, 194],
+	[127, 224, 240],
+	[246, 253, 255],
+	[6, 15, 19],
 ]
 function cyc(ph: number, out: number[]) {
 	const s = ph * 4
@@ -76,7 +76,7 @@ function load(src: string) {
 	})
 }
 
-function readFields(kind: ChangeKind, imgs: HTMLImageElement[], refCount: number): Fields {
+function readFields(kind: ChangeKind, imgs: HTMLImageElement[], refCount: number, keepRgb: boolean): Fields {
 	const w = imgs[imgs.length - 1].naturalWidth
 	const h = imgs[imgs.length - 1].naturalHeight
 	const c = document.createElement('canvas')
@@ -88,10 +88,12 @@ function readFields(kind: ChangeKind, imgs: HTMLImageElement[], refCount: number
 	const a: Uint8Array[] = []
 	const green: Float32Array[] = []
 	const luma: Float32Array[] = []
+	const rgbs: Uint8ClampedArray[] = []
 	for (const im of imgs) {
 		ctx.clearRect(0, 0, w, h)
 		ctx.drawImage(im, 0, 0, w, h)
 		const d = ctx.getImageData(0, 0, w, h).data
+		if (keepRgb) rgbs.push(d)
 		const val = new Float32Array(n)
 		const al = new Uint8Array(n)
 		const g = new Float32Array(n)
@@ -135,13 +137,17 @@ function readFields(kind: ChangeKind, imgs: HTMLImageElement[], refCount: number
 			perm[p] = wet >= 0.85 * v.length ? 1 : 0
 		}
 	}
-	return { w, h, v, a, perm }
+	return { w, h, v, a, perm, rgb: keepRgb ? rgbs : null }
 }
 
 const rgb = [0, 0, 0]
-function paint(out: Uint8ClampedArray, F: Fields, kind: ChangeKind, t: number, time: number, reveal: number, epi: [number, number], revealAt: number) {
+/** base > 0 paints the radar itself under the change (eased between the same two passes, quieted), so the picture
+ *  and its change can never drift apart; base 0 paints the change alone over pictures drawn elsewhere. */
+function paint(out: Uint8ClampedArray, F: Fields, kind: ChangeKind, t: number, time: number, reveal: number, epi: [number, number], revealAt: number, base: number) {
 	const live = revealAt < 0 || Math.round(t) === revealAt
 	const { w, h, v, a, perm } = F
+	const RA = base > 0 && F.rgb ? F.rgb[Math.max(0, Math.min(v.length - 1, Math.floor(t)))] : null
+	const RB = base > 0 && F.rgb ? F.rgb[Math.min(v.length - 1, Math.max(0, Math.floor(t)) + 1)] : null
 	const i0 = Math.max(0, Math.min(v.length - 1, Math.floor(t)))
 	const i1 = Math.min(v.length - 1, i0 + 1)
 	const f = t - i0
@@ -198,12 +204,14 @@ function paint(out: Uint8ClampedArray, F: Fields, kind: ChangeKind, t: number, t
 				b = 90
 			}
 			al = 0.1 + m * 0.42
+			// contour lines, drawn as a soft band so they stay smooth when the picture is scaled up
 			const c = (((x * 4 + time * 0.22) % 1) + 1) % 1
-			if (c < 0.07) {
-				r = 255
-				g = 255
-				b = 255
-				al = 0.85
+			const line = 1 - smooth(0.018, 0.06, Math.min(c, 1 - c))
+			if (line > 0) {
+				r += (255 - r) * line
+				g += (255 - g) * line
+				b += (255 - b) * line
+				al = Math.max(al, 0.85 * line)
 			}
 		} else {
 			const ph = (((x * 2.4 + time * 0.3) % 1) + 1) % 1
@@ -227,6 +235,21 @@ function paint(out: Uint8ClampedArray, F: Fields, kind: ChangeKind, t: number, t
 				}
 			}
 		}
+		if (RA && RB) {
+			// the radar, eased between the two passes and quieted, with the change laid over it
+			const br = RA[o] + (RB[o] - RA[o]) * e
+			const bg = RA[o + 1] + (RB[o + 1] - RA[o + 1]) * e
+			const bb = RA[o + 2] + (RB[o + 2] - RA[o + 2]) * e
+			const L = 0.3 * br + 0.59 * bg + 0.11 * bb
+			const qr = (L + (br - L) * 0.5) * 0.62
+			const qg = (L + (bg - L) * 0.5) * 0.62
+			const qb = (L + (bb - L) * 0.5) * 0.66
+			out[o] = qr + (r - qr) * al
+			out[o + 1] = qg + (g - qg) * al
+			out[o + 2] = qb + (b - qb) * al
+			out[o + 3] = Math.max(base, al) * alpha
+			continue
+		}
 		out[o] = r
 		out[o + 1] = g
 		out[o + 2] = b
@@ -237,19 +260,22 @@ function paint(out: Uint8ClampedArray, F: Fields, kind: ChangeKind, t: number, t
 export function ChangeLayer({
 	kind,
 	frames,
-	index,
-	playing,
+	index = 0,
+	playing = false,
 	onIndex,
 	refCount = 1,
 	speed = 0.55,
 	epicentre = [0.5, 0.5],
 	revealAt = -1,
+	scrub,
+	active = true,
+	base = 0,
 	className,
 }: {
 	kind: ChangeKind
 	frames: string[]
-	index: number
-	playing: boolean
+	index?: number
+	playing?: boolean
 	onIndex?: (i: number) => void
 	refCount?: number
 	/** passes per second while playing */
@@ -258,36 +284,55 @@ export function ChangeLayer({
 	epicentre?: [number, number]
 	/** the pass (a pair spanning the event) that reveals from the epicentre and plays at full strength; -1 for all */
 	revealAt?: number
+	/** driven from outside (the page's scroll): the pass position, 0 to frames - 1, read every frame */
+	scrub?: { current: number }
+	/** off while hidden under another scene: nothing is painted */
+	active?: boolean
+	/** above 0, the radar itself is painted under the change at this opacity */
+	base?: number
 	className?: string
 }) {
 	const canvas = useRef<HTMLCanvasElement>(null)
 	const fields = useRef<Fields | null>(null)
-	const st = useRef({ t: index, target: index, playing, reveal: 1, revealFor: -1, shown: index })
+	const st = useRef({ t: index, target: index, playing, reveal: 1, revealFor: -1, shown: index, drawn: -1 })
 	const cb = useRef(onIndex)
 	cb.current = onIndex
 	const epi = useRef(epicentre)
 	epi.current = epicentre
 	const rev = useRef(revealAt)
 	rev.current = revealAt
+	const on = useRef(active)
+	on.current = active
+	const scr = useRef(scrub)
+	scr.current = scrub
 	st.current.target = index
 	st.current.playing = playing
-	const key = `${kind}|${refCount}|${frames.join('|')}`
+	const key = `${kind}|${refCount}|${base > 0}|${frames.join('|')}`
 
 	useEffect(() => {
 		let gone = false
+		let idle = 0
 		fields.current = null
 		Promise.all(frames.map(load))
 			.then((imgs) => {
 				if (gone || !canvas.current) return
-				const F = readFields(kind, imgs, refCount)
-				canvas.current.width = F.w
-				canvas.current.height = F.h
-				fields.current = F
-				st.current.t = st.current.target
+				// reading every pass is the heavy part: do it when the page is idle, so scrolling never stalls on it
+				const read = () => {
+					if (gone || !canvas.current) return
+					const F = readFields(kind, imgs, refCount, base > 0)
+					canvas.current.width = F.w
+					canvas.current.height = F.h
+					fields.current = F
+					st.current.t = scr.current ? scr.current.current : st.current.target
+					st.current.drawn = -1
+				}
+				if ('requestIdleCallback' in window) idle = window.requestIdleCallback(read, { timeout: 900 })
+				else read()
 			})
 			.catch(() => {})
 		return () => {
 			gone = true
+			if (idle && 'cancelIdleCallback' in window) window.cancelIdleCallback(idle)
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [key])
@@ -297,6 +342,8 @@ export function ChangeLayer({
 		if (!el) return
 		const ctx = el.getContext('2d')!
 		const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+		// water has no motion of its own, so a still scrubbed water layer is not repainted
+		const lives = kind !== 'water'
 		let raf = 0
 		let last = 0
 		let seen = true
@@ -305,13 +352,30 @@ export function ChangeLayer({
 		io.observe(el)
 		const loop = (now: number) => {
 			raf = requestAnimationFrame(loop)
-			if (!seen || now - last < 33) return
-			const dt = Math.min(0.1, (now - (last || now)) / 1000)
-			last = now
+			if (!seen || !on.current) return
 			const F = fields.current
 			if (!F) return
 			const s = st.current
 			const n = F.v.length
+			const driven = scr.current
+			if (driven) {
+				const t = Math.min(n - 1, Math.max(0, driven.current))
+				// scrolled: paint on this frame; still: only what moves on its own, at about 30fps
+				const moved = Math.abs(t - s.drawn) > 0.0005
+				if (!moved && (!lives || reduced || now - last < 33)) return
+				last = now
+				s.t = t
+				s.drawn = t
+				// the pair that spans a quake reveals from the epicentre as it is scrolled into
+				s.reveal = rev.current >= 1 ? Math.min(1, Math.max(0, t - (rev.current - 1))) : 1
+				if (!img || img.width !== F.w || img.height !== F.h) img = ctx.createImageData(F.w, F.h)
+				paint(img.data, F, kind, t, reduced ? 0 : now / 1000, s.reveal, epi.current, rev.current, base)
+				ctx.putImageData(img, 0, 0)
+				return
+			}
+			if (now - last < 33) return
+			const dt = Math.min(0.1, (now - (last || now)) / 1000)
+			last = now
 			if (s.playing && !reduced) {
 				s.t += dt * speed
 				if (s.t > n - 1) s.t = 0
@@ -332,7 +396,7 @@ export function ChangeLayer({
 			}
 			if (s.reveal < 1) s.reveal = Math.min(1, s.reveal + dt * 0.55)
 			if (!img || img.width !== F.w || img.height !== F.h) img = ctx.createImageData(F.w, F.h)
-			paint(img.data, F, kind, Math.min(n - 1, Math.max(0, s.t)), reduced ? 0 : now / 1000, reduced ? 1 : s.reveal, epi.current, rev.current)
+			paint(img.data, F, kind, Math.min(n - 1, Math.max(0, s.t)), reduced ? 0 : now / 1000, reduced ? 1 : s.reveal, epi.current, rev.current, base)
 			ctx.putImageData(img, 0, 0)
 		}
 		raf = requestAnimationFrame(loop)
@@ -340,7 +404,7 @@ export function ChangeLayer({
 			cancelAnimationFrame(raf)
 			io.disconnect()
 		}
-	}, [kind, speed])
+	}, [kind, speed, base])
 
 	return <canvas ref={canvas} className={className} aria-hidden />
 }
