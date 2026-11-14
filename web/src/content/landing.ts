@@ -1,19 +1,12 @@
-// Landing copy. Facts come from the repository README, docs/MODELS.md and the real pass list (src/data/passes.json);
-// headings are those facts set in the 8x grammar: short statements, each ending in a full stop.
+// Landing copy. Facts come from the repository README and the real pass list (src/data/passes.json); nothing here
+// claims a result the models have not produced yet.
 import type { SiteKey } from '@/lib/radar'
 
 export const HERO = {
-	lines: ['Flood. Grow.', 'Burn. Sink.'],
-	accent: ['Sink.'],
+	eyebrow: 'NASA-ISRO NISAR · L-band radar · Valencia, Spain',
+	lines: ['Flood, grow,', 'burn and sink.'],
+	mark: 'sink.',
 	lead: 'One web app that shows how the land around Valencia changes, seen by NISAR radar, and what is likely to come next.',
-	source: { label: 'NASA-ISRO NISAR, via NASA ASF DAAC', href: 'https://nisar-docs.asf.alaska.edu/' },
-}
-
-export const PASSES = {
-	line1: 'One radar.',
-	/** the second line for each beat of the pinned mosaic; the last one is filled with the real count */
-	beats: ['One pass.', 'Every 12 days.'],
-	para: "NISAR's L-band radar sees through cloud, day or night. It passes over the Albufera every 12 days on each of three tracks.",
 }
 
 export type StoryKey = 'water' | 'fire' | 'sink' | 'quake'
@@ -28,9 +21,11 @@ export type Story = {
 	/** two passes to compare (before, after) by last date and track; one pass when there is nothing to compare */
 	compare: { site: SiteKey; date: string; track: string }[]
 	note: string
+	/** the animated change layer: what it shows, read from the radar previews */
+	change: { kind: 'water' | 'fire' | 'sink' | 'quake'; legend: string; event?: string; epicentre?: [number, number] }
 }
 
-export const STORIES_HEAD = { lines: ['Four stories.', 'One map.'], line: 'Several kinds of surface change, not just one. Each comes with the real NISAR passes that cover it.' }
+export const STORIES_HEAD = { title: 'Four stories', line: 'Real NISAR passes over each place. Hover a card to see the pass before.' }
 
 export const STORIES: Story[] = [
 	{
@@ -46,6 +41,7 @@ export const STORIES: Story[] = [
 			{ site: 'coast', date: '2026-10-28', track: '066' },
 		],
 		note: 'Flooded paddies read dark: open water sends the pulse away.',
+		change: { kind: 'water', legend: 'Aqua: ground that reads dark (wet) on each pass. Deep blue: water on almost every pass.' },
 	},
 	{
 		key: 'fire',
@@ -60,6 +56,7 @@ export const STORIES: Story[] = [
 			{ site: 'espada', date: '2026-08-17', track: '058' },
 		],
 		note: 'Burned forest loses its canopy, and its brightness drops.',
+		change: { kind: 'fire', legend: 'Ember: canopy brightness lost against the passes before the fire began on 25 Jul.', event: '2026-07-25' },
 	},
 	{
 		key: 'sink',
@@ -69,8 +66,12 @@ export const STORIES: Story[] = [
 		where: 'Lorca',
 		kind: 'Ground motion pairs',
 		site: 'lorca',
-		compare: [{ site: 'lorca', date: '2026-08-24', track: '159' }],
+		compare: [
+			{ site: 'lorca', date: '2026-08-12', track: '159' },
+			{ site: 'lorca', date: '2026-08-24', track: '159' },
+		],
 		note: 'Colours show motion toward or away from the satellite between two passes.',
+		change: { kind: 'sink', legend: 'Blue and red: motion toward or away from the satellite in each 12-day pair. White lines trace its shape.' },
 	},
 	{
 		key: 'quake',
@@ -85,47 +86,13 @@ export const STORIES: Story[] = [
 			{ site: 'panama', date: '2026-10-09', track: '141' },
 		],
 		note: 'The pair that spans the quake fills with fringes; the pair before it does not.',
+		change: { kind: 'quake', legend: 'Fringes from each pair, set flowing. The pair that spans the quake reveals from the USGS epicentre; the others stay dim.', event: '2026-10-09', epicentre: [-80.7566, 7.6069] },
 	},
 ]
 
-export const MACHINE = {
-	lines: ['You never touch', 'a 7 GB file.'],
-	sr: 'How it works: you never touch a 7 GB file.',
-	steps: [
-		{ n: '01', title: 'Fetch', fig: '7 GB', line: 'A full NISAR file is 1 to 7 GB. Harmony cuts out only our sites and layers.' },
-		{ n: '02', title: 'Process', fig: 'dB', line: 'Calibrate to dB, filter speckle, detect change, classify it, forecast.' },
-		{ n: '03', title: 'Bake', fig: 'COG', line: 'Export small Cloud-Optimized GeoTIFFs and JSON.' },
-		{ n: '04', title: 'Show', fig: '0', line: 'Tile servers. The browser reads the COGs directly.' },
-	],
-	after: 'Plain language first, with the radar details one click deeper.',
-}
-
-export const MODELS = {
-	lines: ['Three models.', 'Three questions.'],
-	accent: ['questions.'],
-	line: 'Each model answers a different question with NISAR data.',
-	cards: [
-		{ tag: 'CV · surface masks', short: 'Where is the water?', q: 'Where is the water, flooded vegetation or burned ground in this scene?', delivers: 'Mask maps per date + accuracy scores', chips: ['Water', 'Flooded vegetation', 'Burned'] },
-		{ tag: 'ML · change classes', short: 'What kind of land?', q: 'What kind of land is this pixel, and how does it change through the season?', delivers: 'Class map + confusion matrix', chips: ['Rice paddy', 'Permanent water', 'Urban', 'Forest', 'Burned'] },
-		{ tag: 'Prediction · forecasts', short: 'What happens next?', q: 'What happens next, and how sure are we?', delivers: 'Forecasts with ranges + backtest scores', chips: ['Median', '80% range', '95% range'] },
-	],
-}
-
-export const DATA = {
-	lines: ['Open data.', 'All of it.'],
-	line: "NASA's free and open data first, with partner data to check it.",
-	sources: [
-		{ name: 'NISAR GCOV', from: 'NASA ASF DAAC', href: 'https://nisar-docs.asf.alaska.edu/' },
-		{ name: 'NISAR GUNW', from: 'NASA ASF DAAC', href: 'https://nisar-docs.asf.alaska.edu/' },
-		{ name: 'OPERA DSWx-S1', from: 'NASA JPL', href: 'https://www.jpl.nasa.gov/go/opera/products' },
-		{ name: 'Copernicus EMS', from: 'EMSR935', href: 'https://mapping.emergency.copernicus.eu/activations/EMSR935/' },
-		{ name: 'EGMS', from: 'Ground motion', href: 'https://egms.land.copernicus.eu/' },
-		{ name: 'USGS', from: 'Earthquakes', href: 'https://earthquake.usgs.gov/earthquakes/eventpage/us6000u18k' },
-	],
-}
-
-export const CTA = {
-	lines: ['The surface never', 'stops dancing.'],
-	accent: ['dancing.'],
-	line: 'Earth is in a constant waltz. Pick a story and watch it change, pass by pass.',
+export const MAP_HEAD = {
+	lines: ['Every pass,', 'one map.'],
+	mark: 'map.',
+	line: 'Pick a story, play the season, compare any two passes. Every picture links to its record in NASA’s catalogue.',
+	commands: ['Play the season', 'Compare two passes', 'See every place'],
 }
