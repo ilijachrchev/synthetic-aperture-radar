@@ -167,7 +167,8 @@ class PipelineTests(unittest.TestCase):
                 writer.writerow(["pid", *[day.strftime("%Y%m%d") for day in days]])
                 writer.writerow(["p1", *values])
             manifest = root / "manifest.json"
-            manifest.write_text(json.dumps({"layers": [{"id": "existing-cv"}]}))
+            ml_entry = {"model": "ml", "site": "albufera", "layer": "class", "date": "2026-10-28", "file": "x.tif"}
+            manifest.write_text(json.dumps([ml_entry]))
             args = parser().parse_args(["run", "--format", "egms", "--input", str(path),
                                         "--point-id", "p1", "--output", str(root / "out"),
                                         "--manifest", str(manifest), "--as-of", "2026-11-14", "--no-plot"])
@@ -180,10 +181,11 @@ class PipelineTests(unittest.TestCase):
             self.assertIn("64", scores["test"])
             self.assertTrue(all(p["intervals"]["95"]["calibration_n"] >= 19 for p in forecast["predictions"]))
             existing = json.loads(manifest.read_text())
-            self.assertEqual(existing["layers"], [{"id": "existing-cv"}])
-            self.assertEqual(len(existing["forecasts"]), 1)
+            self.assertEqual(existing[0], ml_entry)
+            self.assertEqual([(e["model"], e["site"], e["layer"], e["date"]) for e in existing[1:]],
+                             [("prediction", "lorca", "vertical_motion_p1", "2026-11-14")])
             run(args)
-            self.assertEqual(len(json.loads(manifest.read_text())["forecasts"]), 1)
+            self.assertEqual(len(json.loads(manifest.read_text())), 2)
 
             existing = json.loads((root / "out/forecast.json").read_text())
             existing["point_id"] = "another_point"

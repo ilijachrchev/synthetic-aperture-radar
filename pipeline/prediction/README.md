@@ -6,10 +6,10 @@ Owner: **Zhivko Stoimchev (`@zstoimchev`)**. Implementation assisted by OpenAI C
 
 ## Run from the repository root
 
-Python 3.10+ and two packages are sufficient; no GPU, Earthdata account, or web server is required for the NGL example.
+Python 3.11+ (the shared `pyproject.toml`); no GPU, Earthdata account, or web server is required for the NGL example.
 
 ```bash
-python -m pip install -r pipeline/prediction/requirements.txt
+python -m pip install -e ".[dev,prediction]"
 python -m pipeline.prediction fetch --station LOR1
 python -m pipeline.prediction run --as-of 2026-11-14
 python -m unittest discover -s tests -v
@@ -31,7 +31,7 @@ The default output directory is `data/prediction/lorca/`:
 | `backtest.csv` | Every rolling prediction, observed target, training dates, model, error, and split |
 | `chart.png`, `chart.svg` | Standalone figures for inspection or presentation |
 
-The run also upserts one entry under `forecasts` in `data/manifest.json`, preserving existing entries and the `layers` array for CV/ML. Prediction entries identify their actual source type and do not invent a NISAR granule ID. Paths are repository-relative when the default output directory is used. Copy the manifest and referenced files into the web app's public assets while retaining their relative paths.
+The run also upserts one entry in `data/manifest.json`, the shared list format keyed by `(model, site, layer, date)` that the CV and ML models use (`layer` is `vertical_motion_<point>`, `date` the forecast origin), preserving every other entry. Prediction entries identify their actual source type and do not invent a NISAR granule ID. Paths are repository-relative when the default output directory is used. Copy the manifest and referenced files into the web app's public assets while retaining their relative paths.
 
 Use a separate `--output` directory for each point/source. The command refuses to overwrite an existing output that belongs to a different point, site, or source type.
 

@@ -18,6 +18,7 @@ from pathlib import Path
 
 from pipeline.config import DATA_DIR, REPO_ROOT, get_site
 from pipeline.dswx import DSWX_COLLECTION
+from pipeline.prediction.manifest import upsert as upsert_manifest
 
 from . import SITE
 from . import area as area_mod
@@ -180,16 +181,15 @@ def cmd_forecast(args: argparse.Namespace) -> dict:
 
 
 def update_manifest(path: Path, forecast_json: dict, out: Path, has_plot: bool) -> None:
-    manifest = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {"schema_version": 1, "layers": []}
     entry = {
-        "id": forecast_json["id"], "model": "prediction", "site": SITE, "point_id": None,
+        "model": "prediction", "site": SITE, "layer": "flooded_area", "date": forecast_json["forecast_origin"],
+        "id": forecast_json["id"],
         "file": rel(out / "forecast.json"), "metrics": rel(out / "metrics.json"),
         "observations": rel(AREA_CSV), "chart": rel(out / "chart.png") if has_plot else None,
         "source_type": "dswx-s1", "units": "ha",
         "issued_at_utc": forecast_json["issued_at_utc"], "data_cutoff": forecast_json["data_cutoff"],
     }
-    manifest["forecasts"] = [f for f in manifest.get("forecasts", []) if f.get("id") != entry["id"]] + [entry]
-    write_json(path, manifest)
+    upsert_manifest(path, [entry])
 
 
 def parser() -> argparse.ArgumentParser:

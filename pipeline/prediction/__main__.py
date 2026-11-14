@@ -15,6 +15,7 @@ import numpy as np
 
 from . import __version__
 from .data import Series, fetch_ngl, load_egms, load_ngl, utc_now
+from .manifest import upsert as upsert_manifest
 from .evaluation import interval_radius, rolling_backtest, select_models, summarize, training_window
 from .models import MODEL_NAMES, fit_model
 
@@ -70,19 +71,15 @@ def _intervals(calibration: list[dict], name: str, lead: int, value: float) -> d
 
 
 def _update_manifest(path: Path, forecast: dict, output: Path, has_plot: bool) -> None:
-    manifest = json.loads(path.read_text()) if path.exists() else {"schema_version": 1, "layers": []}
-    if not isinstance(manifest, dict) or not isinstance(manifest.get("forecasts", []), list):
-        raise ValueError("Manifest must be an object with an optional forecasts array")
-    entry = {"id": forecast["id"], "model": "prediction", "site": forecast["site"],
-             "point_id": forecast["point_id"], "file": (output / "forecast.json").as_posix(),
+    entry = {"model": "prediction", "site": forecast["site"],
+             "layer": f"vertical_motion_{forecast['point_id']}", "date": forecast["forecast_origin"],
+             "id": forecast["id"], "point_id": forecast["point_id"], "file": (output / "forecast.json").as_posix(),
              "metrics": (output / "metrics.json").as_posix(),
              "observations": (output / "observations.csv").as_posix(),
              "chart": (output / "chart.png").as_posix() if has_plot else None,
              "source_type": forecast["source"]["type"], "units": "mm",
              "issued_at_utc": forecast["issued_at_utc"], "data_cutoff": forecast["data_cutoff"]}
-    entries = [item for item in manifest.get("forecasts", []) if item.get("id") != entry["id"]]
-    manifest["forecasts"] = entries + [entry]
-    write_json(path, manifest)
+    upsert_manifest(path, [entry])
 
 
 def run(args: argparse.Namespace) -> dict:
