@@ -9,11 +9,9 @@
 	--f-ink-2: var(--ink-2);
 	--f-ink-3: var(--ink-2);
 	--f-line: var(--line-strong);
-	/* the wordmark reads against the land under it: ink by day, the night ground by night */
+	/* the wordmark reads against the page's ground under it, in ink, by day and by night */
 	--f-mark: var(--ink);
-}
-[data-theme="dark"] .foot8 {
-	--f-mark: var(--bg);
+	--f-land: clamp(300px, 38vw, 600px);
 }
 .foot8-card {
 	position: relative;
@@ -21,20 +19,12 @@
 	isolation: isolate;
 	border-radius: 40px 40px 0 0;
 	padding: 63px 63px 0;
-	background: var(--f-card);
+	/* solid behind the links, then open onto the page's ground where the wordmark stands */
+	background: linear-gradient(to bottom, var(--f-card) calc(100% - var(--f-land) - 10px), transparent calc(100% - var(--f-land) + 170px));
 	color: var(--f-ink);
 	transition: background-color 0.5s var(--ease), color 0.5s var(--ease);
 }
-.foot8-card::after {
-	content: "";
-	position: absolute;
-	inset: 0;
-	z-index: -1;
-	pointer-events: none;
-	background: url("/img/grain.png") repeat;
-	background-size: 160px 160px;
-	opacity: 0.4;
-}
+
 .foot8-top {
 	display: flex;
 	justify-content: space-between;
@@ -130,14 +120,7 @@
 .foot8-land {
 	position: relative;
 	margin: 18px -63px 0;
-	height: clamp(300px, 38vw, 600px);
-	-webkit-mask-image: linear-gradient(to bottom, transparent, #000 14%);
-	mask-image: linear-gradient(to bottom, transparent, #000 14%);
-}
-.foot8-canvas {
-	display: block;
-	width: 100%;
-	height: 100%;
+	height: var(--f-land);
 }
 .foot8-mark {
 	position: absolute;
@@ -166,11 +149,6 @@
 		animation: foot8-sheet linear both;
 		animation-timeline: view();
 		animation-range: entry 0% entry 60%;
-	}
-	.foot8-land {
-		animation: foot8-rise linear both;
-		animation-timeline: view();
-		animation-range: entry 10% entry 100%;
 	}
 	.foot8-mark span {
 		animation: foot8-climb linear both;
