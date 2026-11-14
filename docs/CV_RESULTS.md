@@ -1,6 +1,6 @@
 # CV benchmark results
 
-Results of the protocol in [CV_PROTOCOL.md](CV_PROTOCOL.md), run on 14 Nov 2026. The final model and its threshold were chosen on validation blocks only and scored once on the two test sites. Everything below comes from the files in `data/metrics/` named in each section; numbers are reported as they came, including the ones that do not favour the final model.
+Results of the protocol in [CV_PROTOCOL.md](CV_PROTOCOL.md), run on 14 Nov 2026. The final model and its threshold were chosen on validation blocks only and scored once on the two test sites. Everything below comes from the files in `data/metrics/` named in each section; numbers are reported as they came, including the ones that do not favour the final model. A second benchmark, judged by optical water maps instead of Sentinel-1's own map, with the coherence model v2: [CV_BENCHMARK.md](CV_BENCHMARK.md), section 10.
 
 ## 1. Data actually used
 
