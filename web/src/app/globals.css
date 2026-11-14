@@ -84,8 +84,11 @@ body {
 	-webkit-font-smoothing: antialiased;
 	transition: color 0.45s var(--ease);
 }
+/* The page ends where its content ends. Parts that animate in from below (the footer rises 90px into place) would
+   otherwise lengthen the scroll for as long as they are moved, and the smooth scroll measures that length on load,
+   which left a band of empty ground under the footer. clip, not hidden, so the sticky monitor still pins. */
 main {
-	overflow-x: clip;
+	overflow: clip;
 }
 ::selection {
 	background: var(--accent);
