@@ -1,12 +1,13 @@
 'use client'
 
 import 'maplibre-gl/dist/maplibre-gl.css'
-import { ArrowLeft, ArrowUpRight, Columns2, Pause, Play, Square } from 'lucide-react'
+import { ArrowLeft, ArrowUpRight, ChevronLeft, ChevronRight, Columns2, Globe2, Image as ImageIcon, Pause, Play, Waves } from 'lucide-react'
 import type { Map as MapLibreMap } from 'maplibre-gl'
 import Link from 'next/link'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Mark } from '../brand'
-import { ThemeToggle } from '../theme-toggle'
+import { ChangeLayer } from '../change-layer'
+import { PaletteSwitch } from '../palette-switch'
 import './map-app.css'
 
 type PassView = { img: string; dates: string[]; crid: string | null; granule: string; collection: string }
@@ -21,6 +22,7 @@ export type StoryCfg = {
 	where: string
 	kind: string
 	note: string
+	change: { kind: 'water' | 'fire' | 'sink' | 'quake'; legend: string; event?: string; epicentre?: [number, number] }
 	places: Place[]
 	initial: { pi: number; ti: number; a: number; b: number | null }
 }
@@ -28,14 +30,11 @@ export type StoryCfg = {
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 const dd = (iso: string) => `${Number(iso.slice(8, 10))} ${MONTHS[Number(iso.slice(5, 7)) - 1]}`
 const span = (p: PassView) => p.dates.map(dd).join(' > ')
-const PRODUCT = {
-	GCOV: 'Radar brightness · HH and HV · 20 m',
-	GUNW: 'Ground motion pairs · 12 days apart · 80 m',
-}
 const TILES = 'https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless-2020_3857/default/g/{z}/{y}/{x}.jpg'
+const center = (b: Place['box']): [number, number] => [(b[0] + b[2]) / 2, (b[1] + b[3]) / 2]
 
-/** An image that cross-fades when its source changes: the new one fades in over the old, then the old is dropped. */
-function Fader({ src, alt, className, style }: { src: string; alt: string; className?: string; style?: React.CSSProperties }) {
+/** An image that cross-fades when its source changes. */
+function Fader({ src, alt }: { src: string; alt: string }) {
 	const [layers, setLayers] = useState([{ src, id: 0 }])
 	useEffect(() => {
 		setLayers((l) => (l[l.length - 1].src === src ? l : [...l.slice(-1), { src, id: l[l.length - 1].id + 1 }]))
@@ -43,7 +42,7 @@ function Fader({ src, alt, className, style }: { src: string; alt: string; class
 		return () => window.clearTimeout(t)
 	}, [src])
 	return (
-		<div className={className} style={style}>
+		<div className="mp-layer">
 			{layers.map((l, i) => (
 				<img key={l.id} src={l.src} alt={i === layers.length - 1 ? alt : ''} data-new={i === layers.length - 1 || undefined} />
 			))}
@@ -52,10 +51,9 @@ function Fader({ src, alt, className, style }: { src: string; alt: string; class
 }
 
 /**
- * The map app. Landtrack's full-bleed map with floating glass panels and EarthEye's layers-on-the-left, figures-on-
- * the-right, with a cleaner rail: the four stories with their 3D icons, then place, track and layer. The radar is
- * the real NISAR preview, placed on its box by projecting the box corners on every move; the swipe compare clips the
- * second pass at the handle. Every pass links to its granule record, so each picture carries its proof.
+ * The map as an easy dashboard. What is where: every place is a marker on the map, the four stories sit on the left.
+ * What to do: one dock at the bottom holds every command (step back, play the season, step on, compare) above the
+ * pass timeline. What it is: one small card on the right, with the pass's record in NASA's catalogue as its proof.
  */
 export function MapApp({ stories }: { stories: StoryCfg[] }) {
 	const mapEl = useRef<HTMLDivElement>(null)
@@ -63,38 +61,56 @@ export function MapApp({ stories }: { stories: StoryCfg[] }) {
 	const ov = useRef<HTMLDivElement>(null)
 	const after = useRef<HTMLDivElement>(null)
 	const swipeEl = useRef<HTMLDivElement>(null)
+	const pins = useRef<(HTMLButtonElement | null)[]>([])
 	const swipeRef = useRef(0.5)
 	const [ready, setReady] = useState(false)
+	const [overview, setOverview] = useState(false)
 	const [si, setSi] = useState(0)
 	const [pi, setPi] = useState(stories[0].initial.pi)
-	const [ti, setTi] = useState(stories[0].initial.ti)
-	const [a, setA] = useState(stories[0].initial.a)
+	const [a, setA] = useState(0)
 	const [b, setB] = useState<number | null>(stories[0].initial.b)
-	const [compare, setCompare] = useState(stories[0].initial.b != null)
-	const [slot, setSlot] = useState<'a' | 'b'>('a')
+	const [compare, setCompare] = useState(false)
+	const [side, setSide] = useState<'a' | 'b'>('b')
 	const [playing, setPlaying] = useState(false)
 	const [swipe, setSwipe] = useState(0.5)
-	const [radarOn, setRadarOn] = useState(true)
-	const [opacity, setOpacity] = useState(1)
+	const [view, setView] = useState<'change' | 'radar'>('change')
 
 	const story = stories[si]
 	const place = story.places[Math.min(pi, story.places.length - 1)]
+	const ti = pi === story.initial.pi ? story.initial.ti : 0
 	const track = place.tracks[Math.min(ti, place.tracks.length - 1)]
 	const n = track.passes.length
 	const pa = track.passes[Math.min(a, n - 1)]
 	const pb = b != null ? track.passes[Math.min(b, n - 1)] : null
-	const showB = compare && pb != null
+	const showB = compare && pb != null && !overview
+	const frames = useMemo(() => track.passes.map((p) => p.img), [track])
+	const refCount = story.change.event ? Math.max(1, track.passes.filter((p) => p.dates[0] < story.change.event!).length) : 1
+	const ev = story.change.event
+	const revealAt = ev ? track.passes.findIndex((p) => p.dates[0] < ev && p.dates[p.dates.length - 1] >= ev) : -1
+	const epi = useMemo<[number, number]>(() => {
+		const c = story.change.epicentre
+		if (!c) return [0.5, 0.5]
+		const [w, s, e, nn] = place.box
+		return [(c[0] - w) / (e - w), (nn - c[1]) / (nn - s)]
+	}, [story.change.epicentre, place.box])
+
+	// every place of every story, for the markers
+	const allPlaces = useMemo(() => stories.flatMap((s, i) => s.places.map((p, j) => ({ story: i, place: j, name: p.name, key: s.key, c: center(p.box) }))), [stories])
 
 	const choose = useCallback(
-		(i: number) => {
+		(i: number, placeIdx?: number) => {
 			const s = stories[i]
+			const pIdx = placeIdx ?? s.initial.pi
+			const same = pIdx === s.initial.pi
+			setOverview(false)
 			setSi(i)
-			setPi(s.initial.pi)
-			setTi(s.initial.ti)
-			setA(s.initial.a)
-			setB(s.initial.b)
-			setCompare(s.initial.b != null)
-			setSlot('a')
+			setPi(pIdx)
+			// the change view starts at the first pass so play runs the whole season
+			setA(0)
+			setB(same ? s.initial.b : null)
+			setCompare(false)
+			setView('change')
+			setSide('b')
 			setPlaying(false)
 			try {
 				history.replaceState(null, '', `/map?story=${s.key}`)
@@ -103,36 +119,49 @@ export function MapApp({ stories }: { stories: StoryCfg[] }) {
 		[stories],
 	)
 
-	// a story from the link (?story=fire) on arrival
 	useEffect(() => {
 		const k = new URLSearchParams(window.location.search).get('story')
 		const i = stories.findIndex((s) => s.key === k)
 		if (i > 0) choose(i)
 	}, [stories, choose])
 
-	// place the radar box on the map: project its corners, clip the second pass at the handle
+	// place the radar on its box and the markers on their places
 	const layout = useCallback(() => {
 		const map = mapRef.current
-		const el = ov.current
-		if (!map || !el) return
+		if (!map) return
+		const box = map.getContainer()
+		// read everything first so a frame lays out once: the map's offset and the panels a marker must not sit under
+		const o = box.getBoundingClientRect()
+		const panels = box.parentElement ? [...box.parentElement.querySelectorAll<HTMLElement>(':scope > .mp-rail, :scope > .mp-card, :scope > .mp-dock')].map((el) => el.getBoundingClientRect()) : []
 		const [w, s, e, nn] = place.box
 		const tl = map.project([w, nn])
 		const br = map.project([e, s])
 		const ww = br.x - tl.x
 		const hh = br.y - tl.y
-		el.style.transform = `translate3d(${tl.x}px, ${tl.y}px, 0)`
-		el.style.width = `${ww}px`
-		el.style.height = `${hh}px`
+		if (ov.current) {
+			ov.current.style.transform = `translate3d(${tl.x}px, ${tl.y}px, 0)`
+			ov.current.style.width = `${ww}px`
+			ov.current.style.height = `${hh}px`
+		}
 		if (after.current) {
-			const x = swipeRef.current * map.getContainer().clientWidth - tl.x
+			const x = swipeRef.current * o.width - tl.x
 			after.current.style.clipPath = `inset(0 0 0 ${Math.min(ww, Math.max(0, x))}px)`
 		}
-		// the handle spans the radar box only, so its knob always sits on the picture
 		if (swipeEl.current) {
 			swipeEl.current.style.top = `${tl.y}px`
 			swipeEl.current.style.height = `${hh}px`
 		}
-	}, [place.box])
+		allPlaces.forEach((p, k) => {
+			const el = pins.current[k]
+			if (!el) return
+			const pt = map.project(p.c)
+			el.style.transform = `translate3d(${pt.x}px, ${pt.y}px, 0)`
+			// a marker is an icon above its point and a name below it; one that would sit under a panel steps away
+			const x = pt.x + o.left
+			const y = pt.y + o.top
+			el.toggleAttribute('data-under', panels.some((r) => x + 50 > r.left && x - 50 < r.right && y + 26 > r.top && y - 46 < r.bottom))
+		})
+	}, [place.box, allPlaces])
 
 	useEffect(() => {
 		let map: MapLibreMap | null = null
@@ -155,14 +184,14 @@ export function MapApp({ stories }: { stories: StoryCfg[] }) {
 							attribution: '<a href="https://s2maps.eu" target="_blank" rel="noopener">Sentinel-2 cloudless</a> by EOX, modified Copernicus Sentinel data 2020 · Radar: NASA-ISRO NISAR via NASA ASF DAAC',
 						},
 					},
-					layers: [{ id: 's2', type: 'raster', source: 's2', paint: { 'raster-saturation': -0.35, 'raster-contrast': 0.05 } }],
+					layers: [{ id: 's2', type: 'raster', source: 's2', paint: { 'raster-saturation': -0.4, 'raster-contrast': 0.05 } }],
 				},
 				bounds: [
 					[w, s],
 					[e, nn],
 				],
 				maxZoom: 12.5,
-				minZoom: 3,
+				minZoom: 1.5,
 				dragRotate: false,
 				pitchWithRotate: false,
 				attributionControl: { compact: true },
@@ -171,8 +200,7 @@ export function MapApp({ stories }: { stories: StoryCfg[] }) {
 			mapRef.current = map
 			map.on('load', () => {
 				setReady(true)
-				// on a phone the credits stay behind their info button (one tap away) instead of covering the map
-				if (window.innerWidth <= 900) map?.getContainer().querySelector('.maplibregl-ctrl-attrib')?.classList.remove('maplibregl-compact-show')
+				map?.getContainer().querySelector('.maplibregl-ctrl-attrib')?.classList.remove('maplibregl-compact-show')
 			})
 		})()
 		return () => {
@@ -182,7 +210,6 @@ export function MapApp({ stories }: { stories: StoryCfg[] }) {
 		}
 	}, [stories])
 
-	// keep the radar on its box while the map moves
 	useEffect(() => {
 		const map = mapRef.current
 		if (!map || !ready) return
@@ -204,47 +231,78 @@ export function MapApp({ stories }: { stories: StoryCfg[] }) {
 		}
 	}, [ready, layout])
 
-	// fly to the place, leaving room for the rail, the panel and the timeline
+	// fly to the place, or out to every place
 	useEffect(() => {
 		const map = mapRef.current
 		if (!map || !ready) return
 		const wide = window.innerWidth > 900
+		const pad = wide ? { top: 90, bottom: 190, left: 340, right: 360 } : { top: 130, bottom: 230, left: 24, right: 24 }
+		if (overview) {
+			const xs = allPlaces.map((p) => p.c[0])
+			const ys = allPlaces.map((p) => p.c[1])
+			map.fitBounds(
+				[
+					[Math.min(...xs) - 4, Math.min(...ys) - 4],
+					[Math.max(...xs) + 4, Math.max(...ys) + 4],
+				],
+				{ padding: pad, duration: 1600 },
+			)
+			return
+		}
 		const [w, s, e, nn] = place.box
 		map.fitBounds(
 			[
 				[w, s],
 				[e, nn],
 			],
-			{ padding: wide ? { top: 96, bottom: 120, left: 360, right: 380 } : { top: 140, bottom: 170, left: 24, right: 24 }, duration: 1300, maxZoom: 11.2 },
+			{ padding: pad, duration: 1400, maxZoom: 11.2 },
 		)
-	}, [ready, place.box, si, pi])
+	}, [ready, place.box, si, pi, overview, allPlaces])
 
 	useEffect(() => {
 		swipeRef.current = swipe
 		layout()
 	}, [swipe, showB, layout])
 
-	// play through the track, one pass at a time
+	// the radar view steps on a timer; the change view plays itself and reports each pass it reaches
 	useEffect(() => {
-		if (!playing) return
+		if (!playing || view === 'change') return
 		const id = window.setInterval(() => setA((v) => (v + 1) % n), 1100)
 		return () => window.clearInterval(id)
-	}, [playing, n])
+	}, [playing, n, view])
 
-	// arrow keys step through passes
+	const step = useCallback(
+		(d: number) => {
+			setPlaying(false)
+			if (compare && side === 'b') setB((v) => Math.min(n - 1, Math.max(0, (v ?? 0) + d)))
+			else setA((v) => Math.min(n - 1, Math.max(0, v + d)))
+		},
+		[compare, side, n],
+	)
 	useEffect(() => {
 		const on = (e: KeyboardEvent) => {
-			if (e.target instanceof HTMLInputElement) return
-			if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return
-			const d = e.key === 'ArrowRight' ? 1 : -1
-			setPlaying(false)
-			if (compare && slot === 'b') setB((v) => Math.min(n - 1, Math.max(0, (v ?? 0) + d)))
-			else setA((v) => Math.min(n - 1, Math.max(0, v + d)))
+			if (e.key === 'ArrowLeft') step(-1)
+			else if (e.key === 'ArrowRight') step(1)
+			else if (e.key === ' ' && !(e.target instanceof HTMLButtonElement)) {
+				e.preventDefault()
+				setCompare(false)
+				setPlaying((v) => !v)
+			}
 		}
 		window.addEventListener('keydown', on)
 		return () => window.removeEventListener('keydown', on)
-	}, [compare, slot, n])
+	}, [step])
 
+	const toggleCompare = () => {
+		setPlaying(false)
+		setView('radar')
+		if (!compare && pi === story.initial.pi && story.initial.b != null) {
+			setA(story.initial.a)
+			setB(story.initial.b)
+		} else if (!compare && b == null) setB(Math.min(n - 1, a + Math.max(1, Math.floor(n / 2))))
+		setSide('b')
+		setCompare(!compare)
+	}
 	const drag = (e: React.PointerEvent) => {
 		const host = mapEl.current
 		if (!host) return
@@ -275,232 +333,207 @@ export function MapApp({ stories }: { stories: StoryCfg[] }) {
 		return { at: t.map(at), months }
 	}, [track])
 
-	const pick = (i: number) => {
-		setPlaying(false)
-		if (compare && slot === 'b') setB(i)
-		else setA(i)
-	}
-	const toggleCompare = (on: boolean) => {
-		setPlaying(false)
-		setCompare(on)
-		if (on && b == null) setB(Math.min(n - 1, a + Math.max(1, Math.floor(n / 2))))
-		if (on) setSlot('b')
-		else setSlot('a')
-	}
-	const shownPass = compare && slot === 'b' && pb ? pb : pa
+	const cur = compare && side === 'b' && pb ? pb : pa
+	const idx = compare && side === 'b' && b != null ? b : a
 
 	return (
-		<div className="mp">
+		<div className="mp" data-overview={overview || undefined}>
 			<div ref={mapEl} className="mp-map" />
 			<div className="mp-wash" aria-hidden />
 
-			<div ref={ov} className="mp-ov" data-on={(radarOn && ready) || undefined} style={{ opacity }}>
-				<Fader className="mp-layer" src={pa.img} alt={`NISAR ${place.name}, ${span(pa)}`} />
+			<div ref={ov} className="mp-ov" data-on={(ready && !overview) || undefined} data-view={showB ? 'radar' : view}>
+				<Fader src={pa.img} alt={`NISAR ${place.name}, ${span(pa)}`} />
+				{view === 'change' && !showB && (
+					<ChangeLayer className="mp-change" kind={story.change.kind} frames={frames} index={a} playing={playing} onIndex={setA} refCount={refCount} epicentre={epi} revealAt={story.change.kind === 'quake' ? revealAt : -1} />
+				)}
 				{showB && (
 					<div ref={after} className="mp-after">
-						<Fader className="mp-layer" src={pb!.img} alt={`NISAR ${place.name}, ${span(pb!)}`} />
+						<Fader src={pb!.img} alt={`NISAR ${place.name}, ${span(pb!)}`} />
 					</div>
 				)}
 			</div>
 
-			{showB && radarOn && (
-				<div ref={swipeEl} className="mp-swipe" style={{ left: `${swipe * 100}%` }} onPointerDown={drag} role="slider" aria-label="Compare" aria-valuenow={Math.round(swipe * 100)} aria-valuemin={0} aria-valuemax={100} tabIndex={0}>
-					<span className="mp-swipe-a">{span(pa)}</span>
+			{showB && (
+				<div ref={swipeEl} className="mp-swipe" style={{ left: `${swipe * 100}%` }} onPointerDown={drag} role="slider" aria-label="Compare the two passes" aria-valuenow={Math.round(swipe * 100)} aria-valuemin={0} aria-valuemax={100} tabIndex={0}>
+					<span className="mp-swipe-tag mp-swipe-a">{span(pa)}</span>
 					<span className="mp-swipe-knob">
-						<Columns2 size={16} strokeWidth={2} />
+						<Columns2 size={16} strokeWidth={2.2} />
 					</span>
-					<span className="mp-swipe-b">{span(pb!)}</span>
+					<span className="mp-swipe-tag mp-swipe-b">{span(pb!)}</span>
 				</div>
 			)}
 
+			{allPlaces.map((p, k) => (
+				<button
+					key={`${p.key}-${p.place}`}
+					ref={(n) => void (pins.current[k] = n)}
+					type="button"
+					className="mp-pin"
+					data-on={(!overview && p.story === si && p.place === pi) || undefined}
+					onClick={() => choose(p.story, p.place)}
+				>
+					<img src={`/img/icons/${p.key}.webp`} alt="" width={40} height={40} />
+					<span>{p.name}</span>
+				</button>
+			))}
+
 			<aside className="mp-rail">
-				<Link href="/" className="mp-brand">
+				<Link href="/" className="mp-brand" aria-label="Back to the landing">
 					<Mark size={20} />
 					<span className="display">Dancing with the SARs</span>
 				</Link>
-
-				<p className="mp-label">Stories</p>
+				<button type="button" className="mp-all" data-on={overview || undefined} onClick={() => setOverview(true)}>
+					<Globe2 size={18} strokeWidth={1.9} />
+					All places
+				</button>
 				<ul className="mp-stories">
-					{stories.map((s, i) => {
-						const count = s.places.reduce((m, p) => m + p.tracks.reduce((k, t) => k + t.passes.length, 0), 0)
-						return (
-							<li key={s.key}>
-								<button type="button" onClick={() => choose(i)} data-on={i === si || undefined}>
-									<img src={`/img/icons/${s.key}.webp`} alt="" width={44} height={44} />
-									<span>
-										<b>{s.tab}</b>
-										<small>{s.places.map((p) => p.name).join(' · ')}</small>
-									</span>
-									<i className="mono">{count}</i>
-								</button>
-							</li>
-						)
-					})}
-				</ul>
-
-				{story.places.length > 1 && (
-					<>
-						<p className="mp-label">Place</p>
-						<div className="mp-seg">
-							{story.places.map((p, i) => (
-								<button
-									key={p.site}
-									type="button"
-									data-on={i === pi || undefined}
-									onClick={() => {
-										setPi(i)
-										setTi(0)
-										setA(story.places[i].tracks[0].passes.length - 1)
-										setB(null)
-										setCompare(false)
-										setSlot('a')
-									}}
-								>
-									{p.name}
-								</button>
-							))}
-						</div>
-					</>
-				)}
-
-				<p className="mp-label">Track</p>
-				<div className="mp-seg">
-					{place.tracks.map((t, i) => (
-						<button
-							key={t.id}
-							type="button"
-							data-on={i === ti || undefined}
-							onClick={() => {
-								setTi(i)
-								setA(t.passes.length - 1)
-								setB(null)
-								setCompare(false)
-								setSlot('a')
-								setPlaying(false)
-							}}
-						>
-							<span className="mono">{t.label}</span>
-							<small>{t.passes.length}</small>
-						</button>
+					{stories.map((s, i) => (
+						<li key={s.key}>
+							<button type="button" onClick={() => choose(i)} data-on={(!overview && i === si) || undefined}>
+								<img src={`/img/icons/${s.key}.webp`} alt="" width={52} height={52} />
+								<span>
+									<b>{s.tab}</b>
+									<small>{s.where}</small>
+								</span>
+							</button>
+						</li>
 					))}
-				</div>
-
-				<p className="mp-label">Layer</p>
-				<label className="mp-switch">
-					<span>
-						<b>NISAR {place.product}</b>
-						<small>{PRODUCT[place.product]}</small>
-					</span>
-					<input type="checkbox" checked={radarOn} onChange={(e) => setRadarOn(e.target.checked)} />
-					<i aria-hidden />
-				</label>
-				<label className="mp-range">
-					<small>Opacity</small>
-					<input type="range" min={0.2} max={1} step={0.05} value={opacity} onChange={(e) => setOpacity(Number(e.target.value))} />
-				</label>
-
+				</ul>
 				<div className="mp-rail-foot">
 					<Link href="/" className="mp-back">
 						<ArrowLeft size={15} strokeWidth={2} /> Landing
 					</Link>
-					<ThemeToggle />
+					<PaletteSwitch />
 				</div>
 			</aside>
 
-			<div className="mp-top">
-				<span className="mp-crumb">
-					<b>{place.name}</b>
-					<i className="mono">{track.label}</i>
-				</span>
-				<div className="mp-view" role="group" aria-label="View">
-					<button type="button" data-on={!compare || undefined} onClick={() => toggleCompare(false)}>
-						<Square size={14} strokeWidth={2} /> Single
-					</button>
-					<button type="button" data-on={compare || undefined} onClick={() => toggleCompare(true)}>
-						<Columns2 size={14} strokeWidth={2} /> Compare
-					</button>
+			{!overview && (
+				<aside className="mp-card">
+					<p className="mp-kind">{story.kind}</p>
+					<h1 className="display">{story.title}</h1>
+					<p className="mp-what">{story.what}</p>
+					{view === 'change' && !showB && (
+						<p className="mp-legend">
+							<span className={`mp-swatch mp-swatch-${story.change.kind}`} aria-hidden />
+							<span>
+								{story.change.legend}
+								<small>Animated from the radar previews: a quick estimate, not the project&apos;s models.</small>
+							</span>
+						</p>
+					)}
+					{story.places.length > 1 && (
+						<div className="mp-places">
+							{story.places.map((p, i) => (
+								<button key={p.site} type="button" data-on={i === pi || undefined} onClick={() => choose(si, i)}>
+									{p.name}
+								</button>
+							))}
+						</div>
+					)}
+					<a className="mp-proof" href={`https://cmr.earthdata.nasa.gov/search/granules.json?readable_granule_name=${encodeURIComponent(cur.granule)}`} target="_blank" rel="noopener noreferrer">
+						<span>
+							Data record, NASA CMR
+							<small className="mono">
+								{place.product} · track {track.label} · {cur.crid === 'P05036' ? 'validated' : 'provisional'}
+							</small>
+						</span>
+						<ArrowUpRight size={16} strokeWidth={2} />
+					</a>
+				</aside>
+			)}
+
+			{overview ? (
+				<div className="mp-dock mp-dock-hint">
+					<Globe2 size={18} strokeWidth={1.9} /> Pick a place on the map, or a story on the left.
 				</div>
-			</div>
-
-			<aside className="mp-panel">
-				<img className="mp-icon" src={`/img/icons/${story.key}.webp`} alt="" width={76} height={76} />
-				<p className="mp-eyebrow">
-					{story.n} · {story.kind}
-				</p>
-				<h1 className="display">{story.title}</h1>
-				<p className="mp-what">{story.what}</p>
-				<dl>
-					<div>
-						<dt>Place</dt>
-						<dd>{place.name}</dd>
-					</div>
-					<div>
-						<dt>Product</dt>
-						<dd>NISAR L2 {place.product}</dd>
-					</div>
-					<div>
-						<dt>Track</dt>
-						<dd className="mono">
-							{track.label} · {n} {place.product === 'GUNW' ? 'pairs' : 'passes'}
-						</dd>
-					</div>
-					<div>
-						<dt>{showB ? 'Comparing' : 'Shown'}</dt>
-						<dd className="mono">{showB ? `${span(pa)} | ${span(pb!)}` : span(pa)}</dd>
-					</div>
-				</dl>
-				<p className="mp-note">{story.note}</p>
-				<a className="mp-proof" href={`https://cmr.earthdata.nasa.gov/search/granules.json?readable_granule_name=${encodeURIComponent(shownPass.granule)}`} target="_blank" rel="noopener noreferrer">
-					<span>
-						Granule record, NASA CMR
-						<small className="mono">{shownPass.crid === 'P05036' ? 'Validated' : 'Provisional'} · {shownPass.collection.replace('NISAR_L2_', '').replace(/_/g, ' ')}</small>
-					</span>
-					<ArrowUpRight size={16} strokeWidth={2} />
-				</a>
-			</aside>
-
-			<div className="mp-time">
-				<button type="button" className="mp-play" onClick={() => {
-						if (compare) toggleCompare(false)
-						setPlaying((v) => !v)
-					}} aria-label={playing ? 'Pause' : 'Play every pass'}>
-					{playing ? <Pause size={16} strokeWidth={2.2} /> : <Play size={16} strokeWidth={2.2} />}
-				</button>
-				{compare && (
-					<div className="mp-slots">
-						<button type="button" data-on={slot === 'a' || undefined} onClick={() => setSlot('a')}>
-							<b>A</b> {dd(pa.dates[pa.dates.length - 1])}
+			) : (
+				<div className="mp-dock">
+					<div className="mp-cmds">
+						<button type="button" className="mp-icon" onClick={() => step(-1)} aria-label="Previous pass">
+							<ChevronLeft size={20} strokeWidth={2.2} />
 						</button>
-						<button type="button" data-on={slot === 'b' || undefined} onClick={() => setSlot('b')}>
-							<b>B</b> {pb ? dd(pb.dates[pb.dates.length - 1]) : 'pick'}
-						</button>
-					</div>
-				)}
-				<div className="mp-ticks">
-					{track.passes.map((p, i) => (
 						<button
-							key={p.img}
 							type="button"
-							style={{ left: `${ticks.at[i] * 100}%` }}
-							data-a={i === a || undefined}
-							data-b={(compare && i === b) || undefined}
-							onClick={() => pick(i)}
-							aria-label={`Show ${span(p)}`}
-							title={span(p)}
+							className="mp-play"
+							onClick={() => {
+								setCompare(false)
+								setPlaying((v) => !v)
+							}}
 						>
-							<span />
+							{playing ? <Pause size={17} strokeWidth={2.4} /> : <Play size={17} strokeWidth={2.4} />}
+							{playing ? 'Pause' : 'Play season'}
 						</button>
-					))}
-					{ticks.months.map((m) => (
-						<em key={m.label} style={{ left: `${m.at * 100}%` }}>
-							{m.label}
-						</em>
-					))}
+						<button type="button" className="mp-icon" onClick={() => step(1)} aria-label="Next pass">
+							<ChevronRight size={20} strokeWidth={2.2} />
+						</button>
+						<div className="mp-date">
+							{compare && pb ? (
+								<span className="mp-sides">
+									<button type="button" data-on={side === 'a' || undefined} onClick={() => setSide('a')}>
+										<small>Before</small>
+										{span(pa)}
+									</button>
+									<button type="button" data-on={side === 'b' || undefined} onClick={() => setSide('b')}>
+										<small>After</small>
+										{span(pb)}
+									</button>
+								</span>
+							) : (
+								<>
+									<b>{span(pa)} 2026</b>
+									<small className="mono">
+										pass {String(idx + 1).padStart(2, '0')} of {String(n).padStart(2, '0')}
+									</small>
+								</>
+							)}
+						</div>
+						<div className="mp-view" role="group" aria-label="View">
+							<button
+								type="button"
+								data-on={(view === 'change' && !compare) || undefined}
+								onClick={() => {
+									setCompare(false)
+									setView('change')
+								}}
+							>
+								<Waves size={16} strokeWidth={2.1} /> Change
+							</button>
+							<button type="button" data-on={(view === 'radar' && !compare) || undefined} onClick={() => setView('radar')}>
+								<ImageIcon size={16} strokeWidth={2.1} /> Radar
+							</button>
+						</div>
+						<button type="button" className="mp-compare" data-on={compare || undefined} onClick={toggleCompare}>
+							<Columns2 size={17} strokeWidth={2.1} />
+							Compare
+						</button>
+					</div>
+					<div className="mp-ticks">
+						{track.passes.map((p, i) => (
+							<button
+								key={p.img}
+								type="button"
+								style={{ left: `${ticks.at[i] * 100}%` }}
+								data-a={i === a || undefined}
+								data-b={(compare && i === b) || undefined}
+								onClick={() => {
+									setPlaying(false)
+									if (compare && side === 'b') setB(i)
+									else setA(i)
+								}}
+								aria-label={`Show ${span(p)}`}
+								title={span(p)}
+							>
+								<span />
+							</button>
+						))}
+						{ticks.months.map((m) => (
+							<em key={m.label} style={{ left: `${m.at * 100}%` }}>
+								{m.label}
+							</em>
+						))}
+					</div>
 				</div>
-				<span className="mp-count mono">
-					{String((compare && slot === 'b' && b != null ? b : a) + 1).padStart(2, '0')} / {String(n).padStart(2, '0')}
-				</span>
-			</div>
+			)}
 		</div>
 	)
 }

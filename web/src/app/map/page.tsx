@@ -44,6 +44,7 @@ export default function MapPage() {
 			where: s.where,
 			kind: s.kind,
 			note: s.note,
+			change: s.change,
 			places,
 			initial: { pi, ti, a: Math.max(0, idx(c0.date)), b: c1 ? idx(c1.date) : null },
 		}
