@@ -1,5 +1,5 @@
 /* The map as an easy dashboard: the map fills the screen; the stories on the left, one card on the right, every
-   command in one dock at the bottom. Glass panels in the palette's colours. */
+   command in one dock at the bottom. Glass panels in the theme's colours. */
 .sr-only {
 	position: absolute;
 	width: 1px;
@@ -16,13 +16,10 @@
 	color: var(--ink);
 	--rail-w: 300px;
 	--card-w: 340px;
-	--wash: rgb(221 245 234 / 0.1);
+	--wash: rgb(251 250 247 / 0.06);
 }
-[data-palette="2"] .mp {
-	--wash: rgb(12 22 51 / 0.36);
-}
-[data-palette="3"] .mp {
-	--wash: rgb(246 215 215 / 0.1);
+[data-theme="dark"] .mp {
+	--wash: rgb(6 15 19 / 0.34);
 }
 .mp-map {
 	position: absolute;

@@ -10,7 +10,7 @@ import { type FloodModel, PLATFORMS, type RainFile, floodModel, utcClock, utcDay
 import type { Bounds } from '@/lib/gl-quad'
 import { PictureLayer } from '@/lib/picture-layer'
 import { WaterLayer, type WaterMeta, type WaterSeries } from '@/lib/water-layer'
-import { PaletteSwitch } from '../palette-switch'
+import { ThemeSwitch } from '../theme-switch'
 import './flood.css'
 
 type Scene = { day: string; file: string; time_utc: string; platform: string; cloud_pct?: number; scenes: { id: string; tile: string; cloud_pct: number }[] }
@@ -1023,7 +1023,7 @@ export function WaterApp({ story }: { story: Story }) {
 						)}
 					</p>
 					<p className="fl-attrib">{story.credit}</p>
-					<PaletteSwitch />
+					<ThemeSwitch />
 					<button type="button" className="fl-src" aria-expanded={credits} onClick={() => setCredits((v) => !v)}>
 						Sources
 					</button>

@@ -7,8 +7,12 @@
 	--f-card: var(--card);
 	--f-ink: var(--ink);
 	--f-ink-2: var(--ink-2);
-	--f-ink-3: var(--muted);
-	--f-line: var(--line);
+	--f-ink-3: var(--ink-2);
+	--f-line: var(--line-strong);
+	/* the wordmark reads against the land under it: ink by day, the night ground by night */
+	--f-mark: var(--ink);
+}
+[data-theme="dark"] .foot8 {
 	--f-mark: var(--bg);
 }
 .foot8-card {

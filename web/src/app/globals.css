@@ -6,74 +6,64 @@
 	--font-mono: var(--font-geist-mono), ui-monospace, Consolas, monospace;
 }
 
-/* Three palettes to try, each kept to the user's split. 1: mint sorbet 60, deep ocean 30, hot coral 10.
-   2: midnight navy 60, powder blue 30, fresh mint 10. 3: blush pink 40, charcoal ink 30, fresh mint 30.
-   Coral and mint fail as text on the light grounds, so the accent word sits on a marker block instead, with ink
-   on it; every text pair here clears 4.5:1 (marker text, which is display size, clears 4:1). */
+/* Lagoon. One cyan, measured from the Lagoon card (deep #0083c2, core #12b5d6, glow #7fe0f0, light #e2f9fc), on warm
+   paper with near-black ink by day and on the abyss under the lagoon by night. It sits between Planet (teal on dark,
+   imagery framed in it) and NASA Earth Observatory and Umbra (a quiet page where the imagery carries the colour).
+   Cyan carries the action and the live data; ink sits on it ("light aura, so type goes ink"). Every text pair clears
+   4.5:1; cyan as text uses --accent-ink. */
 :root,
-[data-palette="1"] {
+[data-theme="light"] {
 	color-scheme: light;
-	--bg: #ddf5ea;
-	--bg-2: #cdeee0;
-	--deep: #0b3d57;
+	--bg: #fbfaf7;
+	--bg-2: #f2f1ec;
+	--card: #ffffff;
+	--ink: #0b0d0f;
+	--ink-2: rgb(11 13 15 / 0.76);
+	--muted: rgb(11 13 15 / 0.6);
+	--line: rgb(11 13 15 / 0.08);
+	--line-strong: rgb(11 13 15 / 0.17);
+	--deep: #0083c2;
 	--on-deep: #ffffff;
-	--ink: #0b3d57;
-	--ink-2: rgb(11 61 87 / 0.8);
-	--muted: rgb(11 61 87 / 0.64);
-	--line: rgb(11 61 87 / 0.14);
-	--line-strong: rgb(11 61 87 / 0.28);
-	--card: #f4fcf8;
-	--accent: #ff6b57;
-	--on-accent: #0b3d57;
-	--btn: #0b3d57;
-	--on-btn: #ffffff;
-	--btn-dot: #ff6b57;
-	--glass: rgb(244 252 248 / 0.72);
-	--glass-line: rgb(255 255 255 / 0.85);
-	--shadow: 0 1px 2px rgb(11 61 87 / 0.08), 0 24px 50px -24px rgb(11 61 87 / 0.35);
+	--accent: #12b5d6;
+	--accent-2: #7fe0f0;
+	--accent-3: #e2f9fc;
+	--accent-ink: #006a9e;
+	--on-accent: #0b0d0f;
+	--btn: #12b5d6;
+	--on-btn: #0b0d0f;
+	--btn-dot: #0b0d0f;
+	--glass: rgb(255 255 255 / 0.72);
+	--glass-line: rgb(255 255 255 / 0.92);
+	--stage: #081217;
+	--aura: rgb(18 181 214 / 0.18);
+	--shadow: 0 1px 2px rgb(11 13 15 / 0.06), 0 30px 60px -30px rgb(8 40 56 / 0.38);
 	--ease: cubic-bezier(0.16, 1, 0.3, 1);
 }
-[data-palette="2"] {
+[data-theme="dark"] {
 	color-scheme: dark;
-	--bg: #0c1633;
-	--bg-2: #111e44;
-	--deep: #b9d6f2;
-	--on-deep: #0c1633;
-	--ink: #eef5ff;
-	--ink-2: #b9d6f2;
-	--muted: rgb(185 214 242 / 0.7);
-	--line: rgb(185 214 242 / 0.14);
-	--line-strong: rgb(185 214 242 / 0.3);
-	--card: #13224b;
-	--accent: #3ddba4;
-	--on-accent: #0c1633;
-	--btn: #3ddba4;
-	--on-btn: #0c1633;
-	--btn-dot: #0c1633;
-	--glass: rgb(19 34 75 / 0.7);
-	--glass-line: rgb(185 214 242 / 0.18);
-	--shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 24px 50px -24px rgb(0 0 0 / 0.6);
-}
-[data-palette="3"] {
-	color-scheme: light;
-	--bg: #f6d7d7;
-	--bg-2: #f1caca;
-	--deep: #24262b;
-	--on-deep: #ffffff;
-	--ink: #24262b;
-	--ink-2: rgb(36 38 43 / 0.8);
-	--muted: rgb(36 38 43 / 0.64);
-	--line: rgb(36 38 43 / 0.14);
-	--line-strong: rgb(36 38 43 / 0.28);
-	--card: #b8f0d9;
-	--accent: #3ddba4;
-	--on-accent: #24262b;
-	--btn: #3ddba4;
-	--on-btn: #24262b;
-	--btn-dot: #24262b;
-	--glass: rgb(255 240 240 / 0.72);
-	--glass-line: rgb(255 255 255 / 0.8);
-	--shadow: 0 1px 2px rgb(36 38 43 / 0.08), 0 24px 50px -24px rgb(36 38 43 / 0.35);
+	--bg: #060f13;
+	--bg-2: #0a171d;
+	--card: #0c1b22;
+	--ink: #eaf6f9;
+	--ink-2: rgb(234 246 249 / 0.78);
+	--muted: rgb(234 246 249 / 0.58);
+	--line: rgb(127 224 240 / 0.1);
+	--line-strong: rgb(127 224 240 / 0.2);
+	--deep: #12b5d6;
+	--on-deep: #060f13;
+	--accent: #12b5d6;
+	--accent-2: #7fe0f0;
+	--accent-3: #0b2a33;
+	--accent-ink: #7fe0f0;
+	--on-accent: #060f13;
+	--btn: #12b5d6;
+	--on-btn: #060f13;
+	--btn-dot: #060f13;
+	--glass: rgb(10 25 32 / 0.66);
+	--glass-line: rgb(127 224 240 / 0.14);
+	--stage: #050c10;
+	--aura: rgb(18 181 214 / 0.16);
+	--shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 30px 60px -30px rgb(0 0 0 / 0.75);
 }
 
 html {
@@ -88,7 +78,7 @@ html.lenis body {
 	overscroll-behavior: contain;
 }
 body {
-	background: var(--bg);
+	background: url("/img/grain.png") repeat, var(--bg);
 	color: var(--ink);
 	font-family: var(--font-sans);
 	font-weight: 450;
@@ -117,23 +107,6 @@ main {
 	text-transform: uppercase;
 	line-height: 0.88;
 	letter-spacing: -0.004em;
-}
-/* The accent word: ink on a marker block of the accent colour, which swipes in behind it (--mx, landing-motion). */
-.mark {
-	position: relative;
-	z-index: 0;
-	color: var(--on-accent);
-	padding: 0 0.07em;
-	margin: 0 -0.03em;
-}
-.mark::before {
-	content: "";
-	position: absolute;
-	inset: 0.03em 0 0.01em;
-	z-index: -1;
-	background: var(--accent);
-	transform: scaleX(var(--mx, 1));
-	transform-origin: left center;
 }
 .lead {
 	font-size: clamp(18px, 1.55vw, 22px);
@@ -219,24 +192,39 @@ main {
 	white-space: nowrap;
 }
 
-/* the palette switch: three swatches, each drawn in its own split */
-.pal {
-	display: inline-flex;
-	gap: 7px;
-	padding: 5px;
+/* the theme switch: day and night, a thumb that slides between them */
+.theme {
+	position: relative;
+	display: inline-grid;
+	grid-template-columns: 1fr 1fr;
+	padding: 4px;
 	border-radius: 999px;
-	box-shadow: inset 0 0 0 1px var(--line);
+	box-shadow: inset 0 0 0 1px var(--line-strong);
 }
-.pal button {
-	width: 24px;
-	height: 24px;
+.theme::before {
+	content: "";
+	position: absolute;
+	top: 4px;
+	bottom: 4px;
+	left: 4px;
+	width: calc(50% - 4px);
 	border-radius: 999px;
-	box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.15);
-	transition: transform 0.25s var(--ease), box-shadow 0.25s var(--ease);
+	background: var(--ink);
+	transition: transform 0.45s var(--ease);
 }
-.pal button:hover {
-	transform: scale(1.12);
+[data-theme="dark"] .theme::before {
+	transform: translateX(100%);
 }
-.pal button[aria-checked="true"] {
-	box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--ink);
+.theme button {
+	position: relative;
+	display: grid;
+	place-items: center;
+	width: 36px;
+	height: 32px;
+	border-radius: 999px;
+	color: var(--muted);
+	transition: color 0.3s var(--ease);
+}
+.theme button[aria-pressed="true"] {
+	color: var(--bg);
 }

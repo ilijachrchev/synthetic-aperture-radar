@@ -3,19 +3,8 @@ import Link from 'next/link'
 import { HERO, MAP_HEAD, STORIES_HEAD } from '@/content/landing'
 import { LivingRadar } from './living-radar'
 import { SiteNav } from './site-nav'
+import { type Chapter, StoryScroll } from './story-scroll'
 import './landing.css'
-
-function Marked({ text, mark }: { text: string; mark: string }) {
-	const at = text.lastIndexOf(mark)
-	if (at < 0) return <>{text}</>
-	return (
-		<>
-			{text.slice(0, at)}
-			<span className="mark">{mark}</span>
-			{text.slice(at + mark.length)}
-		</>
-	)
-}
 
 /** The hero: what it is on the left, the real thing on the right, a season of radar playing by itself. */
 export function Hero({ radar, track, facts }: { radar: { img: string; date: string }[]; track: string; facts: string[] }) {
@@ -30,7 +19,7 @@ export function Hero({ radar, track, facts }: { radar: { img: string; date: stri
 					<h1 className="display hx-title">
 						{HERO.lines.map((l) => (
 							<span key={l} className="hx-line">
-								<Marked text={l} mark={HERO.mark} />
+								{l}
 							</span>
 						))}
 					</h1>
@@ -64,49 +53,24 @@ export function Hero({ radar, track, facts }: { radar: { img: string; date: stri
 	)
 }
 
-export type StoryCardData = { key: string; title: string; what: string; kind: string; where: string; coverage: string; before: { img: string; label: string }; after: { img: string; label: string } }
-
-/** Four cards, one per story: the real after-pass, the pass before on hover, the 3D icon, one line. */
-export function Stories({ cards }: { cards: StoryCardData[] }) {
+/** The four stories: a short head, then the pinned stage where scrolling plays each season on the real passes. */
+export function Stories({ chapters }: { chapters: Chapter[] }) {
 	return (
-		<section id="stories" className="sx">
+		<section id="stories" className="st">
 			<div className="sx-head">
 				<h2 className="display sx-title">{STORIES_HEAD.title}</h2>
 				<p className="lead" data-a>
 					{STORIES_HEAD.line}
 				</p>
 			</div>
-			<div className="sx-grid" data-a-group>
-				{cards.map((c) => (
-					<Link key={c.key} href={`/map?story=${c.key}`} className="sc" data-a>
-						<div className="sc-img">
-							<img src={c.before.img} alt={`NISAR, ${c.where}, ${c.before.label}`} loading="lazy" />
-							<img className="sc-after" src={c.after.img} alt={`NISAR, ${c.where}, ${c.after.label}`} loading="lazy" />
-							<span className="sc-tag sc-tag-after mono">{c.after.label}</span>
-							<span className="sc-tag sc-tag-before mono">{c.before.label}</span>
-						</div>
-						<img className="sc-icon" src={`/img/icons/${c.key}.webp`} alt="" width={96} height={96} loading="lazy" />
-						<div className="sc-body">
-							<p className="mono sc-kind">{c.kind}</p>
-							<h3 className="display">{c.title}</h3>
-							<p className="sc-what">{c.what}</p>
-							<p className="mono sc-meta">
-								{c.where} · {c.coverage}
-							</p>
-						</div>
-						<span className="sc-go" aria-hidden>
-							<ArrowUpRight size={18} strokeWidth={2.2} />
-						</span>
-					</Link>
-				))}
-			</div>
+			<StoryScroll chapters={chapters} />
 		</section>
 	)
 }
 
 const ICONS = [Play, Columns2, Globe2]
 
-/** The app, shown as itself: a real screenshot in a browser window, in the palette that is on. */
+/** The app, shown as itself: a real screenshot in a browser window, in the theme that is on. */
 export function MapPreview() {
 	return (
 		<section id="map" className="mx">
@@ -114,7 +78,7 @@ export function MapPreview() {
 				<h2 className="display sx-title">
 					{MAP_HEAD.lines.map((l) => (
 						<span key={l} className="hx-line">
-							<Marked text={l} mark={MAP_HEAD.mark} />
+							{l}
 						</span>
 					))}
 				</h2>
@@ -130,8 +94,8 @@ export function MapPreview() {
 						<i />
 						<span className="mono">dancing-with-the-sars / map</span>
 					</span>
-					{['1', '2', '3'].map((p) => (
-						<img key={p} className="mx-shot" data-p={p} src={`/img/app/app-${p}.webp`} alt={p === '2' ? 'The map app: the Albufera radar over a satellite map, with the stories, the pass card and the season timeline' : ''} width={1440} height={900} loading="lazy" />
+					{['light', 'dark'].map((p) => (
+						<img key={p} className="mx-shot" data-t={p} src={`/img/app/app-${p}.webp`} alt={p === 'light' ? 'The map app: the Albufera radar over a satellite map, with the stories, the pass card and the season timeline' : ''} width={1440} height={900} loading="lazy" />
 					))}
 				</Link>
 			</div>

@@ -26,7 +26,7 @@ def main():
     ap.add_argument("--seconds", type=float, default=40, help="stop after this long even if the story has not ended")
     ap.add_argument("--size", default="1920x1080")
     ap.add_argument("--every", type=float, default=0.5, help="seconds between frames")
-    ap.add_argument("--palette", default="2")
+    ap.add_argument("--theme", default="dark", choices=["light", "dark"], help="day or night")
     ap.add_argument("--skip", type=float, default=1.5, help="seconds cut from the start of the MP4, while the first tiles arrive")
     args = ap.parse_args()
     w, h = (int(v) for v in args.size.split("x"))
@@ -41,7 +41,7 @@ def main():
         errors = []
         page.on("console", lambda m: errors.append(m.text) if m.type == "error" else None)
         page.on("pageerror", lambda e: errors.append(str(e)))
-        page.add_init_script(f"try {{ localStorage.setItem('palette', '{args.palette}') }} catch (e) {{}}")
+        page.add_init_script(f"try {{ localStorage.setItem('theme', '{args.theme}') }} catch (e) {{}}")
         page.goto(args.url, wait_until="domcontentloaded")
         page.wait_for_selector(".fl[data-cinema]", timeout=120000)
         start = time.time()

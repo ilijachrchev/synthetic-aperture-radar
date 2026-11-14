@@ -62,7 +62,7 @@ def main():
     ap.add_argument("--shots", nargs="*")
     ap.add_argument("--size", default="1440x900")
     ap.add_argument("--scale", type=float, default=1.0)
-    ap.add_argument("--palette", default="2")
+    ap.add_argument("--theme", default="dark", choices=["light", "dark"], help="day or night")
     ap.add_argument("--headed", action="store_true")
     ap.add_argument("--cinema", action="store_true", help="film mode: only what the story needs on screen")
     args = ap.parse_args()
@@ -78,7 +78,7 @@ def main():
         errors = []
         page.on("console", lambda m: errors.append(m.text) if m.type == "error" else None)
         page.on("pageerror", lambda e: errors.append(str(e)))
-        page.add_init_script(f"try {{ localStorage.setItem('palette', '{args.palette}') }} catch (e) {{}}")
+        page.add_init_script(f"try {{ localStorage.setItem('theme', '{args.theme}') }} catch (e) {{}}")
         page.goto(url, wait_until="domcontentloaded")
         page.wait_for_function("window.__flood && document.querySelector('.fl[data-ready]')", timeout=90000)
         for name in shots:

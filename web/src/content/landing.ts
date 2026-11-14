@@ -5,7 +5,6 @@ import type { SiteKey } from '@/lib/radar'
 export const HERO = {
 	eyebrow: 'NASA-ISRO NISAR · L-band radar · Valencia, Spain',
 	lines: ['Flood, grow,', 'burn and sink.'],
-	mark: 'sink.',
 	lead: 'One web app that shows how the land around Valencia changes, seen by NISAR radar, and what is likely to come next.',
 }
 
@@ -25,7 +24,7 @@ export type Story = {
 	change: { kind: 'water' | 'fire' | 'sink' | 'quake'; legend: string; event?: string; epicentre?: [number, number] }
 }
 
-export const STORIES_HEAD = { title: 'Four stories', line: 'Real NISAR passes over each place. Hover a card to see the pass before.' }
+export const STORIES_HEAD = { title: 'Four stories', line: 'Scroll, and each season plays out on the real NISAR passes, over the ground around them.' }
 
 export const STORIES: Story[] = [
 	{
@@ -92,7 +91,6 @@ export const STORIES: Story[] = [
 
 export const MAP_HEAD = {
 	lines: ['Every pass,', 'one map.'],
-	mark: 'map.',
 	line: 'Pick a story, play the season, compare any two passes. Every picture links to its record in NASA’s catalogue.',
 	commands: ['Play the season', 'Compare two passes', 'See every place'],
 }

@@ -1,7 +1,7 @@
 /* The flood page: the map is the picture, one readout top right, one dock at the bottom that is the time axis.
-   Panels take the palette tokens; what sits on the map itself (title, place names) is always light, because the
-   satellite picture under it is the same in every palette. Data colours are fixed too: they mean the same thing
-   in every palette and they match the shader (src/lib/water-layer.ts). */
+   Panels take the theme tokens (day and night); what sits on the map itself (title, place names) is always light,
+   because the satellite picture under it is the same in both themes. Data colours are fixed too: they mean the same
+   thing by day and by night and they match the shader (src/lib/water-layer.ts). */
 .fl {
 	--w-open: #2a8fff;
 	--w-veg: #33e0ad;
@@ -839,7 +839,7 @@
 .fl[data-cinema] .fl-picnote,
 .fl[data-cinema] .fl-keys,
 .fl[data-cinema] .fl-src,
-.fl[data-cinema] .pal {
+.fl[data-cinema] .theme {
 	display: none;
 }
 .fl[data-cinema] .fl-caption {

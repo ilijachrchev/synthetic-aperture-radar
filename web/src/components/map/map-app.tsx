@@ -7,7 +7,7 @@ import Link from 'next/link'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Mark } from '../brand'
 import { ChangeLayer } from '../change-layer'
-import { PaletteSwitch } from '../palette-switch'
+import { ThemeSwitch } from '../theme-switch'
 import './map-app.css'
 
 type PassView = { img: string; dates: string[]; crid: string | null; granule: string; collection: string }
@@ -403,7 +403,7 @@ export function MapApp({ stories }: { stories: StoryCfg[] }) {
 					<Link href="/" className="mp-back">
 						<ArrowLeft size={15} strokeWidth={2} /> Landing
 					</Link>
-					<PaletteSwitch />
+					<ThemeSwitch />
 				</div>
 			</aside>
 
