@@ -55,7 +55,8 @@ const gainFor = (rows: [number, number][], share: number) => {
 	const from = sum(rows[0])
 	const to = sum(rows[rows.length - 1])
 	const x = Math.min(1, Math.max(0, share))
-	if (to <= from) return x
+	// all of it means the whole clock, also where the table is flat at its end
+	if (to <= from || x >= 1) return x
 	const target = from + (to - from) * x
 	for (let k = 0; k < rows.length - 1; k++) {
 		const lo = sum(rows[k])

@@ -409,22 +409,15 @@ export function WaterApp({ story }: { story: Story }) {
 				e.chip.dataset.state = frame ? 'pass' : 'between'
 				put(e.chip, frame ? `${PLATFORMS[frame.platform ?? ''] ?? series.sensor} radar pass` : 'Between passes, an estimate')
 			}
-			put(
-				e.seen,
-				frame && frame.seen < 0.98
-					? `This pass saw ${Math.round(frame.seen * 100)} % of the site`
-					: frame || !v.driven
-						? ''
-						: v.storm
-							? v.loss > 0
-								? 'Rain over: the shoreline settles towards the next pass'
-								: 'The shoreline rises with the rain'
-							: days.event === null || T < days.event
-								? ''
-								: v.loss > 0
-									? `Not seen yet: this is the scar of the ${utcDay(model.times[v.b], false)} pass`
-									: 'The fire burns: timed by the EFFIS record',
-			)
+			// the line under the number: what kind of picture this is
+			const note = () => {
+				if (frame) return frame.seen < 0.98 ? `This pass saw ${Math.round(frame.seen * 100)} % of the site` : ''
+				if (!v.driven) return ''
+				if (v.storm) return v.loss > 0 ? 'Rain over: the shoreline settles towards the next pass' : 'The shoreline rises with the rain'
+				if (days.event === null || T < days.event) return ''
+				return v.loss > 0 ? `Not seen yet: this is the scar of the ${utcDay(model.times[v.b], false)} pass` : 'The fire burns: timed by the EFFIS record'
+			}
+			put(e.seen, note())
 			const word = twoClass ? 'open water' : 'water'
 			if (story.kind === 'fire') {
 				const mapped = story.outline && data.outline ? (data.outline[story.outline.key].features[0] as { properties: { effis_area_ha: number } }).properties.effis_area_ha : 0

@@ -267,4 +267,6 @@ python scripts/shoot_flood.py out --story fire --cinema --size 1920x1080
 python scripts/record_flood.py out --url "http://localhost:3000/flood?story"
 ```
 
+The two capture scripts drive a browser through Playwright. They use the browser of Playwright when it is installed and, when it is not, the Chrome or Edge of the computer, so nothing has to be downloaded. In that case `record_flood.py` takes the frames from the browser's own screencast and makes the film with the `ffmpeg` on the path; on a busy computer take it a few times and keep the smoothest.
+
 <sub>Drafted with an SI assistant (Claude Code). Frames marked mockup are SI-generated and watermarked. Decisions on the idea and the look stay with the team.</sub>
