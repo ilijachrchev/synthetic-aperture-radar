@@ -1,0 +1,333 @@
+{
+  "schema_version": 1,
+  "id": "prediction-albufera-flooded-area",
+  "site": "albufera",
+  "quantity": "flooded area inside the rice-field mask (open water + inundated vegetation)",
+  "units": "ha",
+  "issued_at_utc": "2026-11-14T11:33:20+00:00",
+  "forecast_origin": "2026-11-14",
+  "data_cutoff": "2026-11-10",
+  "observation_age_days": 4,
+  "recent_level_ha": 3819.3,
+  "climatology_at_cutoff_ha": 3711.7,
+  "mask": {
+    "file": "data/prediction/albufera/rice_mask.tif",
+    "area_ha": 14790.6,
+    "rule": "CORINE 2018 class 213 AND (at least 60 m inside the polygon OR JRC occurrence 1-89 %), minus WorldCover urban (50), JRC permanent water (>= 90 %) and sea"
+  },
+  "source": {
+    "type": "sentinel-1 water maps",
+    "collection": "OPERA_L3_DSWX-S1_V1",
+    "layer": "B01_WTR",
+    "flooded_classes": {
+      "1": "open water",
+      "3": "inundated vegetation"
+    },
+    "passes_used": 396,
+    "first_date": "2024-08-21",
+    "last_date": "2026-11-10"
+  },
+  "season": {
+    "start_month": 8,
+    "current": 2026,
+    "reference": [
+      2024,
+      2025
+    ]
+  },
+  "selection_method": "Lowest MAE per effective lead on past seasons held out in turn; current season never selects",
+  "interval_method": "Absolute-error order statistic ceil((n+1)*coverage) from the selection folds; clipped to 0 and the mask area. Historical-error ranges, not a coverage guarantee",
+  "selected_models_by_lead": {
+    "16": "climatology",
+    "28": "climatology",
+    "40": "climatology"
+  },
+  "predictions": [
+    {
+      "horizon_days": 12,
+      "target_date": "2026-11-26",
+      "effective_lead_days": 16,
+      "model": "climatology",
+      "value_ha": 4350.7,
+      "intervals": {
+        "80": {
+          "lower_ha": 3194.0,
+          "upper_ha": 5507.3,
+          "radius_ha": 1156.6,
+          "calibration_n": 114,
+          "status": "available"
+        },
+        "95": {
+          "lower_ha": 2011.5,
+          "upper_ha": 6689.8,
+          "radius_ha": 2339.1,
+          "calibration_n": 114,
+          "status": "available"
+        }
+      }
+    },
+    {
+      "horizon_days": 24,
+      "target_date": "2026-12-08",
+      "effective_lead_days": 28,
+      "model": "climatology",
+      "value_ha": 4182.8,
+      "intervals": {
+        "80": {
+          "lower_ha": 2982.5,
+          "upper_ha": 5383.0,
+          "radius_ha": 1200.3,
+          "calibration_n": 110,
+          "status": "available"
+        },
+        "95": {
+          "lower_ha": 1843.7,
+          "upper_ha": 6521.9,
+          "radius_ha": 2339.1,
+          "calibration_n": 110,
+          "status": "available"
+        }
+      }
+    },
+    {
+      "horizon_days": 36,
+      "target_date": "2026-12-20",
+      "effective_lead_days": 40,
+      "model": "climatology",
+      "value_ha": 4707.1,
+      "intervals": {
+        "80": {
+          "lower_ha": 3475.4,
+          "upper_ha": 5938.8,
+          "radius_ha": 1231.7,
+          "calibration_n": 106,
+          "status": "available"
+        },
+        "95": {
+          "lower_ha": 2368.0,
+          "upper_ha": 7046.2,
+          "radius_ha": 2339.1,
+          "calibration_n": 106,
+          "status": "available"
+        }
+      }
+    }
+  ],
+  "model_predictions": [
+    {
+      "horizon_days": 12,
+      "target_date": "2026-11-26",
+      "effective_lead_days": 16,
+      "model": "persistence",
+      "value_ha": 3819.3,
+      "intervals": {
+        "80": {
+          "lower_ha": 1944.6,
+          "upper_ha": 5694.0,
+          "radius_ha": 1874.7,
+          "calibration_n": 114,
+          "status": "available"
+        },
+        "95": {
+          "lower_ha": 702.9,
+          "upper_ha": 6935.7,
+          "radius_ha": 3116.4,
+          "calibration_n": 114,
+          "status": "available"
+        }
+      }
+    },
+    {
+      "horizon_days": 12,
+      "target_date": "2026-11-26",
+      "effective_lead_days": 16,
+      "model": "climatology",
+      "value_ha": 4350.7,
+      "intervals": {
+        "80": {
+          "lower_ha": 3194.0,
+          "upper_ha": 5507.3,
+          "radius_ha": 1156.6,
+          "calibration_n": 114,
+          "status": "available"
+        },
+        "95": {
+          "lower_ha": 2011.5,
+          "upper_ha": 6689.8,
+          "radius_ha": 2339.1,
+          "calibration_n": 114,
+          "status": "available"
+        }
+      }
+    },
+    {
+      "horizon_days": 12,
+      "target_date": "2026-11-26",
+      "effective_lead_days": 16,
+      "model": "damped_anomaly",
+      "value_ha": 4413.8,
+      "intervals": {
+        "80": {
+          "lower_ha": 3013.3,
+          "upper_ha": 5814.3,
+          "radius_ha": 1400.5,
+          "calibration_n": 114,
+          "status": "available"
+        },
+        "95": {
+          "lower_ha": 1608.9,
+          "upper_ha": 7218.6,
+          "radius_ha": 2804.8,
+          "calibration_n": 114,
+          "status": "available"
+        }
+      }
+    },
+    {
+      "horizon_days": 24,
+      "target_date": "2026-12-08",
+      "effective_lead_days": 28,
+      "model": "persistence",
+      "value_ha": 3819.3,
+      "intervals": {
+        "80": {
+          "lower_ha": 1421.7,
+          "upper_ha": 6216.9,
+          "radius_ha": 2397.6,
+          "calibration_n": 110,
+          "status": "available"
+        },
+        "95": {
+          "lower_ha": 0.0,
+          "upper_ha": 7658.2,
+          "radius_ha": 3838.9,
+          "calibration_n": 110,
+          "status": "available"
+        }
+      }
+    },
+    {
+      "horizon_days": 24,
+      "target_date": "2026-12-08",
+      "effective_lead_days": 28,
+      "model": "climatology",
+      "value_ha": 4182.8,
+      "intervals": {
+        "80": {
+          "lower_ha": 2982.5,
+          "upper_ha": 5383.0,
+          "radius_ha": 1200.3,
+          "calibration_n": 110,
+          "status": "available"
+        },
+        "95": {
+          "lower_ha": 1843.7,
+          "upper_ha": 6521.9,
+          "radius_ha": 2339.1,
+          "calibration_n": 110,
+          "status": "available"
+        }
+      }
+    },
+    {
+      "horizon_days": 24,
+      "target_date": "2026-12-08",
+      "effective_lead_days": 28,
+      "model": "damped_anomaly",
+      "value_ha": 4225.1,
+      "intervals": {
+        "80": {
+          "lower_ha": 2873.0,
+          "upper_ha": 5577.2,
+          "radius_ha": 1352.1,
+          "calibration_n": 110,
+          "status": "available"
+        },
+        "95": {
+          "lower_ha": 1725.5,
+          "upper_ha": 6724.6,
+          "radius_ha": 2499.6,
+          "calibration_n": 110,
+          "status": "available"
+        }
+      }
+    },
+    {
+      "horizon_days": 36,
+      "target_date": "2026-12-20",
+      "effective_lead_days": 40,
+      "model": "persistence",
+      "value_ha": 3819.3,
+      "intervals": {
+        "80": {
+          "lower_ha": 966.6,
+          "upper_ha": 6672.0,
+          "radius_ha": 2852.7,
+          "calibration_n": 106,
+          "status": "available"
+        },
+        "95": {
+          "lower_ha": 0.0,
+          "upper_ha": 8116.7,
+          "radius_ha": 4297.4,
+          "calibration_n": 106,
+          "status": "available"
+        }
+      }
+    },
+    {
+      "horizon_days": 36,
+      "target_date": "2026-12-20",
+      "effective_lead_days": 40,
+      "model": "climatology",
+      "value_ha": 4707.1,
+      "intervals": {
+        "80": {
+          "lower_ha": 3475.4,
+          "upper_ha": 5938.8,
+          "radius_ha": 1231.7,
+          "calibration_n": 106,
+          "status": "available"
+        },
+        "95": {
+          "lower_ha": 2368.0,
+          "upper_ha": 7046.2,
+          "radius_ha": 2339.1,
+          "calibration_n": 106,
+          "status": "available"
+        }
+      }
+    },
+    {
+      "horizon_days": 36,
+      "target_date": "2026-12-20",
+      "effective_lead_days": 40,
+      "model": "damped_anomaly",
+      "value_ha": 4735.5,
+      "intervals": {
+        "80": {
+          "lower_ha": 3462.4,
+          "upper_ha": 6008.6,
+          "radius_ha": 1273.1,
+          "calibration_n": 106,
+          "status": "available"
+        },
+        "95": {
+          "lower_ha": 2364.9,
+          "upper_ha": 7106.1,
+          "radius_ha": 2370.6,
+          "calibration_n": 106,
+          "status": "available"
+        }
+      }
+    }
+  ],
+  "nisar_check": {
+    "status": "not_performed"
+  },
+  "caveats": [
+    "Seasonal agricultural flooding of rice fields, not a disaster flood forecast.",
+    "Wind can roughen water and hide it from radar; single passes can read low.",
+    "Only two past seasons: climatology is thin and the ranges are wide on purpose."
+  ]
+}
