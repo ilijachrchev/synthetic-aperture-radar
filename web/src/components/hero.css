@@ -49,9 +49,9 @@
 	inset: 0;
 	opacity: 0;
 	background:
-		linear-gradient(to bottom, rgb(10 14 32 / 0.45), transparent 24%),
-		radial-gradient(60% 70% at 100% 100%, rgb(8 12 28 / 0.62), transparent 72%),
-		radial-gradient(55% 60% at 0% 100%, rgb(8 12 28 / 0.42), transparent 70%);
+		linear-gradient(to bottom, rgb(6 18 53 / 0.5), transparent 24%),
+		radial-gradient(60% 70% at 100% 100%, rgb(4 14 46 / 0.66), transparent 72%),
+		radial-gradient(55% 60% at 0% 100%, rgb(4 14 46 / 0.45), transparent 70%);
 	transition: opacity 0.9s var(--ease);
 }
 [data-theme="dark"] .hero-scrim {
