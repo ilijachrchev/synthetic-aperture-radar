@@ -15,7 +15,7 @@
 //
 // No framework in here: it is a MapLibre custom layer and can be used from any page.
 import type { CustomLayerInterface, CustomRenderMethodInput, Map as MapLibreMap } from 'maplibre-gl'
-import { QUAD_VERT, TILE_VERT, buildProgram, quadMatrix, tileRect, unitQuad, withClip } from './gl-quad'
+import { type LazyProgram, QUAD_VERT, TERRAIN_REDRAW_MS, TILE_VERT, quadMatrix, startProgram, tileRect, unitQuad, withClip } from './gl-quad'
 import { WATER_FRAG } from './water-shader'
 
 export type WaterFrame = {
@@ -107,11 +107,14 @@ const UNIFORMS = [
 	'u_matrix', 'u_rect', 'u_clip', 'u_a', 'u_b', 'u_ref', 'u_base', 'u_size', 'u_gain', 'u_loss', 'u_obs', 'u_time', 'u_flow', 'u_flash', 'u_hasRef',
 	'u_opacity', 'u_forecast', 'u_soft', 'u_fill', 'u_line', 'u_reach', 'u_lin', 'u_range', 'u_cOpen', 'u_cVeg', 'u_cGlow', 'u_cEdge', 'u_cUnseen',
 ]
-const MAX_TEXTURES = 8
+/** frames kept on the card: every pass of a story, so playing it again loads nothing; a longer series cycles */
+const MAX_TEXTURES = 14
 const FLASH_MS = 650
+/** frames fetched ahead of time go on the card one at a time, this far apart, and not while the camera moves */
+const IDLE_UPLOAD_MS = 140
 
 type Slot = { tex: WebGLTexture; used: number }
-type Prog = { program: WebGLProgram; u: Record<string, WebGLUniformLocation | null> }
+type Prog = { lazy: LazyProgram; u: Record<string, WebGLUniformLocation | null> | null }
 type TerrainTile = Parameters<NonNullable<CustomLayerInterface['renderToTerrainTile']>>[1]
 
 export class WaterLayer {
@@ -120,7 +123,7 @@ export class WaterLayer {
 	style: WaterStyle
 	private map: MapLibreMap | null = null
 	private gl: WebGL2RenderingContext | null = null
-	/** the layer drawn by the camera, and the same layer drawn into one terrain tile */
+	/** the layer drawn by the camera, and the same layer drawn into one terrain tile; each compiles when first needed */
 	private flat: Prog | null = null
 	private draped: Prog | null = null
 	private vao: WebGLVertexArrayObject | null = null
@@ -128,7 +131,11 @@ export class WaterLayer {
 	private revision = 0
 	private slots = new Map<string, Slot>()
 	private loading = new Set<string>()
-	private pending: { key: string; bitmap: ImageBitmap }[] = []
+	/** decoded frames waiting for the card; `soon` ones are needed for the moment on screen or the next pass */
+	private pending: { key: string; bitmap: ImageBitmap; soon: boolean }[] = []
+	private lastIdleUpload = 0
+	/** appended to every file address, so a new bake is never taken from the browser's cache */
+	private version: string
 	private view: WaterView = { a: 0, b: 0, gain: 0, loss: 0, observed: 1, ref: -1 }
 	private flow = 0
 	private flashAt = -1e9
@@ -147,6 +154,7 @@ export class WaterLayer {
 		this.meta = opts.meta
 		this.frames = opts.series.frames
 		this.style = { ...WATER_STYLE, ...opts.style }
+		this.version = `?v=${encodeURIComponent(opts.meta.baked_utc)}`
 		this.layer = {
 			id: this.id,
 			type: 'custom',
@@ -166,7 +174,19 @@ export class WaterLayer {
 		this.want(this.view.a)
 		this.want(this.view.b)
 		if (this.view.ref >= 0) this.want(this.view.ref)
+		// the next two passes, so the playhead never reaches a pass that is still on its way
+		this.want(this.view.b + 1)
+		this.want(this.view.b + 2)
 		this.touch()
+	}
+
+	/** fetch every pass of the series, without hurry: they go on the card while the map is still */
+	preloadAll() {
+		for (let i = 0; i < Math.min(this.frames.length, MAX_TEXTURES - 2); i++) this.load(`f${i}`, this.url(this.frames[i].file), false)
+	}
+
+	private url(file: string) {
+		return `${this.root}/${file}${this.version}`
 	}
 
 	/** 0 to 1: how much the ripples run (1 while the series plays) */
@@ -198,16 +218,33 @@ export class WaterLayer {
 	}
 
 	/** What the layer draws has changed. Draped over terrain the tiles are kept as textures, and MapLibre only
-	 *  draws them again when this number moves. */
+	 *  draws them again when this number moves. It draws all of them, at 2048 pixels a side with everything on them,
+	 *  so the number moves at most TERRAIN_REDRAW_MS apart: the camera still moves at full speed over the textures. */
 	private touch() {
+		if (this.redrawQueued || this.gone) return
+		const wait = TERRAIN_REDRAW_MS - (performance.now() - this.lastRedraw)
+		if (wait > 0) {
+			// too soon after the last one: one redraw when it is time, and no frames drawn for nothing until then
+			this.redrawQueued = true
+			this.redrawTimer = window.setTimeout(() => {
+				this.redrawQueued = false
+				this.touch()
+			}, wait)
+			return
+		}
+		this.lastRedraw = performance.now()
 		this.layer.terrainTileRevision = ++this.revision
 		this.map?.triggerRepaint()
 	}
 
+	private lastRedraw = -1e9
+	private redrawQueued = false
+	private redrawTimer = 0
+
 	/** start loading a frame ahead of the playhead */
 	want(index: number) {
 		if (index < 0 || index >= this.frames.length) return
-		this.load(`f${index}`, `${this.root}/${this.frames[index].file}`)
+		this.load(`f${index}`, this.url(this.frames[index].file), true)
 	}
 
 	/** true when every frame of the current view is ready to draw */
@@ -216,10 +253,21 @@ export class WaterLayer {
 		return this.slots.has('base') && this.slots.has(`f${a}`) && this.slots.has(`f${b}`) && (ref < 0 || this.slots.has(`f${ref}`))
 	}
 
-	private load(key: string, url: string) {
-		if (this.gone || this.slots.has(key) || this.loading.has(key) || this.pending.some((p) => p.key === key)) return
+	private load(key: string, url: string, soon: boolean) {
+		if (this.gone || this.slots.has(key)) return
+		// a frame fetched ahead of time that is now needed jumps the queue
+		const waiting = this.pending.find((p) => p.key === key)
+		if (waiting) {
+			if (soon && !waiting.soon) waiting.soon = true
+			return
+		}
+		if (this.loading.has(key)) {
+			if (soon) this.urgent.add(key)
+			return
+		}
 		this.loading.add(key)
-		fetch(url)
+		if (soon) this.urgent.add(key)
+		fetch(url, soon ? undefined : { priority: 'low' })
 			.then((r) => {
 				if (!r.ok) throw new Error(`${url}: ${r.status}`)
 				return r.blob()
@@ -228,37 +276,38 @@ export class WaterLayer {
 			.then((blob) => createImageBitmap(blob, { colorSpaceConversion: 'none', premultiplyAlpha: 'none' }))
 			.then((bitmap) => {
 				if (this.gone) return bitmap.close()
-				this.pending.push({ key, bitmap })
+				this.pending.push({ key, bitmap, soon: this.urgent.has(key) })
 				this.map?.triggerRepaint()
 			})
 			.catch((err) => console.error('water frame failed to load', err))
-			.finally(() => this.loading.delete(key))
+			.finally(() => {
+				this.loading.delete(key)
+				this.urgent.delete(key)
+			})
 	}
+
+	/** frames asked for by the moment on screen while they were still being fetched ahead of time */
+	private urgent = new Set<string>()
 
 	private onAdd(map: MapLibreMap, gl: WebGL2RenderingContext) {
 		this.map = map
 		this.gl = gl
-		const make = (vert: string): Prog => {
-			const program = buildProgram(gl, vert, FRAG)
-			const u: Prog['u'] = {}
-			for (const name of UNIFORMS) u[name] = gl.getUniformLocation(program, name)
-			return { program, u }
-		}
-		this.flat = make(QUAD_VERT)
-		this.draped = make(TILE_VERT)
-		const quad = unitQuad(gl, this.flat.program)
+		// the terrain is on by default: its program first, the flat one only when the map is flat
+		this.draped = { lazy: startProgram(gl, TILE_VERT, FRAG), u: null }
+		const quad = unitQuad(gl)
 		this.vao = quad.vao
 		this.buffer = quad.buffer
-		this.load('base', `${this.root}/${this.meta.base}`)
+		this.load('base', this.url(this.meta.base), true)
 		this.set({})
 	}
 
 	private onRemove() {
 		this.gone = true
+		window.clearTimeout(this.redrawTimer)
 		const gl = this.gl
 		if (gl) {
 			for (const s of this.slots.values()) gl.deleteTexture(s.tex)
-			for (const p of [this.flat, this.draped]) if (p) gl.deleteProgram(p.program)
+			for (const p of [this.flat, this.draped]) if (p) gl.deleteProgram(p.lazy.program)
 			if (this.buffer) gl.deleteBuffer(this.buffer)
 			if (this.vao) gl.deleteVertexArray(this.vao)
 		}
@@ -269,10 +318,31 @@ export class WaterLayer {
 		this.gl = null
 	}
 
-	/** put decoded frames on the card. Done inside render, where MapLibre expects its GL state to be touched */
+	/** a program that can draw now, or null while it compiles (the layer then draws again once it is done) */
+	private use(p: Prog | null): Prog | null {
+		if (!p || !this.gl) return null
+		if (!p.lazy.ready()) return null
+		if (!p.u) {
+			const u: NonNullable<Prog['u']> = {}
+			for (const name of UNIFORMS) u[name] = this.gl.getUniformLocation(p.lazy.program, name)
+			p.u = u
+		}
+		return p
+	}
+
+	/** Put decoded frames on the card. Done inside render, where MapLibre expects its GL state to be touched. A
+	 *  frame the screen needs goes up at once; one fetched ahead of time waits until the camera is still, one at a time. */
 	private upload(gl: WebGL2RenderingContext) {
-		const job = this.pending.shift()
-		if (!job) return
+		let i = this.pending.findIndex((p) => p.soon)
+		if (i < 0 && this.pending.length && performance.now() - this.lastIdleUpload > IDLE_UPLOAD_MS && !this.map?.isMoving()) {
+			i = 0
+			this.lastIdleUpload = performance.now()
+		}
+		if (i < 0) {
+			if (this.pending.length) this.map?.triggerRepaint()
+			return
+		}
+		const job = this.pending.splice(i, 1)[0]
 		const tex = gl.createTexture()!
 		gl.activeTexture(gl.TEXTURE0)
 		gl.bindTexture(gl.TEXTURE_2D, tex)
@@ -304,8 +374,17 @@ export class WaterLayer {
 	 *  moves by itself (ripples, the pulse of a pass) asks for the next frame. */
 	private prerender(gl: WebGL2RenderingContext) {
 		this.upload(gl)
+		// a program still compiling: look again next frame, and draw the layer again once it is done
+		if (this.compiling) {
+			if (this.compiling.lazy.ready()) {
+				this.compiling = null
+				this.touch()
+			} else this.map?.triggerRepaint()
+		}
 		if (this.flow > 0.001 || performance.now() - this.flashAt < FLASH_MS) this.touch()
 	}
+
+	private compiling: Prog | null = null
 
 	/** Everything the two paths share: the frames, the clocks, the colours. False when there is nothing to draw yet. */
 	private begin(gl: WebGL2RenderingContext, p: Prog) {
@@ -321,9 +400,9 @@ export class WaterLayer {
 
 		const now = performance.now()
 		const flash = Math.max(0, 1 - (now - this.flashAt) / FLASH_MS)
-		const u = p.u
+		const u = p.u!
 		const s = this.style
-		gl.useProgram(p.program)
+		gl.useProgram(p.lazy.program)
 		const bind = (unit: number, tex: WebGLTexture, loc: WebGLUniformLocation | null) => {
 			gl.activeTexture(gl.TEXTURE0 + unit)
 			gl.bindTexture(gl.TEXTURE_2D, tex)
@@ -366,8 +445,15 @@ export class WaterLayer {
 		// the camera matrix below is a Mercator one. On the globe (far out, without terrain) it would put the
 		// rectangle in the wrong place, so the layer waits until the globe has turned flat, near zoom 12
 		if (input.shaderData.variantName !== 'mercator') return
-		if (!this.flat || !this.begin(gl, this.flat)) return
-		gl.uniformMatrix4fv(this.flat.u.u_matrix, false, quadMatrix(input.defaultProjectionData.mainMatrix as unknown as ArrayLike<number>, this.meta.bounds))
+		this.flat ??= { lazy: startProgram(gl, QUAD_VERT, FRAG), u: null }
+		const p = this.use(this.flat)
+		if (!p) {
+			this.compiling = this.flat
+			this.map?.triggerRepaint()
+			return
+		}
+		if (!this.begin(gl, p)) return
+		gl.uniformMatrix4fv(p.u!.u_matrix, false, quadMatrix(input.defaultProjectionData.mainMatrix as unknown as ArrayLike<number>, this.meta.bounds))
 		withClip(gl, this.clip, () => gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4))
 		gl.bindVertexArray(null)
 	}
@@ -376,9 +462,15 @@ export class WaterLayer {
 	 *  has no place in a tile, so it does not apply here. */
 	private renderTile(gl: WebGL2RenderingContext, tile: TerrainTile) {
 		const at = tileRect(this.meta.bounds, tile.tileID)
-		if (!at || !this.draped || !this.begin(gl, this.draped)) return
-		gl.uniform4fv(this.draped.u.u_rect, at.rect)
-		gl.uniform4fv(this.draped.u.u_clip, at.clip)
+		if (!at) return
+		const p = this.use(this.draped)
+		if (!p) {
+			this.compiling = this.draped
+			return
+		}
+		if (!this.begin(gl, p)) return
+		gl.uniform4fv(p.u!.u_rect, at.rect)
+		gl.uniform4fv(p.u!.u_clip, at.clip)
 		gl.disable(gl.CULL_FACE)
 		gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4)
 		gl.bindVertexArray(null)

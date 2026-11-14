@@ -71,6 +71,8 @@ float swell(vec2 p, float t, float seed) {
 void main() {
 	vec3 ta = texture(u_a, v_uv, u_soft).rgb;
 	vec3 tb = texture(u_b, v_uv, u_soft).rgb;
+	// the reference pass is bound to the first frame when there is none (u_hasRef says which)
+	vec3 tr = texture(u_ref, v_uv, u_soft).rgb;
 	float sea = texture(u_base, v_uv).r;
 
 	// outside the water a distance counts for at most u_reach, so new water far from the old does not wait for
@@ -82,19 +84,48 @@ void main() {
 	// a pixel on its way into the water follows the gain clock, a pixel on its way out the loss clock
 	float sAny = mix(anyA, anyB, anyB < anyA ? u_gain : u_loss);
 	float sOpen = mix(openA, openB, openB < openA ? u_gain : u_loss);
+	float refAny = dist(tr.g);
+	float refOpen = dist(tr.b);
 
 	// the ground in grid pixels (about 15 m each), and how many of them one screen pixel covers
 	vec2 g = v_uv * u_size;
+	// Every slope used below is taken here, before the shader may stop early: a slope needs all four pixels of
+	// its little square, and some graphics drivers refuse one taken after a branch.
+	vec2 gx = dFdx(g);
+	vec2 gy = dFdy(g);
 	float texel = max(length(fwidth(g)) * 0.7071, 1e-5);
+	float wAny = fwidth(sAny);
+	float wOpen = fwidth(sOpen);
+	float wA = fwidth(anyA);
+	float wB = fwidth(anyB);
+	float wRef = fwidth(refAny);
+	float wRefOpen = fwidth(refOpen);
+	float sx = dFdx(sAny);
+	float sy = dFdy(sAny);
+
+	// ground this pass did not see: a faint grey hatch on the ground, only while the picture is a pass
+	float seen = mix(ta.r, tb.r, step(0.5, 0.5 * (u_gain + u_loss)));
+	float miss = (1.0 - smoothstep(0.35, 0.65, seen)) * u_obs * (1.0 - u_forecast);
+	float hatch = 1.0 - smoothstep(0.07, 0.14, abs(fract((g.x + g.y) / 9.0) - 0.5));
+	float missA = miss * mix(0.04, hatch * 0.09, smoothstep(3.0, 6.0, 9.0 / texel));
+	float keep = (1.0 - smoothstep(0.35, 0.65, sea)) * u_opacity;
+
+	// Far from the water of both passes (the distance has reached u_reach) nothing is drawn but that hatch: no fill,
+	// no shore, no glow, no light. That is most of the ground, so stop here; the rest is the work of the water.
+	if (min(anyA, anyB) >= u_reach - 0.01) {
+		fragColor = vec4(u_cUnseen * missA, missA) * keep;
+		return;
+	}
+
 	// the slope of the field, with a floor so flat patches stay sane
-	float gAny = max(fwidth(sAny), texel * 0.35);
+	float gAny = max(wAny, texel * 0.35);
 	float px = sAny / gAny; // signed distance to the shoreline in screen pixels, negative in water
 	// The same distance for everything soft (glow, rim, ripples): the field itself over the size of a pixel.
 	// Far from a shore the field is stored in coarse steps, and its slope there is all noise, so px is only
 	// trusted for the crisp things right at the shoreline.
 	float dpx = sAny / texel;
 	float water = clamp(0.5 - px, 0.0, 1.0);
-	float open = clamp(0.5 - sOpen / max(fwidth(sOpen), texel * 0.35), 0.0, 1.0);
+	float open = clamp(0.5 - sOpen / max(wOpen, texel * 0.35), 0.0, 1.0);
 
 	// Is this a body of water or a speck? Read the field 8 pixels wide: specks average out, bodies do not.
 	// The wide field is mixed exactly as the sharp one, so a shore on its way between two passes keeps its line.
@@ -111,12 +142,9 @@ void main() {
 	float moved = 1.0;
 	float wasLine = 0.0;
 	if (u_hasRef > 0.5) {
-		vec3 tr = texture(u_ref, v_uv, u_soft).rgb;
-		float refAny = dist(tr.g);
-		float refOpen = dist(tr.b);
-		float gRef = max(fwidth(refAny), texel * 0.35);
+		float gRef = max(wRef, texel * 0.35);
 		float freshAny = clamp(0.5 + refAny / gRef, 0.0, 1.0);
-		float freshOpen = clamp(0.5 + refOpen / max(fwidth(refOpen), texel * 0.35), 0.0, 1.0);
+		float freshOpen = clamp(0.5 + refOpen / max(wRefOpen, texel * 0.35), 0.0, 1.0);
 		fresh = max(freshAny, open * freshOpen);
 		moved = smoothstep(0.75, 3.0, abs(refAny - sAny));
 		// the line between what was there and what is new: where "new" turns over, about one screen pixel wide
@@ -124,17 +152,15 @@ void main() {
 	}
 
 	// only what the two passes disagree on is an estimate: water that both passes have is as sure between them
-	float inA = clamp(0.5 - anyA / max(fwidth(anyA), texel * 0.35), 0.0, 1.0);
-	float inB = clamp(0.5 - anyB / max(fwidth(anyB), texel * 0.35), 0.0, 1.0);
+	float inA = clamp(0.5 - anyA / max(wA, texel * 0.35), 0.0, 1.0);
+	float inB = clamp(0.5 - anyB / max(wB, texel * 0.35), 0.0, 1.0);
 	float between = (1.0 - u_obs) * (1.0 - inA * inB);
 	float shifting = (1.0 - u_obs) * smoothstep(0.5, 2.0, abs(anyB - anyA));
 
 	// Which way the shore faces on the ground, not on the screen: the screen slope of the field, taken back through
 	// the screen slope of the ground. So the light and the dashes below do not turn with the camera or the terrain.
-	vec2 gx = dFdx(g);
-	vec2 gy = dFdy(g);
 	float det = gx.x * gy.y - gx.y * gy.x;
-	vec2 grad = vec2(dFdx(sAny) * gy.y - dFdy(sAny) * gx.y, dFdy(sAny) * gx.x - dFdx(sAny) * gy.x) / (abs(det) > 1e-10 ? det : 1e-10);
+	vec2 grad = vec2(sx * gy.y - sy * gx.y, sy * gx.x - sx * gy.x) / (abs(det) > 1e-10 ? det : 1e-10);
 	vec2 nrm = grad / max(length(grad), 1e-4); // from the water towards the land
 	// the light comes from the north-west, as on a printed map (grid x runs east, grid y runs south)
 	float face = dot(nrm, vec2(-0.7071, -0.7071));
@@ -210,12 +236,6 @@ void main() {
 	halo *= 1.0 - u_forecast;
 	shade *= 1.0 - u_forecast;
 
-	// ground this pass did not see: a faint grey hatch on the ground, only while the picture is a pass
-	float seen = mix(ta.r, tb.r, step(0.5, 0.5 * (u_gain + u_loss)));
-	float miss = (1.0 - smoothstep(0.35, 0.65, seen)) * u_obs * (1.0 - u_forecast);
-	float hatch = 1.0 - smoothstep(0.07, 0.14, abs(fract((g.x + g.y) / 9.0) - 0.5));
-	float missA = miss * mix(0.04, hatch * 0.09, smoothstep(3.0, 6.0, 9.0 / texel));
-
 	// bottom to top: the hatch of unseen ground, shade, glow, casing, the water itself, the shoreline
 	vec4 acc = vec4(0.0);
 	acc = over(acc, u_cUnseen, missA);
@@ -225,5 +245,5 @@ void main() {
 	acc = over(acc, fillCol, fillA);
 	acc = over(acc, u_cEdge, line);
 
-	fragColor = acc * (1.0 - smoothstep(0.35, 0.65, sea)) * u_opacity;
+	fragColor = acc * keep;
 }`
