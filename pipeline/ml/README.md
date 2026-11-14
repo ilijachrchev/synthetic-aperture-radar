@@ -114,10 +114,10 @@ All four ML stacks, built with `python -m pipeline.run` and run with the default
 
 | Site | Pixels agree | Class overlap (IoU) between the two maps |
 |---|---:|---|
-| albufera | 85.5 % | **rice 0.96 · water 0.94** · urban 0.73 · other 0.67 · orchard 0.61 · forest 0.33 |
+| albufera | 85.5 % | **rice 0.96 · water 0.94 · urban 0.73** · other 0.67 · orchard 0.61 · forest 0.33 |
 | espada | 74.9 % | **burned 0.74 · forest 0.71** · water 0.61 · orchard 0.56 · other 0.54 · urban 0.42 |
 
-**What to show in the app:** rice, the lagoon and the burn scar are solid: two viewing angles give nearly the same map, and they agree with CORINE rice (F1 0.97) and EFFIS (burned precision 0.97 to 0.98). Orchard, other crops, forest at Albufera and urban at Espadà are much less stable between tracks. Show them as faint background, or not at all, and make no claims about them. The `confidence` layer shows the same thing pixel by pixel.
+**What to show in the app:** rice, the lagoon and the burn scar are solid, and so are the towns at Albufera (IoU 0.73): two viewing angles give nearly the same map, and they agree with CORINE rice (F1 0.97) and EFFIS (burned precision 0.97 to 0.98). Orchard, other crops, forest at Albufera and urban at Espadà are much less stable between tracks. Show them as faint background, or not at all, and make no claims about them. The `confidence` layer shows the same thing pixel by pixel.
 
 Default layer per site: **albufera 066_D_069** and **espada 058_A_022** (the most dates, including the VALIDATED 28 Oct pass).
 
