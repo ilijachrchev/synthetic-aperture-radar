@@ -12,6 +12,8 @@ data/interim/
 data/stack/
 data/ml/synthetic_*/
 data/models/
+data/coherence/
+data/optical/
 
 # Credentials and local login config: never commit them
 .netrc

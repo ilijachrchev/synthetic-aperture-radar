@@ -67,6 +67,8 @@ class TrainConfig:
     label_mode: str = "water13"
     jitter_db: float = 0.0     # random calibration offset per training crop, dB
     max_gap_h: float = MAX_GAP_H  # training labels at most this many hours from the NISAR pass
+    clean_labels: bool = False  # drop labels a clear optical map contradicts (pipeline.cv.dataset)
+    coh_dropout: float = 0.0   # share of training crops with the coherence channel blanked
     name: str = "cv_unet"
 
 
@@ -153,7 +155,8 @@ def train(cfg: TrainConfig, scenes: list[Scene] | None = None,
     dev = torch.device(device or ("cuda" if torch.cuda.is_available() else "cpu"))
     if scenes is None:
         scenes = [s for site in train_sites(cfg)
-                  for s in load_scenes(site, max_gap_h=cfg.max_gap_h, inputs=cfg.inputs, label_mode=cfg.label_mode)]
+                  for s in load_scenes(site, max_gap_h=cfg.max_gap_h, inputs=cfg.inputs, label_mode=cfg.label_mode,
+                                       clean_with_optical=cfg.clean_labels)]
     sites = tuple(dict.fromkeys(s.site for s in scenes))
     if permanent is None:
         permanent = {site: site_permanent_water(site) for site in sites}
@@ -183,7 +186,7 @@ def train(cfg: TrainConfig, scenes: list[Scene] | None = None,
     mean, std = channel_stats(scenes, train_region)
     train_set = CropDataset(scenes, train_region, mean, std, cfg.samples_per_epoch, cfg.tile, cfg.seed,
                             focus={site: ~p for site, p in permanent.items()}, focus_share=cfg.focus_share,
-                            jitter_db=cfg.jitter_db)
+                            jitter_db=cfg.jitter_db, coh_dropout=cfg.coh_dropout)
     val_all = TileDataset(clean, val, mean, std, cfg.tile)
     dynamic = [replace(s, cls=np.where(permanent[s.site], IGNORE, s.cls).astype("uint8")) for s in clean]
     loader = DataLoader(train_set, batch_size=cfg.batch, num_workers=0, drop_last=True)
@@ -194,6 +197,11 @@ def train(cfg: TrainConfig, scenes: list[Scene] | None = None,
     per_site = ", ".join(f"{site} {sum(s.site == site for s in scenes)} scenes, {len(val_ids[site])} blocks, "
                          f"{val_share_water[site]:.1%} of its changing water" for site in sites)
     older = f" ({len(scenes) - len(clean)} with labels over {MAX_GAP_H} h, training only)" if len(clean) < len(scenes) else ""
+    if cfg.clean_labels:
+        labelled = sum(int((s.y != IGNORE).sum()) for s in scenes)
+        dropped = sum(s.cleaned_px for s in scenes)
+        older += (f", optical cleanup drops {dropped} of {labelled} labels ({dropped / max(labelled, 1):.1%}) "
+                  f"in {sum(s.cleaned_px > 0 for s in scenes)} scenes")
     print(f"{cfg.name}: {len(scenes)} scenes{older}, inputs {cfg.inputs} ({len(INPUTS[cfg.inputs])} channels), "
           f"labels {cfg.label_mode} ({classes} output) | training windows {len(train_set.pool)}, "
           f"{len(train_set.focus_pool)} with changing water | validation: {per_site}; {len(val_all)} tiles "
@@ -275,6 +283,10 @@ def main() -> None:
     parser.add_argument("--inputs", default=TrainConfig.inputs, choices=list(INPUTS))
     parser.add_argument("--label-mode", default=TrainConfig.label_mode, choices=list(LABEL_MODES))
     parser.add_argument("--jitter-db", type=float, default=TrainConfig.jitter_db)
+    parser.add_argument("--clean-labels", action="store_true",
+                        help="drop labels a clear same-date optical water map contradicts (data/optical)")
+    parser.add_argument("--coh-dropout", type=float, default=TrainConfig.coh_dropout,
+                        help="share of training crops whose coherence channel is blanked")
     parser.add_argument("--random-init", action="store_true", help="no Sentinel-1 pretrained encoder")
     parser.add_argument("--models-dir", type=Path, default=MODELS_DIR, help="where the checkpoint goes")
     args = parser.parse_args()
@@ -282,7 +294,8 @@ def main() -> None:
                       max_gap_h=args.max_gap_h, epochs=args.epochs, samples_per_epoch=args.samples, batch=args.batch,
                       lr=args.lr, seed=args.seed, split_seed=args.split_seed,
                       encoder_weights=None if args.random_init else S1_WEIGHTS,
-                      inputs=args.inputs, label_mode=args.label_mode, jitter_db=args.jitter_db, name=args.name)
+                      inputs=args.inputs, label_mode=args.label_mode, jitter_db=args.jitter_db,
+                      clean_labels=args.clean_labels, coh_dropout=args.coh_dropout, name=args.name)
     out = args.models_dir / f"{cfg.name}.pt"
     summary = train(cfg, out=out)
     METRICS_DIR.mkdir(parents=True, exist_ok=True)

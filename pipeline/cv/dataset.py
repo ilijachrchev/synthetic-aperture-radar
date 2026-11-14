@@ -9,6 +9,10 @@ each pixel's usual backscatter over its whole stack: the median and the 90th
 percentile of HH and HV ("current+ref"). On a single L-band date a dry, smooth
 field is as dark as water; next to its usual, brighter self, new water stands
 out. The reference uses no labels, only the radar time series of the same stack.
+The "+coh" inputs add the 12-day coherence of the date (pipeline.cv.coherence):
+water loses it, dry and stable ground keeps it, even where both are equally dark.
+It comes right after HH and HV; where no pair covers a pixel it is NaN, which
+standardizing turns into the channel mean.
 
 Targets (LABEL_MODES), from the DSWx-S1 classes:
 - water13: 1 = open water or inundated vegetation, 0 = the rest (v1 and v2)
@@ -16,6 +20,14 @@ Targets (LABEL_MODES), from the DSWx-S1 classes:
 - three:   0 = not water, 1 = open water, 2 = inundated vegetation
 Everywhere IGNORE where NISAR is not usable or the water map is masked or fill.
 Each scene also keeps the DSWx classes (cls), so every variant is scored alike.
+
+Optical label cleanup (clean_with_optical, pre-registered in docs/CV_BENCHMARK.md):
+where the optical water map of the date (data/optical, OPERA DSWx-HLS within 1 day)
+is clear and contradicts the Sentinel-1 map (Sentinel-1 open water where optical
+sees no water, or Sentinel-1 no water where optical sees open water), the pixel
+is not trained on and not scored in validation (Scene.dropped). Inundated
+vegetation is kept: optical cannot see water under plants. The validation blocks
+still come from the uncleaned classes, so every variant keeps the same blocks.
 
 No leakage between training and validation: each site grid is cut into
 BLOCK_PX blocks (about 5 km) and a fixed, seeded share of blocks is held out on
@@ -39,7 +51,7 @@ import numpy as np
 import torch
 import xarray as xr
 
-from pipeline.config import STACK_DIR, site_stacks
+from pipeline.config import DATA_DIR, STACK_DIR, site_stacks
 from pipeline.cv.data import dswx_on_grid, open_stack, to_db
 from pipeline.cv.evaluate import (
     DSWX_INUNDATED_VEG, DSWX_INVALID, DSWX_OPEN_WATER, DSWX_RAW, MAX_GAP_H, date_index, dswx_files,
@@ -54,7 +66,20 @@ DB_RANGE = (-35.0, 5.0)  # clip before standardizing (the sea can reach the nois
 INPUTS: dict[str, tuple[str, ...]] = {
     "current": ("hh", "hv"),
     "current+ref": ("hh", "hv", "hh_median", "hv_median", "hh_p90", "hv_p90"),
+    "current+coh": ("hh", "hv", "coh"),
+    "current+ref+coh": ("hh", "hv", "coh", "hh_median", "hv_median", "hh_p90", "hv_p90"),
 }
+COH_CHANNEL = 2  # position of "coh" in the inputs that have it (right after HH and HV)
+OPTICAL_DIR = DATA_DIR / "optical"
+OPTICAL_NOT_WATER, OPTICAL_OPEN_WATER = 0, 1  # OPERA DSWx-HLS B01_WTR classes
+
+
+def uses_reference(inputs: str) -> bool:
+    return "hh_median" in INPUTS[inputs]
+
+
+def uses_coherence(inputs: str) -> bool:
+    return "coh" in INPUTS[inputs]
 LABEL_MODES: tuple[str, ...] = ("water13", "open1", "three")
 
 
@@ -68,6 +93,9 @@ class Scene:
     cls: np.ndarray | None = None  # (H, W) uint8 DSWx-S1 class, IGNORE where not usable or masked
     ref: np.ndarray | None = None  # (4, H, W) reference_db of the stack, the same array for all its scenes
     gap_h: float | None = None     # hours between the label and the NISAR pass (None: unknown)
+    coh_channel: int | None = None  # input channel that holds coherence (not shifted by the dB jitter)
+    dropped: np.ndarray | None = None  # (H, W) bool, labels the optical cleanup drops (not trained, not scored)
+    cleaned_px: int = 0            # how many labels the optical cleanup drops
 
     @property
     def shape(self) -> tuple[int, int]:
@@ -83,7 +111,7 @@ class Scene:
         if self.ref is None:
             return x
         ref = self.ref[:, r:r + size, c:c + size].astype("float32")
-        ref[:, ~np.isfinite(x).all(axis=0)] = np.nan
+        ref[:, ~np.isfinite(x[:2]).all(axis=0)] = np.nan  # HH and HV decide; coherence may be missing
         return np.concatenate([x, ref])
 
     def full(self) -> np.ndarray:
@@ -143,14 +171,20 @@ def target(water_map: np.ndarray, usable: np.ndarray, label_mode: str = "water13
 
 
 def scene_arrays(ds: xr.Dataset, t: int, water_map: np.ndarray | None = None, reference: np.ndarray | None = None,
-                 label_mode: str = "water13") -> tuple[np.ndarray, np.ndarray | None]:
+                 label_mode: str = "water13", coherence: np.ndarray | None = None) -> tuple[np.ndarray, np.ndarray | None]:
     """Model input (C, H, W) in dB for one acquisition and, given a DSWx map, its target (H, W).
 
-    reference: the stack's reference_db, appended after HH and HV (the "current+ref" inputs).
+    coherence: the date's coherence (0 to 1, NaN where no pair), right after HH and HV ("+coh").
+    reference: the stack's reference_db, appended after those (the "current+ref" inputs).
+    Usable pixels are set by HH and HV only; a missing coherence does not drop a pixel.
     """
     x = np.stack([to_db(ds["HH"].values[t]), to_db(ds["HV"].values[t])]).astype("float32")
     usable = ds["valid"].values[t].astype(bool) & np.isfinite(x).all(axis=0)
     x[:, ~usable] = np.nan
+    if coherence is not None:
+        coh = coherence.astype("float32").copy()
+        coh[~usable] = np.nan
+        x = np.concatenate([x, coh[None]])
     if reference is not None:
         ref = reference.copy()
         ref[:, ~usable] = np.nan
@@ -160,9 +194,32 @@ def scene_arrays(ds: xr.Dataset, t: int, water_map: np.ndarray | None = None, re
     return x, target(water_map, usable, label_mode)
 
 
+def optical_classes(site: str, stack_id: str, day: str) -> np.ndarray | None:
+    """OPERA DSWx-HLS classes of one NISAR date on the stack grid (data/optical, band 1), or None."""
+    path = OPTICAL_DIR / f"{site}_{stack_id}" / f"{day}.tif"
+    if not path.exists():
+        return None
+    import rasterio
+
+    with rasterio.open(path) as src:
+        return src.read(1)
+
+
+def optical_disagreement(water_map: np.ndarray, optical: np.ndarray) -> np.ndarray:
+    """Pixels where a clear optical map contradicts the Sentinel-1 map: Sentinel-1 open water where
+    optical sees no water, or Sentinel-1 no water where optical sees open water. Partial water,
+    cloud, inundated vegetation and masked labels are left alone."""
+    s1_open = water_map == DSWX_OPEN_WATER
+    s1_dry = ~np.isin(water_map, DSWX_INVALID) & ~np.isin(water_map, WATER_CLASSES)
+    return (s1_open & (optical == OPTICAL_NOT_WATER)) | (s1_dry & (optical == OPTICAL_OPEN_WATER))
+
+
 def load_scenes(site: str, stacks: tuple[str, ...] | None = None, max_gap_h: float = MAX_GAP_H,
-                inputs: str = "current", label_mode: str = "water13") -> list[Scene]:
+                inputs: str = "current", label_mode: str = "water13",
+                clean_with_optical: bool = False) -> list[Scene]:
     """Every labelled acquisition of a site (same-day water map, HV present), stored compactly."""
+    from pipeline.cv.coherence import coherence_for
+
     if inputs not in INPUTS:
         raise ValueError(f"inputs must be one of {list(INPUTS)}, not {inputs!r}")
     index = {(e["stack_id"], e["date"]): e
@@ -170,7 +227,7 @@ def load_scenes(site: str, stacks: tuple[str, ...] | None = None, max_gap_h: flo
     scenes = []
     for stack_id in stacks or site_stacks(site):
         ds = open_stack(STACK_DIR / f"{site}_{stack_id}.nc")
-        reference = reference_db(ds).astype("float16") if inputs == "current+ref" else None
+        reference = reference_db(ds).astype("float16") if uses_reference(inputs) else None
         for day, t in date_index(ds).items():
             entry = index.get((stack_id, day))
             if not entry or entry["hours_from_nisar"] is None or entry["hours_from_nisar"] > max_gap_h:
@@ -180,10 +237,21 @@ def load_scenes(site: str, stacks: tuple[str, ...] | None = None, max_gap_h: flo
             water_map = dswx_on_grid(ds, dswx_files(entry))
             if np.isin(water_map, DSWX_INVALID).all():
                 continue  # the pass's tiles touch the box but its swath misses the site: no label at all
-            x, y = scene_arrays(ds, t, water_map, None, label_mode)  # the reference is added per crop
-            usable = np.isfinite(x).all(axis=0)
+            coherence = coherence_for(site, stack_id, day, water_map.shape) if uses_coherence(inputs) else None
+            x, y = scene_arrays(ds, t, water_map, None, label_mode, coherence)  # the reference is added per crop
+            usable = np.isfinite(x[:2]).all(axis=0)
             cls = np.where(usable & ~np.isin(water_map, DSWX_INVALID), water_map, IGNORE).astype("uint8")
-            scenes.append(Scene(site, stack_id, day, x.astype("float16"), y, cls, reference, entry["hours_from_nisar"]))
+            dropped, cleaned = None, 0
+            if clean_with_optical:
+                optical = optical_classes(site, stack_id, day)
+                if optical is not None:
+                    dropped = optical_disagreement(water_map, optical) & (y != IGNORE)
+                    cleaned = int(dropped.sum())
+                    dropped = dropped if cleaned else None
+            # y and cls stay uncleaned, so windows, blocks and channel statistics match an uncleaned
+            # variant; the dropped labels are masked crop by crop (CropDataset, TileDataset).
+            scenes.append(Scene(site, stack_id, day, x.astype("float16"), y, cls, reference, entry["hours_from_nisar"],
+                                COH_CHANNEL if coherence is not None else None, dropped, cleaned))
         del ds
     return scenes
 
@@ -289,9 +357,11 @@ class CropDataset(torch.utils.data.Dataset):
 
     def __init__(self, scenes: list[Scene], allowed: Region, mean: np.ndarray, std: np.ndarray,
                  samples: int, size: int = TILE_PX, seed: int = 0, focus: Region | None = None,
-                 focus_share: float = 0.0, min_focus_px: int = 200, jitter_db: float = 0.0):
+                 focus_share: float = 0.0, min_focus_px: int = 200, jitter_db: float = 0.0,
+                 coh_dropout: float = 0.0):
         self.scenes, self.mean, self.std, self.size, self.samples = scenes, mean, std, size, samples
         self.jitter_db = jitter_db
+        self.coh_dropout = coh_dropout  # share of crops whose coherence is blanked, as on dates with no pair
         self.focus_share = focus_share
         self.pool: list[tuple[int, tuple[int, int]]] = []
         self.focus_pool: list[tuple[int, tuple[int, int]]] = []
@@ -314,9 +384,19 @@ class CropDataset(torch.utils.data.Dataset):
         s = self.scenes[i]
         x = s.crop(r, c, self.size)
         if self.jitter_db:
-            x = x + np.float32(self.rng.uniform(-self.jitter_db, self.jitter_db))
+            shift = np.float32(self.rng.uniform(-self.jitter_db, self.jitter_db))
+            if s.coh_channel is None:
+                x = x + shift
+            else:  # a calibration offset moves the dB channels, never the coherence
+                db = np.ones(x.shape[0], dtype=bool)
+                db[s.coh_channel] = False
+                x[db] += shift
+        if s.coh_channel is not None and self.coh_dropout and self.rng.random() < self.coh_dropout:
+            x[s.coh_channel] = np.nan  # the newest dates have no GUNW pair yet: learn to work without it
         x = standardize(x, self.mean, self.std)
         y = s.y[r:r + self.size, c:c + self.size]
+        if s.dropped is not None:
+            y = np.where(s.dropped[r:r + self.size, c:c + self.size], IGNORE, y).astype("uint8")
         k = int(self.rng.integers(4))
         x, y = np.rot90(x, k, axes=(1, 2)), np.rot90(y, k)
         if self.rng.random() < 0.5:
@@ -344,4 +424,7 @@ class TileDataset(torch.utils.data.Dataset):
     def __getitem__(self, k: int) -> tuple[torch.Tensor, torch.Tensor]:
         s, (r, c) = self.items[k]
         x = standardize(s.crop(r, c, self.size), self.mean, self.std)
-        return torch.from_numpy(x), torch.from_numpy(s.cls[r:r + self.size, c:c + self.size].copy())
+        cls = s.cls[r:r + self.size, c:c + self.size]
+        if s.dropped is not None:  # labels the optical cleanup drops are not scored either
+            cls = np.where(s.dropped[r:r + self.size, c:c + self.size], IGNORE, cls)
+        return torch.from_numpy(x), torch.from_numpy(cls.astype("uint8").copy())

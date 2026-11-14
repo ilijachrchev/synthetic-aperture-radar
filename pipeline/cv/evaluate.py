@@ -131,7 +131,8 @@ def unet_predictor(model_path: str | Path, threshold: float = 0.5) -> Predictor:
     The returned function also carries .checkpoint and .probabilities(ds, t),
     which gives the (open water, any water) probability maps.
     """
-    from pipeline.cv.dataset import reference_db, scene_arrays
+    from pipeline.cv.coherence import coherence_for
+    from pipeline.cv.dataset import reference_db, scene_arrays, uses_coherence, uses_reference
     from pipeline.cv.predict import load_model, model_spec, predict_scene, water_probabilities
 
     model, mean, std, checkpoint = load_model(model_path)
@@ -139,13 +140,16 @@ def unet_predictor(model_path: str | Path, threshold: float = 0.5) -> Predictor:
     references: dict[tuple[str, str], np.ndarray] = {}
 
     def probabilities(ds: xr.Dataset, t: int) -> tuple[np.ndarray, np.ndarray]:
-        reference = None
-        if inputs == "current+ref":
-            key = (str(ds.attrs.get("site")), str(ds.attrs.get("stack_id")))
+        reference, coherence = None, None
+        key = (str(ds.attrs.get("site")), str(ds.attrs.get("stack_id")))
+        if uses_reference(inputs):
             if key not in references:
                 references[key] = reference_db(ds)
             reference = references[key]
-        x, _ = scene_arrays(ds, t, reference=reference)
+        if uses_coherence(inputs):
+            coherence = coherence_for(key[0], key[1], str(ds["time"].values[t])[:10],
+                                      (ds.sizes["y"], ds.sizes["x"]))
+        x, _ = scene_arrays(ds, t, reference=reference, coherence=coherence)
         return water_probabilities(predict_scene(model, x, mean, std, tile=checkpoint["config"]["tile"]))
 
     def predict(ds: xr.Dataset, t: int) -> tuple[dict[str, np.ndarray], np.ndarray, dict]:

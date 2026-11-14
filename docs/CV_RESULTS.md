@@ -16,7 +16,7 @@ A labelled scene is a NISAR acquisition with a same-day OPERA DSWx-S1 map at mos
 
 - Training used 28 usable scenes (14 before this study, at Albufera only). The protocol expected about 44; the Ebro shortfall was found after training, by the data quality check.
 - The labels look clean where they exist: they call 97 to 99.8 % of permanent inland water "water" at every site.
-- Radar brightness of built-up land differs by up to 5 dB between sites and tracks (for example -1.1 to -2.1 dB at Albufera 066 D, -5.1 to -6.9 dB at Camargue 101 A), a real shift between places.
+- Radar brightness of built-up land differs by up to 5.8 dB between sites and tracks (for example -1.1 to -2.1 dB at Albufera 066 D, -5.1 to -6.9 dB at Camargue 101 A), a real shift between places, and by up to 1.3 dB between dates of one stack (Camargue 101 A, 25 Sep to 7 Oct). Training adds one random offset of up to 1 dB per crop (`--jitter-db 1.0`) for this.
 
 ## 2. Model choice, on validation only
 
