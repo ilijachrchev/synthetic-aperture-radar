@@ -1,12 +1,22 @@
 {
   "file": "rice_mask.tif",
-  "rule": "JRC occurrence 1-89 % AND WorldCover in {40, 80, 90} AND not sea",
-  "pixels": 271906,
-  "area_ha": 10876.2,
-  "area_ha_by_worldcover_class": {
-    "40": 7324.6,
-    "80": 473.7,
-    "90": 3078.0
+  "rule": "CORINE 2018 class 213 AND (at least 60 m inside the polygon OR JRC occurrence 1-89 %), minus WorldCover urban (50), JRC permanent water (>= 90 %) and sea",
+  "sources": [
+    "albufera_clc2018.geojson",
+    "albufera_worldcover_2021_20m.tif",
+    "albufera_jrc_occurrence_20m.tif",
+    "albufera_sea_20m.tif"
+  ],
+  "attribution": "CORINE: (c) European Union, Copernicus Land Monitoring Service 2018, EEA",
+  "pixels": 369765,
+  "area_ha": 14790.6,
+  "corine_rice_ha": 15642.3,
+  "corine_rice_deep_ha": 14522.6,
+  "edge_never_water_dropped_ha": 748.3,
+  "removed_ha": {
+    "urban": 121.8,
+    "permanent_water": 0.0,
+    "sea": 0.0
   },
   "grid": {
     "crs": "EPSG:32630",

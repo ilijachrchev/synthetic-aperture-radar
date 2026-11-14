@@ -83,20 +83,26 @@ def build_index(granules: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return sorted(index, key=lambda e: e["begin_utc"])
 
 
-def download(site: Site, index: list[dict[str, Any]], root: Path = HISTORY_RAW) -> Path:
-    """Download each pass's WTR tiles (skips files already on disk) and write index.json."""
+def download(site: Site, index: list[dict[str, Any]], root: Path = HISTORY_RAW, workers: int = 8) -> Path:
+    """Download each pass's WTR tiles (skips files already on disk), several passes at once, and write index.json."""
+    from concurrent.futures import ThreadPoolExecutor
+
     import earthaccess  # imported here so searching needs no login
 
     earthaccess.login(strategy="netrc")
     site_dir = root / site.name
-    for entry in index:
+
+    def fetch(entry: dict[str, Any]) -> None:
         pass_dir = site_dir / entry["pass_id"]
         pass_dir.mkdir(parents=True, exist_ok=True)
         urls = [g["wtr_url"] for g in entry["selected"]]
         todo = [u for u in urls if not (pass_dir / u.rsplit("/", 1)[-1]).exists()]
         if todo:
-            earthaccess.download(todo, local_path=str(pass_dir))
+            earthaccess.download(todo, local_path=str(pass_dir), threads=1, show_progress=False)
         entry["files"] = [(pass_dir / u.rsplit("/", 1)[-1]).relative_to(site_dir).as_posix() for u in urls]
+
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        list(pool.map(fetch, index))
     complete = [e for e in index if all((site_dir / f).exists() for f in e.get("files", []))]
     out = site_dir / "index.json"
     out.write_text(json.dumps(complete, indent=1), encoding="utf-8")
