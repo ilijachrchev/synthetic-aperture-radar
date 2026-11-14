@@ -45,6 +45,13 @@ tree count by early stopping, burned rule: HV drop >= 1.0 dB on either track.
 +5.5 points (Albufera) and +8.2 points (Espadà) over v1, far above the spread.
 Decision: kept, it is the new base.
 
+**v2 test blocks** (measured once by the main session with `python -m pipeline.ml run`,
+commit 4557777; recorded in the registry, not re-run): Albufera acc 0.822 / macro F1
+0.828; Espadà 0.791 / 0.808, burned precision 0.98, recall 0.85, 7,096 of 7,351 ha
+inside EFFIS, 185 ha more than 2 km away. Espadà with no burned rule: 0.802 / 0.818,
+burned precision 0.95, recall 0.96, 9,616 ha mapped (EFFIS 9,230), 465 ha more than
+2 km away. These are for reporting only; no choice below uses them.
+
 ## v2a / v2b — burned rule off / 0.5 dB — DROPPED
 The rule acts after the model, so all thresholds were scored on the same three
 v2 models (registry entry `v2-rules`, Espadà only). "Far" = mapped burned more
@@ -146,6 +153,8 @@ Espadà 932), refit on the whole training area; burned only where HV dropped
 | Albufera acc / macro F1 | – / 0.745 | 0.807 / 0.791 | – / 0.807 ± 0.005 | **0.823 / 0.834** |
 | Espadà acc / macro F1 | – / 0.667 | 0.756 / 0.723 | – / 0.757 ± 0.003 | **0.793 / 0.815** |
 | Pego-Oliva benchmark (trained on Albufera, never seen) | | 0.530 / 0.523 | | **0.611 / 0.596** |
+
+v2 on the same test blocks (from the main session): Albufera 0.822 / 0.828, Espadà 0.791 / 0.808. Texture adds +0.6 / +0.7 points on test, about what validation showed.
 
 Test is higher than validation because the test score is on the cleaned-up
 map (the specks filter helps) and the final model trains on more area.
