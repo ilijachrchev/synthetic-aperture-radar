@@ -132,12 +132,33 @@ Only the selected row's `YYYYMMDD` columns become displacement observations. The
 
 `--target-tolerance-days 3` accommodates a six-day observation grid. It scores predictions at the actual nearest available target date within that tolerance, records the actual lead, and never interpolates labels. Consequently these are approximately matched, not exact-day scores. If a numeric no-data sentinel is present, specify it with `--nodata-value`. Blank and nonfinite observations are omitted; zero displacement remains valid. Fewer usable targets can make error ranges unavailable or require different split dates.
 
+## NISAR check: chained GUNW interferograms vs GNSS (`lorca_gunw.py`)
+
+```bash
+python -m pipeline.prediction.lorca_gunw fetch     # Earthdata login; reads only the Lorca box from each HDF5 (28 MB total)
+python -m pipeline.prediction.lorca_gunw analyse   # data/prediction/lorca_gunw.json + .png
+```
+
+Every consecutive 12-day NISAR GUNW pair over the box: track **167 D** (frame 069, 7 pairs, 25 Jun → 11 Oct 2026) and track **159 A** (frame 021, 6 pairs, 25 Jun → 17 Sep). Phase → vertical with the product's own line-of-sight vectors (assumes no horizontal motion), corrections from the product (ionosphere, troposphere at the GLO-30 height) kept only where they lower the spatial spread, each pair referenced to the box median, pairs summed. Pixels: valid in both dates, coherence ≥ 0.3, main connected component, valid in every pair (86 %).
+
+| Track | NISAR at LOR1 | GNSS LOR1, same dates | RMS difference per date | Rate needs 3σ by |
+|---|---:|---:|---:|---:|
+| 167 D | −11.8 mm (−53 mm/yr) | −15.0 mm (−48 mm/yr) | 6.2 mm | ≈ mid-Nov 2026 (needs pairs after 11 Oct) |
+| 159 A | +2.9 mm (+18 mm/yr) | −9.1 mm (−35 mm/yr) | 12.9 mm | ≈ Apr 2027 |
+
+**Reading:** not yet a confirmation. The descending track ends close to GNSS, but the ascending one does not, and both maps are dominated by ±25–30 mm patches that differ between the tracks: atmosphere, not ground motion (5–95 % of the map: −29 to +29 mm). Three to four months of 12-day pairs hold about 1–1.5 cm of sinking at LOR1, the same size as one date's atmospheric noise. That noise does not add up along the chain (each date's atmosphere cancels in the next pair), so the rate gets sharper with every new date. The table's last column is when a straight-line fit should resolve the GNSS rate at 3σ, assuming the per-date noise stays at the RMS above.
+
+**Changed after the first run (disclosed):** a plane + height term is removed from each pair. Without it, the two tracks show opposite 30–40 mm ramps across the box. The undetrended numbers are kept in `lorca_gunw.json → without_detrend` (167 D −81 mm/yr, 159 A −9 mm/yr). Both versions are scored against GNSS only after the method was fixed; GNSS does not choose anything.
+
+So the Lorca forecast stays on GNSS (and EGMS once downloaded). NISAR becomes the check once it has more dates; re-run `fetch` + `analyse` as new GUNW pairs appear in CMR.
+
+DEM: Copernicus GLO-30 (© DLR e.V. 2010–2014 and © Airbus 2014–2018, provided under COPERNICUS by the EU and ESA).
+
 ## What remains after this milestone
 
 - Import and inspect an actual EGMS Vertical point or small group, preserving the product release and reference metadata.
 - Equipment changes are modelled as steps (above); earthquake offsets are not. The 2023 rate change means a single trend is not a physical explanation either.
-- Build a corrected NISAR GUNW comparison with coherence/connected-component checks and matching motion geometry. Vertical and line-of-sight motion must not be subtracted directly.
-- Resolve the GUNW input workflow: MintPy's NISAR loader expects HDF5 products and metadata, not only the Harmony intensity/phase COGs used elsewhere.
+- NISAR GUNW: first comparison done (above); re-run as pairs after 11 Oct appear. A redundant network (24/36-day pairs) would need RSLCs, not GUNWs.
 - Add Albufera water-area forecasting as a separate series/pipeline with its own units, coverage rules, and validation. It is not implemented in this milestone.
 
 ## Source references
