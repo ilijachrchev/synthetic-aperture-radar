@@ -144,11 +144,12 @@ def pick_pass(granules: list[dict[str, Any]], nisar_utc: str) -> tuple[list[dict
     return chosen, gap
 
 
-def build_index(site: Site, stacks: set[str] | None = None) -> list[dict[str, Any]]:
+def build_index(site: Site, stacks: set[str] | None = None,
+                min_coverage: float = MIN_COVERAGE) -> list[dict[str, Any]]:
     """One entry per NISAR acquisition: its stack and time, the chosen pass and the time gap."""
     by_day: dict[str, list[dict[str, Any]]] = {}
     index = []
-    for acq in nisar_acquisitions(site):
+    for acq in nisar_acquisitions(site, min_coverage):
         if stacks and acq["stack_id"] not in stacks:
             continue
         day = acq["nisar_utc"][:10]
@@ -186,10 +187,13 @@ def main() -> None:
     parser.add_argument("--site", required=True)
     parser.add_argument("--stack", action="append", help="only this stack id; repeatable")
     parser.add_argument("--dry-run", action="store_true", help="show the matches, no login needed")
+    parser.add_argument("--min-coverage", type=float, default=MIN_COVERAGE,
+                        help=f"share of the site box a frame must cover (default {MIN_COVERAGE}); "
+                             "the index is rewritten, so list every stack it should keep with --stack")
     args = parser.parse_args()
 
     site = get_site(args.site)
-    index = build_index(site, set(args.stack) if args.stack else None)
+    index = build_index(site, set(args.stack) if args.stack else None, args.min_coverage)
     matched = sum(1 for e in index if e["selected"])
     print(f"{site.name}: {matched} of {len(index)} NISAR acquisitions have a same-day DSWx-S1 pass")
     for e in index:

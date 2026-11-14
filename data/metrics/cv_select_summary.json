@@ -1,0 +1,30 @@
+{
+ "rule": "highest pooled validation IoU, ties to fewer models",
+ "candidates": {
+  "e2": {
+   "pooled_iou": 0.3589,
+   "threshold": 0.3,
+   "models": 3,
+   "median_iou": 0.0663
+  },
+  "e2_e4": {
+   "pooled_iou": 0.3605,
+   "threshold": 0.3,
+   "models": 4,
+   "median_iou": 0.0338
+  },
+  "e2_e5": {
+   "pooled_iou": 0.3548,
+   "threshold": 0.3,
+   "models": 4,
+   "median_iou": 0.0689
+  },
+  "e2_e4_e5": {
+   "pooled_iou": 0.3609,
+   "threshold": 0.3,
+   "models": 5,
+   "median_iou": 0.034
+  }
+ },
+ "chosen": "e2_e4_e5"
+}

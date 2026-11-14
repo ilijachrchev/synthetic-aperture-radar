@@ -4,7 +4,7 @@ The shared data for the CV and ML models: how it lines up, where the stacks are,
 
 ## One grid per site
 
-Every layer of a site sits on one grid: **EPSG:32630** (WGS 84 / UTM 30N), **20 m** pixels, snapped to the 20 m lattice. Take it from the code, never rebuild it by hand:
+Every layer of a site sits on one grid: the UTM zone of the site (**EPSG:32630**, UTM 30N, for the Valencian sites; 32631 for Ebro and Camargue; 32629 for Donana), **20 m** pixels, snapped to the 20 m lattice. Take it from the code, never rebuild it by hand:
 
 ```python
 from pipeline.config import get_site
@@ -19,6 +19,9 @@ grid = site_grid(get_site("albufera"))   # crs, transform, width, height
 | pego_oliva | -0.25, 38.78, 0.06, 39.02 | 738060, 4323460 | 1388 x 1376 | CV |
 | espada | -0.50, 39.78, -0.10, 40.02 | 713340, 4434020 | 1751 x 1385 | CV, ML |
 | lorca | -1.80, 37.55, -1.45, 37.85 | 605560, 4190320 | 1568 x 1688 | Prediction |
+| ebro | 0.56, 40.54, 0.90, 40.82 | 293360, 4521660 (31N) | 1478 x 1593 | CV training |
+| camargue | 4.35, 43.40, 4.75, 43.65 | 608860, 4834500 (31N) | 1643 x 1419 | CV training |
+| donana | -6.42, 36.88, -6.08, 37.20 | 728960, 4121060 (29N) | 1565 x 1820 | CV test |
 
 The box is the area of interest; the grid is that box snapped outward in UTM, so it reaches slightly past it.
 
@@ -28,9 +31,35 @@ One NetCDF file per site and track: `data/stack/<site>_<stack>.nc`. Each track s
 
 | Site | Stacks (track_direction_frame) | Dates |
 |---|---|---|
-| albufera | 066_D_069 · 058_A_021 | 11 · 10, 18 Jun to 28 Oct 2026 |
-| pego_oliva | 066_D_069 · 058_A_021 | 11 · 10 |
+| albufera | 066_D_069 · 058_A_021 | 11 · 11, 18 Jun to 28 Oct 2026 |
+| pego_oliva | 066_D_069 · 058_A_021 | 11 · 11 |
 | espada | 058_A_022 · 167_D_068 | 11 · 9 |
+
+These shared stacks cover the whole site box. One extra stack is for CV testing only: `pego_oliva_167_D_069` (9 dates, 25 Jun to 23 Oct). Its frame covers about 63 % of the box, and only 34 ha of the EMSR935 flood outline is seen on both 11 and 23 Oct. Build it with `--min-coverage 0.6` on `pipeline.nisar_fetch` and `pipeline.dswx`. For `pipeline.dswx`, list all three Pego-Oliva stacks with `--stack`, because the index is rewritten.
+
+### Extra stacks for the CV model only
+
+`config.CV_STACKS` adds three wetlands that only the CV model uses: two for training and a second unseen test site. They are not in `STACKS`, so `pipeline.run` and the ML model never download them. Frames may cover only part of the box; the rest stays invalid. Results: [CV_RESULTS.md](CV_RESULTS.md).
+
+| Site | Stacks | Dates | Usable labelled scenes |
+|---|---|---|---|
+| ebro (training) | 058_A_022 · 066_D_068 · 167_D_068 | 11 · 11 · 9 | 0 · 1 · 4 |
+| camargue (training) | 101_A_023 · 173_A_024 | 10 · 11 | 3 · 6 |
+| donana (test) | 023_D_070 · 116_A_020 · 015_A_020 | 11 · 10 · 10 | 11 · 5 · 1 |
+
+"Usable" means a same-day DSWx-S1 map within 2 h that covers at least 10 % of the usable pixels. Many matched passes miss the site: their tiles touch the box but the swath does not (`python -m pipeline.cv.quality` lists them).
+
+Build one site (the raw NISAR subsets can be deleted once its stacks are built):
+
+```bash
+python -m pipeline.catalog --site ebro
+python -m pipeline.context --site ebro
+python -m pipeline.nisar_fetch --site ebro --stack 058_A_022 --min-coverage 0.15   # each stack of the site
+python -m pipeline.stack --site ebro --stack 058_A_022                              # each stack of the site
+python -m pipeline.dswx --site ebro --stack 058_A_022 --stack 066_D_068 --stack 167_D_068 --min-coverage 0.15
+```
+
+List every stack of the site in the `pipeline.dswx` call: it rewrites the site's label index with only the stacks given.
 
 Inside each file, dims `time x y x`:
 

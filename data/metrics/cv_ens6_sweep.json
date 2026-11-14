@@ -1,0 +1,42 @@
+{
+ "model": [
+  "data/models/cv_unet.pt",
+  "data/models/cv_unet_v3a.pt",
+  "data/models/cv_unet_v3b.pt",
+  "data/models/cv_unet_v3c.pt",
+  "data/models/cv_unet_v3c_s1.pt",
+  "data/models/cv_unet_v2_s1.pt"
+ ],
+ "site": "albufera",
+ "split": "held-out validation blocks",
+ "rows": [
+  {
+   "threshold": 0.3,
+   "open_median_iou": 0.1348,
+   "open_pooled_iou": 0.306,
+   "any_median_iou": 0.0899,
+   "any_pooled_iou": 0.2482
+  },
+  {
+   "threshold": 0.4,
+   "open_median_iou": 0.1486,
+   "open_pooled_iou": 0.3144,
+   "any_median_iou": 0.0907,
+   "any_pooled_iou": 0.2478
+  },
+  {
+   "threshold": 0.5,
+   "open_median_iou": 0.1602,
+   "open_pooled_iou": 0.2976,
+   "any_median_iou": 0.0852,
+   "any_pooled_iou": 0.2272
+  },
+  {
+   "threshold": 0.6,
+   "open_median_iou": 0.1618,
+   "open_pooled_iou": 0.2581,
+   "any_median_iou": 0.0671,
+   "any_pooled_iou": 0.19
+  }
+ ]
+}

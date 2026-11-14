@@ -1,0 +1,851 @@
+{
+ "reports": [
+  "cv_test_multisite",
+  "cv_test_albufera_only",
+  "cv_test_previous"
+ ],
+ "groups": [
+  {
+   "site": "donana",
+   "split": "test site, never seen in training",
+   "dates": 17,
+   "stacks": [
+    "donana 015_A_020",
+    "donana 023_D_070",
+    "donana 116_A_020"
+   ],
+   "models": {
+    "baseline": {
+     "open": {
+      "pooled_iou": 0.016,
+      "ci95": [
+       0.0102,
+       0.0233
+      ],
+      "median_iou": 0.0079,
+      "precision": 0.0161,
+      "recall": 0.8097
+     },
+     "any": {
+      "pooled_iou": 0.0888,
+      "ci95": [
+       0.0786,
+       0.0989
+      ],
+      "median_iou": 0.0925,
+      "precision": 0.0907,
+      "recall": 0.8094
+     }
+    },
+    "cv_test_multisite": {
+     "open": {
+      "pooled_iou": 0.0352,
+      "ci95": [
+       0.0222,
+       0.0525
+      ],
+      "median_iou": 0.0206,
+      "precision": 0.0362,
+      "recall": 0.5523
+     },
+     "any": {
+      "pooled_iou": 0.0894,
+      "ci95": [
+       0.0772,
+       0.1024
+      ],
+      "median_iou": 0.0923,
+      "precision": 0.1055,
+      "recall": 0.3686
+     }
+    },
+    "cv_test_albufera_only": {
+     "open": {
+      "pooled_iou": 0.0234,
+      "ci95": [
+       0.0156,
+       0.0331
+      ],
+      "median_iou": 0.014,
+      "precision": 0.0236,
+      "recall": 0.6671
+     },
+     "any": {
+      "pooled_iou": 0.083,
+      "ci95": [
+       0.0739,
+       0.0924
+      ],
+      "median_iou": 0.0848,
+      "precision": 0.0915,
+      "recall": 0.4717
+     }
+    },
+    "cv_test_previous": {
+     "open": {
+      "pooled_iou": 0.0194,
+      "ci95": [
+       0.0135,
+       0.0267
+      ],
+      "median_iou": 0.0128,
+      "precision": 0.0197,
+      "recall": 0.5918
+     },
+     "any": {
+      "pooled_iou": 0.0873,
+      "ci95": [
+       0.0791,
+       0.0954
+      ],
+      "median_iou": 0.0888,
+      "precision": 0.0952,
+      "recall": 0.5147
+     }
+    }
+   },
+   "differences": {
+    "cv_test_multisite - baseline": {
+     "open": {
+      "pooled_iou": 0.0192,
+      "ci95": [
+       0.0116,
+       0.0307
+      ],
+      "share_of_draws_better": 1.0
+     },
+     "any": {
+      "pooled_iou": 0.0006,
+      "ci95": [
+       -0.005,
+       0.0065
+      ],
+      "share_of_draws_better": 0.554
+     }
+    },
+    "cv_test_albufera_only - baseline": {
+     "open": {
+      "pooled_iou": 0.0074,
+      "ci95": [
+       0.0048,
+       0.0108
+      ],
+      "share_of_draws_better": 1.0
+     },
+     "any": {
+      "pooled_iou": -0.0058,
+      "ci95": [
+       -0.0096,
+       -0.0017
+      ],
+      "share_of_draws_better": 0.003
+     }
+    },
+    "cv_test_albufera_only - cv_test_multisite": {
+     "open": {
+      "pooled_iou": -0.0118,
+      "ci95": [
+       -0.0199,
+       -0.0065
+      ],
+      "share_of_draws_better": 0.0
+     },
+     "any": {
+      "pooled_iou": -0.0064,
+      "ci95": [
+       -0.0112,
+       -0.0019
+      ],
+      "share_of_draws_better": 0.002
+     }
+    },
+    "cv_test_previous - baseline": {
+     "open": {
+      "pooled_iou": 0.0034,
+      "ci95": [
+       0.0016,
+       0.005
+      ],
+      "share_of_draws_better": 1.0
+     },
+     "any": {
+      "pooled_iou": -0.0015,
+      "ci95": [
+       -0.0049,
+       0.002
+      ],
+      "share_of_draws_better": 0.216
+     }
+    },
+    "cv_test_previous - cv_test_multisite": {
+     "open": {
+      "pooled_iou": -0.0158,
+      "ci95": [
+       -0.0262,
+       -0.0084
+      ],
+      "share_of_draws_better": 0.0
+     },
+     "any": {
+      "pooled_iou": -0.0021,
+      "ci95": [
+       -0.0074,
+       0.0024
+      ],
+      "share_of_draws_better": 0.234
+     }
+    },
+    "cv_test_previous - cv_test_albufera_only": {
+     "open": {
+      "pooled_iou": -0.004,
+      "ci95": [
+       -0.0067,
+       -0.0017
+      ],
+      "share_of_draws_better": 0.0
+     },
+     "any": {
+      "pooled_iou": 0.0043,
+      "ci95": [
+       0.0023,
+       0.0062
+      ],
+      "share_of_draws_better": 1.0
+     }
+    }
+   }
+  },
+  {
+   "site": "pego_oliva",
+   "split": "test site, never seen in training",
+   "dates": 18,
+   "stacks": [
+    "pego_oliva 058_A_021",
+    "pego_oliva 066_D_069",
+    "pego_oliva 167_D_069"
+   ],
+   "models": {
+    "baseline": {
+     "open": {
+      "pooled_iou": 0.1205,
+      "ci95": [
+       0.0314,
+       0.2337
+      ],
+      "median_iou": 0.0415,
+      "precision": 0.1225,
+      "recall": 0.8786
+     },
+     "any": {
+      "pooled_iou": 0.2151,
+      "ci95": [
+       0.1525,
+       0.2913
+      ],
+      "median_iou": 0.1604,
+      "precision": 0.2814,
+      "recall": 0.4772
+     }
+    },
+    "cv_test_multisite": {
+     "open": {
+      "pooled_iou": 0.334,
+      "ci95": [
+       0.1188,
+       0.4854
+      ],
+      "median_iou": 0.1946,
+      "precision": 0.3693,
+      "recall": 0.7772
+     },
+     "any": {
+      "pooled_iou": 0.2207,
+      "ci95": [
+       0.1185,
+       0.3229
+      ],
+      "median_iou": 0.1239,
+      "precision": 0.4582,
+      "recall": 0.2987
+     }
+    },
+    "cv_test_albufera_only": {
+     "open": {
+      "pooled_iou": 0.2838,
+      "ci95": [
+       0.0831,
+       0.4386
+      ],
+      "median_iou": 0.1326,
+      "precision": 0.3058,
+      "recall": 0.7981
+     },
+     "any": {
+      "pooled_iou": 0.1845,
+      "ci95": [
+       0.0816,
+       0.2889
+      ],
+      "median_iou": 0.0847,
+      "precision": 0.3821,
+      "recall": 0.2629
+     }
+    },
+    "cv_test_previous": {
+     "open": {
+      "pooled_iou": 0.3739,
+      "ci95": [
+       0.1183,
+       0.5266
+      ],
+      "median_iou": 0.1747,
+      "precision": 0.426,
+      "recall": 0.7534
+     },
+     "any": {
+      "pooled_iou": 0.176,
+      "ci95": [
+       0.0606,
+       0.2888
+      ],
+      "median_iou": 0.0783,
+      "precision": 0.501,
+      "recall": 0.2134
+     }
+    }
+   },
+   "differences": {
+    "cv_test_multisite - baseline": {
+     "open": {
+      "pooled_iou": 0.2135,
+      "ci95": [
+       0.0859,
+       0.2741
+      ],
+      "share_of_draws_better": 1.0
+     },
+     "any": {
+      "pooled_iou": 0.0056,
+      "ci95": [
+       -0.0365,
+       0.0361
+      ],
+      "share_of_draws_better": 0.589
+     }
+    },
+    "cv_test_albufera_only - baseline": {
+     "open": {
+      "pooled_iou": 0.1633,
+      "ci95": [
+       0.0506,
+       0.2243
+      ],
+      "share_of_draws_better": 1.0
+     },
+     "any": {
+      "pooled_iou": -0.0306,
+      "ci95": [
+       -0.0732,
+       0.0009
+      ],
+      "share_of_draws_better": 0.029
+     }
+    },
+    "cv_test_albufera_only - cv_test_multisite": {
+     "open": {
+      "pooled_iou": -0.0502,
+      "ci95": [
+       -0.059,
+       -0.0339
+      ],
+      "share_of_draws_better": 0.0
+     },
+     "any": {
+      "pooled_iou": -0.0362,
+      "ci95": [
+       -0.0436,
+       -0.031
+      ],
+      "share_of_draws_better": 0.0
+     }
+    },
+    "cv_test_previous - baseline": {
+     "open": {
+      "pooled_iou": 0.2534,
+      "ci95": [
+       0.0851,
+       0.3194
+      ],
+      "share_of_draws_better": 1.0
+     },
+     "any": {
+      "pooled_iou": -0.0391,
+      "ci95": [
+       -0.0933,
+       0.0009
+      ],
+      "share_of_draws_better": 0.03
+     }
+    },
+    "cv_test_previous - cv_test_multisite": {
+     "open": {
+      "pooled_iou": 0.0399,
+      "ci95": [
+       -0.0042,
+       0.0668
+      ],
+      "share_of_draws_better": 0.949
+     },
+     "any": {
+      "pooled_iou": -0.0447,
+      "ci95": [
+       -0.0626,
+       -0.0332
+      ],
+      "share_of_draws_better": 0.0
+     }
+    },
+    "cv_test_previous - cv_test_albufera_only": {
+     "open": {
+      "pooled_iou": 0.0901,
+      "ci95": [
+       0.0339,
+       0.1132
+      ],
+      "share_of_draws_better": 1.0
+     },
+     "any": {
+      "pooled_iou": -0.0085,
+      "ci95": [
+       -0.0269,
+       0.0027
+      ],
+      "share_of_draws_better": 0.074
+     }
+    }
+   }
+  },
+  {
+   "site": "all test sites",
+   "split": "test site, never seen in training",
+   "dates": 35,
+   "stacks": [
+    "donana 015_A_020",
+    "donana 023_D_070",
+    "donana 116_A_020",
+    "pego_oliva 058_A_021",
+    "pego_oliva 066_D_069",
+    "pego_oliva 167_D_069"
+   ],
+   "models": {
+    "baseline": {
+     "open": {
+      "pooled_iou": 0.017,
+      "ci95": [
+       0.0111,
+       0.0244
+      ],
+      "median_iou": 0.0247,
+      "precision": 0.0171,
+      "recall": 0.814
+     },
+     "any": {
+      "pooled_iou": 0.0903,
+      "ci95": [
+       0.0802,
+       0.1003
+      ],
+      "median_iou": 0.1047,
+      "precision": 0.0925,
+      "recall": 0.7935
+     }
+    },
+    "cv_test_multisite": {
+     "open": {
+      "pooled_iou": 0.0381,
+      "ci95": [
+       0.0248,
+       0.056
+      ],
+      "median_iou": 0.0852,
+      "precision": 0.0393,
+      "recall": 0.5664
+     },
+     "any": {
+      "pooled_iou": 0.0915,
+      "ci95": [
+       0.0793,
+       0.1045
+      ],
+      "median_iou": 0.1048,
+      "precision": 0.1088,
+      "recall": 0.3653
+     }
+    },
+    "cv_test_albufera_only": {
+     "open": {
+      "pooled_iou": 0.0251,
+      "ci95": [
+       0.017,
+       0.0349
+      ],
+      "median_iou": 0.052,
+      "precision": 0.0254,
+      "recall": 0.6753
+     },
+     "any": {
+      "pooled_iou": 0.0843,
+      "ci95": [
+       0.0752,
+       0.0937
+      ],
+      "median_iou": 0.0848,
+      "precision": 0.0935,
+      "recall": 0.4617
+     }
+    },
+    "cv_test_previous": {
+     "open": {
+      "pooled_iou": 0.021,
+      "ci95": [
+       0.015,
+       0.0283
+      ],
+      "median_iou": 0.0584,
+      "precision": 0.0213,
+      "recall": 0.6019
+     },
+     "any": {
+      "pooled_iou": 0.0882,
+      "ci95": [
+       0.0799,
+       0.0965
+      ],
+      "median_iou": 0.0872,
+      "precision": 0.0968,
+      "recall": 0.5003
+     }
+    }
+   },
+   "differences": {
+    "cv_test_multisite - baseline": {
+     "open": {
+      "pooled_iou": 0.0211,
+      "ci95": [
+       0.0131,
+       0.0324
+      ],
+      "share_of_draws_better": 1.0
+     },
+     "any": {
+      "pooled_iou": 0.0012,
+      "ci95": [
+       -0.0045,
+       0.0071
+      ],
+      "share_of_draws_better": 0.625
+     }
+    },
+    "cv_test_albufera_only - baseline": {
+     "open": {
+      "pooled_iou": 0.0081,
+      "ci95": [
+       0.0053,
+       0.0115
+      ],
+      "share_of_draws_better": 1.0
+     },
+     "any": {
+      "pooled_iou": -0.006,
+      "ci95": [
+       -0.0098,
+       -0.0018
+      ],
+      "share_of_draws_better": 0.002
+     }
+    },
+    "cv_test_albufera_only - cv_test_multisite": {
+     "open": {
+      "pooled_iou": -0.013,
+      "ci95": [
+       -0.0212,
+       -0.0075
+      ],
+      "share_of_draws_better": 0.0
+     },
+     "any": {
+      "pooled_iou": -0.0072,
+      "ci95": [
+       -0.0119,
+       -0.0028
+      ],
+      "share_of_draws_better": 0.001
+     }
+    },
+    "cv_test_previous - baseline": {
+     "open": {
+      "pooled_iou": 0.004,
+      "ci95": [
+       0.002,
+       0.0057
+      ],
+      "share_of_draws_better": 1.0
+     },
+     "any": {
+      "pooled_iou": -0.0021,
+      "ci95": [
+       -0.0056,
+       0.0015
+      ],
+      "share_of_draws_better": 0.126
+     }
+    },
+    "cv_test_previous - cv_test_multisite": {
+     "open": {
+      "pooled_iou": -0.0171,
+      "ci95": [
+       -0.0278,
+       -0.0098
+      ],
+      "share_of_draws_better": 0.0
+     },
+     "any": {
+      "pooled_iou": -0.0033,
+      "ci95": [
+       -0.0085,
+       0.0011
+      ],
+      "share_of_draws_better": 0.097
+     }
+    },
+    "cv_test_previous - cv_test_albufera_only": {
+     "open": {
+      "pooled_iou": -0.0041,
+      "ci95": [
+       -0.0069,
+       -0.0019
+      ],
+      "share_of_draws_better": 0.0
+     },
+     "any": {
+      "pooled_iou": 0.0039,
+      "ci95": [
+       0.0019,
+       0.0059
+      ],
+      "share_of_draws_better": 1.0
+     }
+    }
+   }
+  },
+  {
+   "site": "albufera",
+   "split": "held-out validation blocks of a training site",
+   "dates": 14,
+   "stacks": [
+    "albufera 058_A_021",
+    "albufera 066_D_069"
+   ],
+   "models": {
+    "baseline": {
+     "open": {
+      "pooled_iou": 0.0941,
+      "ci95": [
+       0.0104,
+       0.2105
+      ],
+      "median_iou": 0.0,
+      "precision": 0.0941,
+      "recall": 0.9929
+     },
+     "any": {
+      "pooled_iou": 0.0968,
+      "ci95": [
+       0.0176,
+       0.2047
+      ],
+      "median_iou": 0.029,
+      "precision": 0.1013,
+      "recall": 0.6857
+     }
+    },
+    "cv_test_multisite": {
+     "open": {
+      "pooled_iou": 0.6181,
+      "ci95": [
+       0.3685,
+       0.7112
+      ],
+      "median_iou": 0.0,
+      "precision": 0.6833,
+      "recall": 0.8662
+     },
+     "any": {
+      "pooled_iou": 0.441,
+      "ci95": [
+       0.098,
+       0.5632
+      ],
+      "median_iou": 0.0002,
+      "precision": 0.6794,
+      "recall": 0.5569
+     }
+    },
+    "cv_test_albufera_only": {
+     "open": {
+      "pooled_iou": 0.5747,
+      "ci95": [
+       0.3431,
+       0.6514
+      ],
+      "median_iou": 0.0,
+      "precision": 0.6487,
+      "recall": 0.8344
+     },
+     "any": {
+      "pooled_iou": 0.4172,
+      "ci95": [
+       0.1062,
+       0.5298
+      ],
+      "median_iou": 0.0161,
+      "precision": 0.6389,
+      "recall": 0.5459
+     }
+    },
+    "cv_test_previous": {
+     "open": {
+      "pooled_iou": 0.4401,
+      "ci95": [
+       0.1923,
+       0.5623
+      ],
+      "median_iou": 0.1694,
+      "precision": 0.5337,
+      "recall": 0.715
+     },
+     "any": {
+      "pooled_iou": 0.3656,
+      "ci95": [
+       0.1342,
+       0.4936
+      ],
+      "median_iou": 0.116,
+      "precision": 0.5356,
+      "recall": 0.5353
+     }
+    }
+   },
+   "differences": {
+    "cv_test_multisite - baseline": {
+     "open": {
+      "pooled_iou": 0.524,
+      "ci95": [
+       0.3433,
+       0.6334
+      ],
+      "share_of_draws_better": 0.997
+     },
+     "any": {
+      "pooled_iou": 0.3442,
+      "ci95": [
+       0.0805,
+       0.4181
+      ],
+      "share_of_draws_better": 0.995
+     }
+    },
+    "cv_test_albufera_only - baseline": {
+     "open": {
+      "pooled_iou": 0.4806,
+      "ci95": [
+       0.3151,
+       0.5681
+      ],
+      "share_of_draws_better": 0.997
+     },
+     "any": {
+      "pooled_iou": 0.3204,
+      "ci95": [
+       0.0867,
+       0.3842
+      ],
+      "share_of_draws_better": 0.999
+     }
+    },
+    "cv_test_albufera_only - cv_test_multisite": {
+     "open": {
+      "pooled_iou": -0.0434,
+      "ci95": [
+       -0.0706,
+       -0.0101
+      ],
+      "share_of_draws_better": 0.004
+     },
+     "any": {
+      "pooled_iou": -0.0238,
+      "ci95": [
+       -0.0374,
+       0.0133
+      ],
+      "share_of_draws_better": 0.117
+     }
+    },
+    "cv_test_previous - baseline": {
+     "open": {
+      "pooled_iou": 0.346,
+      "ci95": [
+       0.1772,
+       0.4353
+      ],
+      "share_of_draws_better": 1.0
+     },
+     "any": {
+      "pooled_iou": 0.2688,
+      "ci95": [
+       0.114,
+       0.3504
+      ],
+      "share_of_draws_better": 1.0
+     }
+    },
+    "cv_test_previous - cv_test_multisite": {
+     "open": {
+      "pooled_iou": -0.178,
+      "ci95": [
+       -0.2705,
+       -0.1022
+      ],
+      "share_of_draws_better": 0.005
+     },
+     "any": {
+      "pooled_iou": -0.0754,
+      "ci95": [
+       -0.1094,
+       0.047
+      ],
+      "share_of_draws_better": 0.089
+     }
+    },
+    "cv_test_previous - cv_test_albufera_only": {
+     "open": {
+      "pooled_iou": -0.1346,
+      "ci95": [
+       -0.2163,
+       -0.061
+      ],
+      "share_of_draws_better": 0.006
+     },
+     "any": {
+      "pooled_iou": -0.0516,
+      "ci95": [
+       -0.0866,
+       0.035
+      ],
+      "share_of_draws_better": 0.088
+     }
+    }
+   }
+  }
+ ]
+}
