@@ -93,9 +93,33 @@ The water threshold is Otsu over every HH value **with the sea** (without it the
 | `confidence.tif` / `confidence_utm.tif` | Highest class probability, 0 to 100 %, 255 = nodata |
 | `metrics.json` | Scores, confusion matrix, label counts and sources, hectares per class (pixels × 0.04 ha), dates used and left out, split settings |
 | `feature_importance.json` | LightGBM gain share per feature |
-| `model.txt` | The trained LightGBM model. `lightgbm.Booster(model_file="model.txt").predict(X)` reuses it without training; columns follow `model_classes` in `metrics.json`, features follow `feature_names` |
+| `model.txt` | The trained LightGBM model, about 8 MB, **not in git** (rebuilt in about 2 minutes by `run`). `lightgbm.Booster(model_file="model.txt").predict(X)` reuses it without training; columns follow `model_classes` in `metrics.json`, features follow `feature_names` |
 
 A real (non-fake) run also adds `class` and `confidence` entries to `data/manifest.json`, with the source granule of every date. ML entries are keyed on (model, site, stack, layer), so a rerun replaces its own entry.
+
+The maps, `metrics.json` and `feature_importance.json` of the four real stacks are committed (about 18 MB), so the app reads them straight from the repo.
+
+## Results and what to show
+
+All four ML stacks, built with `python -m pipeline.run` and run with the defaults. Scores are **agreement with the label maps** on held-out 1 km blocks, not ground-truth accuracy:
+
+| Stack | Dates | Accuracy | Macro F1 | Kappa |
+|---|---:|---:|---:|---:|
+| albufera 066_D_069 | 11 | 0.807 | 0.791 | 0.742 |
+| albufera 058_A_021 | 10 | 0.801 | 0.764 | 0.733 |
+| espada 058_A_022 | 11 | 0.756 | 0.723 | 0.683 |
+| espada 167_D_068 | 9 | 0.752 | 0.738 | 0.676 |
+
+**Cross-check between tracks** (`python -m pipeline.ml.crosscheck`, written to `data/ml/crosscheck.json`). Each track sees the ground from its own angle and gets its own trained model, so classes on which both maps agree are ones the radar really separates:
+
+| Site | Pixels agree | Class overlap (IoU) between the two maps |
+|---|---:|---|
+| albufera | 85.5 % | **rice 0.96 · water 0.94** · urban 0.73 · other 0.67 · orchard 0.61 · forest 0.33 |
+| espada | 74.9 % | **burned 0.74 · forest 0.71** · water 0.61 · orchard 0.56 · other 0.54 · urban 0.42 |
+
+**What to show in the app:** rice, the lagoon and the burn scar are solid: two viewing angles give nearly the same map, and they agree with CORINE rice (F1 0.97) and EFFIS (burned precision 0.97 to 0.98). Orchard, other crops, forest at Albufera and urban at Espadà are much less stable between tracks. Show them as faint background, or not at all, and make no claims about them. The `confidence` layer shows the same thing pixel by pixel.
+
+Default layer per site: **albufera 066_D_069** and **espada 058_A_022** (the most dates, including the VALIDATED 28 Oct pass).
 
 ## Status
 
@@ -110,7 +134,7 @@ A real (non-fake) run also adds `class` and `confidence` entries to `data/manife
   | albufera 066_D_069 | 0.807 | 0.791 | 0.742 | rice F1 0.97, water 0.99, urban 0.83, other 0.71, forest 0.66, orchard 0.58 |
   | espada 058_A_022 | 0.756 | 0.723 | 0.683 | burned P 0.98 / R 0.77 (6,846 ha, 6,447 inside EFFIS), forest 0.88 |
 
+- [x] Both tracks of each site mapped, cross-checked and committed with their manifest entries
 - [ ] Known weak spot: water at Espadà is over-mapped (308 ha mapped, 127 ha labelled, precision 0.37), mostly along reservoir margins where the shoreline moves through the season
-- [ ] The second track of each site (albufera 058_A_021, espada 167_D_068) as a cross-check
 
 <sub>SI disclosure: this code was drafted with an SI assistant (Claude Code) and reviewed by the team.</sub>

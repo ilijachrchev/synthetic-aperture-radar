@@ -1,0 +1,246 @@
+{
+  "site": "espada",
+  "stack": "167_D_068",
+  "synthetic": false,
+  "created_utc": "2026-11-14T12:44:02+00:00",
+  "code_version": "0.3.0",
+  "stack_file": "data/stack/espada_167_D_068.nc",
+  "dates": [
+    "2026-06-25",
+    "2026-07-07",
+    "2026-07-19",
+    "2026-08-24",
+    "2026-09-05",
+    "2026-09-17",
+    "2026-09-29",
+    "2026-10-11",
+    "2026-10-23"
+  ],
+  "dates_left_out": [],
+  "crid_rule": "all",
+  "label_sources": {
+    "worldcover": "data/context/espada_worldcover_2021_20m.tif",
+    "jrc_occurrence": "data/context/espada_jrc_occurrence_20m.tif",
+    "effis": "data/labels/espada_effis_burnt_area.geojson",
+    "polygons": null,
+    "sea": "data/context/espada_sea_20m.tif",
+    "corine": "data/labels/espada_clc2018.geojson"
+  },
+  "water_threshold_hh_db": -15.0,
+  "water_threshold_rule": "fallback (otsu gave -7.0 dB)",
+  "speckle_filter_px": 5,
+  "burned_min_hv_drop_db": 1.0,
+  "majority_filter_px": 3,
+  "min_patch_px": 5,
+  "scores_are": "agreement with the labels (WorldCover, JRC, CORINE, EFFIS, drawn fields) on held-out 1 km blocks, not ground-truth accuracy",
+  "split": {
+    "block_px": 50,
+    "gap_px": 2,
+    "test_fraction": 0.25,
+    "seed": 42,
+    "balanced_by_class": true,
+    "test_share_per_class": {
+      "rice_paddy": 0.0,
+      "permanent_water": 0.259,
+      "urban": 0.35,
+      "forest": 0.291,
+      "burned": 0.315,
+      "other_crops_shrub": 0.3,
+      "orchard": 0.35
+    }
+  },
+  "train_pixels": 102168,
+  "model_file": "model.txt",
+  "model_classes": [
+    "permanent_water",
+    "urban",
+    "forest",
+    "burned",
+    "other_crops_shrub",
+    "orchard"
+  ],
+  "feature_names": [
+    "hh_mean",
+    "hh_std",
+    "hh_min",
+    "hh_max",
+    "hv_mean",
+    "hv_std",
+    "hv_min",
+    "hv_max",
+    "hv_minus_hh_mean",
+    "hv_minus_hh_std",
+    "hh_variability",
+    "hv_variability",
+    "hh_drop_size",
+    "hh_drop_doy",
+    "hh_rise_size",
+    "hh_rise_doy",
+    "hv_drop_size",
+    "hv_drop_doy",
+    "hv_rise_size",
+    "hv_rise_doy",
+    "dark_fraction",
+    "n_valid_hh",
+    "n_valid_hv",
+    "hh_late_minus_early",
+    "hv_late_minus_early",
+    "hh_step_drop",
+    "hh_step_doy",
+    "hv_step_drop",
+    "hv_step_doy"
+  ],
+  "label_pixels": {
+    "rice_paddy": 0,
+    "permanent_water": 3180,
+    "urban": 121880,
+    "forest": 374946,
+    "burned": 230753,
+    "other_crops_shrub": 760218,
+    "orchard": 320051
+  },
+  "sea_pixels": 43968,
+  "class_area_ha": {
+    "rice_paddy": 0.0,
+    "permanent_water": 254.88,
+    "urban": 8153.36,
+    "forest": 30188.52,
+    "burned": 6520.4,
+    "other_crops_shrub": 26836.96,
+    "orchard": 17962.72
+  },
+  "valid_fraction": 0.9269261298855528,
+  "n_test_pixels": 537961,
+  "overall_accuracy": 0.7519281137480226,
+  "kappa": 0.675990734890871,
+  "macro_f1": 0.7384410282436465,
+  "per_class": {
+    "rice_paddy": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 0
+    },
+    "permanent_water": {
+      "precision": 0.4873222016079159,
+      "recall": 0.9837702871410736,
+      "f1": 0.6517783291976841,
+      "support": 801
+    },
+    "urban": {
+      "precision": 0.5424091350346348,
+      "recall": 0.8404119716514556,
+      "f1": 0.6593002209933702,
+      "support": 39226
+    },
+    "forest": {
+      "precision": 0.796239468838922,
+      "recall": 0.943483722292007,
+      "f1": 0.8636304691755063,
+      "support": 105881
+    },
+    "burned": {
+      "precision": 0.9726075877689694,
+      "recall": 0.7558721601848286,
+      "f1": 0.8506515615810815,
+      "support": 72716
+    },
+    "other_crops_shrub": {
+      "precision": 0.8340194041949539,
+      "recall": 0.6201818704114453,
+      "f1": 0.7113784358263133,
+      "support": 212349
+    },
+    "orchard": {
+      "precision": 0.6205173557373425,
+      "recall": 0.7869854563128575,
+      "f1": 0.6939071526879239,
+      "support": 106988
+    }
+  },
+  "confusion_matrix": {
+    "labels": [
+      "rice_paddy",
+      "permanent_water",
+      "urban",
+      "forest",
+      "burned",
+      "other_crops_shrub",
+      "orchard"
+    ],
+    "rows_are": "reference",
+    "matrix": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        788,
+        0,
+        1,
+        0,
+        10,
+        2
+      ],
+      [
+        0,
+        17,
+        32966,
+        970,
+        102,
+        3605,
+        1566
+      ],
+      [
+        0,
+        0,
+        2239,
+        99897,
+        147,
+        2678,
+        920
+      ],
+      [
+        0,
+        0,
+        1298,
+        13128,
+        54964,
+        2109,
+        1217
+      ],
+      [
+        0,
+        693,
+        21014,
+        10125,
+        1035,
+        131695,
+        47787
+      ],
+      [
+        0,
+        119,
+        3260,
+        1340,
+        264,
+        17807,
+        84198
+      ]
+    ]
+  },
+  "classes_missing_from_test": [
+    "rice_paddy"
+  ],
+  "before_specks_cleanup": {
+    "overall_accuracy": 0.7320865267184796,
+    "macro_f1": 0.7117946196062288,
+    "kappa": 0.6510128340425333
+  }
+}

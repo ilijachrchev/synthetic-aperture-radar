@@ -1,0 +1,194 @@
+{
+  "what": "Pixel agreement between the class maps of two tracks of one site, each with its own trained model. A class is reliable when the maps overlap on at least 70% of its pixels (IoU).",
+  "sites": [
+    {
+      "site": "albufera",
+      "stacks": [
+        "066_D_069",
+        "058_A_021"
+      ],
+      "pixels_agree": 0.855,
+      "accuracy": {
+        "066_D_069": 0.807,
+        "058_A_021": 0.801
+      },
+      "macro_f1": {
+        "066_D_069": 0.791,
+        "058_A_021": 0.764
+      },
+      "reliable_classes": [
+        "rice_paddy",
+        "permanent_water",
+        "urban"
+      ],
+      "classes": {
+        "rice_paddy": {
+          "area_ha": {
+            "066_D_069": 14843,
+            "058_A_021": 14777
+          },
+          "overlap_iou": 0.955,
+          "f1": {
+            "066_D_069": 0.974,
+            "058_A_021": 0.976
+          },
+          "reliable": true
+        },
+        "permanent_water": {
+          "area_ha": {
+            "066_D_069": 2391,
+            "058_A_021": 2425
+          },
+          "overlap_iou": 0.937,
+          "f1": {
+            "066_D_069": 0.992,
+            "058_A_021": 0.99
+          },
+          "reliable": true
+        },
+        "urban": {
+          "area_ha": {
+            "066_D_069": 7538,
+            "058_A_021": 7359
+          },
+          "overlap_iou": 0.728,
+          "f1": {
+            "066_D_069": 0.828,
+            "058_A_021": 0.827
+          },
+          "reliable": true
+        },
+        "forest": {
+          "area_ha": {
+            "066_D_069": 1171,
+            "058_A_021": 1239
+          },
+          "overlap_iou": 0.332,
+          "f1": {
+            "066_D_069": 0.663,
+            "058_A_021": 0.524
+          },
+          "reliable": false
+        },
+        "other_crops_shrub": {
+          "area_ha": {
+            "066_D_069": 13277,
+            "058_A_021": 13405
+          },
+          "overlap_iou": 0.67,
+          "f1": {
+            "066_D_069": 0.706,
+            "058_A_021": 0.699
+          },
+          "reliable": false
+        },
+        "orchard": {
+          "area_ha": {
+            "066_D_069": 8868,
+            "058_A_021": 8880
+          },
+          "overlap_iou": 0.614,
+          "f1": {
+            "066_D_069": 0.583,
+            "058_A_021": 0.57
+          },
+          "reliable": false
+        }
+      }
+    },
+    {
+      "site": "espada",
+      "stacks": [
+        "058_A_022",
+        "167_D_068"
+      ],
+      "pixels_agree": 0.749,
+      "accuracy": {
+        "058_A_022": 0.756,
+        "167_D_068": 0.752
+      },
+      "macro_f1": {
+        "058_A_022": 0.723,
+        "167_D_068": 0.738
+      },
+      "reliable_classes": [
+        "forest",
+        "burned"
+      ],
+      "classes": {
+        "permanent_water": {
+          "area_ha": {
+            "058_A_022": 308,
+            "167_D_068": 255
+          },
+          "overlap_iou": 0.611,
+          "f1": {
+            "058_A_022": 0.535,
+            "167_D_068": 0.652
+          },
+          "reliable": false
+        },
+        "urban": {
+          "area_ha": {
+            "058_A_022": 7689,
+            "167_D_068": 8153
+          },
+          "overlap_iou": 0.422,
+          "f1": {
+            "058_A_022": 0.679,
+            "167_D_068": 0.659
+          },
+          "reliable": false
+        },
+        "forest": {
+          "area_ha": {
+            "058_A_022": 30166,
+            "167_D_068": 30189
+          },
+          "overlap_iou": 0.71,
+          "f1": {
+            "058_A_022": 0.877,
+            "167_D_068": 0.864
+          },
+          "reliable": true
+        },
+        "burned": {
+          "area_ha": {
+            "058_A_022": 6846,
+            "167_D_068": 6520
+          },
+          "overlap_iou": 0.741,
+          "f1": {
+            "058_A_022": 0.859,
+            "167_D_068": 0.851
+          },
+          "reliable": true
+        },
+        "other_crops_shrub": {
+          "area_ha": {
+            "058_A_022": 26885,
+            "167_D_068": 26837
+          },
+          "overlap_iou": 0.536,
+          "f1": {
+            "058_A_022": 0.696,
+            "167_D_068": 0.711
+          },
+          "reliable": false
+        },
+        "orchard": {
+          "area_ha": {
+            "058_A_022": 18028,
+            "167_D_068": 17963
+          },
+          "overlap_iou": 0.563,
+          "f1": {
+            "058_A_022": 0.691,
+            "167_D_068": 0.694
+          },
+          "reliable": false
+        }
+      }
+    }
+  ]
+}
