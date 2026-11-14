@@ -16,10 +16,25 @@ import { STORIES, type Story } from '@/content/stories'
 import { type FloodModel, type RainFile, floodModel, utcDay } from '@/lib/flood-model'
 import type { Bounds } from '@/lib/gl-quad'
 import { PictureLayer } from '@/lib/picture-layer'
-import { FAR_BASE, TERRAIN, addFarBase, farView, flyIn, set3d, setSky, warmUp } from '@/lib/scene3d'
+import { FAR_BASE, TERRAIN, addFarBase, emptyLayer, farView, flyIn, set3d, setSky, warmUp } from '@/lib/scene3d'
+import { maxZoomOf, tileCount, tilesOf, transformTile } from '@/lib/tiles'
+import { warmStory, whenIdle } from '@/lib/warm'
 import { WaterLayer, type WaterMeta, type WaterSeries } from '@/lib/water-layer'
 import { ThemeSwitch } from '../theme-switch'
 import './story.css'
+
+/** MapLibre is the largest file of the page: fetch it as soon as this code runs in the browser, while the story's
+ *  data is on its way, and start its workers right away. Nothing happens on the server. */
+const maplibre =
+	typeof window === 'undefined'
+		? null
+		: import('maplibre-gl').then((m) => {
+				m.setWorkerUrl(`/maplibre/maplibre-gl-worker.mjs?v=${m.getVersion()}`)
+				// the tiles come from this site over one connection: more of them at once
+				m.setMaxParallelImageRequests(32)
+				m.prewarm()
+				return m
+			})
 
 type Scene = { day: string; file: string; time_utc: string; cloud_pct?: number; scenes: { cloud_pct: number }[] }
 type Optical = { bounds: Bounds; credit: string; scenes: Scene[] }
@@ -56,9 +71,16 @@ type Photo = 'clear' | 'day'
 
 const HOUR = 3600e3
 const DAY = 24 * HOUR
-const BASE_TILES = 'https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless-2017_3857/default/g/{z}/{y}/{x}.jpg'
+/** the cloudless picture of EOX around the place; its tiles for the stories are in the app (lib/tiles.ts) */
+const BASE_TILES = tilesOf('base')
 /** coast lines, borders and place names, shown only from far out so the way in can be read */
-const NAMES_TILES = 'https://tiles.maps.eox.at/wmts/1.0.0/overlay_bright_3857/default/g/{z}/{y}/{x}.png'
+const NAMES_TILES = tilesOf('names')
+/** the zoom from which the names are gone: closer in the layer is hidden, so its tiles are not even fetched */
+const NAMES_UNTIL = 8.4
+/** how often the light on still water moves on, in milliseconds */
+const SHIMMER_MS = 83
+/** the longest side a satellite picture is decoded at: about its own 10 m on the ground, a third of the bytes of 4096 */
+const PICTURE_PX = { desktop: 2560, phone: 2048 }
 /** the hold on every pass while playing, and how long a whole story takes to play */
 const DWELL_MS = 420
 const PLAY_SECONDS = { storm: 9, season: 13, fire: 11 }
@@ -202,6 +224,17 @@ export function StoryApp({ story }: { story: Story }) {
 		return { ...base, ref: -1, refHa: 0 }
 	}, [data, choices, seriesId, days, story])
 
+	// The first view waits for its radar frames. Fetch them as soon as the story's data is here, while MapLibre is
+	// still on its way, so the layer finds them in the browser's cache when it asks.
+	useEffect(() => {
+		if (!data || !active) return
+		const v = `?v=${encodeURIComponent(data.meta.baked_utc)}`
+		const { model, layerSeries, ref } = active
+		const at = model.viewAt(model.first)
+		const frames = [at.a, at.b, at.b + 1, ref].filter((i) => i >= 0 && i < layerSeries.frames.length).map((i) => layerSeries.frames[i].file)
+		for (const file of new Set([data.meta.base, ...frames])) fetch(`${story.root}/${file}${v}`).catch(() => {})
+	}, [data, active, story])
+
 	// the story in a few short lines, every number read from the baked files
 	const beats = useMemo(() => {
 		if (!data || !active) return []
@@ -311,6 +344,9 @@ export function StoryApp({ story }: { story: Story }) {
 			const pool = scenesFor(opt.current.photo)
 			const scene = pool.filter((x) => Date.parse(x.time_utc) <= T).pop() ?? pool[0]
 			if (scene) pic.current?.show(scene.day)
+			// and the next picture is fetched before the playhead gets there
+			const next = pool.find((x) => Date.parse(x.time_utc) > T)
+			if (next) pic.current?.preload(next.day)
 
 			const e = el.current
 			const put = (node: HTMLElement | null | undefined, text: string) => {
@@ -383,8 +419,7 @@ export function StoryApp({ story }: { story: Story }) {
 		let map: MapLibreMap | null = null
 		let gone = false
 		;(async () => {
-			const { Map, Marker, setWorkerUrl } = await import('maplibre-gl')
-			setWorkerUrl('/maplibre/maplibre-gl-worker.mjs')
+			const { Map, Marker } = await (maplibre ?? import('maplibre-gl'))
 			if (gone || !mapEl.current) return
 			const small = window.matchMedia('(max-width: 820px)').matches
 			const q = new URLSearchParams(window.location.search)
@@ -393,15 +428,19 @@ export function StoryApp({ story }: { story: Story }) {
 			const view = viewOf(story)
 			map = new Map({
 				container: mapEl.current,
+				// the tiles of the stories are in the app; a tile outside them goes to its own server
+				transformRequest: transformTile,
 				style: {
 					version: 8,
 					sources: {
-						base: { type: 'raster', tiles: [BASE_TILES], tileSize: 256, maxzoom: 14 },
-						names: { type: 'raster', tiles: [NAMES_TILES], tileSize: 256, maxzoom: 12 },
+						// the base stops at 12: closer in, our own Sentinel-2 picture covers the place
+						base: { type: 'raster', tiles: [BASE_TILES], tileSize: 256, maxzoom: maxZoomOf('base') },
+						names: { type: 'raster', tiles: [NAMES_TILES], tileSize: 256, maxzoom: maxZoomOf('names') },
 					},
 					layers: [
-						{ id: 'base', type: 'raster', source: 'base', paint: { 'raster-saturation': -0.3, 'raster-brightness-max': 0.8 } },
-						{ id: 'names', type: 'raster', source: 'names', paint: { 'raster-opacity': ['interpolate', ['linear'], ['zoom'], 3, 0.85, 6.6, 0.8, 8.4, 0] as never } },
+						// from far out the Blue Marble shows alone (scene3d.ts): the base is not even fetched there
+						{ id: 'base', type: 'raster', source: 'base', minzoom: 5.2, paint: { 'raster-saturation': -0.3, 'raster-brightness-max': 0.8 } },
+						{ id: 'names', type: 'raster', source: 'names', maxzoom: NAMES_UNTIL, paint: { 'raster-opacity': ['interpolate', ['linear'], ['zoom'], 3, 0.85, 6.6, 0.8, NAMES_UNTIL, 0] as never } },
 					],
 				},
 				center: view.center,
@@ -417,9 +456,11 @@ export function StoryApp({ story }: { story: Story }) {
 			// as soon as the style is read, not on 'load': that one waits for the base tiles of a far server
 			map.once('style.load', () => {
 				if (gone || !map) return
-				const pictures = data.optical.scenes.map((s) => ({ key: s.day, url: `${story.root}/${s.file}` }))
+				// every file of a bake carries its time, so the browser may keep it as long as it likes
+				const v = `?v=${encodeURIComponent(data.meta.baked_utc)}`
+				const pictures = data.optical.scenes.map((s) => ({ key: s.day, url: `${story.root}/${s.file}${v}` }))
 				// a wide feather: a tilted view would show the straight edge of the picture
-				pic.current = new PictureLayer({ id: 'pic', bounds: data.optical.bounds, pictures, maxSize: small ? 2048 : 4096, feather: 0.14 })
+				pic.current = new PictureLayer({ id: 'pic', bounds: data.optical.bounds, pictures, maxSize: small ? PICTURE_PX.phone : PICTURE_PX.desktop, feather: 0.14 })
 				// the picture steps back so the layer on it is the first thing the eye lands on
 				for (const sc of data.optical.scenes) pic.current.setDim(sc.day, cloud(sc) > 80 ? 0.6 : 0.72, cloud(sc) > 80 ? 0.5 : 0.7)
 				pic.current.setDimmed(true)
@@ -432,8 +473,9 @@ export function StoryApp({ story }: { story: Story }) {
 					map.addLayer({ id: 'official-fill', type: 'fill', source: 'official', paint: { 'fill-color': '#ff7ac8', 'fill-opacity': 0, 'fill-opacity-transition': fade } })
 					map.addLayer({ id: 'official-line', type: 'line', source: 'official', paint: { 'line-color': '#ffa3da', 'line-width': 2, 'line-opacity': 0, 'line-opacity-transition': fade } })
 				}
-				// the radar layer goes under this empty layer, the columns over it
-				map.addLayer({ id: 'over-water', type: 'background', paint: { 'background-opacity': 0 } })
+				// the radar layer goes under this empty layer, the columns over it. It draws nothing, not even into the
+				// textures of the terrain (an empty background layer would fill every one of them)
+				map.addLayer(emptyLayer('over-water'))
 
 				if (extra?.depth.features.length) {
 					map.addSource('depth', { type: 'geojson', data: extra.depth } as never)
@@ -602,8 +644,9 @@ export function StoryApp({ story }: { story: Story }) {
 				}
 			}
 			if (s.T !== s.shown) apply(s.T)
-			// water is never quite still: the light on it keeps moving, about thirty times a second, while the page is close
-			if (alive && s.zoomFade > 0.5 && now - s.lit > 32) {
+			// water is never quite still: the light on it keeps moving while the page is close. It moves slowly, so twelve
+			// steps a second are smooth to the eye, and each step draws every terrain tile again (gl-quad.ts)
+			if (alive && s.zoomFade > 0.5 && now - s.lit > SHIMMER_MS) {
 				s.lit = now
 				water.current?.repaint()
 			}
@@ -611,6 +654,26 @@ export function StoryApp({ story }: { story: Story }) {
 		raf = requestAnimationFrame(loop)
 		return () => cancelAnimationFrame(raf)
 	}, [active, apply, story, days])
+
+	// Once the first view is up, the rest of the story comes in without hurry: every pass of the series and every
+	// picture it may show, so playing it, or a click on the strip, never waits for a file.
+	useEffect(() => {
+		if (!ready || !data) return
+		const id = window.setTimeout(() => {
+			water.current?.preloadAll()
+			for (const s of scenesFor(opt.current.photo)) pic.current?.preload(s.day)
+		}, 500)
+		// and a little later the first views of the other stories, so the switch between them is quick
+		let stop = () => {}
+		const later = window.setTimeout(() => {
+			stop = whenIdle(() => STORIES.filter((s) => s.key !== story.key).forEach((s) => warmStory(s)), 4000)
+		}, 4000)
+		return () => {
+			window.clearTimeout(id)
+			window.clearTimeout(later)
+			stop()
+		}
+	}, [ready, data, scenesFor, story])
 
 	// what the buttons switch
 	useEffect(() => {
@@ -854,6 +917,8 @@ export function StoryApp({ story }: { story: Story }) {
 			},
 			map: () => mapRef.current,
 			settled: () => !!water.current?.ready() && !!pic.current?.current() && !!mapRef.current?.loaded() && !mapRef.current?.isMoving(),
+			/** tiles served by the app and tiles that had to go to their own server */
+			tiles: () => ({ ...tileCount }),
 		}
 		const host = window as unknown as { __flood?: typeof api }
 		host.__flood = api

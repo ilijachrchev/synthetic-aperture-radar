@@ -4,6 +4,11 @@
 
 export type Bounds = [number, number, number, number]
 
+/** Over terrain MapLibre keeps each terrain tile as a texture, 2048 pixels a side, and draws all of them again, with
+ *  everything on them, whenever one of our layers says it has changed. Our layers say so at most this often (about
+ *  30 times a second): the camera still moves at full speed over the textures. */
+export const TERRAIN_REDRAW_MS = 32
+
 export const QUAD_VERT = `#version 300 es
 in vec2 a_pos;
 uniform mat4 u_matrix;
@@ -77,32 +82,57 @@ export function quadMatrix(main: ArrayLike<number>, bounds: Bounds) {
 	return mat
 }
 
-export function buildProgram(gl: WebGL2RenderingContext, vert: string, frag: string) {
-	const compile = (type: number, src: string) => {
+/** A program that compiles on its own: `ready()` is false until it can be drawn with. */
+export type LazyProgram = { program: WebGLProgram; ready: () => boolean }
+
+/**
+ * Compile a program without waiting for it. Asking for the result of a compile right away holds the page until the
+ * graphics driver is done, and the water shader takes the driver a long while (hundreds of milliseconds on some
+ * laptops). With KHR_parallel_shader_compile the browser compiles on another thread and `ready()` turns true once
+ * the program is linked; without it, `ready()` waits for the compile the first time it is asked.
+ */
+export function startProgram(gl: WebGL2RenderingContext, vert: string, frag: string): LazyProgram {
+	const parallel = gl.getExtension('KHR_parallel_shader_compile')
+	const shader = (type: number, src: string) => {
 		const sh = gl.createShader(type)!
 		gl.shaderSource(sh, src)
 		gl.compileShader(sh)
-		if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(sh) ?? 'shader failed to compile')
 		return sh
 	}
+	const vs = shader(gl.VERTEX_SHADER, vert)
+	const fs = shader(gl.FRAGMENT_SHADER, frag)
 	const program = gl.createProgram()!
-	gl.attachShader(program, compile(gl.VERTEX_SHADER, vert))
-	gl.attachShader(program, compile(gl.FRAGMENT_SHADER, frag))
+	gl.attachShader(program, vs)
+	gl.attachShader(program, fs)
 	// the same slot in every program, so the flat and the draped program of a layer share one vertex array
 	gl.bindAttribLocation(program, 0, 'a_pos')
 	gl.linkProgram(program)
-	if (!gl.getProgramParameter(program, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(program) ?? 'program failed to link')
-	return program
+	let done = false
+	return {
+		program,
+		ready() {
+			if (done) return true
+			if (parallel && !gl.getProgramParameter(program, parallel.COMPLETION_STATUS_KHR)) return false
+			if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+				throw new Error(gl.getShaderInfoLog(fs) || gl.getShaderInfoLog(vs) || gl.getProgramInfoLog(program) || 'program failed to link')
+			}
+			gl.deleteShader(vs)
+			gl.deleteShader(fs)
+			done = true
+			return true
+		},
+	}
 }
 
-/** A unit square as a triangle strip, bound to the program's a_pos. */
-export function unitQuad(gl: WebGL2RenderingContext, program: WebGLProgram) {
+/** A unit square as a triangle strip, on attribute 0, where every program here binds a_pos. Asking the program for
+ *  the place of a_pos would wait for its compile to finish, which is what startProgram avoids. */
+export function unitQuad(gl: WebGL2RenderingContext) {
 	const vao = gl.createVertexArray()!
 	const buffer = gl.createBuffer()!
 	gl.bindVertexArray(vao)
 	gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
 	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([0, 0, 1, 0, 0, 1, 1, 1]), gl.STATIC_DRAW)
-	const loc = gl.getAttribLocation(program, 'a_pos')
+	const loc = 0
 	gl.enableVertexAttribArray(loc)
 	gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0)
 	gl.bindVertexArray(null)

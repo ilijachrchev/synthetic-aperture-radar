@@ -3,26 +3,29 @@
 // With the terrain on, MapLibre lays its raster, fill and line layers over the relief, and our own two layers too
 // (water-layer.ts and picture-layer.ts draw into the terrain tiles). Nothing else in a page has to change: switch it
 // on after the style has loaded, tilt the camera, and switch it off again for the flat map.
-import type { Map as MapLibreMap, SkySpecification } from 'maplibre-gl'
+import type { CustomLayerInterface, Map as MapLibreMap, SkySpecification } from 'maplibre-gl'
+import { maxZoomOf, tilesOf } from './tiles'
 
 /** A view of the map with the camera tilted: where it looks, how close, how low, and from which side. */
 export type Camera3D = { center: [number, number]; zoom: number; pitch: number; bearing: number }
 
 /**
  * The elevation tiles. Mapterhorn serves open elevation data as terrarium tiles: in Spain the 2 m lidar model of
- * the national survey (MDT02, CC BY 4.0), elsewhere Copernicus GLO-30. No key, sent with CORS headers.
+ * the national survey (MDT02, CC BY 4.0), elsewhere Copernicus GLO-30. No key, sent with CORS headers. The tiles of
+ * the stories are copied into the app (scripts/bake_tiles.py, lib/tiles.ts); others still come from Mapterhorn.
  * The credit is the one its tile description asks for, plus the two sources these pages actually show.
  */
 export const TERRAIN = {
 	id: 'terrain-dem',
 	source: {
 		type: 'raster-dem' as const,
-		tiles: ['https://tiles.mapterhorn.com/{z}/{x}/{y}.webp'],
+		tiles: [tilesOf('dem')],
 		encoding: 'terrarium' as const,
 		tileSize: 512,
-		// far out the relief cannot be seen, and some open-ocean tiles of the low zooms do not exist (404)
+		// far out the relief cannot be seen, and some open-ocean tiles of the low zooms do not exist (404).
+		// It stops at zoom 12 (15 m): the terrain mesh of these views is coarser than that, so finer tiles only cost
 		minzoom: 6,
-		maxzoom: 14,
+		maxzoom: maxZoomOf('dem'),
 	},
 	credit: 'Terrain: © Mapterhorn (mapterhorn.com/attribution). MDT02 2015-2021 CC-BY 4.0 scne.es; Copernicus GLO-30, DLR e.V. 2010-2014 and Airbus Defence and Space GmbH 2014-2018, provided under COPERNICUS by the European Union and ESA',
 	creditShort: 'Terrain: Mapterhorn, CNIG, Copernicus',
@@ -112,9 +115,19 @@ export function set3d(map: MapLibreMap, on: boolean, opts: { sky?: keyof typeof 
  */
 export const FAR_BASE = {
 	id: 'far-base',
-	tiles: ['https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/BlueMarble_ShadedRelief_Bathymetry/default/GoogleMapsCompatible_Level8/{z}/{y}/{x}.jpeg'],
-	maxzoom: 8,
+	// NASA GIBS BlueMarble_ShadedRelief_Bathymetry, copied into the app for the way in (lib/tiles.ts)
+	tiles: [tilesOf('far')],
+	maxzoom: maxZoomOf('far'),
 	credit: 'Blue Marble: NASA Earth Observatory, served by NASA GIBS',
+}
+
+/**
+ * A layer that draws nothing, to hold a place in the order of the layers (ours go under it). Unlike an empty
+ * background layer it is not drawn into the textures of the terrain either: with the terrain on, MapLibre would fill
+ * every terrain tile with a background layer, invisible or not, each time it draws the tiles again.
+ */
+export function emptyLayer(id: string): CustomLayerInterface {
+	return { id, type: 'custom', renderingMode: '2d', render: () => {} }
 }
 
 /** Put the whole Earth under the base map, and let the base map fade in over it on the way down (zoom 5.2 to 6.6).

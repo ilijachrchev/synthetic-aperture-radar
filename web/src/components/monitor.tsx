@@ -6,7 +6,9 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { ArrowUpRight } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
+import { STORIES } from '@/content/stories'
 import { storyNav } from '@/lib/story-nav'
+import { warmMaplibre, warmStory, whenIdle } from '@/lib/warm'
 import { lenisRef } from './smooth'
 
 gsap.registerPlugin(ScrollTrigger, useGSAP)
@@ -43,8 +45,9 @@ export function Monitor({ films, track }: { films: Film[]; track: HTMLElement | 
 	const videos = useRef<(HTMLVideoElement | null)[]>([])
 	const bar = useRef<HTMLSpanElement>(null)
 	const curRef = useRef(0)
-	// the furthest film that has been given its file: the one on screen and the next
+	// the furthest film that has been given its file: the one on screen, and the next once that one can play through
 	const reach = useRef(-1)
+	const [through, setThrough] = useState<boolean[]>(() => films.map(() => false))
 	const [cur, setCur] = useState(0)
 	const [seen, setSeen] = useState(false)
 	const [near, setNear] = useState(false)
@@ -65,6 +68,17 @@ export function Monitor({ films, track }: { films: Film[]; track: HTMLElement | 
 			close.disconnect()
 		}
 	}, [])
+
+	// "Open the map" opens the flood: once the landing is up, its map code and its first view come in quietly, so
+	// the click shows the map at once
+	useEffect(
+		() =>
+			whenIdle(() => {
+				warmMaplibre()
+				warmStory(STORIES[0])
+			}),
+		[],
+	)
 
 	// the track's scroll picks the story
 	useGSAP(
@@ -117,7 +131,9 @@ export function Monitor({ films, track }: { films: Film[]; track: HTMLElement | 
 		return () => timers.forEach((t) => window.clearTimeout(t))
 	}, [cur, seen, calm, near])
 
-	if (near && !calm) reach.current = Math.max(reach.current, Math.min(N - 1, cur + 1))
+	// one film at a time: the next one only starts to load once the one on screen has enough to play to its end, so
+	// the page and the first film do not share the line with a second film nobody is watching yet
+	if (near && !calm) reach.current = Math.max(reach.current, Math.min(N - 1, cur + (through[cur] ? 1 : 0)))
 	const film = films[cur]
 	return (
 		<div className="mon">
@@ -135,6 +151,7 @@ export function Monitor({ films, track }: { films: Film[]; track: HTMLElement | 
 							loop
 							playsInline
 							preload="auto"
+							onCanPlayThrough={() => setThrough((t) => (t[i] ? t : t.map((v, k) => v || k === i)))}
 							aria-label={`${f.title}, ${f.place}: the story playing on its 3D map page`}
 						/>
 					))}
