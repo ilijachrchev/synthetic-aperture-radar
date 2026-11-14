@@ -4,20 +4,12 @@
 	position: relative;
 	margin-top: -46px;
 	z-index: 2;
-	--f-card: #fbfcff;
-	--f-ink: #082058;
-	--f-ink-2: rgb(8 32 88 / 0.74);
-	--f-ink-3: rgb(8 32 88 / 0.6);
-	--f-line: rgb(8 32 88 / 0.12);
-	--f-mark: #e4eeff;
-}
-[data-theme="dark"] .foot8 {
-	--f-card: #0d2a6e;
-	--f-ink: #eef3ff;
-	--f-ink-2: rgb(238 243 255 / 0.74);
-	--f-ink-3: rgb(238 243 255 / 0.56);
-	--f-line: rgb(160 190 255 / 0.16);
-	--f-mark: #e5ecf6;
+	--f-card: var(--card);
+	--f-ink: var(--ink);
+	--f-ink-2: var(--ink-2);
+	--f-ink-3: var(--muted);
+	--f-line: var(--line);
+	--f-mark: var(--bg);
 }
 .foot8-card {
 	position: relative;

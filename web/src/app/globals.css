@@ -6,204 +6,200 @@
 	--font-mono: var(--font-geist-mono), ui-monospace, Consolas, monospace;
 }
 
-/* Grounds and inks measured on 8x.social: the light middle (#e4eeff, ink #0b0b0c, navy #082058) by day, the navy
-   hero (#082058 with its #102c70 glow) by night. One ground per theme for the whole page. The accent is their
-   text gradient, darkened at its pale end by day so it holds on the light ground. */
-:root {
+/* Three palettes to try, each kept to the user's split. 1: mint sorbet 60, deep ocean 30, hot coral 10.
+   2: midnight navy 60, powder blue 30, fresh mint 10. 3: blush pink 40, charcoal ink 30, fresh mint 30.
+   Coral and mint fail as text on the light grounds, so the accent word sits on a marker block instead, with ink
+   on it; every text pair here clears 4.5:1 (marker text, which is display size, clears 4:1). */
+:root,
+[data-palette="1"] {
 	color-scheme: light;
-	--bg: #e4eeff;
-	--bg-glow: rgb(176 200 255 / 0.55);
-	--ink: #0b0b0c;
-	--navy: #082058;
-	--ink-2: rgb(11 11 12 / 0.74);
-	--muted: rgb(11 11 12 / 0.56);
-	--line: rgb(8 32 88 / 0.12);
-	--line-strong: rgb(8 32 88 / 0.22);
-	--card: #ffffff;
-	--card-line: rgb(8 32 88 / 0.08);
-	--glass: rgb(255 255 255 / 0.55);
+	--bg: #ddf5ea;
+	--bg-2: #cdeee0;
+	--deep: #0b3d57;
+	--on-deep: #ffffff;
+	--ink: #0b3d57;
+	--ink-2: rgb(11 61 87 / 0.8);
+	--muted: rgb(11 61 87 / 0.64);
+	--line: rgb(11 61 87 / 0.14);
+	--line-strong: rgb(11 61 87 / 0.28);
+	--card: #f4fcf8;
+	--accent: #ff6b57;
+	--on-accent: #0b3d57;
+	--btn: #0b3d57;
+	--on-btn: #ffffff;
+	--btn-dot: #ff6b57;
+	--glass: rgb(244 252 248 / 0.72);
 	--glass-line: rgb(255 255 255 / 0.85);
-	--pill-glass: rgb(8 32 88 / 0.06);
-	--accent: #2d6bff;
-	--accent-grad: linear-gradient(17deg, #1f4fe0, #2d6bff 34%, #5e93ff 70%, #8fb6ff);
-	--ghost-ring: rgb(8 32 88 / 0.3);
-	--shadow: 0 1px 2px rgb(8 32 88 / 0.06), 0 18px 44px -18px rgb(8 32 88 / 0.35);
+	--shadow: 0 1px 2px rgb(11 61 87 / 0.08), 0 24px 50px -24px rgb(11 61 87 / 0.35);
 	--ease: cubic-bezier(0.16, 1, 0.3, 1);
 }
-[data-theme="dark"] {
+[data-palette="2"] {
 	color-scheme: dark;
-	--bg: #082058;
-	--bg-glow: rgb(16 44 112 / 0.75);
-	--ink: #ffffff;
-	--ink-2: rgb(255 255 255 / 0.8);
-	--muted: rgb(255 255 255 / 0.6);
-	--line: rgb(255 255 255 / 0.12);
-	--line-strong: rgb(255 255 255 / 0.24);
-	--card: #0d2a6e;
-	--card-line: rgb(255 255 255 / 0.1);
-	--glass: rgb(8 24 70 / 0.45);
-	--glass-line: rgb(255 255 255 / 0.16);
-	--pill-glass: rgb(255 255 255 / 0.06);
-	--accent: #86b4ff;
-	--accent-grad: linear-gradient(17deg, #3d7bff, #5e93ff 34%, #86b4ff 62%, #c4d8fe 88%, #cfc8ff);
-	--ghost-ring: rgb(255 255 255 / 0.36);
-	--shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 24px 60px -24px rgb(0 0 0 / 0.6);
+	--bg: #0c1633;
+	--bg-2: #111e44;
+	--deep: #b9d6f2;
+	--on-deep: #0c1633;
+	--ink: #eef5ff;
+	--ink-2: #b9d6f2;
+	--muted: rgb(185 214 242 / 0.7);
+	--line: rgb(185 214 242 / 0.14);
+	--line-strong: rgb(185 214 242 / 0.3);
+	--card: #13224b;
+	--accent: #3ddba4;
+	--on-accent: #0c1633;
+	--btn: #3ddba4;
+	--on-btn: #0c1633;
+	--btn-dot: #0c1633;
+	--glass: rgb(19 34 75 / 0.7);
+	--glass-line: rgb(185 214 242 / 0.18);
+	--shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 24px 50px -24px rgb(0 0 0 / 0.6);
+}
+[data-palette="3"] {
+	color-scheme: light;
+	--bg: #f6d7d7;
+	--bg-2: #f1caca;
+	--deep: #24262b;
+	--on-deep: #ffffff;
+	--ink: #24262b;
+	--ink-2: rgb(36 38 43 / 0.8);
+	--muted: rgb(36 38 43 / 0.64);
+	--line: rgb(36 38 43 / 0.14);
+	--line-strong: rgb(36 38 43 / 0.28);
+	--card: #b8f0d9;
+	--accent: #3ddba4;
+	--on-accent: #24262b;
+	--btn: #3ddba4;
+	--on-btn: #24262b;
+	--btn-dot: #24262b;
+	--glass: rgb(255 240 240 / 0.72);
+	--glass-line: rgb(255 255 255 / 0.8);
+	--shadow: 0 1px 2px rgb(36 38 43 / 0.08), 0 24px 50px -24px rgb(36 38 43 / 0.35);
 }
 
 html {
 	background: var(--bg);
 	-webkit-text-size-adjust: 100%;
 }
+html.lenis,
+html.lenis body {
+	height: auto;
+}
+.lenis.lenis-smooth [data-lenis-prevent] {
+	overscroll-behavior: contain;
+}
 body {
-	background:
-		radial-gradient(70% 45% at 50% 0%, var(--bg-glow), transparent 70%),
-		radial-gradient(50% 35% at 85% 60%, var(--bg-glow), transparent 70%),
-		var(--bg);
+	background: var(--bg);
 	color: var(--ink);
 	font-family: var(--font-sans);
 	font-weight: 450;
 	-webkit-font-smoothing: antialiased;
-	transition: background-color 0.5s var(--ease), color 0.5s var(--ease);
+	transition: background-color 0.45s var(--ease), color 0.45s var(--ease);
 }
-/* nothing may widen the page sideways; clip (unlike hidden) keeps sticky stages pinned to the viewport */
 main {
 	overflow-x: clip;
 }
 ::selection {
-	background: color-mix(in oklab, var(--accent) 30%, transparent);
+	background: var(--accent);
+	color: var(--on-accent);
 }
 :where(a, button, [role="button"]):focus-visible {
-	outline: 2px solid var(--accent);
+	outline: 2px solid var(--ink);
 	outline-offset: 3px;
 	border-radius: 999px;
 }
-:where(button, a, [role="button"]):active {
-	transform: scale(0.975);
-}
 
-/* Display type, as both 8x sites set it: Archivo 900 at wdth 62, capitals, line-height .86, tracking -0.004em. */
+/* Display type: Archivo 900 at its narrowest width, in capitals. */
 .display {
 	font-family: var(--font-display);
 	font-weight: 900;
 	font-stretch: 62%;
 	font-variation-settings: "wdth" 62;
 	text-transform: uppercase;
-	line-height: 0.86;
+	line-height: 0.88;
 	letter-spacing: -0.004em;
-	text-wrap: balance;
 }
-.accent {
-	background: var(--accent-grad);
-	-webkit-background-clip: text;
-	background-clip: text;
-	color: transparent;
+/* The accent word: ink on a marker block of the accent colour, which swipes in behind it (--mx, landing-motion). */
+.mark {
+	position: relative;
+	z-index: 0;
+	color: var(--on-accent);
+	padding: 0 0.07em;
+	margin: 0 -0.03em;
+}
+.mark::before {
+	content: "";
+	position: absolute;
+	inset: 0.03em 0 0.01em;
+	z-index: -1;
+	background: var(--accent);
+	transform: scaleX(var(--mx, 1));
+	transform-origin: left center;
 }
 .lead {
-	font-size: clamp(18px, 1.7vw, 24px);
+	font-size: clamp(18px, 1.55vw, 22px);
 	font-weight: 500;
 	letter-spacing: -0.01em;
-	line-height: 1.38;
+	line-height: 1.42;
 	color: var(--ink-2);
-}
-.eyebrow {
-	font-size: 15px;
-	font-weight: 600;
-	letter-spacing: 0.025em;
-	text-transform: uppercase;
-	color: var(--muted);
 }
 .mono {
 	font-family: var(--font-mono);
 	font-variant-numeric: tabular-nums;
 }
 
-/* Pills, measured: primary 56px, blue gradient with a lilac glow in its corner and an icon dot; ghost 56px with a
-   1px inset ring. */
-.pill {
+.btn {
 	display: inline-flex;
 	align-items: center;
 	gap: 12px;
-	height: 56px;
-	padding: 0 22px 0 8px;
+	height: 54px;
+	padding: 0 24px 0 8px;
 	border-radius: 999px;
 	font-size: 17px;
-	font-weight: 600;
+	font-weight: 700;
 	white-space: nowrap;
-	color: #fff;
-	background:
-		radial-gradient(90% 140% at 100% 0, rgb(167 155 255 / 0.55), rgb(167 155 255 / 0) 60%),
-		linear-gradient(100deg, #2350ff, #2b5fff);
-	box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.3), inset 0 -1px 0 rgb(8 32 88 / 0.35), 0 10px 30px -12px rgb(35 80 255 / 0.7);
-	transition: transform 0.26s var(--ease), box-shadow 0.26s var(--ease);
+	color: var(--on-btn);
+	background: var(--btn);
+	box-shadow: 0 14px 30px -16px var(--btn);
+	transition: transform 0.35s var(--ease), box-shadow 0.35s var(--ease);
 }
-.pill:hover {
-	transform: translateY(-1px);
+.btn:hover {
+	transform: translateY(-2px);
 }
-.pill-dot {
+.btn-dot {
 	display: grid;
 	place-items: center;
-	width: 40px;
-	height: 40px;
+	width: 38px;
+	height: 38px;
 	border-radius: 999px;
-	background: #fff;
-	color: #2350ff;
+	background: var(--btn-dot);
+	color: var(--btn);
 }
-.pill-ghost {
+.btn-ghost {
 	display: inline-flex;
 	align-items: center;
-	gap: 12px;
-	height: 56px;
-	padding: 0 22px;
+	height: 54px;
+	padding: 0 24px;
 	border-radius: 999px;
 	font-size: 17px;
 	font-weight: 600;
 	white-space: nowrap;
 	color: var(--ink);
-	background: var(--pill-glass);
-	box-shadow: inset 0 0 0 1px var(--ghost-ring);
-	transition: background-color 0.26s var(--ease);
+	box-shadow: inset 0 0 0 1.5px var(--line-strong);
+	transition: background-color 0.3s var(--ease);
 }
-.pill-ghost:hover {
-	background: color-mix(in oklab, var(--pill-glass) 60%, var(--ghost-ring));
-}
-.pill-ghost .mono {
-	padding-left: 12px;
-	border-left: 1px solid var(--line-strong);
-	font-size: 14px;
-	color: var(--muted);
+.btn-ghost:hover {
+	background: var(--line);
 }
 
-/* Words lift out of their own masks one after another (8x.business's titles). Hidden only once a script runs and
-   only until the heading is in view; reduced motion shows them at rest. */
-.wd {
-	display: inline-block;
-	overflow: hidden;
-	vertical-align: top;
-	padding: 0.08em 0.02em 0.06em;
-	margin: -0.08em -0.02em -0.06em;
-}
-.wd > span {
-	display: inline-block;
-	transition: transform 0.9s var(--ease);
-	transition-delay: var(--d, 0ms);
-}
-.js [data-words]:not([data-in]) .wd > span {
-	transform: translate3d(0, 108%, 0);
-}
-.js [data-rise] {
-	transition: opacity 0.8s var(--ease), transform 0.9s var(--ease);
-	transition-delay: var(--d, 0ms);
-}
-.js [data-rise]:not([data-in]) {
+/* GSAP reveals: hidden only when a script is there to show them. */
+.js [data-a] {
 	opacity: 0;
-	transform: translate3d(0, 28px, 0);
 }
 
 @media (prefers-reduced-motion: reduce) {
-	.js [data-words] .wd > span,
-	.js [data-rise] {
-		transform: none !important;
+	.js [data-a] {
 		opacity: 1 !important;
+		transform: none !important;
 	}
 	*,
 	*::before,
@@ -212,4 +208,35 @@ main {
 		animation-duration: 0.01ms !important;
 		animation-iteration-count: 1 !important;
 	}
+}
+
+.sr-only {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	clip: rect(0 0 0 0);
+	white-space: nowrap;
+}
+
+/* the palette switch: three swatches, each drawn in its own split */
+.pal {
+	display: inline-flex;
+	gap: 7px;
+	padding: 5px;
+	border-radius: 999px;
+	box-shadow: inset 0 0 0 1px var(--line);
+}
+.pal button {
+	width: 24px;
+	height: 24px;
+	border-radius: 999px;
+	box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.15);
+	transition: transform 0.25s var(--ease), box-shadow 0.25s var(--ease);
+}
+.pal button:hover {
+	transform: scale(1.12);
+}
+.pal button[aria-checked="true"] {
+	box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--ink);
 }
