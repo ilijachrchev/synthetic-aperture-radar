@@ -1,7 +1,7 @@
 import { ArrowUpRight } from 'lucide-react'
 import Link from 'next/link'
 import { Brand } from './brand'
-import { PaletteSwitch } from './palette-switch'
+import { ThemeSwitch } from './theme-switch'
 import './site-nav.css'
 
 export function SiteNav() {
@@ -13,7 +13,7 @@ export function SiteNav() {
 				<Link href="/#map">The map</Link>
 			</nav>
 			<div className="snav-end">
-				<PaletteSwitch />
+				<ThemeSwitch />
 				<Link href="/map" className="btn snav-cta">
 					<span className="btn-dot">
 						<ArrowUpRight size={15} strokeWidth={2.4} />

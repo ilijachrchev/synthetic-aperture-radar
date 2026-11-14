@@ -16,18 +16,18 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
 	themeColor: [
-		{ media: '(prefers-color-scheme: light)', color: '#0c1633' },
-		{ media: '(prefers-color-scheme: dark)', color: '#0c1633' },
+		{ media: '(prefers-color-scheme: light)', color: '#fbfaf7' },
+		{ media: '(prefers-color-scheme: dark)', color: '#060f13' },
 	],
 }
 
-// Palette 2 is the default; a saved choice from the palette switch wins. The js class lets reveals hide content only
-// when a script is there to show it again. Runs before first paint, so no flash.
-const BOOT = `(function(){var d=document.documentElement;d.classList.add("js");try{var p=localStorage.getItem("palette");if(p==="1"||p==="2"||p==="3")d.setAttribute("data-palette",p)}catch(e){}})()`
+// Day is the default; a saved choice from the theme switch wins. The js class lets reveals hide content only when a
+// script is there to show it again. Runs before first paint, so no flash.
+const BOOT = `(function(){var d=document.documentElement;d.classList.add("js");try{var p=localStorage.getItem("theme");if(p==="light"||p==="dark")d.setAttribute("data-theme",p)}catch(e){}})()`
 
 export default function RootLayout({ children }: LayoutProps<'/'>) {
 	return (
-		<html lang="en" data-palette="2" suppressHydrationWarning className={`${archivo.variable} ${hanken.variable} ${geistMono.variable}`}>
+		<html lang="en" data-theme="light" suppressHydrationWarning className={`${archivo.variable} ${hanken.variable} ${geistMono.variable}`}>
 			<head>
 				<script dangerouslySetInnerHTML={{ __html: BOOT }} />
 			</head>

@@ -5,7 +5,7 @@ import { useEffect, useRef } from 'react'
 // The footer's land, after 8x.social's: misty ridges drawn as a halftone screen, dots large where the land is dark
 // and gone where the mist lies, the mist drifting slowly along the valleys. Everything is procedural (no image), so
 // it needs no SI watermark. Ridges stand for the hills behind the Albufera; the flat band at the bottom is the
-// paddies. Dots in the palette's 30% colour (--deep). Runs only while on screen; reduced motion draws one frame.
+// paddies. Dots in the theme's deep cyan (--deep). Runs only while on screen; reduced motion draws one frame.
 
 const CELL = 6
 
@@ -174,7 +174,7 @@ export function HalftoneLand({ className = '' }: { className?: string }) {
 		})
 		io.observe(canvas)
 		const mo = new MutationObserver(() => draw(performance.now()))
-		mo.observe(document.documentElement, { attributes: true, attributeFilter: ['data-palette'] })
+		mo.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] })
 		return () => {
 			cancelAnimationFrame(raf)
 			ro.disconnect()
