@@ -1,51 +1,60 @@
-import { ArrowUpRight, Columns2, Globe2, Play } from 'lucide-react'
+import { ArrowUpRight } from 'lucide-react'
 import Link from 'next/link'
-import { HERO, MAP_HEAD, STORIES_HEAD } from '@/content/landing'
-import { LivingRadar } from './living-radar'
+import { HERO, STORIES, STORIES_HEAD } from '@/content/landing'
+import { MapApp, type StoryCfg } from './map/map-app'
 import { SiteNav } from './site-nav'
 import { type Chapter, StoryScroll } from './story-scroll'
 import './landing.css'
 
-/** The hero: what it is on the left, the real thing on the right, a season of radar playing by itself. */
-export function Hero({ radar, track, facts }: { radar: { img: string; date: string }[]; track: string; facts: string[] }) {
+/**
+ * The hero: one line, the way into the app and straight to each story, and under it the app itself, live and half in
+ * view, growing to fill the screen as the page scrolls (landing-motion). What is shown, where and when sits on top.
+ */
+export function Hero({ stories, eyebrow, source }: { stories: StoryCfg[]; eyebrow: string; source: { label: string; href: string } }) {
 	return (
 		<section className="hx">
-			<SiteNav />
-			<div className="hx-grid">
-				<div className="hx-copy">
-					<p className="mono hx-eyebrow" data-a>
-						{HERO.eyebrow}
-					</p>
-					<h1 className="display hx-title">
-						{HERO.lines.map((l) => (
-							<span key={l} className="hx-line">
-								{l}
-							</span>
-						))}
-					</h1>
-					<p className="lead hx-lead" data-a>
-						{HERO.lead}
-					</p>
-					<div className="hx-cta" data-a>
-						<Link href="/map" className="btn">
-							<span className="btn-dot">
-								<ArrowUpRight size={18} strokeWidth={2.4} />
-							</span>
-							Open the map
-						</Link>
-						<Link href="/#stories" className="btn-ghost">
-							See the stories
-						</Link>
+			<div className="hx-pin">
+				<div className="hx-top">
+					<SiteNav />
+					<div className="hx-head">
+						<p className="mono hx-eyebrow" data-a>
+							{eyebrow}
+						</p>
+						<h1 className="display hx-title">
+							{HERO.lines.map((l, i) => (
+								<span key={l} className="hx-line">
+									{i > 0 ? ' ' : ''}
+									{l}
+								</span>
+							))}
+						</h1>
+						<p className="lead hx-lead" data-a>
+							{HERO.lead}
+						</p>
+						<div className="hx-cta" data-a>
+							<Link href="/map" className="btn">
+								<span className="btn-dot">
+									<ArrowUpRight size={18} strokeWidth={2.4} />
+								</span>
+								Open the map
+							</Link>
+							<nav className="hx-jump" aria-label="Straight to a story">
+								{STORIES.map((s) => (
+									<Link key={s.key} href={`/map?story=${s.key}`} className="hx-chip">
+										<i data-k={s.change.kind} aria-hidden />
+										{s.tab}
+									</Link>
+								))}
+							</nav>
+						</div>
+						<p className="mono hx-source" data-a>
+							Data: <a href={source.href}>{source.label}</a>
+						</p>
 					</div>
-					<ul className="hx-facts" data-a>
-						{facts.map((f) => (
-							<li key={f}>{f}</li>
-						))}
-					</ul>
 				</div>
-				<div className="hx-radar">
-					<div className="hx-radar-inner">
-						<LivingRadar passes={radar} track={track} />
+				<div className="hx-stage">
+					<div className="hx-app">
+						<MapApp stories={stories} embed />
 					</div>
 				</div>
 			</div>
@@ -64,59 +73,6 @@ export function Stories({ chapters }: { chapters: Chapter[] }) {
 				</p>
 			</div>
 			<StoryScroll chapters={chapters} />
-		</section>
-	)
-}
-
-const ICONS = [Play, Columns2, Globe2]
-
-/** The app, shown as itself: a real screenshot in a browser window, in the theme that is on. */
-export function MapPreview() {
-	return (
-		<section id="map" className="mx">
-			<div className="sx-head">
-				<h2 className="display sx-title">
-					{MAP_HEAD.lines.map((l) => (
-						<span key={l} className="hx-line">
-							{l}
-						</span>
-					))}
-				</h2>
-				<p className="lead" data-a>
-					{MAP_HEAD.line}
-				</p>
-			</div>
-			<div className="mx-stage">
-				<Link href="/map" className="mx-frame" aria-label="Open the map">
-					<span className="mx-bar" aria-hidden>
-						<i />
-						<i />
-						<i />
-						<span className="mono">dancing-with-the-sars / map</span>
-					</span>
-					{['light', 'dark'].map((p) => (
-						<img key={p} className="mx-shot" data-t={p} src={`/img/app/app-${p}.webp`} alt={p === 'light' ? 'The map app: the Albufera radar over a satellite map, with the stories, the pass card and the season timeline' : ''} width={1440} height={900} loading="lazy" />
-					))}
-				</Link>
-			</div>
-			<div className="mx-foot" data-a-group>
-				<ul className="mx-cmds">
-					{MAP_HEAD.commands.map((c, i) => {
-						const Icon = ICONS[i]
-						return (
-							<li key={c} data-a>
-								<Icon size={16} strokeWidth={2.2} /> {c}
-							</li>
-						)
-					})}
-				</ul>
-				<Link href="/map" className="btn" data-a>
-					<span className="btn-dot">
-						<ArrowUpRight size={18} strokeWidth={2.4} />
-					</span>
-					Open the map
-				</Link>
-			</div>
 		</section>
 	)
 }

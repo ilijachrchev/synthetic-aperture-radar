@@ -1,287 +1,158 @@
-/* The landing: four pieces on one ground. Hero (what it is + the real radar playing), the four stories pinned
-   (story-scroll.css), the app as itself, the footer. Everything GSAP moves starts hidden only when a script is there (html.js). */
+/* The landing: the hero (one line, the ways in, and the real app growing out of the page as it scrolls), the four
+   stories pinned (story-scroll.css), the footer. Everything GSAP moves starts hidden only when a script is there. */
 .js .hx-title,
 .js .sx-title,
-.js .hx-radar {
+.js .hx-stage {
 	opacity: 0;
 }
 
 /* ---------- hero ---------- */
 .hx {
 	position: relative;
-	min-height: min(100svh, 1000px);
-	display: flex;
-	flex-direction: column;
+	/* the hero holds for one and a quarter screens while the app grows to fill it */
+	height: 225svh;
 }
-.hx-grid {
-	flex: 1;
-	width: 100%;
-	max-width: 1480px;
+.hx-pin {
+	position: sticky;
+	top: 0;
+	height: 100svh;
+	overflow: hidden;
+}
+.hx-top {
+	position: relative;
+	z-index: 3;
+	will-change: transform, opacity;
+}
+.hx-head {
+	max-width: 1200px;
 	margin: 0 auto;
-	padding: 8px 32px 56px;
-	display: grid;
-	grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
-	align-items: center;
-	gap: 56px;
-}
-.hx-copy {
-	min-width: 0;
+	padding: clamp(10px, 3.4svh, 46px) 24px 0;
+	text-align: center;
 }
 .hx-eyebrow {
-	margin: 0 0 26px;
+	margin: 0 0 20px;
 	font-size: 13px;
 	color: var(--muted);
 }
 .hx-title {
 	margin: 0;
-	font-size: clamp(64px, 8.2vw, 136px);
+	/* one punchy line on a desktop */
+	font-size: clamp(48px, 6.3vw, 104px);
+	text-wrap: balance;
 }
 .hx-line {
-	display: block;
+	display: inline;
 }
 .hx-lead {
-	margin: 30px 0 0;
-	max-width: 520px;
+	margin: 20px auto 0;
+	max-width: 640px;
+	text-wrap: balance;
 }
 .hx-cta {
-	margin-top: 34px;
+	margin-top: 28px;
 	display: flex;
 	flex-wrap: wrap;
-	gap: 12px;
+	justify-content: center;
+	align-items: center;
+	gap: 10px;
 }
-.hx-facts {
-	list-style: none;
-	margin: 34px 0 0;
-	padding: 0;
+.hx-jump {
 	display: flex;
 	flex-wrap: wrap;
+	justify-content: center;
 	gap: 8px;
 }
-.hx-facts li {
-	padding: 7px 13px;
-	border-radius: 999px;
-	font-size: 13.5px;
-	font-weight: 600;
-	color: var(--ink-2);
-	box-shadow: inset 0 0 0 1px var(--line-strong);
-}
-.hx-radar {
-	position: relative;
-	min-width: 0;
-	display: grid;
-	place-items: center;
-}
-/* the light aura the radar sits in: a gradient, painted once */
-.hx-radar::before {
-	content: "";
-	position: absolute;
-	inset: -12% -18%;
-	z-index: -1;
-	background: radial-gradient(closest-side, var(--aura), transparent 72%);
-	pointer-events: none;
-}
-.hx-radar-inner {
-	width: 100%;
-	will-change: transform;
-}
-
-/* the living radar */
-.lr {
-	width: min(100%, calc(min(78svh, 760px) * 0.8));
-	margin: 0 auto;
-}
-.lr-frame {
-	position: relative;
-	aspect-ratio: 377 / 470;
-	border-radius: 30px;
-	overflow: hidden;
-	background: var(--stage);
-	box-shadow: 0 0 0 1px var(--line-strong), 0 2px 4px rgb(0 0 0 / 0.06), 0 50px 100px -40px rgb(0 70 100 / 0.5);
-	isolation: isolate;
-}
-.lr-frame img {
-	position: absolute;
-	inset: 0;
-	width: 100%;
-	height: 100%;
-	object-fit: cover;
-	opacity: 0;
-	transition: opacity 0.9s var(--ease);
-}
-.lr-frame img[data-on] {
-	opacity: 0.5;
-	filter: saturate(0.45) brightness(0.92);
-}
-.lr-change {
-	position: absolute;
-	inset: 0;
-	width: 100%;
-	height: 100%;
-}
-.lr-key {
-	position: absolute;
-	right: 16px;
-	bottom: 16px;
-	margin: 0;
+.hx-chip {
 	display: inline-flex;
 	align-items: center;
-	gap: 8px;
-	padding: 7px 12px;
+	gap: 9px;
+	height: 46px;
+	padding: 0 17px 0 15px;
 	border-radius: 999px;
-	font-size: 12px;
+	font-size: 15px;
 	font-weight: 600;
-	color: #fff;
-	background: rgb(8 10 24 / 0.55);
-	backdrop-filter: blur(10px);
-	-webkit-backdrop-filter: blur(10px);
+	color: var(--ink);
+	background: var(--glass);
+	box-shadow: inset 0 0 0 1.5px var(--line-strong);
+	transition: transform 0.35s var(--ease), background-color 0.3s var(--ease);
 }
-.lr-key i {
-	width: 12px;
-	height: 12px;
-	border-radius: 4px;
+.hx-chip:hover {
+	transform: translateY(-2px);
+	background: var(--card);
+}
+/* each story's chip wears its change colour, the same as its legend */
+.hx-chip i {
+	width: 11px;
+	height: 11px;
+	border-radius: 3px;
+}
+.hx-chip i[data-k="water"] {
 	background: #36d6ff;
 }
-.lr-pin {
-	position: absolute;
-	transform: translate(-7px, -7px);
-	display: inline-flex;
-	align-items: center;
-	gap: 7px;
-	font-size: 12.5px;
-	font-weight: 600;
-	color: #fff;
-	text-shadow: 0 1px 3px rgb(0 0 0 / 0.8);
+.hx-chip i[data-k="fire"] {
+	background: linear-gradient(135deg, #ffc450, #b4321e);
 }
-.lr-pin i {
-	width: 14px;
-	height: 14px;
-	border-radius: 999px;
-	border: 2px solid #fff;
-	box-shadow: 0 0 0 3px rgb(0 0 0 / 0.25);
+.hx-chip i[data-k="sink"] {
+	background: linear-gradient(90deg, #4696ff 50%, #ff6e5a 50%);
 }
-.lr-live {
-	position: absolute;
-	left: 16px;
-	top: 16px;
-	margin: 0;
-	display: inline-flex;
-	align-items: center;
-	gap: 8px;
-	padding: 7px 12px;
-	border-radius: 999px;
-	font-size: 11.5px;
-	color: #fff;
-	background: rgb(8 10 24 / 0.55);
-	backdrop-filter: blur(10px);
-	-webkit-backdrop-filter: blur(10px);
+.hx-chip i[data-k="quake"] {
+	background: conic-gradient(#060f13, #0083c2, #7fe0f0, #f6fdff, #060f13);
 }
-.lr-live span {
-	width: 8px;
-	height: 8px;
-	border-radius: 999px;
-	background: var(--accent-2);
-	animation: lr-pulse 1.8s ease-in-out infinite;
-}
-@keyframes lr-pulse {
-	50% {
-		opacity: 0.35;
-	}
-}
-.lr-date {
-	position: absolute;
-	left: 16px;
-	bottom: 16px;
-	display: flex;
-	align-items: baseline;
-	gap: 8px;
-	padding: 10px 16px 8px;
-	border-radius: 18px;
-	color: #fff;
-	background: rgb(8 10 24 / 0.55);
-	backdrop-filter: blur(10px);
-	-webkit-backdrop-filter: blur(10px);
-}
-.lr-date b {
-	font-size: 46px;
-	animation: lr-roll 0.6s var(--ease) both;
-}
-@keyframes lr-roll {
-	from {
-		opacity: 0;
-		transform: translateY(40%);
-	}
-}
-.lr-date small {
-	font-size: 12px;
-	opacity: 0.75;
-}
-.lr-bar {
-	margin-top: 26px;
-	display: flex;
-	align-items: center;
-	gap: 14px;
-}
-.lr-bar > button {
-	flex: none;
-	display: grid;
-	place-items: center;
-	width: 38px;
-	height: 38px;
-	border-radius: 999px;
-	color: var(--on-btn);
-	background: var(--btn);
-}
-.lr-bar ol {
-	flex: 1;
-	list-style: none;
-	margin: 0;
-	padding: 0;
-	display: flex;
-	gap: 5px;
-}
-.lr-bar li {
-	flex: 1;
-}
-.lr-bar li button {
-	display: block;
-	width: 100%;
-	height: 22px;
-	position: relative;
-}
-.lr-bar li button::after {
-	content: "";
-	position: absolute;
-	left: 0;
-	right: 0;
-	top: 9px;
-	height: 4px;
-	border-radius: 4px;
-	background: var(--line-strong);
-	transition: background-color 0.4s var(--ease), transform 0.4s var(--ease);
-}
-.lr-bar li button[data-past]::after {
-	background: var(--ink-2);
-}
-.lr-bar li button[data-on]::after {
-	background: var(--accent);
-	transform: scaleY(1.8);
-}
-.lr-count {
-	flex: none;
+.hx-source {
+	margin: 18px 0 0;
 	font-size: 12px;
 	color: var(--muted);
 }
-
-/* ---------- sections ---------- */
-.mx {
-	max-width: 1480px;
-	margin: 0 auto;
-	padding: 150px 32px 0;
-	scroll-margin-top: 10px;
+.hx-source a {
+	text-decoration: underline;
+	text-underline-offset: 3px;
+	text-decoration-color: var(--line-strong);
 }
+.hx-source a:hover {
+	color: var(--ink);
+}
+
+/* the app, half in view under the line, growing to fill the screen as the page scrolls (landing-motion) */
+.hx-stage {
+	position: absolute;
+	inset: 0;
+	z-index: 1;
+	perspective: 2200px;
+	perspective-origin: 50% 20%;
+	pointer-events: none;
+}
+.hx-app {
+	position: absolute;
+	left: 14px;
+	top: 0;
+	width: calc(100% - 28px);
+	height: calc(100svh - 28px);
+	border-radius: 28px;
+	overflow: hidden;
+	background: var(--stage);
+	box-shadow: 0 0 0 1px var(--line-strong), 0 70px 140px -50px rgb(0 40 60 / 0.5);
+	transform-origin: 50% 0;
+	/* where it rests before the script measures the line above it */
+	transform: translate3d(0, 62svh, 0) scale(0.8);
+	pointer-events: auto;
+	will-change: transform;
+}
+.hx-app::after {
+	/* a hairline that keeps the frame's edge crisp over the map */
+	content: "";
+	position: absolute;
+	inset: 0;
+	border-radius: inherit;
+	box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.08);
+	pointer-events: none;
+	z-index: 10;
+}
+
+/* ---------- section heads ---------- */
 .sx-head {
 	max-width: 760px;
 	margin: 0 auto 60px;
+	padding: 0 24px;
 	text-align: center;
 }
 .sx-title {
@@ -293,123 +164,71 @@
 	max-width: 560px;
 }
 
-/* the app, as itself */
-.mx-stage {
-	perspective: 1600px;
-}
-.mx-frame {
-	position: relative;
-	display: block;
-	max-width: 1240px;
-	margin: 0 auto;
-	border-radius: 22px;
-	overflow: hidden;
-	background: var(--card);
-	box-shadow: 0 50px 120px -40px rgb(0 40 60 / 0.5), 0 0 0 1px var(--line-strong);
-	transform-origin: 50% 0%;
-	will-change: transform;
-}
-.mx-bar {
-	display: flex;
-	align-items: center;
-	gap: 7px;
-	height: 40px;
-	padding: 0 16px;
-	color: var(--muted);
-}
-.mx-bar i {
-	width: 11px;
-	height: 11px;
-	border-radius: 999px;
-	background: currentColor;
-	opacity: 0.35;
-}
-.mx-bar .mono {
-	margin: 0 auto;
-	font-size: 12px;
-	opacity: 0.75;
-}
-.mx-shot {
-	display: none;
-	width: 100%;
-	height: auto;
-}
-:root:not([data-theme="dark"]) .mx-shot[data-t="light"],
-[data-theme="dark"] .mx-shot[data-t="dark"] {
-	display: block;
-}
-.mx-foot {
-	margin: 44px auto 0;
-	max-width: 1240px;
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	flex-wrap: wrap;
-	gap: 14px;
-}
-.mx-cmds {
-	list-style: none;
-	margin: 0;
-	padding: 0;
-	display: flex;
-	flex-wrap: wrap;
-	gap: 10px;
-}
-.mx-cmds li {
-	display: inline-flex;
-	align-items: center;
-	gap: 8px;
-	height: 54px;
-	padding: 0 20px;
-	border-radius: 999px;
-	font-size: 15px;
-	font-weight: 600;
-	box-shadow: inset 0 0 0 1.5px var(--line-strong);
-}
-.mx {
-	padding-bottom: 170px;
-}
-
 @media (max-width: 900px) {
-	.hx-grid {
-		grid-template-columns: minmax(0, 1fr);
-		gap: 40px;
-		padding: 8px 18px 40px;
+	.hx-line {
+		display: block;
 	}
 	.hx-title {
-		font-size: clamp(64px, 18vw, 110px);
-	}
-	.lr {
-		width: min(100%, 460px);
+		font-size: clamp(54px, 15vw, 96px);
 	}
 }
 @media (max-width: 640px) {
-	.hx-grid {
+	.hx {
+		height: 210svh;
+	}
+	.hx-head {
 		padding-inline: 16px;
 	}
-	/* both calls to action stay on one line on a phone */
-	.hx-cta {
-		gap: 8px;
+	.hx-eyebrow {
+		margin-bottom: 14px;
+		font-size: 11.5px;
 	}
-	.hx-cta .btn,
-	.hx-cta .btn-ghost {
+	.hx-lead {
+		margin-top: 14px;
 		font-size: 16px;
 	}
+	.hx-cta {
+		margin-top: 18px;
+		gap: 8px;
+	}
 	.hx-cta .btn {
-		gap: 10px;
-		padding-right: 18px;
+		height: 48px;
+		font-size: 16px;
 	}
-	.hx-cta .btn-ghost {
-		padding: 0 18px;
+	.hx-chip {
+		height: 38px;
+		padding: 0 12px 0 11px;
+		font-size: 13.5px;
 	}
-	.mx {
-		padding: 110px 16px 0;
+	.hx-source {
+		display: none;
 	}
-	.mx {
-		padding-bottom: 120px;
+	.hx-app {
+		left: 8px;
+		width: calc(100% - 16px);
+		height: calc(100svh - 16px);
+		border-radius: 22px;
 	}
-	.mx-cmds li {
-		height: 44px;
-		font-size: 14px;
+}
+
+/* reduced motion: no pin and no growth; the app simply sits under the line at full size */
+@media (prefers-reduced-motion: reduce) {
+	.hx {
+		height: auto;
+	}
+	.hx-pin {
+		position: relative;
+		height: auto;
+		overflow: visible;
+	}
+	.hx-stage {
+		position: relative;
+		inset: auto;
+		height: calc(100svh - 28px);
+		margin: 40px 0 14px;
+		opacity: 1;
+	}
+	.hx-app {
+		transform: none !important;
 	}
 }

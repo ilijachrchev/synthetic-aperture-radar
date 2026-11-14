@@ -88,9 +88,3 @@ export const STORIES: Story[] = [
 		change: { kind: 'quake', legend: 'Fringes from each pair, set flowing. The pair that spans the quake reveals from the USGS epicentre; the others stay dim.', event: '2026-10-09', epicentre: [-80.7566, 7.6069] },
 	},
 ]
-
-export const MAP_HEAD = {
-	lines: ['Every pass,', 'one map.'],
-	line: 'Pick a story, play the season, compare any two passes. Every picture links to its record in NASA’s catalogue.',
-	commands: ['Play the season', 'Compare two passes', 'See every place'],
-}
