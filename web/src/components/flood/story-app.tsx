@@ -77,6 +77,9 @@ const frameTime = (f: { time_utc?: string; date?: string }) => Date.parse(f.time
 /** the cloud share of a picture: that of the Sentinel-2 scene that fills most of it */
 const cloud = (s: Scene) => s.cloud_pct ?? Math.max(...s.scenes.map((x) => x.cloud_pct))
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms))
+/** `?story` alone plays the film. An old link to the retired explorer arrives as `?story=fire`: that one opens the
+ *  page as the app it is. */
+const asFilm = (q: URLSearchParams) => q.get('story') === ''
 /** the resting view of a story on this screen: a narrow, upright screen has a view of its own */
 const viewOf = (story: Story): Story['view'] => (window.matchMedia('(max-width: 820px)').matches ? { ...story.view, zoom: story.view.zoom - 1.2, ...story.phone } : story.view)
 
@@ -386,7 +389,7 @@ export function StoryApp({ story }: { story: Story }) {
 			const small = window.matchMedia('(max-width: 820px)').matches
 			const q = new URLSearchParams(window.location.search)
 			// the page opens a little above the place and comes down onto it, unless a still picture was asked for
-			const arrive = !q.has('still') && !q.has('story') && !window.matchMedia('(prefers-reduced-motion: reduce)').matches
+			const arrive = !q.has('still') && !asFilm(q) && !window.matchMedia('(prefers-reduced-motion: reduce)').matches
 			const view = viewOf(story)
 			map = new Map({
 				container: mapEl.current,
@@ -865,7 +868,7 @@ export function StoryApp({ story }: { story: Story }) {
 		if (!ready || told.current) return
 		told.current = true
 		const q = new URLSearchParams(window.location.search)
-		if (q.has('story')) {
+		if (asFilm(q)) {
 			tell()
 			return
 		}
