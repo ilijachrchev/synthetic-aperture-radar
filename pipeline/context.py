@@ -26,6 +26,7 @@ Written with SI assistance (Claude Code), reviewed by the team.
 
 from __future__ import annotations
 
+import argparse
 import csv
 import io
 import math
@@ -241,13 +242,19 @@ def fetch_panama_event() -> Path:
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser.add_argument("--site", action="append", choices=[s for s in SITES if s != "panama"],
+                        help="only these sites (repeatable); default every site plus LOR1 and Panama")
+    args = parser.parse_args()
     for site in SITES.values():
-        if site.name != "panama":  # land cover and water history are for the Spanish sites
-            fetch_rasters(site)
-            context_on_grid(site)
-            sea_on_grid(site)
-    fetch_lor1()
-    fetch_panama_event()
+        if site.name == "panama" or (args.site and site.name not in args.site):
+            continue  # land cover and water history are for the European sites
+        fetch_rasters(site)
+        context_on_grid(site)
+        sea_on_grid(site)
+    if not args.site:
+        fetch_lor1()
+        fetch_panama_event()
 
 
 if __name__ == "__main__":

@@ -1,0 +1,273 @@
+{
+ "rule": "highest pooled IoU of changing open water on the training sites' validation blocks against the optical answer key; ties to the value listed first",
+ "nisar_dark_lowcoh": {
+  "c": 0.25,
+  "iou": 0.3905,
+  "grid": [
+   {
+    "c": 0.15,
+    "iou": 0.3757
+   },
+   {
+    "c": 0.2,
+    "iou": 0.3852
+   },
+   {
+    "c": 0.25,
+    "iou": 0.3905
+   },
+   {
+    "c": 0.3,
+    "iou": 0.384
+   },
+   {
+    "c": 0.35,
+    "iou": 0.3675
+   },
+   {
+    "c": 0.4,
+    "iou": 0.3484
+   },
+   {
+    "c": 0.45,
+    "iou": 0.328
+   },
+   {
+    "c": 0.5,
+    "iou": 0.311
+   }
+  ]
+ },
+ "v1": {
+  "threshold": 0.05,
+  "iou": 0.3125,
+  "grid": [
+   {
+    "threshold": 0.05,
+    "iou": 0.3125
+   },
+   {
+    "threshold": 0.1,
+    "iou": 0.2882
+   },
+   {
+    "threshold": 0.15,
+    "iou": 0.2668
+   },
+   {
+    "threshold": 0.2,
+    "iou": 0.2501
+   },
+   {
+    "threshold": 0.25,
+    "iou": 0.2346
+   },
+   {
+    "threshold": 0.3,
+    "iou": 0.2202
+   },
+   {
+    "threshold": 0.35,
+    "iou": 0.2038
+   },
+   {
+    "threshold": 0.4,
+    "iou": 0.1887
+   },
+   {
+    "threshold": 0.5,
+    "iou": 0.1536
+   }
+  ]
+ },
+ "v2": {
+  "threshold": 0.05,
+  "iou": 0.3497,
+  "grid": [
+   {
+    "threshold": 0.05,
+    "iou": 0.3497
+   },
+   {
+    "threshold": 0.1,
+    "iou": 0.3272
+   },
+   {
+    "threshold": 0.15,
+    "iou": 0.3072
+   },
+   {
+    "threshold": 0.2,
+    "iou": 0.2903
+   },
+   {
+    "threshold": 0.25,
+    "iou": 0.2736
+   },
+   {
+    "threshold": 0.3,
+    "iou": 0.2596
+   },
+   {
+    "threshold": 0.35,
+    "iou": 0.247
+   },
+   {
+    "threshold": 0.4,
+    "iou": 0.2365
+   },
+   {
+    "threshold": 0.5,
+    "iou": 0.2165
+   }
+  ]
+ },
+ "abl_v1_s0": {
+  "threshold": 0.05,
+  "iou": 0.2791,
+  "grid": [
+   {
+    "threshold": 0.05,
+    "iou": 0.2791
+   },
+   {
+    "threshold": 0.1,
+    "iou": 0.2465
+   },
+   {
+    "threshold": 0.15,
+    "iou": 0.2231
+   },
+   {
+    "threshold": 0.2,
+    "iou": 0.2058
+   },
+   {
+    "threshold": 0.25,
+    "iou": 0.1909
+   },
+   {
+    "threshold": 0.3,
+    "iou": 0.1788
+   },
+   {
+    "threshold": 0.35,
+    "iou": 0.167
+   },
+   {
+    "threshold": 0.4,
+    "iou": 0.1572
+   },
+   {
+    "threshold": 0.5,
+    "iou": 0.1375
+   }
+  ]
+ },
+ "abl_coh_s0": {
+  "threshold": 0.05,
+  "iou": 0.3344,
+  "grid": [
+   {
+    "threshold": 0.05,
+    "iou": 0.3344
+   },
+   {
+    "threshold": 0.1,
+    "iou": 0.3001
+   },
+   {
+    "threshold": 0.15,
+    "iou": 0.2676
+   },
+   {
+    "threshold": 0.2,
+    "iou": 0.2416
+   },
+   {
+    "threshold": 0.25,
+    "iou": 0.22
+   },
+   {
+    "threshold": 0.3,
+    "iou": 0.2053
+   },
+   {
+    "threshold": 0.35,
+    "iou": 0.1916
+   },
+   {
+    "threshold": 0.4,
+    "iou": 0.1803
+   },
+   {
+    "threshold": 0.5,
+    "iou": 0.1579
+   }
+  ]
+ },
+ "abl_both_s0": {
+  "threshold": 0.05,
+  "iou": 0.3235,
+  "grid": [
+   {
+    "threshold": 0.05,
+    "iou": 0.3235
+   },
+   {
+    "threshold": 0.1,
+    "iou": 0.3009
+   },
+   {
+    "threshold": 0.15,
+    "iou": 0.2839
+   },
+   {
+    "threshold": 0.2,
+    "iou": 0.2725
+   },
+   {
+    "threshold": 0.25,
+    "iou": 0.263
+   },
+   {
+    "threshold": 0.3,
+    "iou": 0.2553
+   },
+   {
+    "threshold": 0.35,
+    "iou": 0.2478
+   },
+   {
+    "threshold": 0.4,
+    "iou": 0.2415
+   },
+   {
+    "threshold": 0.5,
+    "iou": 0.2291
+   }
+  ]
+ },
+ "v2_spot": {
+  "threshold": 0.05,
+  "sure": 0.5,
+  "iou": 0.3078,
+  "grid": [
+   {
+    "threshold": 0.05,
+    "sure": 0.5,
+    "iou": 0.3078
+   },
+   {
+    "threshold": 0.05,
+    "sure": 0.6,
+    "iou": 0.2953
+   },
+   {
+    "threshold": 0.05,
+    "sure": 0.7,
+    "iou": 0.2891
+   }
+  ]
+ }
+}
