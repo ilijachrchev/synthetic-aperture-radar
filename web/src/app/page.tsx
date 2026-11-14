@@ -1,4 +1,4 @@
-import { Hero, Stories } from '@/components/landing'
+import { Hero } from '@/components/landing'
 import { LandingMotion } from '@/components/landing-motion'
 import { SiteFooter } from '@/components/site-footer'
 import { Smooth } from '@/components/smooth'
@@ -57,8 +57,7 @@ export default function Home() {
 		<main>
 			<Smooth />
 			<LandingMotion />
-			<Hero stories={mapStories()} />
-			<Stories chapters={chapters()} />
+			<Hero stories={mapStories()} chapters={chapters()} />
 			<SiteFooter />
 		</main>
 	)

@@ -59,7 +59,7 @@ function Fader({ src, alt }: { src: string; alt: string }) {
  * embed: the app shown inside the landing's hero. The map does not take the wheel or drags (the page scrolls past it),
  * the season plays by itself, the address and the keyboard are left alone, and the rail offers the full map.
  */
-export function MapApp({ stories, embed = false }: { stories: StoryCfg[]; embed?: boolean }) {
+export function MapApp({ stories, embed = false, visible }: { stories: StoryCfg[]; embed?: boolean; visible?: { current: boolean } }) {
 	const mapEl = useRef<HTMLDivElement>(null)
 	const mapRef = useRef<MapLibreMap | null>(null)
 	const ov = useRef<HTMLDivElement>(null)
@@ -355,7 +355,7 @@ export function MapApp({ stories, embed = false }: { stories: StoryCfg[]; embed?
 			<div ref={ov} className="mp-ov" data-on={(ready && !overview) || undefined} data-view={showB ? 'radar' : view}>
 				<Fader src={pa.img} alt={`NISAR ${place.name}, ${span(pa)}`} />
 				{view === 'change' && !showB && (
-					<ChangeLayer className="mp-change" kind={story.change.kind} frames={frames} index={a} playing={playing} onIndex={setA} refCount={refCount} epicentre={epi} revealAt={story.change.kind === 'quake' ? revealAt : -1} />
+					<ChangeLayer className="mp-change" kind={story.change.kind} frames={frames} index={a} playing={playing} onIndex={setA} refCount={refCount} epicentre={epi} revealAt={story.change.kind === 'quake' ? revealAt : -1} visible={visible} />
 				)}
 				{showB && (
 					<div ref={after} className="mp-after">

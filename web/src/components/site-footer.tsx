@@ -11,8 +11,8 @@ const COLUMNS = [
 	{
 		title: 'Landing',
 		links: [
+			{ label: 'Overview', href: '/' },
 			{ label: 'Stories', href: '/#stories' },
-			{ label: 'The app', href: '/#map' },
 			{ label: 'Open the map', href: '/map' },
 		],
 	},

@@ -1,18 +1,17 @@
-/* The landing: the hero (the line and two buttons, centred, and the dashboard on a monitor rising from below), the
-   four stories pinned (story-scroll.css), the footer. Everything GSAP moves starts hidden only when a script is there. */
+/* The landing: the line and two buttons centred on a lagoon panel, then the dashboard on a monitor that pins while the
+   four stories play on its screen, then the footer. Everything GSAP moves starts hidden only when a script is there. */
 .js .hx-title,
-.js .sx-title,
-.js .hx-mon {
+.js .mon-in {
 	opacity: 0;
 }
 
-/* ---------- hero ---------- */
+/* ---------- the panel ---------- */
 :root,
 [data-theme="light"] {
-	/* the panel's water, quiet by day: pale lagoon, a touch deeper, white light */
-	--smoke-0: #e8f7fb;
-	--smoke-1: #c9ebf4;
-	--smoke-2: #fdffff;
+	/* the lagoon by day, in the footer's blues: deep, a lighter body, glow in the wisps */
+	--smoke-0: #006d9e;
+	--smoke-1: #0b8fc0;
+	--smoke-2: #5fd2ea;
 }
 [data-theme="dark"] {
 	--smoke-0: #061820;
@@ -21,21 +20,26 @@
 }
 .hx {
 	position: relative;
-	padding-bottom: 40px;
 	isolation: isolate;
 }
-/* the panel: rounded, inset like the stories' window, filling the first screen under the nav */
 .hx-bg {
 	position: absolute;
 	z-index: -1;
 	left: 14px;
 	right: 14px;
-	top: 84px;
-	height: calc(100svh - 98px);
+	top: 14px;
+	height: calc(100svh - 28px);
 	border-radius: 30px;
 	overflow: hidden;
 	background: linear-gradient(180deg, var(--smoke-0), var(--smoke-1));
-	box-shadow: inset 0 0 0 1px var(--line);
+}
+/* a touch of shade at the top so the white line reads on the brightest water */
+.hx-bg::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background: linear-gradient(180deg, rgb(0 25 40 / 0.26) 0%, rgb(0 25 40 / 0.08) 38%, transparent 60%);
+	pointer-events: none;
 }
 .hx-smoke {
 	position: absolute;
@@ -48,11 +52,14 @@
 .hx-smoke[data-on] {
 	opacity: 1;
 }
+
+/* ---------- the line and the two buttons, white on the panel in both themes ---------- */
 .hx-head {
 	max-width: 1100px;
 	margin: 0 auto;
-	padding: clamp(28px, 7svh, 84px) 24px 0;
+	padding: clamp(104px, 15svh, 150px) 24px 0;
 	text-align: center;
+	color: #fff;
 }
 .hx-title {
 	margin: 0;
@@ -66,6 +73,7 @@
 	margin: 22px auto 0;
 	max-width: 620px;
 	text-wrap: balance;
+	color: rgb(255 255 255 / 0.86);
 }
 .hx-cta {
 	margin-top: 32px;
@@ -74,15 +82,44 @@
 	justify-content: center;
 	gap: 12px;
 }
+.hx-cta .btn {
+	color: #0b0d0f;
+	background: #fff;
+	box-shadow: 0 14px 30px -16px rgb(0 0 0 / 0.5);
+}
+.hx-cta .btn-dot {
+	color: #fff;
+	background: #0b0d0f;
+}
+.hx-cta .btn-ghost {
+	color: #fff;
+	box-shadow: inset 0 0 0 1.5px rgb(255 255 255 / 0.55);
+}
+.hx-cta .btn-ghost:hover {
+	background: rgb(255 255 255 / 0.12);
+}
 
-/* the monitor: its top half in view under the buttons, the whole of it as the page scrolls */
-.hx-mon {
-	margin-top: clamp(44px, 8svh, 84px);
+/* ---------- the monitor's track: pinned in the middle while the stories play ---------- */
+.hx-track {
+	position: relative;
+	/* one screen to arrive, a lead with the dashboard, about a screen and a fifth per story, a short hold */
+	height: calc(100svh + var(--n) * 120svh + 50svh);
+	margin-top: clamp(16px, 3svh, 40px);
+}
+.hx-sticky {
+	position: sticky;
+	top: 0;
+	height: 100svh;
+	/* the floating navbar keeps the top; the monitor centres in what is left */
+	padding: 76px 0 12px;
+	display: grid;
+	place-items: center;
 	perspective: 2000px;
 	perspective-origin: 50% 0;
 }
 .mon {
-	width: min(1120px, 86vw);
+	/* the screen's height plus bezel and stand (about 108px) fits under the navbar */
+	width: min(1120px, 86vw, calc((100svh - 200px) * 1.6));
 	margin: 0 auto;
 	transform-origin: 50% 0;
 	will-change: transform;
@@ -95,7 +132,7 @@
 }
 .mon-glass {
 	position: relative;
-	aspect-ratio: 16 / 10;
+	aspect-ratio: var(--ar, 16 / 10);
 	border-radius: clamp(5px, 0.7vw, 10px);
 	overflow: hidden;
 	background: #081217;
@@ -112,12 +149,15 @@
 [data-theme="dark"] .mon-night {
 	display: block;
 }
-.mon-app {
+/* the app and the stories are laid out at the screen's own size and drawn scaled into it */
+.mon-layer {
 	position: absolute;
 	left: 0;
 	top: 0;
 	transform: scale(var(--k, 0.75));
 	transform-origin: 0 0;
+}
+.mon-app {
 	animation: mon-in 0.8s var(--ease) 0.6s both;
 }
 @keyframes mon-in {
@@ -128,7 +168,7 @@
 /* the stand: a short neck and a flat foot, brushed metal by day and dark by night */
 .mon-neck {
 	width: 15%;
-	height: clamp(34px, 5vw, 70px);
+	height: clamp(30px, 4.6vw, 64px);
 	margin: 0 auto;
 	background: linear-gradient(90deg, #b9bec3, #e7eaec 45%, #c9cdd1 60%, #a9aeb3);
 	clip-path: polygon(8% 0, 92% 0, 100% 100%, 0 100%);
@@ -148,20 +188,20 @@
 	background: linear-gradient(180deg, #353c43, #1b2025);
 }
 
-/* ---------- section heads ---------- */
-.sx-head {
-	max-width: 760px;
-	margin: 0 auto 60px;
-	padding: 0 24px;
-	text-align: center;
+/* a phone: the monitor becomes a portrait screen at the phone's own size, with no stand */
+.mon[data-device="phone"] {
+	width: min(86vw, calc((100svh - 110px) * 0.53));
 }
-.sx-title {
-	margin: 0;
-	font-size: clamp(64px, 8.4vw, 132px);
+.mon[data-device="phone"] .mon-body {
+	padding: 7px;
+	border-radius: 30px;
 }
-.sx-head .lead {
-	margin: 22px auto 0;
-	max-width: 560px;
+.mon[data-device="phone"] .mon-glass {
+	border-radius: 24px;
+}
+.mon[data-device="phone"] .mon-neck,
+.mon[data-device="phone"] .mon-foot {
+	display: none;
 }
 
 @media (max-width: 900px) {
@@ -171,22 +211,19 @@
 	.hx-title {
 		font-size: clamp(52px, 14vw, 96px);
 	}
-	.mon {
-		width: 92vw;
-	}
 }
 @media (max-width: 860px) {
 	.hx-bg {
 		left: 8px;
 		right: 8px;
-		top: 68px;
-		height: calc(100svh - 76px);
+		top: 8px;
+		height: calc(100svh - 16px);
 		border-radius: 22px;
 	}
 }
 @media (max-width: 640px) {
 	.hx-head {
-		padding-inline: 16px;
+		padding: 96px 16px 0;
 	}
 	.hx-cta {
 		gap: 8px;

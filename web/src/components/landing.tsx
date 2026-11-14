@@ -1,24 +1,26 @@
 import { ArrowUpRight } from 'lucide-react'
 import Link from 'next/link'
-import { HERO, STORIES_HEAD } from '@/content/landing'
+import { HERO, STORIES } from '@/content/landing'
 import type { StoryCfg } from './map/map-app'
-import { Monitor } from './monitor'
-import { SiteNav } from './site-nav'
+import { MonitorStage } from './monitor'
+import { PillNav } from './pill-nav'
 import { Smoke } from './smoke'
-import { type Chapter, StoryScroll } from './story-scroll'
+import { StoryLink } from './story-link'
+import type { Chapter } from './story-scroll'
 import './landing.css'
 
 /**
- * The hero: the line and the two things to do, centred on a rounded lagoon panel with slow water moving in it, and the
- * dashboard on a monitor resting on the panel's lower edge, rising into full view as the page scrolls.
+ * The landing in one piece: the line and the two things to do, centred on a lagoon panel with slow water in it, and
+ * under them the dashboard on a monitor. The monitor pins as the page scrolls and the four stories play on its screen;
+ * the pill navbar floats above it all and lights the story on screen.
  */
-export function Hero({ stories }: { stories: StoryCfg[] }) {
+export function Hero({ stories, chapters }: { stories: StoryCfg[]; chapters: Chapter[] }) {
 	return (
 		<section className="hx">
 			<div className="hx-bg" aria-hidden>
 				<Smoke className="hx-smoke" />
 			</div>
-			<SiteNav />
+			<PillNav stories={STORIES.map((s) => ({ key: s.key, tab: s.tab }))} />
 			<div className="hx-head">
 				<h1 className="display hx-title">
 					{HERO.lines.map((l, i) => (
@@ -38,29 +40,10 @@ export function Hero({ stories }: { stories: StoryCfg[] }) {
 						</span>
 						Open the map
 					</Link>
-					<Link href="/#stories" className="btn-ghost">
-						See the stories
-					</Link>
+					<StoryLink className="btn-ghost">See the stories</StoryLink>
 				</div>
 			</div>
-			<div className="hx-mon">
-				<Monitor stories={stories} />
-			</div>
-		</section>
-	)
-}
-
-/** The four stories: a short head, then the pinned stage where scrolling plays each season on the real passes. */
-export function Stories({ chapters }: { chapters: Chapter[] }) {
-	return (
-		<section id="stories" className="st">
-			<div className="sx-head">
-				<h2 className="display sx-title">{STORIES_HEAD.title}</h2>
-				<p className="lead" data-a>
-					{STORIES_HEAD.line}
-				</p>
-			</div>
-			<StoryScroll chapters={chapters} />
+			<MonitorStage stories={stories} chapters={chapters} />
 		</section>
 	)
 }
