@@ -65,6 +65,10 @@ body {
 	-webkit-font-smoothing: antialiased;
 	transition: background-color 0.5s var(--ease), color 0.5s var(--ease);
 }
+/* nothing may widen the page sideways; clip (unlike hidden) keeps sticky stages pinned to the viewport */
+main {
+	overflow-x: clip;
+}
 ::selection {
 	background: color-mix(in oklab, var(--accent) 30%, transparent);
 }

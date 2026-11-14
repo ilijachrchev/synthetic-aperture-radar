@@ -80,6 +80,7 @@
 .mos-area {
 	position: relative;
 	min-width: 0;
+	overflow: clip;
 	-webkit-mask-image: linear-gradient(to bottom, transparent, #000 7%, #000 93%, transparent);
 	mask-image: linear-gradient(to bottom, transparent, #000 7%, #000 93%, transparent);
 }
