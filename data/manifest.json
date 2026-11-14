@@ -15,5 +15,1410 @@
     "units": "mm",
     "issued_at_utc": "2026-11-13T23:37:10+00:00",
     "data_cutoff": "2026-10-17"
+  },
+  {
+    "model": "cv",
+    "site": "albufera",
+    "stack": "066_D_069",
+    "layer": "water",
+    "date": "2026-06-18",
+    "file": "data/cv/albufera_066_D_069/2026-06-18_water.tif",
+    "classes": [
+      "not_water",
+      "open_water"
+    ],
+    "open_water_ha": 2642.5,
+    "flooded_vegetation_ha": null,
+    "valid_fraction": 0.68,
+    "source": {
+      "granule_ur": "NISAR_L2_PR_GCOV_023_066_D_069_2005_DHDH_M_20260618T185321_20260618T185356_P05023_N_F_J_001",
+      "crid": "P05023",
+      "maturity": "PROVISIONAL",
+      "pols": "HH+HV"
+    },
+    "model_file": "cv_unet+cv_unet_v3a+cv_unet_v3b+cv_unet_v3c+cv_unet_v3c_s1+cv_unet_v2_s1",
+    "threshold": 0.4
+  },
+  {
+    "model": "cv",
+    "site": "albufera",
+    "stack": "066_D_069",
+    "layer": "water",
+    "date": "2026-06-30",
+    "file": "data/cv/albufera_066_D_069/2026-06-30_water.tif",
+    "classes": [
+      "not_water",
+      "open_water"
+    ],
+    "open_water_ha": 2452.0,
+    "flooded_vegetation_ha": null,
+    "valid_fraction": 0.68,
+    "source": {
+      "granule_ur": "NISAR_L2_PR_GCOV_024_066_D_069_2005_DHDH_M_20260630T185321_20260630T185356_P05023_N_F_J_001",
+      "crid": "P05023",
+      "maturity": "PROVISIONAL",
+      "pols": "HH+HV"
+    },
+    "model_file": "cv_unet+cv_unet_v3a+cv_unet_v3b+cv_unet_v3c+cv_unet_v3c_s1+cv_unet_v2_s1",
+    "threshold": 0.4
+  },
+  {
+    "model": "cv",
+    "site": "albufera",
+    "stack": "066_D_069",
+    "layer": "water",
+    "date": "2026-07-12",
+    "file": "data/cv/albufera_066_D_069/2026-07-12_water.tif",
+    "classes": [
+      "not_water",
+      "open_water"
+    ],
+    "open_water_ha": 2490.2,
+    "flooded_vegetation_ha": null,
+    "valid_fraction": 0.68,
+    "source": {
+      "granule_ur": "NISAR_L2_PR_GCOV_025_066_D_069_2005_DHDH_M_20260712T185320_20260712T185355_P05023_N_F_J_001",
+      "crid": "P05023",
+      "maturity": "PROVISIONAL",
+      "pols": "HH+HV"
+    },
+    "model_file": "cv_unet+cv_unet_v3a+cv_unet_v3b+cv_unet_v3c+cv_unet_v3c_s1+cv_unet_v2_s1",
+    "threshold": 0.4
+  },
+  {
+    "model": "cv",
+    "site": "albufera",
+    "stack": "066_D_069",
+    "layer": "water",
+    "date": "2026-07-24",
+    "file": "data/cv/albufera_066_D_069/2026-07-24_water.tif",
+    "classes": [
+      "not_water",
+      "open_water"
+    ],
+    "open_water_ha": 2477.3,
+    "flooded_vegetation_ha": null,
+    "valid_fraction": 0.68,
+    "source": {
+      "granule_ur": "NISAR_L2_PR_GCOV_026_066_D_069_2005_DHDH_M_20260724T185319_20260724T185354_P05023_N_F_J_001",
+      "crid": "P05023",
+      "maturity": "PROVISIONAL",
+      "pols": "HH+HV"
+    },
+    "model_file": "cv_unet+cv_unet_v3a+cv_unet_v3b+cv_unet_v3c+cv_unet_v3c_s1+cv_unet_v2_s1",
+    "threshold": 0.4
+  },
+  {
+    "model": "cv",
+    "site": "albufera",
+    "stack": "066_D_069",
+    "layer": "water",
+    "date": "2026-08-17",
+    "file": "data/cv/albufera_066_D_069/2026-08-17_water.tif",
+    "classes": [
+      "not_water",
+      "open_water"
+    ],
+    "open_water_ha": 2460.2,
+    "flooded_vegetation_ha": null,
+    "valid_fraction": 0.68,
+    "source": {
+      "granule_ur": "NISAR_L2_PR_GCOV_028_066_D_069_2005_DHDH_M_20260817T185318_20260817T185353_P05023_N_F_J_001",
+      "crid": "P05023",
+      "maturity": "PROVISIONAL",
+      "pols": "HH+HV"
+    },
+    "model_file": "cv_unet+cv_unet_v3a+cv_unet_v3b+cv_unet_v3c+cv_unet_v3c_s1+cv_unet_v2_s1",
+    "threshold": 0.4
+  },
+  {
+    "model": "cv",
+    "site": "albufera",
+    "stack": "066_D_069",
+    "layer": "water",
+    "date": "2026-08-29",
+    "file": "data/cv/albufera_066_D_069/2026-08-29_water.tif",
+    "classes": [
+      "not_water",
+      "open_water"
+    ],
+    "open_water_ha": 2465.4,
+    "flooded_vegetation_ha": null,
+    "valid_fraction": 0.68,
+    "source": {
+      "granule_ur": "NISAR_L2_PR_GCOV_029_066_D_069_2005_DHDH_M_20260829T185318_20260829T185353_P05023_N_F_J_001",
+      "crid": "P05023",
+      "maturity": "PROVISIONAL",
+      "pols": "HH+HV"
+    },
+    "model_file": "cv_unet+cv_unet_v3a+cv_unet_v3b+cv_unet_v3c+cv_unet_v3c_s1+cv_unet_v2_s1",
+    "threshold": 0.4
+  },
+  {
+    "model": "cv",
+    "site": "albufera",
+    "stack": "066_D_069",
+    "layer": "water",
+    "date": "2026-09-10",
+    "file": "data/cv/albufera_066_D_069/2026-09-10_water.tif",
+    "classes": [
+      "not_water",
+      "open_water"
+    ],
+    "open_water_ha": 2452.1,
+    "flooded_vegetation_ha": null,
+    "valid_fraction": 0.68,
+    "source": {
+      "granule_ur": "NISAR_L2_PR_GCOV_030_066_D_069_2005_DHDH_M_20260910T185318_20260910T185353_P05023_N_F_J_001",
+      "crid": "P05023",
+      "maturity": "PROVISIONAL",
+      "pols": "HH+HV"
+    },
+    "model_file": "cv_unet+cv_unet_v3a+cv_unet_v3b+cv_unet_v3c+cv_unet_v3c_s1+cv_unet_v2_s1",
+    "threshold": 0.4
+  },
+  {
+    "model": "cv",
+    "site": "albufera",
+    "stack": "066_D_069",
+    "layer": "water",
+    "date": "2026-09-22",
+    "file": "data/cv/albufera_066_D_069/2026-09-22_water.tif",
+    "classes": [
+      "not_water",
+      "open_water"
+    ],
+    "open_water_ha": 2468.3,
+    "flooded_vegetation_ha": null,
+    "valid_fraction": 0.68,
+    "source": {
+      "granule_ur": "NISAR_L2_PR_GCOV_031_066_D_069_2005_DHDH_M_20260922T185318_20260922T185353_P05023_N_F_J_001",
+      "crid": "P05023",
+      "maturity": "PROVISIONAL",
+      "pols": "HH+HV"
+    },
+    "model_file": "cv_unet+cv_unet_v3a+cv_unet_v3b+cv_unet_v3c+cv_unet_v3c_s1+cv_unet_v2_s1",
+    "threshold": 0.4
+  },
+  {
+    "model": "cv",
+    "site": "albufera",
+    "stack": "066_D_069",
+    "layer": "water",
+    "date": "2026-10-04",
+    "file": "data/cv/albufera_066_D_069/2026-10-04_water.tif",
+    "classes": [
+      "not_water",
+      "open_water"
+    ],
+    "open_water_ha": 2960.6,
+    "flooded_vegetation_ha": null,
+    "valid_fraction": 0.68,
+    "source": {
+      "granule_ur": "NISAR_L2_PR_GCOV_032_066_D_069_2005_DHDH_M_20261004T185318_20261004T185353_P05023_N_F_J_001",
+      "crid": "P05023",
+      "maturity": "PROVISIONAL",
+      "pols": "HH+HV"
+    },
+    "model_file": "cv_unet+cv_unet_v3a+cv_unet_v3b+cv_unet_v3c+cv_unet_v3c_s1+cv_unet_v2_s1",
+    "threshold": 0.4
+  },
+  {
+    "model": "cv",
+    "site": "albufera",
+    "stack": "066_D_069",
+    "layer": "water",
+    "date": "2026-10-16",
+    "file": "data/cv/albufera_066_D_069/2026-10-16_water.tif",
+    "classes": [
+      "not_water",
+      "open_water"
+    ],
+    "open_water_ha": 4370.4,
+    "flooded_vegetation_ha": null,
+    "valid_fraction": 0.68,
+    "source": {
+      "granule_ur": "NISAR_L2_PR_GCOV_033_066_D_069_2005_DHDH_M_20261016T185318_20261016T185353_P05023_N_F_J_001",
+      "crid": "P05023",
+      "maturity": "PROVISIONAL",
+      "pols": "HH+HV"
+    },
+    "model_file": "cv_unet+cv_unet_v3a+cv_unet_v3b+cv_unet_v3c+cv_unet_v3c_s1+cv_unet_v2_s1",
+    "threshold": 0.4
+  },
+  {
+    "model": "cv",
+    "site": "albufera",
+    "stack": "066_D_069",
+    "layer": "water",
+    "date": "2026-10-28",
+    "file": "data/cv/albufera_066_D_069/2026-10-28_water.tif",
+    "classes": [
+      "not_water",
+      "open_water"
+    ],
+    "open_water_ha": 7317.9,
+    "flooded_vegetation_ha": null,
+    "valid_fraction": 0.68,
+    "source": {
+      "granule_ur": "NISAR_L2_PR_GCOV_034_066_D_069_2005_DHDH_M_20261028T185318_20261028T185353_P05036_N_F_J_001",
+      "crid": "P05036",
+      "maturity": "VALIDATED",
+      "pols": "HH+HV"
+    },
+    "model_file": "cv_unet+cv_unet_v3a+cv_unet_v3b+cv_unet_v3c+cv_unet_v3c_s1+cv_unet_v2_s1",
+    "threshold": 0.4
+  },
+  {
+    "model": "cv",
+    "site": "albufera",
+    "stack": "066_D_069",
+    "layer": "first_water_doy",
+    "date": "2026-06-18/2026-10-28",
+    "file": "data/cv/albufera_066_D_069/first_water_doy.tif",
+    "units": "day of year 2026; 0 never water on a seen date, 65535 never seen or sea",
+    "dates_doy": [
+      169,
+      181,
+      193,
+      205,
+      229,
+      241,
+      253,
+      265,
+      277,
+      289,
+      301
+    ],
+    "model_file": "cv_unet+cv_unet_v3a+cv_unet_v3b+cv_unet_v3c+cv_unet_v3c_s1+cv_unet_v2_s1",
+    "threshold": 0.4
+  },
+  {
+    "model": "cv",
+    "site": "albufera",
+    "stack": "066_D_069",
+    "layer": "last_water_doy",
+    "date": "2026-06-18/2026-10-28",
+    "file": "data/cv/albufera_066_D_069/last_water_doy.tif",
+    "units": "day of year 2026; 0 never water on a seen date, 65535 never seen or sea",
+    "dates_doy": [
+      169,
+      181,
+      193,
+      205,
+      229,
+      241,
+      253,
+      265,
+      277,
+      289,
+      301
+    ],
+    "model_file": "cv_unet+cv_unet_v3a+cv_unet_v3b+cv_unet_v3c+cv_unet_v3c_s1+cv_unet_v2_s1",
+    "threshold": 0.4
+  },
+  {
+    "model": "cv",
+    "site": "albufera",
+    "stack": "058_A_021",
+    "layer": "water",
+    "date": "2026-06-18",
+    "file": "data/cv/albufera_058_A_021/2026-06-18_water.tif",
+    "classes": [
+      "not_water",
+      "open_water"
+    ],
+    "open_water_ha": 3175.6,
+    "flooded_vegetation_ha": null,
+    "valid_fraction": 0.68,
+    "source": {
+      "granule_ur": "NISAR_L2_PR_GCOV_023_058_A_021_2005_DHDH_A_20260618T050655_20260618T050722_P05023_N_F_J_001",
+      "crid": "P05023",
+      "maturity": "PROVISIONAL",
+      "pols": "HH+HV"
+    },
+    "model_file": "cv_unet+cv_unet_v3a+cv_unet_v3b+cv_unet_v3c+cv_unet_v3c_s1+cv_unet_v2_s1",
+    "threshold": 0.4
+  },
+  {
+    "model": "cv",
+    "site": "albufera",
+    "stack": "058_A_021",
+    "layer": "water",
+    "date": "2026-06-30",
+    "file": "data/cv/albufera_058_A_021/2026-06-30_water.tif",
+    "classes": [
+      "not_water",
+      "open_water"
+    ],
+    "open_water_ha": 2457.9,
+    "flooded_vegetation_ha": null,
+    "valid_fraction": 0.68,
+    "source": {
+      "granule_ur": "NISAR_L2_PR_GCOV_024_058_A_021_2005_DHDH_A_20260630T050650_20260630T050721_P05023_N_F_J_001",
+      "crid": "P05023",
+      "maturity": "PROVISIONAL",
+      "pols": "HH+HV"
+    },
+    "model_file": "cv_unet+cv_unet_v3a+cv_unet_v3b+cv_unet_v3c+cv_unet_v3c_s1+cv_unet_v2_s1",
+    "threshold": 0.4
+  },
+  {
+    "model": "cv",
+    "site": "albufera",
+    "stack": "058_A_021",
+    "layer": "water",
+    "date": "2026-07-12",
+    "file": "data/cv/albufera_058_A_021/2026-07-12_water.tif",
+    "classes": [
+      "not_water",
+      "open_water"
+    ],
+    "open_water_ha": 2475.4,
+    "flooded_vegetation_ha": null,
+    "valid_fraction": 0.68,
+    "source": {
+      "granule_ur": "NISAR_L2_PR_GCOV_025_058_A_021_2005_DHDH_A_20260712T050653_20260712T050721_P05023_N_F_J_001",
+      "crid": "P05023",
+      "maturity": "PROVISIONAL",
+      "pols": "HH+HV"
+    },
+    "model_file": "cv_unet+cv_unet_v3a+cv_unet_v3b+cv_unet_v3c+cv_unet_v3c_s1+cv_unet_v2_s1",
+    "threshold": 0.4
+  },
+  {
+    "model": "cv",
+    "site": "albufera",
+    "stack": "058_A_021",
+    "layer": "water",
+    "date": "2026-07-24",
+    "file": "data/cv/albufera_058_A_021/2026-07-24_water.tif",
+    "classes": [
+      "not_water",
+      "open_water"
+    ],
+    "open_water_ha": 2461.5,
+    "flooded_vegetation_ha": null,
+    "valid_fraction": 0.68,
+    "source": {
+      "granule_ur": "NISAR_L2_PR_GCOV_026_058_A_021_2005_DHDH_A_20260724T050653_20260724T050720_P05023_N_F_J_001",
+      "crid": "P05023",
+      "maturity": "PROVISIONAL",
+      "pols": "HH+HV"
+    },
+    "model_file": "cv_unet+cv_unet_v3a+cv_unet_v3b+cv_unet_v3c+cv_unet_v3c_s1+cv_unet_v2_s1",
+    "threshold": 0.4
+  },
+  {
+    "model": "cv",
+    "site": "albufera",
+    "stack": "058_A_021",
+    "layer": "water",
+    "date": "2026-08-17",
+    "file": "data/cv/albufera_058_A_021/2026-08-17_water.tif",
+    "classes": [
+      "not_water",
+      "open_water"
+    ],
+    "open_water_ha": 2468.1,
+    "flooded_vegetation_ha": null,
+    "valid_fraction": 0.68,
+    "source": {
+      "granule_ur": "NISAR_L2_PR_GCOV_028_058_A_021_2005_DHDH_A_20260817T050652_20260817T050719_P05023_N_F_J_001",
+      "crid": "P05023",
+      "maturity": "PROVISIONAL",
+      "pols": "HH+HV"
+    },
+    "model_file": "cv_unet+cv_unet_v3a+cv_unet_v3b+cv_unet_v3c+cv_unet_v3c_s1+cv_unet_v2_s1",
+    "threshold": 0.4
+  },
+  {
+    "model": "cv",
+    "site": "albufera",
+    "stack": "058_A_021",
+    "layer": "water",
+    "date": "2026-08-29",
+    "file": "data/cv/albufera_058_A_021/2026-08-29_water.tif",
+    "classes": [
+      "not_water",
+      "open_water"
+    ],
+    "open_water_ha": 2457.4,
+    "flooded_vegetation_ha": null,
+    "valid_fraction": 0.68,
+    "source": {
+      "granule_ur": "NISAR_L2_PR_GCOV_029_058_A_021_2005_DHDH_A_20260829T050652_20260829T050719_P05023_N_F_J_001",
+      "crid": "P05023",
+      "maturity": "PROVISIONAL",
+      "pols": "HH+HV"
+    },
+    "model_file": "cv_unet+cv_unet_v3a+cv_unet_v3b+cv_unet_v3c+cv_unet_v3c_s1+cv_unet_v2_s1",
+    "threshold": 0.4
+  },
+  {
+    "model": "cv",
+    "site": "albufera",
+    "stack": "058_A_021",
+    "layer": "water",
+    "date": "2026-09-10",
+    "file": "data/cv/albufera_058_A_021/2026-09-10_water.tif",
+    "classes": [
+      "not_water",
+      "open_water"
+    ],
+    "open_water_ha": 2440.7,
+    "flooded_vegetation_ha": null,
+    "valid_fraction": 0.68,
+    "source": {
+      "granule_ur": "NISAR_L2_PR_GCOV_030_058_A_021_2005_DHDH_A_20260910T050651_20260910T050718_P05023_N_F_J_001",
+      "crid": "P05023",
+      "maturity": "PROVISIONAL",
+      "pols": "HH+HV"
+    },
+    "model_file": "cv_unet+cv_unet_v3a+cv_unet_v3b+cv_unet_v3c+cv_unet_v3c_s1+cv_unet_v2_s1",
+    "threshold": 0.4
+  },
+  {
+    "model": "cv",
+    "site": "albufera",
+    "stack": "058_A_021",
+    "layer": "water",
+    "date": "2026-09-22",
+    "file": "data/cv/albufera_058_A_021/2026-09-22_water.tif",
+    "classes": [
+      "not_water",
+      "open_water"
+    ],
+    "open_water_ha": 0.0,
+    "flooded_vegetation_ha": null,
+    "valid_fraction": 0.0,
+    "source": {
+      "granule_ur": "NISAR_L2_PR_GCOV_031_058_A_021_2005_SHSH_A_20260922T050651_20260922T050719_P05023_N_F_J_001",
+      "crid": "P05023",
+      "maturity": "PROVISIONAL",
+      "pols": "HH"
+    },
+    "model_file": "cv_unet+cv_unet_v3a+cv_unet_v3b+cv_unet_v3c+cv_unet_v3c_s1+cv_unet_v2_s1",
+    "threshold": 0.4
+  },
+  {
+    "model": "cv",
+    "site": "albufera",
+    "stack": "058_A_021",
+    "layer": "water",
+    "date": "2026-10-04",
+    "file": "data/cv/albufera_058_A_021/2026-10-04_water.tif",
+    "classes": [
+      "not_water",
+      "open_water"
+    ],
+    "open_water_ha": 3005.1,
+    "flooded_vegetation_ha": null,
+    "valid_fraction": 0.68,
+    "source": {
+      "granule_ur": "NISAR_L2_PR_GCOV_032_058_A_021_2005_DHDH_A_20261004T050652_20261004T050719_P05023_N_F_J_001",
+      "crid": "P05023",
+      "maturity": "PROVISIONAL",
+      "pols": "HH+HV"
+    },
+    "model_file": "cv_unet+cv_unet_v3a+cv_unet_v3b+cv_unet_v3c+cv_unet_v3c_s1+cv_unet_v2_s1",
+    "threshold": 0.4
+  },
+  {
+    "model": "cv",
+    "site": "albufera",
+    "stack": "058_A_021",
+    "layer": "water",
+    "date": "2026-10-16",
+    "file": "data/cv/albufera_058_A_021/2026-10-16_water.tif",
+    "classes": [
+      "not_water",
+      "open_water"
+    ],
+    "open_water_ha": 4591.2,
+    "flooded_vegetation_ha": null,
+    "valid_fraction": 0.68,
+    "source": {
+      "granule_ur": "NISAR_L2_PR_GCOV_033_058_A_021_2005_DHDH_A_20261016T050652_20261016T050719_P05023_N_F_J_001",
+      "crid": "P05023",
+      "maturity": "PROVISIONAL",
+      "pols": "HH+HV"
+    },
+    "model_file": "cv_unet+cv_unet_v3a+cv_unet_v3b+cv_unet_v3c+cv_unet_v3c_s1+cv_unet_v2_s1",
+    "threshold": 0.4
+  },
+  {
+    "model": "cv",
+    "site": "albufera",
+    "stack": "058_A_021",
+    "layer": "first_water_doy",
+    "date": "2026-06-18/2026-10-16",
+    "file": "data/cv/albufera_058_A_021/first_water_doy.tif",
+    "units": "day of year 2026; 0 never water on a seen date, 65535 never seen or sea",
+    "dates_doy": [
+      169,
+      181,
+      193,
+      205,
+      229,
+      241,
+      253,
+      265,
+      277,
+      289
+    ],
+    "model_file": "cv_unet+cv_unet_v3a+cv_unet_v3b+cv_unet_v3c+cv_unet_v3c_s1+cv_unet_v2_s1",
+    "threshold": 0.4
+  },
+  {
+    "model": "cv",
+    "site": "albufera",
+    "stack": "058_A_021",
+    "layer": "last_water_doy",
+    "date": "2026-06-18/2026-10-16",
+    "file": "data/cv/albufera_058_A_021/last_water_doy.tif",
+    "units": "day of year 2026; 0 never water on a seen date, 65535 never seen or sea",
+    "dates_doy": [
+      169,
+      181,
+      193,
+      205,
+      229,
+      241,
+      253,
+      265,
+      277,
+      289
+    ],
+    "model_file": "cv_unet+cv_unet_v3a+cv_unet_v3b+cv_unet_v3c+cv_unet_v3c_s1+cv_unet_v2_s1",
+    "threshold": 0.4
+  },
+  {
+    "model": "cv",
+    "site": "pego_oliva",
+    "stack": "066_D_069",
+    "layer": "water",
+    "date": "2026-06-18",
+    "file": "data/cv/pego_oliva_066_D_069/2026-06-18_water.tif",
+    "classes": [
+      "not_water",
+      "open_water"
+    ],
+    "open_water_ha": 79.6,
+    "flooded_vegetation_ha": null,
+    "valid_fraction": 0.622,
+    "source": {
+      "granule_ur": "NISAR_L2_PR_GCOV_023_066_D_069_2005_DHDH_M_20260618T185321_20260618T185356_P05023_N_F_J_001",
+      "crid": "P05023",
+      "maturity": "PROVISIONAL",
+      "pols": "HH+HV"
+    },
+    "model_file": "cv_unet+cv_unet_v3a+cv_unet_v3b+cv_unet_v3c+cv_unet_v3c_s1+cv_unet_v2_s1",
+    "threshold": 0.4
+  },
+  {
+    "model": "cv",
+    "site": "pego_oliva",
+    "stack": "066_D_069",
+    "layer": "water",
+    "date": "2026-06-30",
+    "file": "data/cv/pego_oliva_066_D_069/2026-06-30_water.tif",
+    "classes": [
+      "not_water",
+      "open_water"
+    ],
+    "open_water_ha": 73.6,
+    "flooded_vegetation_ha": null,
+    "valid_fraction": 0.622,
+    "source": {
+      "granule_ur": "NISAR_L2_PR_GCOV_024_066_D_069_2005_DHDH_M_20260630T185321_20260630T185356_P05023_N_F_J_001",
+      "crid": "P05023",
+      "maturity": "PROVISIONAL",
+      "pols": "HH+HV"
+    },
+    "model_file": "cv_unet+cv_unet_v3a+cv_unet_v3b+cv_unet_v3c+cv_unet_v3c_s1+cv_unet_v2_s1",
+    "threshold": 0.4
+  },
+  {
+    "model": "cv",
+    "site": "pego_oliva",
+    "stack": "066_D_069",
+    "layer": "water",
+    "date": "2026-07-12",
+    "file": "data/cv/pego_oliva_066_D_069/2026-07-12_water.tif",
+    "classes": [
+      "not_water",
+      "open_water"
+    ],
+    "open_water_ha": 34.3,
+    "flooded_vegetation_ha": null,
+    "valid_fraction": 0.622,
+    "source": {
+      "granule_ur": "NISAR_L2_PR_GCOV_025_066_D_069_2005_DHDH_M_20260712T185320_20260712T185355_P05023_N_F_J_001",
+      "crid": "P05023",
+      "maturity": "PROVISIONAL",
+      "pols": "HH+HV"
+    },
+    "model_file": "cv_unet+cv_unet_v3a+cv_unet_v3b+cv_unet_v3c+cv_unet_v3c_s1+cv_unet_v2_s1",
+    "threshold": 0.4
+  },
+  {
+    "model": "cv",
+    "site": "pego_oliva",
+    "stack": "066_D_069",
+    "layer": "water",
+    "date": "2026-07-24",
+    "file": "data/cv/pego_oliva_066_D_069/2026-07-24_water.tif",
+    "classes": [
+      "not_water",
+      "open_water"
+    ],
+    "open_water_ha": 46.2,
+    "flooded_vegetation_ha": null,
+    "valid_fraction": 0.622,
+    "source": {
+      "granule_ur": "NISAR_L2_PR_GCOV_026_066_D_069_2005_DHDH_M_20260724T185319_20260724T185354_P05023_N_F_J_001",
+      "crid": "P05023",
+      "maturity": "PROVISIONAL",
+      "pols": "HH+HV"
+    },
+    "model_file": "cv_unet+cv_unet_v3a+cv_unet_v3b+cv_unet_v3c+cv_unet_v3c_s1+cv_unet_v2_s1",
+    "threshold": 0.4
+  },
+  {
+    "model": "cv",
+    "site": "pego_oliva",
+    "stack": "066_D_069",
+    "layer": "water",
+    "date": "2026-08-17",
+    "file": "data/cv/pego_oliva_066_D_069/2026-08-17_water.tif",
+    "classes": [
+      "not_water",
+      "open_water"
+    ],
+    "open_water_ha": 52.3,
+    "flooded_vegetation_ha": null,
+    "valid_fraction": 0.622,
+    "source": {
+      "granule_ur": "NISAR_L2_PR_GCOV_028_066_D_069_2005_DHDH_M_20260817T185318_20260817T185353_P05023_N_F_J_001",
+      "crid": "P05023",
+      "maturity": "PROVISIONAL",
+      "pols": "HH+HV"
+    },
+    "model_file": "cv_unet+cv_unet_v3a+cv_unet_v3b+cv_unet_v3c+cv_unet_v3c_s1+cv_unet_v2_s1",
+    "threshold": 0.4
+  },
+  {
+    "model": "cv",
+    "site": "pego_oliva",
+    "stack": "066_D_069",
+    "layer": "water",
+    "date": "2026-08-29",
+    "file": "data/cv/pego_oliva_066_D_069/2026-08-29_water.tif",
+    "classes": [
+      "not_water",
+      "open_water"
+    ],
+    "open_water_ha": 48.2,
+    "flooded_vegetation_ha": null,
+    "valid_fraction": 0.622,
+    "source": {
+      "granule_ur": "NISAR_L2_PR_GCOV_029_066_D_069_2005_DHDH_M_20260829T185318_20260829T185353_P05023_N_F_J_001",
+      "crid": "P05023",
+      "maturity": "PROVISIONAL",
+      "pols": "HH+HV"
+    },
+    "model_file": "cv_unet+cv_unet_v3a+cv_unet_v3b+cv_unet_v3c+cv_unet_v3c_s1+cv_unet_v2_s1",
+    "threshold": 0.4
+  },
+  {
+    "model": "cv",
+    "site": "pego_oliva",
+    "stack": "066_D_069",
+    "layer": "water",
+    "date": "2026-09-10",
+    "file": "data/cv/pego_oliva_066_D_069/2026-09-10_water.tif",
+    "classes": [
+      "not_water",
+      "open_water"
+    ],
+    "open_water_ha": 53.6,
+    "flooded_vegetation_ha": null,
+    "valid_fraction": 0.622,
+    "source": {
+      "granule_ur": "NISAR_L2_PR_GCOV_030_066_D_069_2005_DHDH_M_20260910T185318_20260910T185353_P05023_N_F_J_001",
+      "crid": "P05023",
+      "maturity": "PROVISIONAL",
+      "pols": "HH+HV"
+    },
+    "model_file": "cv_unet+cv_unet_v3a+cv_unet_v3b+cv_unet_v3c+cv_unet_v3c_s1+cv_unet_v2_s1",
+    "threshold": 0.4
+  },
+  {
+    "model": "cv",
+    "site": "pego_oliva",
+    "stack": "066_D_069",
+    "layer": "water",
+    "date": "2026-09-22",
+    "file": "data/cv/pego_oliva_066_D_069/2026-09-22_water.tif",
+    "classes": [
+      "not_water",
+      "open_water"
+    ],
+    "open_water_ha": 58.2,
+    "flooded_vegetation_ha": null,
+    "valid_fraction": 0.622,
+    "source": {
+      "granule_ur": "NISAR_L2_PR_GCOV_031_066_D_069_2005_DHDH_M_20260922T185318_20260922T185353_P05023_N_F_J_001",
+      "crid": "P05023",
+      "maturity": "PROVISIONAL",
+      "pols": "HH+HV"
+    },
+    "model_file": "cv_unet+cv_unet_v3a+cv_unet_v3b+cv_unet_v3c+cv_unet_v3c_s1+cv_unet_v2_s1",
+    "threshold": 0.4
+  },
+  {
+    "model": "cv",
+    "site": "pego_oliva",
+    "stack": "066_D_069",
+    "layer": "water",
+    "date": "2026-10-04",
+    "file": "data/cv/pego_oliva_066_D_069/2026-10-04_water.tif",
+    "classes": [
+      "not_water",
+      "open_water"
+    ],
+    "open_water_ha": 57.3,
+    "flooded_vegetation_ha": null,
+    "valid_fraction": 0.622,
+    "source": {
+      "granule_ur": "NISAR_L2_PR_GCOV_032_066_D_069_2005_DHDH_M_20261004T185318_20261004T185353_P05023_N_F_J_001",
+      "crid": "P05023",
+      "maturity": "PROVISIONAL",
+      "pols": "HH+HV"
+    },
+    "model_file": "cv_unet+cv_unet_v3a+cv_unet_v3b+cv_unet_v3c+cv_unet_v3c_s1+cv_unet_v2_s1",
+    "threshold": 0.4
+  },
+  {
+    "model": "cv",
+    "site": "pego_oliva",
+    "stack": "066_D_069",
+    "layer": "water",
+    "date": "2026-10-16",
+    "file": "data/cv/pego_oliva_066_D_069/2026-10-16_water.tif",
+    "classes": [
+      "not_water",
+      "open_water"
+    ],
+    "open_water_ha": 112.3,
+    "flooded_vegetation_ha": null,
+    "valid_fraction": 0.622,
+    "source": {
+      "granule_ur": "NISAR_L2_PR_GCOV_033_066_D_069_2005_DHDH_M_20261016T185318_20261016T185353_P05023_N_F_J_001",
+      "crid": "P05023",
+      "maturity": "PROVISIONAL",
+      "pols": "HH+HV"
+    },
+    "model_file": "cv_unet+cv_unet_v3a+cv_unet_v3b+cv_unet_v3c+cv_unet_v3c_s1+cv_unet_v2_s1",
+    "threshold": 0.4
+  },
+  {
+    "model": "cv",
+    "site": "pego_oliva",
+    "stack": "066_D_069",
+    "layer": "water",
+    "date": "2026-10-28",
+    "file": "data/cv/pego_oliva_066_D_069/2026-10-28_water.tif",
+    "classes": [
+      "not_water",
+      "open_water"
+    ],
+    "open_water_ha": 446.0,
+    "flooded_vegetation_ha": null,
+    "valid_fraction": 0.622,
+    "source": {
+      "granule_ur": "NISAR_L2_PR_GCOV_034_066_D_069_2005_DHDH_M_20261028T185318_20261028T185353_P05036_N_F_J_001",
+      "crid": "P05036",
+      "maturity": "VALIDATED",
+      "pols": "HH+HV"
+    },
+    "model_file": "cv_unet+cv_unet_v3a+cv_unet_v3b+cv_unet_v3c+cv_unet_v3c_s1+cv_unet_v2_s1",
+    "threshold": 0.4
+  },
+  {
+    "model": "cv",
+    "site": "pego_oliva",
+    "stack": "066_D_069",
+    "layer": "first_water_doy",
+    "date": "2026-06-18/2026-10-28",
+    "file": "data/cv/pego_oliva_066_D_069/first_water_doy.tif",
+    "units": "day of year 2026; 0 never water on a seen date, 65535 never seen or sea",
+    "dates_doy": [
+      169,
+      181,
+      193,
+      205,
+      229,
+      241,
+      253,
+      265,
+      277,
+      289,
+      301
+    ],
+    "model_file": "cv_unet+cv_unet_v3a+cv_unet_v3b+cv_unet_v3c+cv_unet_v3c_s1+cv_unet_v2_s1",
+    "threshold": 0.4
+  },
+  {
+    "model": "cv",
+    "site": "pego_oliva",
+    "stack": "066_D_069",
+    "layer": "last_water_doy",
+    "date": "2026-06-18/2026-10-28",
+    "file": "data/cv/pego_oliva_066_D_069/last_water_doy.tif",
+    "units": "day of year 2026; 0 never water on a seen date, 65535 never seen or sea",
+    "dates_doy": [
+      169,
+      181,
+      193,
+      205,
+      229,
+      241,
+      253,
+      265,
+      277,
+      289,
+      301
+    ],
+    "model_file": "cv_unet+cv_unet_v3a+cv_unet_v3b+cv_unet_v3c+cv_unet_v3c_s1+cv_unet_v2_s1",
+    "threshold": 0.4
+  },
+  {
+    "model": "cv",
+    "site": "pego_oliva",
+    "stack": "058_A_021",
+    "layer": "water",
+    "date": "2026-06-18",
+    "file": "data/cv/pego_oliva_058_A_021/2026-06-18_water.tif",
+    "classes": [
+      "not_water",
+      "open_water"
+    ],
+    "open_water_ha": 260.0,
+    "flooded_vegetation_ha": null,
+    "valid_fraction": 0.622,
+    "source": {
+      "granule_ur": "NISAR_L2_PR_GCOV_023_058_A_021_2005_DHDH_A_20260618T050655_20260618T050722_P05023_N_F_J_001",
+      "crid": "P05023",
+      "maturity": "PROVISIONAL",
+      "pols": "HH+HV"
+    },
+    "model_file": "cv_unet+cv_unet_v3a+cv_unet_v3b+cv_unet_v3c+cv_unet_v3c_s1+cv_unet_v2_s1",
+    "threshold": 0.4
+  },
+  {
+    "model": "cv",
+    "site": "pego_oliva",
+    "stack": "058_A_021",
+    "layer": "water",
+    "date": "2026-06-30",
+    "file": "data/cv/pego_oliva_058_A_021/2026-06-30_water.tif",
+    "classes": [
+      "not_water",
+      "open_water"
+    ],
+    "open_water_ha": 158.4,
+    "flooded_vegetation_ha": null,
+    "valid_fraction": 0.622,
+    "source": {
+      "granule_ur": "NISAR_L2_PR_GCOV_024_058_A_021_2005_DHDH_A_20260630T050650_20260630T050721_P05023_N_F_J_001",
+      "crid": "P05023",
+      "maturity": "PROVISIONAL",
+      "pols": "HH+HV"
+    },
+    "model_file": "cv_unet+cv_unet_v3a+cv_unet_v3b+cv_unet_v3c+cv_unet_v3c_s1+cv_unet_v2_s1",
+    "threshold": 0.4
+  },
+  {
+    "model": "cv",
+    "site": "pego_oliva",
+    "stack": "058_A_021",
+    "layer": "water",
+    "date": "2026-07-12",
+    "file": "data/cv/pego_oliva_058_A_021/2026-07-12_water.tif",
+    "classes": [
+      "not_water",
+      "open_water"
+    ],
+    "open_water_ha": 84.0,
+    "flooded_vegetation_ha": null,
+    "valid_fraction": 0.622,
+    "source": {
+      "granule_ur": "NISAR_L2_PR_GCOV_025_058_A_021_2005_DHDH_A_20260712T050653_20260712T050721_P05023_N_F_J_001",
+      "crid": "P05023",
+      "maturity": "PROVISIONAL",
+      "pols": "HH+HV"
+    },
+    "model_file": "cv_unet+cv_unet_v3a+cv_unet_v3b+cv_unet_v3c+cv_unet_v3c_s1+cv_unet_v2_s1",
+    "threshold": 0.4
+  },
+  {
+    "model": "cv",
+    "site": "pego_oliva",
+    "stack": "058_A_021",
+    "layer": "water",
+    "date": "2026-07-24",
+    "file": "data/cv/pego_oliva_058_A_021/2026-07-24_water.tif",
+    "classes": [
+      "not_water",
+      "open_water"
+    ],
+    "open_water_ha": 69.0,
+    "flooded_vegetation_ha": null,
+    "valid_fraction": 0.622,
+    "source": {
+      "granule_ur": "NISAR_L2_PR_GCOV_026_058_A_021_2005_DHDH_A_20260724T050653_20260724T050720_P05023_N_F_J_001",
+      "crid": "P05023",
+      "maturity": "PROVISIONAL",
+      "pols": "HH+HV"
+    },
+    "model_file": "cv_unet+cv_unet_v3a+cv_unet_v3b+cv_unet_v3c+cv_unet_v3c_s1+cv_unet_v2_s1",
+    "threshold": 0.4
+  },
+  {
+    "model": "cv",
+    "site": "pego_oliva",
+    "stack": "058_A_021",
+    "layer": "water",
+    "date": "2026-08-17",
+    "file": "data/cv/pego_oliva_058_A_021/2026-08-17_water.tif",
+    "classes": [
+      "not_water",
+      "open_water"
+    ],
+    "open_water_ha": 69.0,
+    "flooded_vegetation_ha": null,
+    "valid_fraction": 0.622,
+    "source": {
+      "granule_ur": "NISAR_L2_PR_GCOV_028_058_A_021_2005_DHDH_A_20260817T050652_20260817T050719_P05023_N_F_J_001",
+      "crid": "P05023",
+      "maturity": "PROVISIONAL",
+      "pols": "HH+HV"
+    },
+    "model_file": "cv_unet+cv_unet_v3a+cv_unet_v3b+cv_unet_v3c+cv_unet_v3c_s1+cv_unet_v2_s1",
+    "threshold": 0.4
+  },
+  {
+    "model": "cv",
+    "site": "pego_oliva",
+    "stack": "058_A_021",
+    "layer": "water",
+    "date": "2026-08-29",
+    "file": "data/cv/pego_oliva_058_A_021/2026-08-29_water.tif",
+    "classes": [
+      "not_water",
+      "open_water"
+    ],
+    "open_water_ha": 69.8,
+    "flooded_vegetation_ha": null,
+    "valid_fraction": 0.622,
+    "source": {
+      "granule_ur": "NISAR_L2_PR_GCOV_029_058_A_021_2005_DHDH_A_20260829T050652_20260829T050719_P05023_N_F_J_001",
+      "crid": "P05023",
+      "maturity": "PROVISIONAL",
+      "pols": "HH+HV"
+    },
+    "model_file": "cv_unet+cv_unet_v3a+cv_unet_v3b+cv_unet_v3c+cv_unet_v3c_s1+cv_unet_v2_s1",
+    "threshold": 0.4
+  },
+  {
+    "model": "cv",
+    "site": "pego_oliva",
+    "stack": "058_A_021",
+    "layer": "water",
+    "date": "2026-09-10",
+    "file": "data/cv/pego_oliva_058_A_021/2026-09-10_water.tif",
+    "classes": [
+      "not_water",
+      "open_water"
+    ],
+    "open_water_ha": 64.2,
+    "flooded_vegetation_ha": null,
+    "valid_fraction": 0.622,
+    "source": {
+      "granule_ur": "NISAR_L2_PR_GCOV_030_058_A_021_2005_DHDH_A_20260910T050651_20260910T050718_P05023_N_F_J_001",
+      "crid": "P05023",
+      "maturity": "PROVISIONAL",
+      "pols": "HH+HV"
+    },
+    "model_file": "cv_unet+cv_unet_v3a+cv_unet_v3b+cv_unet_v3c+cv_unet_v3c_s1+cv_unet_v2_s1",
+    "threshold": 0.4
+  },
+  {
+    "model": "cv",
+    "site": "pego_oliva",
+    "stack": "058_A_021",
+    "layer": "water",
+    "date": "2026-09-22",
+    "file": "data/cv/pego_oliva_058_A_021/2026-09-22_water.tif",
+    "classes": [
+      "not_water",
+      "open_water"
+    ],
+    "open_water_ha": 0.0,
+    "flooded_vegetation_ha": null,
+    "valid_fraction": 0.0,
+    "source": {
+      "granule_ur": "NISAR_L2_PR_GCOV_031_058_A_021_2005_SHSH_A_20260922T050651_20260922T050719_P05023_N_F_J_001",
+      "crid": "P05023",
+      "maturity": "PROVISIONAL",
+      "pols": "HH"
+    },
+    "model_file": "cv_unet+cv_unet_v3a+cv_unet_v3b+cv_unet_v3c+cv_unet_v3c_s1+cv_unet_v2_s1",
+    "threshold": 0.4
+  },
+  {
+    "model": "cv",
+    "site": "pego_oliva",
+    "stack": "058_A_021",
+    "layer": "water",
+    "date": "2026-10-04",
+    "file": "data/cv/pego_oliva_058_A_021/2026-10-04_water.tif",
+    "classes": [
+      "not_water",
+      "open_water"
+    ],
+    "open_water_ha": 90.6,
+    "flooded_vegetation_ha": null,
+    "valid_fraction": 0.622,
+    "source": {
+      "granule_ur": "NISAR_L2_PR_GCOV_032_058_A_021_2005_DHDH_A_20261004T050652_20261004T050719_P05023_N_F_J_001",
+      "crid": "P05023",
+      "maturity": "PROVISIONAL",
+      "pols": "HH+HV"
+    },
+    "model_file": "cv_unet+cv_unet_v3a+cv_unet_v3b+cv_unet_v3c+cv_unet_v3c_s1+cv_unet_v2_s1",
+    "threshold": 0.4
+  },
+  {
+    "model": "cv",
+    "site": "pego_oliva",
+    "stack": "058_A_021",
+    "layer": "water",
+    "date": "2026-10-16",
+    "file": "data/cv/pego_oliva_058_A_021/2026-10-16_water.tif",
+    "classes": [
+      "not_water",
+      "open_water"
+    ],
+    "open_water_ha": 208.6,
+    "flooded_vegetation_ha": null,
+    "valid_fraction": 0.622,
+    "source": {
+      "granule_ur": "NISAR_L2_PR_GCOV_033_058_A_021_2005_DHDH_A_20261016T050652_20261016T050719_P05023_N_F_J_001",
+      "crid": "P05023",
+      "maturity": "PROVISIONAL",
+      "pols": "HH+HV"
+    },
+    "model_file": "cv_unet+cv_unet_v3a+cv_unet_v3b+cv_unet_v3c+cv_unet_v3c_s1+cv_unet_v2_s1",
+    "threshold": 0.4
+  },
+  {
+    "model": "cv",
+    "site": "pego_oliva",
+    "stack": "058_A_021",
+    "layer": "first_water_doy",
+    "date": "2026-06-18/2026-10-16",
+    "file": "data/cv/pego_oliva_058_A_021/first_water_doy.tif",
+    "units": "day of year 2026; 0 never water on a seen date, 65535 never seen or sea",
+    "dates_doy": [
+      169,
+      181,
+      193,
+      205,
+      229,
+      241,
+      253,
+      265,
+      277,
+      289
+    ],
+    "model_file": "cv_unet+cv_unet_v3a+cv_unet_v3b+cv_unet_v3c+cv_unet_v3c_s1+cv_unet_v2_s1",
+    "threshold": 0.4
+  },
+  {
+    "model": "cv",
+    "site": "pego_oliva",
+    "stack": "058_A_021",
+    "layer": "last_water_doy",
+    "date": "2026-06-18/2026-10-16",
+    "file": "data/cv/pego_oliva_058_A_021/last_water_doy.tif",
+    "units": "day of year 2026; 0 never water on a seen date, 65535 never seen or sea",
+    "dates_doy": [
+      169,
+      181,
+      193,
+      205,
+      229,
+      241,
+      253,
+      265,
+      277,
+      289
+    ],
+    "model_file": "cv_unet+cv_unet_v3a+cv_unet_v3b+cv_unet_v3c+cv_unet_v3c_s1+cv_unet_v2_s1",
+    "threshold": 0.4
+  },
+  {
+    "model": "cv",
+    "site": "pego_oliva",
+    "stack": "167_D_069",
+    "layer": "water",
+    "date": "2026-06-25",
+    "file": "data/cv/pego_oliva_167_D_069/2026-06-25_water.tif",
+    "classes": [
+      "not_water",
+      "open_water"
+    ],
+    "open_water_ha": 38.9,
+    "flooded_vegetation_ha": null,
+    "valid_fraction": 0.422,
+    "source": {
+      "granule_ur": "NISAR_L2_PR_GCOV_023_167_D_069_2005_DHDH_A_20260625T190141_20260625T190216_P05023_N_F_J_001",
+      "crid": "P05023",
+      "maturity": "PROVISIONAL",
+      "pols": "HH+HV"
+    },
+    "model_file": "cv_unet+cv_unet_v3a+cv_unet_v3b+cv_unet_v3c+cv_unet_v3c_s1+cv_unet_v2_s1",
+    "threshold": 0.4
+  },
+  {
+    "model": "cv",
+    "site": "pego_oliva",
+    "stack": "167_D_069",
+    "layer": "water",
+    "date": "2026-07-07",
+    "file": "data/cv/pego_oliva_167_D_069/2026-07-07_water.tif",
+    "classes": [
+      "not_water",
+      "open_water"
+    ],
+    "open_water_ha": 33.4,
+    "flooded_vegetation_ha": null,
+    "valid_fraction": 0.422,
+    "source": {
+      "granule_ur": "NISAR_L2_PR_GCOV_024_167_D_069_2005_DHDH_A_20260707T190140_20260707T190215_P05023_N_F_J_001",
+      "crid": "P05023",
+      "maturity": "PROVISIONAL",
+      "pols": "HH+HV"
+    },
+    "model_file": "cv_unet+cv_unet_v3a+cv_unet_v3b+cv_unet_v3c+cv_unet_v3c_s1+cv_unet_v2_s1",
+    "threshold": 0.4
+  },
+  {
+    "model": "cv",
+    "site": "pego_oliva",
+    "stack": "167_D_069",
+    "layer": "water",
+    "date": "2026-07-19",
+    "file": "data/cv/pego_oliva_167_D_069/2026-07-19_water.tif",
+    "classes": [
+      "not_water",
+      "open_water"
+    ],
+    "open_water_ha": 33.2,
+    "flooded_vegetation_ha": null,
+    "valid_fraction": 0.422,
+    "source": {
+      "granule_ur": "NISAR_L2_PR_GCOV_025_167_D_069_2005_DHDH_A_20260719T190140_20260719T190214_P05023_N_F_J_001",
+      "crid": "P05023",
+      "maturity": "PROVISIONAL",
+      "pols": "HH+HV"
+    },
+    "model_file": "cv_unet+cv_unet_v3a+cv_unet_v3b+cv_unet_v3c+cv_unet_v3c_s1+cv_unet_v2_s1",
+    "threshold": 0.4
+  },
+  {
+    "model": "cv",
+    "site": "pego_oliva",
+    "stack": "167_D_069",
+    "layer": "water",
+    "date": "2026-08-24",
+    "file": "data/cv/pego_oliva_167_D_069/2026-08-24_water.tif",
+    "classes": [
+      "not_water",
+      "open_water"
+    ],
+    "open_water_ha": 34.8,
+    "flooded_vegetation_ha": null,
+    "valid_fraction": 0.422,
+    "source": {
+      "granule_ur": "NISAR_L2_PR_GCOV_028_167_D_069_2005_DHDH_A_20260824T190138_20260824T190212_P05023_N_F_J_001",
+      "crid": "P05023",
+      "maturity": "PROVISIONAL",
+      "pols": "HH+HV"
+    },
+    "model_file": "cv_unet+cv_unet_v3a+cv_unet_v3b+cv_unet_v3c+cv_unet_v3c_s1+cv_unet_v2_s1",
+    "threshold": 0.4
+  },
+  {
+    "model": "cv",
+    "site": "pego_oliva",
+    "stack": "167_D_069",
+    "layer": "water",
+    "date": "2026-09-05",
+    "file": "data/cv/pego_oliva_167_D_069/2026-09-05_water.tif",
+    "classes": [
+      "not_water",
+      "open_water"
+    ],
+    "open_water_ha": 38.8,
+    "flooded_vegetation_ha": null,
+    "valid_fraction": 0.422,
+    "source": {
+      "granule_ur": "NISAR_L2_PR_GCOV_029_167_D_069_2005_DHDH_A_20260905T190137_20260905T190212_P05023_N_F_J_001",
+      "crid": "P05023",
+      "maturity": "PROVISIONAL",
+      "pols": "HH+HV"
+    },
+    "model_file": "cv_unet+cv_unet_v3a+cv_unet_v3b+cv_unet_v3c+cv_unet_v3c_s1+cv_unet_v2_s1",
+    "threshold": 0.4
+  },
+  {
+    "model": "cv",
+    "site": "pego_oliva",
+    "stack": "167_D_069",
+    "layer": "water",
+    "date": "2026-09-17",
+    "file": "data/cv/pego_oliva_167_D_069/2026-09-17_water.tif",
+    "classes": [
+      "not_water",
+      "open_water"
+    ],
+    "open_water_ha": 35.7,
+    "flooded_vegetation_ha": null,
+    "valid_fraction": 0.422,
+    "source": {
+      "granule_ur": "NISAR_L2_PR_GCOV_030_167_D_069_2005_DHDH_A_20260917T190137_20260917T190212_P05023_N_F_J_001",
+      "crid": "P05023",
+      "maturity": "PROVISIONAL",
+      "pols": "HH+HV"
+    },
+    "model_file": "cv_unet+cv_unet_v3a+cv_unet_v3b+cv_unet_v3c+cv_unet_v3c_s1+cv_unet_v2_s1",
+    "threshold": 0.4
+  },
+  {
+    "model": "cv",
+    "site": "pego_oliva",
+    "stack": "167_D_069",
+    "layer": "water",
+    "date": "2026-09-29",
+    "file": "data/cv/pego_oliva_167_D_069/2026-09-29_water.tif",
+    "classes": [
+      "not_water",
+      "open_water"
+    ],
+    "open_water_ha": 41.6,
+    "flooded_vegetation_ha": null,
+    "valid_fraction": 0.421,
+    "source": {
+      "granule_ur": "NISAR_L2_PR_GCOV_031_167_D_069_2005_DHDH_A_20260929T190137_20260929T190212_P05023_N_F_J_001",
+      "crid": "P05023",
+      "maturity": "PROVISIONAL",
+      "pols": "HH+HV"
+    },
+    "model_file": "cv_unet+cv_unet_v3a+cv_unet_v3b+cv_unet_v3c+cv_unet_v3c_s1+cv_unet_v2_s1",
+    "threshold": 0.4
+  },
+  {
+    "model": "cv",
+    "site": "pego_oliva",
+    "stack": "167_D_069",
+    "layer": "water",
+    "date": "2026-10-11",
+    "file": "data/cv/pego_oliva_167_D_069/2026-10-11_water.tif",
+    "classes": [
+      "not_water",
+      "open_water"
+    ],
+    "open_water_ha": 39.8,
+    "flooded_vegetation_ha": null,
+    "valid_fraction": 0.421,
+    "source": {
+      "granule_ur": "NISAR_L2_PR_GCOV_032_167_D_069_2005_DHDH_A_20261011T190137_20261011T190212_P05023_N_F_J_001",
+      "crid": "P05023",
+      "maturity": "PROVISIONAL",
+      "pols": "HH+HV"
+    },
+    "model_file": "cv_unet+cv_unet_v3a+cv_unet_v3b+cv_unet_v3c+cv_unet_v3c_s1+cv_unet_v2_s1",
+    "threshold": 0.4
+  },
+  {
+    "model": "cv",
+    "site": "pego_oliva",
+    "stack": "167_D_069",
+    "layer": "water",
+    "date": "2026-10-23",
+    "file": "data/cv/pego_oliva_167_D_069/2026-10-23_water.tif",
+    "classes": [
+      "not_water",
+      "open_water"
+    ],
+    "open_water_ha": 39.3,
+    "flooded_vegetation_ha": null,
+    "valid_fraction": 0.422,
+    "source": {
+      "granule_ur": "NISAR_L2_PR_GCOV_033_167_D_069_2005_DHDH_A_20261023T190137_20261023T190212_P05036_N_F_J_001",
+      "crid": "P05036",
+      "maturity": "VALIDATED",
+      "pols": "HH+HV"
+    },
+    "model_file": "cv_unet+cv_unet_v3a+cv_unet_v3b+cv_unet_v3c+cv_unet_v3c_s1+cv_unet_v2_s1",
+    "threshold": 0.4
+  },
+  {
+    "model": "cv",
+    "site": "pego_oliva",
+    "stack": "167_D_069",
+    "layer": "first_water_doy",
+    "date": "2026-06-25/2026-10-23",
+    "file": "data/cv/pego_oliva_167_D_069/first_water_doy.tif",
+    "units": "day of year 2026; 0 never water on a seen date, 65535 never seen or sea",
+    "dates_doy": [
+      176,
+      188,
+      200,
+      236,
+      248,
+      260,
+      272,
+      284,
+      296
+    ],
+    "model_file": "cv_unet+cv_unet_v3a+cv_unet_v3b+cv_unet_v3c+cv_unet_v3c_s1+cv_unet_v2_s1",
+    "threshold": 0.4
+  },
+  {
+    "model": "cv",
+    "site": "pego_oliva",
+    "stack": "167_D_069",
+    "layer": "last_water_doy",
+    "date": "2026-06-25/2026-10-23",
+    "file": "data/cv/pego_oliva_167_D_069/last_water_doy.tif",
+    "units": "day of year 2026; 0 never water on a seen date, 65535 never seen or sea",
+    "dates_doy": [
+      176,
+      188,
+      200,
+      236,
+      248,
+      260,
+      272,
+      284,
+      296
+    ],
+    "model_file": "cv_unet+cv_unet_v3a+cv_unet_v3b+cv_unet_v3c+cv_unet_v3c_s1+cv_unet_v2_s1",
+    "threshold": 0.4
   }
 ]
