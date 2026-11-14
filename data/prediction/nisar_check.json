@@ -1,0 +1,408 @@
+{
+  "issued_at_utc": "2026-11-14T12:59:30+00:00",
+  "method": "pipeline.cv.baseline: Otsu per scene on 5x5-filtered HH (dB); +-1 dB threshold range",
+  "albufera_rice": {
+    "site": "albufera",
+    "stack": "066_D_069",
+    "rice_mask_ha": 14790.6,
+    "dates": [
+      {
+        "date": "2026-06-18",
+        "crid": "P05023",
+        "rice_observed_fraction": 0.989,
+        "nisar_dark_pct": {
+          "-15": 43.7,
+          "-18": 9.4
+        },
+        "control_cropland_dark_pct": {
+          "-15": 1.2,
+          "-18": 0.1
+        },
+        "median_hh_db": {
+          "rice": -14.41,
+          "control": -8.67
+        },
+        "otsu": {
+          "threshold_db": -9.81,
+          "water_ha": {
+            "-1": 12529.3,
+            "+0": 13292.9,
+            "+1": 13741.2
+          }
+        },
+        "dswx": {
+          "date": "2026-06-18",
+          "day_gap": 0,
+          "flooded_pct": 1.7
+        }
+      },
+      {
+        "date": "2026-06-30",
+        "crid": "P05023",
+        "rice_observed_fraction": 0.989,
+        "nisar_dark_pct": {
+          "-15": 13.4,
+          "-18": 0.3
+        },
+        "control_cropland_dark_pct": {
+          "-15": 0.3,
+          "-18": 0.0
+        },
+        "median_hh_db": {
+          "rice": -11.86,
+          "control": -8.91
+        },
+        "otsu": {
+          "threshold_db": -7.54,
+          "water_ha": {
+            "-1": 12635.7,
+            "+0": 13286.7,
+            "+1": 13686.5
+          }
+        },
+        "dswx": {
+          "date": "2026-06-30",
+          "day_gap": 0,
+          "flooded_pct": 0.2
+        }
+      },
+      {
+        "date": "2026-07-12",
+        "crid": "P05023",
+        "rice_observed_fraction": 0.989,
+        "nisar_dark_pct": {
+          "-15": 5.4,
+          "-18": 0.3
+        },
+        "control_cropland_dark_pct": {
+          "-15": 0.2,
+          "-18": 0.0
+        },
+        "median_hh_db": {
+          "rice": -11.65,
+          "control": -8.75
+        },
+        "otsu": {
+          "threshold_db": -10.19,
+          "water_ha": {
+            "-1": 8599.1,
+            "+0": 11009.9,
+            "+1": 12530.4
+          }
+        },
+        "dswx": {
+          "date": "2026-07-12",
+          "day_gap": 0,
+          "flooded_pct": 0.3
+        }
+      },
+      {
+        "date": "2026-07-24",
+        "crid": "P05023",
+        "rice_observed_fraction": 0.989,
+        "nisar_dark_pct": {
+          "-15": 0.3,
+          "-18": 0.0
+        },
+        "control_cropland_dark_pct": {
+          "-15": 0.1,
+          "-18": 0.0
+        },
+        "median_hh_db": {
+          "rice": -9.06,
+          "control": -8.36
+        },
+        "otsu": {
+          "threshold_db": -11.31,
+          "water_ha": {
+            "-1": 608.4,
+            "+0": 1551.4,
+            "+1": 3523.6
+          }
+        },
+        "dswx": {
+          "date": "2026-07-24",
+          "day_gap": 0,
+          "flooded_pct": 0.3
+        }
+      },
+      {
+        "date": "2026-08-17",
+        "crid": "P05023",
+        "rice_observed_fraction": 0.989,
+        "nisar_dark_pct": {
+          "-15": 0.1,
+          "-18": 0.0
+        },
+        "control_cropland_dark_pct": {
+          "-15": 0.0,
+          "-18": 0.0
+        },
+        "median_hh_db": {
+          "rice": -8.62,
+          "control": -7.26
+        },
+        "otsu": {
+          "threshold_db": -10.33,
+          "water_ha": {
+            "-1": 761.1,
+            "+0": 2158.0,
+            "+1": 4861.6
+          }
+        },
+        "dswx": {
+          "date": "2026-08-17",
+          "day_gap": 0,
+          "flooded_pct": 0.2
+        }
+      },
+      {
+        "date": "2026-08-29",
+        "crid": "P05023",
+        "rice_observed_fraction": 0.989,
+        "nisar_dark_pct": {
+          "-15": 0.1,
+          "-18": 0.0
+        },
+        "control_cropland_dark_pct": {
+          "-15": 0.0,
+          "-18": 0.0
+        },
+        "median_hh_db": {
+          "rice": -9.09,
+          "control": -7.69
+        },
+        "otsu": {
+          "threshold_db": -10.49,
+          "water_ha": {
+            "-1": 897.6,
+            "+0": 2836.2,
+            "+1": 5989.0
+          }
+        },
+        "dswx": {
+          "date": "2026-08-29",
+          "day_gap": 0,
+          "flooded_pct": 0.2
+        }
+      },
+      {
+        "date": "2026-09-10",
+        "crid": "P05023",
+        "rice_observed_fraction": 0.989,
+        "nisar_dark_pct": {
+          "-15": 0.1,
+          "-18": 0.0
+        },
+        "control_cropland_dark_pct": {
+          "-15": 0.0,
+          "-18": 0.0
+        },
+        "median_hh_db": {
+          "rice": -9.11,
+          "control": -7.02
+        },
+        "otsu": {
+          "threshold_db": -8.28,
+          "water_ha": {
+            "-1": 6791.8,
+            "+0": 9496.8,
+            "+1": 11355.4
+          }
+        },
+        "dswx": {
+          "date": "2026-09-10",
+          "day_gap": 0,
+          "flooded_pct": 0.1
+        }
+      },
+      {
+        "date": "2026-09-22",
+        "crid": "P05023",
+        "rice_observed_fraction": 0.989,
+        "nisar_dark_pct": {
+          "-15": 0.3,
+          "-18": 0.0
+        },
+        "control_cropland_dark_pct": {
+          "-15": 0.0,
+          "-18": 0.0
+        },
+        "median_hh_db": {
+          "rice": -8.18,
+          "control": -7.3
+        },
+        "otsu": {
+          "threshold_db": -8.8,
+          "water_ha": {
+            "-1": 3496.7,
+            "+0": 5740.3,
+            "+1": 8228.1
+          }
+        },
+        "dswx": {
+          "date": "2026-09-22",
+          "day_gap": 0,
+          "flooded_pct": 0.2
+        }
+      },
+      {
+        "date": "2026-10-04",
+        "crid": "P05023",
+        "rice_observed_fraction": 0.989,
+        "nisar_dark_pct": {
+          "-15": 5.8,
+          "-18": 2.1
+        },
+        "control_cropland_dark_pct": {
+          "-15": 0.0,
+          "-18": 0.0
+        },
+        "median_hh_db": {
+          "rice": -8.39,
+          "control": -6.3
+        },
+        "otsu": {
+          "threshold_db": -10.32,
+          "water_ha": {
+            "-1": 2100.3,
+            "+0": 2961.2,
+            "+1": 4732.8
+          }
+        },
+        "dswx": {
+          "date": "2026-10-04",
+          "day_gap": 0,
+          "flooded_pct": 2.7
+        }
+      },
+      {
+        "date": "2026-10-16",
+        "crid": "P05023",
+        "rice_observed_fraction": 0.989,
+        "nisar_dark_pct": {
+          "-15": 13.7,
+          "-18": 6.3
+        },
+        "control_cropland_dark_pct": {
+          "-15": 0.1,
+          "-18": 0.0
+        },
+        "median_hh_db": {
+          "rice": -8.78,
+          "control": -7.26
+        },
+        "otsu": {
+          "threshold_db": -10.17,
+          "water_ha": {
+            "-1": 4296.5,
+            "+0": 5374.5,
+            "+1": 6701.4
+          }
+        },
+        "dswx": {
+          "date": "2026-10-16",
+          "day_gap": 0,
+          "flooded_pct": 9.8
+        }
+      },
+      {
+        "date": "2026-10-28",
+        "crid": "P05036",
+        "rice_observed_fraction": 0.989,
+        "nisar_dark_pct": {
+          "-15": 31.0,
+          "-18": 10.3
+        },
+        "control_cropland_dark_pct": {
+          "-15": 0.3,
+          "-18": 0.0
+        },
+        "median_hh_db": {
+          "rice": -12.22,
+          "control": -7.36
+        },
+        "otsu": {
+          "threshold_db": -10.45,
+          "water_ha": {
+            "-1": 8109.4,
+            "+0": 9169.0,
+            "+1": 10178.6
+          }
+        },
+        "dswx": {
+          "date": "2026-10-28",
+          "day_gap": 0,
+          "flooded_pct": 26.9
+        }
+      }
+    ],
+    "paired_dates": 11,
+    "pearson_r_all_dates": {
+      "-15": 0.523,
+      "-18": 0.756,
+      "otsu": 0.115
+    },
+    "autumn": {
+      "dates": [
+        "2026-10-04",
+        "2026-10-16",
+        "2026-10-28"
+      ],
+      "nisar_dark_pct_-15": [
+        5.8,
+        13.7,
+        31.0
+      ],
+      "dswx_flooded_pct": [
+        2.7,
+        9.8,
+        26.9
+      ],
+      "pearson_r_-15": null,
+      "note": "too few autumn dates for a correlation; compare the two series directly"
+    },
+    "reading": "Autumn (the winter flooding the forecast predicts): NISAR and DSWx-S1 rise together. June: NISAR sees up to 44 % of the rice dark while DSWx-S1 sees about 2 %; the rice calendar has the paddies flooded from May sowing to the August drainage, so L-band may see water among young rice that the C-band map misses. Not confirmed on the ground."
+  },
+  "pego_oliva_dana": {
+    "site": "pego_oliva",
+    "stack": "066_D_069",
+    "before": "2026-10-16",
+    "after": "2026-10-28",
+    "thresholds_db": {
+      "before": -11.85,
+      "after": -12.03
+    },
+    "outline_ha_scored": 889.6,
+    "nisar_new_water": {
+      "-1": {
+        "new_water_ha": 220.6,
+        "inside_outline_ha": 204.4,
+        "share_inside_outline": 0.926
+      },
+      "+0": {
+        "new_water_ha": 217.0,
+        "inside_outline_ha": 186.1,
+        "share_inside_outline": 0.858
+      },
+      "+1": {
+        "new_water_ha": 232.1,
+        "inside_outline_ha": 142.0,
+        "share_inside_outline": 0.612
+      }
+    },
+    "dswx_in_emsr935_outline_ha": {
+      "before": {
+        "date": "2026-10-16",
+        "day_gap": 0,
+        "value": 156.42000000000002
+      },
+      "after": {
+        "date": "2026-10-28",
+        "day_gap": 0,
+        "value": 398.54
+      }
+    },
+    "note": "EMSR935 imagery is from 20 Oct; NISAR 28 Oct is 9 days after the peak, so part of the water had drained."
+  }
+}
