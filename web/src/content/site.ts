@@ -10,7 +10,7 @@ export const SITE = {
 
 export const NAV = [
 	{ label: 'Stories', href: '/#stories' },
-	{ label: 'Every pass', href: '/#passes' },
+	{ label: 'The map', href: '/#app' },
 	{ label: 'How it works', href: '/#how' },
 	{ label: 'Data', href: '/#data' },
 ] as const

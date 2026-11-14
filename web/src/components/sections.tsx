@@ -1,9 +1,8 @@
 import { ArrowUpRight } from 'lucide-react'
 import Link from 'next/link'
-import { CLOSE, DATA_HEAD, HOW_HEAD, HOW_LINE, MODELS, SOURCES, STEPS, STORIES, STORIES_HEAD, STORIES_LINE } from '@/content/landing'
+import { CLOSE, DATA_HEAD, HOW_HEAD, HOW_LINE, MODELS, SOURCES, STEPS } from '@/content/landing'
 import { SITE } from '@/content/site'
-import { coverage, findPass, latest } from '@/lib/radar'
-import { Brand } from './brand'
+import { latest } from '@/lib/radar'
 import './sections.css'
 
 /** A centred two-line heading with one accent word, the 8x.business rhythm, then one short line. */
@@ -18,43 +17,6 @@ export function Heading({ a, b, accent, line, as: Tag = 'h2' }: { a: string; b?:
 			</Tag>
 			{line && <p className="sec-line">{line}</p>}
 		</div>
-	)
-}
-
-export function Stories() {
-	return (
-		<section id="stories" className="sec">
-			<Heading a={STORIES_HEAD.a} b={STORIES_HEAD.b} accent={STORIES_HEAD.accent} line={STORIES_LINE} />
-			<div className="stories">
-				{STORIES.map((st, i) => {
-					const pass = findPass(st.site, st.show.date, st.show.track)
-					const label = pass ? `${pass.dates.join(' > ')} · track ${pass.track} ${pass.dir}` : ''
-					return (
-						<Link key={st.key} href={`/map?story=${st.key}`} className="story" data-reveal="rise" style={{ ['--r' as string]: i * 4 }}>
-							<div className="story-radar">
-								{pass?.img && <img src={pass.img} alt={`NISAR ${st.kind.toLowerCase()} over ${st.where}`} loading="lazy" />}
-								<span className="story-pass">{label}</span>
-							</div>
-							<img className="story-icon" src={`/img/icons/${st.key}.webp`} alt="" width={132} height={132} loading="lazy" />
-							<div className="story-body">
-								<h3>{st.title}</h3>
-								<p>{st.what}</p>
-								<dl>
-									<div>
-										<dt>Where</dt>
-										<dd>{st.where}</dd>
-									</div>
-									<div>
-										<dt>NISAR</dt>
-										<dd>{coverage(st.site)}</dd>
-									</div>
-								</dl>
-							</div>
-						</Link>
-					)
-				})}
-			</div>
-		</section>
 	)
 }
 
@@ -110,7 +72,7 @@ export function Data() {
 export function Closing() {
 	const frame = latest('valencia', '066')
 	return (
-		<section className="close" data-reveal="open">
+		<section className="close">
 			{frame?.img && <img className="close-radar" src={frame.img} alt="NISAR radar view of the Valencia coast, latest pass" loading="lazy" />}
 			<div className="close-copy">
 				<h2>
@@ -132,28 +94,5 @@ export function Closing() {
 				</div>
 			</div>
 		</section>
-	)
-}
-
-export function Footer() {
-	return (
-		<footer className="foot">
-			<div className="foot-row">
-				<Brand />
-				<nav aria-label="Footer">
-					<a href={SITE.challenge} target="_blank" rel="noopener noreferrer">
-						The challenge
-					</a>
-					<a href={SITE.repo} target="_blank" rel="noopener noreferrer">
-						GitHub
-					</a>
-					<Link href="/map">Map</Link>
-				</nav>
-			</div>
-			<div className="foot-notes">
-				<p>NASA Space Apps Challenge 2026 · Valencia, Spain. NISAR is a joint mission of NASA and ISRO; data courtesy of NASA&apos;s Alaska Satellite Facility DAAC. This project is not endorsed by NASA.</p>
-				<p>Images marked &ldquo;SI-generated&rdquo; were made with Gemini. Radar images are real NISAR previews. Research and code were drafted with an SI assistant; the idea and the decisions are the team&apos;s.</p>
-			</div>
-		</footer>
 	)
 }

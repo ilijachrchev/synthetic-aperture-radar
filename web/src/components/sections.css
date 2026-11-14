@@ -34,109 +34,6 @@
 	color: var(--muted);
 }
 
-/* Stories: four cards, the real radar on top, the 3D icon standing on its lower edge. */
-.stories {
-	display: grid;
-	grid-template-columns: repeat(4, minmax(0, 1fr));
-	gap: 18px;
-}
-.story {
-	position: relative;
-	display: flex;
-	flex-direction: column;
-	border-radius: 26px;
-	background: var(--surface);
-	border: 1px solid var(--line);
-	overflow: hidden;
-	box-shadow: var(--shadow);
-	transition: transform 0.42s var(--ease), box-shadow 0.42s var(--ease);
-}
-.story:hover {
-	transform: translateY(-4px);
-}
-.story-radar {
-	position: relative;
-	aspect-ratio: 5 / 4;
-	background: #160a17;
-	overflow: hidden;
-}
-.story-radar img {
-	width: 100%;
-	height: 100%;
-	object-fit: cover;
-	transition: transform 1.2s var(--ease);
-}
-.story:hover .story-radar img {
-	transform: scale(1.06);
-}
-.story-pass {
-	position: absolute;
-	left: 14px;
-	top: 12px;
-	padding: 4px 9px;
-	border-radius: 999px;
-	font-family: var(--font-mono);
-	font-size: 11px;
-	color: #fff;
-	background: rgb(10 8 24 / 0.5);
-	backdrop-filter: blur(8px);
-	-webkit-backdrop-filter: blur(8px);
-}
-.story-icon {
-	position: absolute;
-	right: 10px;
-	top: 0;
-	/* percentage margins follow the card's width; the radar above is 4:5 of it, so this stands the icon on its edge */
-	margin-top: calc(80% - 92px);
-	width: 132px;
-	height: 132px;
-	filter: drop-shadow(0 14px 18px rgb(22 22 58 / 0.22));
-	pointer-events: none;
-}
-.story-body {
-	display: flex;
-	flex-direction: column;
-	gap: 10px;
-	padding: 22px 22px 22px;
-	flex: 1;
-}
-.story-body h3 {
-	margin: 0;
-	padding-right: 112px;
-	font-size: 21px;
-	font-weight: 600;
-	letter-spacing: -0.02em;
-	line-height: 1.15;
-}
-.story-body p {
-	margin: 0;
-	color: var(--muted);
-	font-size: 15px;
-	line-height: 1.5;
-}
-.story-body dl {
-	margin: auto 0 0;
-	padding-top: 14px;
-	border-top: 1px solid var(--line);
-	display: grid;
-	gap: 6px;
-}
-.story-body dl div {
-	display: flex;
-	justify-content: space-between;
-	gap: 12px;
-	font-size: 13px;
-}
-.story-body dt {
-	color: var(--muted);
-}
-.story-body dd {
-	margin: 0;
-	text-align: right;
-	font-family: var(--font-mono);
-	font-size: 12px;
-}
-
 /* How it works: four numbered points on hairlines, then the three models in one line each. */
 .steps {
 	list-style: none;
@@ -245,33 +142,38 @@
 	text-align: right;
 }
 
-/* Close: the latest radar pass of the coast on its own plum ground, the copy on the left. */
+/* Close: full bleed on the plum night, the latest radar pass tilted on the right; the footer card rises over its
+   bottom edge the way 8x.social's does. */
 .close {
 	position: relative;
-	margin: 128px 12px 0;
-	min-height: 640px;
-	border-radius: 30px;
+	margin: 140px 0 0;
+	min-height: 700px;
+	padding-bottom: 46px;
 	overflow: hidden;
 	isolation: isolate;
 	color: #fff;
-	background: radial-gradient(120% 90% at 85% 40%, #2a1230, #12071a 70%);
+	background: radial-gradient(110% 90% at 80% 40%, #2a1230, #12071a 68%);
+	transition: background 0.5s var(--ease);
 	display: grid;
-	grid-template-columns: 1fr 1fr;
+	grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
 	align-items: center;
+}
+[data-theme="dark"] .close {
+	background: radial-gradient(100% 90% at 78% 40%, #123a9e, #061235 66%);
 }
 .close-radar {
 	position: absolute;
-	right: 4%;
+	right: 6%;
 	top: 50%;
-	height: 118%;
+	height: 112%;
 	width: auto;
 	max-width: none;
-	transform: translateY(-50%) rotate(-6deg);
+	transform: translateY(-52%) rotate(-6deg);
 	z-index: -1;
 	filter: drop-shadow(0 30px 60px rgb(0 0 0 / 0.5));
 }
 .close-copy {
-	padding: 64px 56px;
+	padding: 64px 56px 64px max(56px, calc((100vw - 1320px) / 2 + 28px));
 	max-width: 620px;
 }
 .close h2 {
@@ -287,6 +189,9 @@
 	font-weight: 400;
 	letter-spacing: -0.01em;
 	color: #f2b4b0;
+}
+[data-theme="dark"] .close h2 em {
+	color: #9fbcff;
 }
 .close p {
 	margin: 22px 0 0;
@@ -331,46 +236,7 @@
 	font-weight: 500;
 }
 
-.foot {
-	max-width: 1320px;
-	margin: 0 auto;
-	padding: 56px 28px 40px;
-}
-.foot-row {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	gap: 20px;
-	flex-wrap: wrap;
-	padding-bottom: 24px;
-	border-bottom: 1px solid var(--line);
-}
-.foot-row nav {
-	display: flex;
-	gap: 26px;
-	font-size: 15px;
-	color: var(--muted);
-}
-.foot-row nav a:hover {
-	color: var(--ink);
-}
-.foot-notes {
-	margin-top: 20px;
-	display: grid;
-	grid-template-columns: 1fr 1fr;
-	gap: 28px;
-	font-size: 13px;
-	line-height: 1.55;
-	color: var(--muted);
-}
-.foot-notes p {
-	margin: 0;
-}
-
 @media (max-width: 1100px) {
-	.stories {
-		grid-template-columns: repeat(2, minmax(0, 1fr));
-	}
 	.steps {
 		grid-template-columns: repeat(2, minmax(0, 1fr));
 		row-gap: 40px;
@@ -389,10 +255,8 @@
 	.sec {
 		padding: 96px 16px 0;
 	}
-	.stories,
 	.steps,
-	.models ul,
-	.foot-notes {
+	.models ul {
 		grid-template-columns: minmax(0, 1fr);
 	}
 	.sources a {
@@ -408,16 +272,21 @@
 	}
 	.close {
 		grid-template-columns: 1fr;
-		min-height: 720px;
+		min-height: 0;
 		align-items: end;
+		padding-top: 300px;
 	}
 	.close-radar {
 		right: 50%;
-		top: 32%;
-		height: 70%;
-		transform: translate(50%, -50%) rotate(-6deg);
+		top: 20px;
+		height: 330px;
+		transform: translateX(50%) rotate(-6deg);
 	}
 	.close-copy {
-		padding: 40px 24px;
+		padding: 28px 24px 56px;
+		background: linear-gradient(to top, #12071a 72%, transparent);
+	}
+	[data-theme="dark"] .close-copy {
+		background: linear-gradient(to top, #061235 72%, transparent);
 	}
 }

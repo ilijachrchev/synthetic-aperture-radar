@@ -56,7 +56,7 @@ export const STORIES: Story[] = [
 ]
 
 export const PASSES_HEAD = { a: 'Every 12-day pass,', b: 'not a single', accent: 'snapshot.' }
-export const PASSES_LINE = 'Track 066 D over the Valencia coast, from the first pass in June to the latest in October. Scroll to play it.'
+export const PASSES_LINE = 'The map plays every pass of one track over the Valencia coast, June to October. These are the real NISAR previews.'
 
 // What L-band shows over rice (docs/RESEARCH.md, section 5 and the site table). Expectations, not model output.
 export const BEATS = [
