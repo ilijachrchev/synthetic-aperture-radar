@@ -4,8 +4,10 @@
 
 Searches the Element 84 Earth Search STAC (public, no login) for Sentinel-2 L2A scenes of each day, reads only the
 site window of the true colour image (the "visual" asset, a Cloud-Optimized GeoTIFF on AWS) and writes
-public/layers/<site>/optical/<day>.webp on the Web Mercator zoom 14 lattice (about 7.5 m on the ground, twice the
-water grid), plus optical.json with each scene id, its time, its cloud cover and the box to place it on the map.
+public/layers/<site>/optical/<day>.webp, read on the Web Mercator zoom 14 lattice (about 7.5 m on the ground, twice
+the water grid) and stored at most --max-px pixels a side (2560: about 10 m, the resolution of Sentinel-2 itself,
+and what the map pages draw), plus optical.json with each scene id, its time, its cloud cover and the box to place
+it on the map. width and height in optical.json are those of the lattice it was read on.
 
 Nothing is retouched: no cloud removal, no colour change. A cloudy day stays cloudy, which is the point.
 Contains modified Copernicus Sentinel data, processed by ESA; credit it wherever a picture is shown.
@@ -88,12 +90,21 @@ def read_day(items, transform, width, height):
     return out, used
 
 
+def store(picture, max_px):
+    """The picture as it is stored: at most max_px a side. The lattice is finer than Sentinel-2 (7.5 m against 10 m),
+    so this keeps every detail of the satellite and about a third of the bytes."""
+    w, h = picture.size
+    k = max_px / max(w, h) if max_px else 1
+    return picture if k >= 1 else picture.resize((round(w * k), round(h * k)), Image.Resampling.LANCZOS)
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--site", required=True, choices=sorted(SITES))
     ap.add_argument("--days", nargs="+", required=True)
     ap.add_argument("--out", type=Path, default=WEB / "public" / "layers")
     ap.add_argument("--quality", type=int, default=80)
+    ap.add_argument("--max-px", type=int, default=2560, help="longest side of a stored picture (0 keeps the lattice)")
     args = ap.parse_args()
 
     bbox = SITES[args.site]
@@ -117,7 +128,7 @@ def main():
         rgb, used = read_day(items, transform, width, height)
         filled = float((rgb.max(axis=0) > 0).mean())
         name = f"{day}.webp"
-        Image.fromarray(np.moveaxis(rgb, 0, -1)).save(folder / name, "WEBP", quality=args.quality, method=6)
+        store(Image.fromarray(np.moveaxis(rgb, 0, -1)), args.max_px).save(folder / name, "WEBP", quality=args.quality, method=6)
         # the cloud share quoted for the picture is the one of the scene that fills most of it
         main = max(used, key=lambda u: u["share"]) if used else None
         rec = {"day": day, "file": f"optical/{name}", "time_utc": main["time_utc"] if main else None,
