@@ -42,7 +42,7 @@ def _cmd_run(args: argparse.Namespace) -> None:
     if not path.exists():
         sys.exit(f"no stack at {path}. Get it with: gh release download data-v1 --pattern \"*.nc\" "
                  f"--dir data/stack   (or build it: python -m pipeline.run)")
-    st = data.load(path, crid=args.crid)
+    st = data.load(path, crid=args.crid, filter_px=args.filter_px)
     tag = "  [FAKE DATA]" if st.synthetic else ""
     print(f"stack {path.name}: {len(st.dates)} dates {st.dates[0]} to {st.dates[-1]}, "
           f"{st.grid.width}x{st.grid.height} px{tag}")
@@ -61,7 +61,7 @@ def _cmd_run(args: argparse.Namespace) -> None:
     else:
         found = labels.default_sources(st.site)
         given = {"worldcover": args.worldcover, "jrc_occurrence": args.jrc,
-                 "effis": args.effis, "polygons": args.polygons, "sea": args.sea}
+                 "effis": args.effis, "polygons": args.polygons, "sea": args.sea, "corine": args.corine}
         sources = {k: (Path(v) if v else found[k]) for k, v in given.items()}
         y_map, sea = labels.build_labels(st.grid, **sources)
         sources = {k: (_rel(v) if v else None) for k, v in sources.items()}
@@ -74,16 +74,19 @@ def _cmd_run(args: argparse.Namespace) -> None:
     if missing:
         print(f"  WARNING: no training pixels for {missing}; the model cannot predict these")
 
-    # Features. The water threshold ignores the sea, so the lagoon and fields drive it.
-    land_hh = st.hh_db[:, ~sea]
-    X, usable, dark_db = features.pixel_features(st.hh_db, st.hv_db, st.times,
-                                                 dark_threshold_db=features.otsu_threshold(land_hh))
+    # Features. The water threshold uses every pixel, sea included: without the
+    # sea there is no clear water mode and Otsu lands among vegetation (PR #7).
+    dark_db, dark_rule = features.water_threshold(st.hh_db)
+    X, usable, dark_db = features.pixel_features(st.hh_db, st.hv_db, st.times, dark_threshold_db=dark_db)
     usable &= ~sea.ravel()
     print(f"features: {X.shape[1]} per pixel, {usable.mean():.1%} of pixels classified, "
-          f"water threshold {dark_db:.1f} dB")
+          f"water threshold {dark_db:.1f} dB ({dark_rule}), speckle filter {args.filter_px or 'off'}")
+    forbid = train.burned_rule(X, None if args.burned_min_hv_drop <= 0 else args.burned_min_hv_drop)
 
     # Spatial split, train, score.
-    train_mask, test_mask = split.split_blocks(st.shape, block_px=args.block_px, seed=args.seed)
+    labels_usable = np.where(usable.reshape(st.shape), y_map, config.UNLABELED)
+    train_mask, test_mask = split.split_blocks(st.shape, block_px=args.block_px, seed=args.seed,
+                                               labels=labels_usable)
     y = y_map.ravel()
     labelled = (y != config.UNLABELED) & usable
     tr = train.sample_per_class(y, labelled & train_mask.ravel(), args.max_per_class, args.seed)
@@ -92,11 +95,18 @@ def _cmd_run(args: argparse.Namespace) -> None:
     if tr.size == 0 or te.size == 0:
         sys.exit("not enough labelled pixels in train or test blocks")
     model = train.fit(X[tr], y[tr], seed=args.seed)
-    metrics = train.evaluate(model, X[te], y[te])
-    print(f"test: accuracy {metrics['overall_accuracy']:.3f}, macro F1 {metrics['macro_f1']:.3f}, "
-          f"kappa {metrics['kappa']:.3f}")
 
-    class_map, confidence = train.predict_map(model, X, usable, st.shape)
+    # Map, then the specks clean-up; the scores come from the final map, so they
+    # describe exactly what the app shows. The filter sees predictions, not labels.
+    class_map, confidence = train.predict_map(model, X, usable, st.shape, forbid=forbid)
+    raw = train.evaluate(None, None, y[te], pred=class_map.ravel()[te])
+    class_map = train.majority_filter(class_map, size=args.majority)
+    class_map = train.sieve_small_patches(class_map, args.min_patch_px)
+    metrics = train.evaluate(None, None, y[te], pred=class_map.ravel()[te])
+    metrics["before_specks_cleanup"] = {k: raw[k] for k in ("overall_accuracy", "macro_f1", "kappa")}
+    print(f"test: accuracy {metrics['overall_accuracy']:.3f}, macro F1 {metrics['macro_f1']:.3f}, "
+          f"kappa {metrics['kappa']:.3f}  (before the specks clean-up: "
+          f"{raw['overall_accuracy']:.3f} / {raw['macro_f1']:.3f} / {raw['kappa']:.3f})")
 
     # Outputs.
     out_dir = Path(args.out_dir) / f"{st.site}_{args.stack}"
@@ -109,10 +119,21 @@ def _cmd_run(args: argparse.Namespace) -> None:
         "stack_file": _rel(path),
         "dates": st.dates, "dates_left_out": st.dropped, "crid_rule": args.crid,
         "label_sources": sources,
-        "water_threshold_hh_db": dark_db,
+        "water_threshold_hh_db": dark_db, "water_threshold_rule": dark_rule,
+        "speckle_filter_px": args.filter_px,
+        "burned_min_hv_drop_db": args.burned_min_hv_drop if args.burned_min_hv_drop > 0 else None,
+        "majority_filter_px": args.majority, "min_patch_px": args.min_patch_px,
+        "scores_are": "agreement with the labels (WorldCover, JRC, CORINE, EFFIS, drawn fields) "
+                      "on held-out 1 km blocks, not ground-truth accuracy",
         "split": {"block_px": args.block_px, "gap_px": config.GAP_PX,
-                  "test_fraction": config.TEST_FRACTION, "seed": args.seed},
+                  "test_fraction": config.TEST_FRACTION, "seed": args.seed, "balanced_by_class": True,
+                  "test_share_per_class": {
+                      n: round(float((labels_usable[test_mask] == i).sum() / max(1, (labels_usable == i).sum())), 3)
+                      for i, n in enumerate(config.CLASSES)}},
         "train_pixels": int(tr.size),
+        "model_file": "model.txt",
+        "model_classes": [config.CLASSES[int(c)] for c in model.classes_],
+        "feature_names": features.FEATURE_NAMES,
         "label_pixels": counts,
         "sea_pixels": int(sea.sum()),
         "class_area_ha": train.class_areas_ha(class_map),
@@ -121,6 +142,10 @@ def _cmd_run(args: argparse.Namespace) -> None:
     }
     export.write_json(run_info, out_dir / "metrics.json")
     export.write_json(importance, out_dir / "feature_importance.json")
+    # The trained model itself, reusable without training again:
+    # lightgbm.Booster(model_file=...).predict(X) gives one column per config.CLASSES entry
+    # in the order of model.classes_ (also in metrics.json as "model_classes").
+    model.booster_.save_model(str(out_dir / "model.txt"))
     print("top features:", ", ".join(f"{d['feature']} {d['gain_share']:.0%}" for d in importance[:5]))
 
     if st.synthetic:
@@ -135,7 +160,7 @@ def _cmd_run(args: argparse.Namespace) -> None:
             {**base, "layer": "class", "file": _rel(paths["class"]), "classes": config.CLASSES},
             {**base, "layer": "confidence", "file": _rel(paths["confidence"]),
              "units": "percent, highest class probability"},
-        ])
+        ], key_fields=export.ML_MANIFEST_KEY)
         print(f"manifest updated: {_rel(Path(args.manifest))}")
     print(f"outputs in {_rel(out_dir)}")
 
@@ -161,6 +186,15 @@ def main(argv: list[str] | None = None) -> None:
     r.add_argument("--polygons", help="hand-drawn GeoJSON/GeoPackage with a `class` column "
                                       "(default data/labels/<site>_drawn.geojson)")
     r.add_argument("--sea", help="override the default sea mask file (1 = sea)")
+    r.add_argument("--corine", help="override the default CORINE 2018 polygons (python -m pipeline.ml.corine)")
+    r.add_argument("--filter-px", type=int, default=data.FILTER_PX,
+                   help=f"speckle filter window in pixels, 0 = off (default {data.FILTER_PX})")
+    r.add_argument("--burned-min-hv-drop", type=float, default=1.0,
+                   help="only call a pixel burned if HV dropped this many dB and stayed down; 0 = off")
+    r.add_argument("--majority", type=int, default=3,
+                   help="majority filter window on the class map (clears single-pixel specks); 1 = off")
+    r.add_argument("--min-patch-px", type=int, default=5,
+                   help="patches smaller than this many pixels take their largest neighbour's class; 1 = off")
     r.add_argument("--truth-var", help="use a label variable inside the stack (fake stacks only)")
     r.add_argument("--stack-dir", default=str(config.STACK_DIR))
     r.add_argument("--out-dir", default=str(config.ML_OUT_DIR))

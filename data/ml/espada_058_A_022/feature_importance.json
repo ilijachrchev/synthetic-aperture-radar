@@ -1,0 +1,118 @@
+[
+  {
+    "feature": "hv_min",
+    "gain_share": 0.2718881567099389
+  },
+  {
+    "feature": "hv_step_drop",
+    "gain_share": 0.11969491158723768
+  },
+  {
+    "feature": "hv_max",
+    "gain_share": 0.09660963657618957
+  },
+  {
+    "feature": "hh_mean",
+    "gain_share": 0.06537327422447847
+  },
+  {
+    "feature": "hh_min",
+    "gain_share": 0.057791988402347165
+  },
+  {
+    "feature": "hh_max",
+    "gain_share": 0.05542313633183309
+  },
+  {
+    "feature": "hv_late_minus_early",
+    "gain_share": 0.04954248952607502
+  },
+  {
+    "feature": "hv_mean",
+    "gain_share": 0.04331686198039862
+  },
+  {
+    "feature": "hh_late_minus_early",
+    "gain_share": 0.02850235402890447
+  },
+  {
+    "feature": "hv_minus_hh_mean",
+    "gain_share": 0.023217431288475268
+  },
+  {
+    "feature": "hh_drop_size",
+    "gain_share": 0.015564493344359713
+  },
+  {
+    "feature": "hh_step_drop",
+    "gain_share": 0.015077941468248207
+  },
+  {
+    "feature": "hh_rise_doy",
+    "gain_share": 0.014713478349246415
+  },
+  {
+    "feature": "hh_rise_size",
+    "gain_share": 0.014520762419520224
+  },
+  {
+    "feature": "hh_drop_doy",
+    "gain_share": 0.01414414302694218
+  },
+  {
+    "feature": "hv_rise_doy",
+    "gain_share": 0.014047359630818658
+  },
+  {
+    "feature": "hh_std",
+    "gain_share": 0.012363747169324615
+  },
+  {
+    "feature": "hv_minus_hh_std",
+    "gain_share": 0.011255247764327254
+  },
+  {
+    "feature": "hv_step_doy",
+    "gain_share": 0.011132005659374613
+  },
+  {
+    "feature": "hv_drop_size",
+    "gain_share": 0.011028866850464093
+  },
+  {
+    "feature": "hv_std",
+    "gain_share": 0.011006623246043127
+  },
+  {
+    "feature": "hv_rise_size",
+    "gain_share": 0.010596111070726173
+  },
+  {
+    "feature": "hh_variability",
+    "gain_share": 0.010019047612731855
+  },
+  {
+    "feature": "hv_variability",
+    "gain_share": 0.008231906913104313
+  },
+  {
+    "feature": "hv_drop_doy",
+    "gain_share": 0.008218050696501063
+  },
+  {
+    "feature": "hh_step_doy",
+    "gain_share": 0.005898495494267911
+  },
+  {
+    "feature": "dark_fraction",
+    "gain_share": 0.0008214786281213769
+  },
+  {
+    "feature": "n_valid_hh",
+    "gain_share": 0.0
+  },
+  {
+    "feature": "n_valid_hv",
+    "gain_share": 0.0
+  }
+]

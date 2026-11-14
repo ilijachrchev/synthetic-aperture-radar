@@ -22,6 +22,7 @@ CLASSES: list[str] = [
     "forest",
     "burned",
     "other_crops_shrub",
+    "orchard",  # appended, so the first six indices stay what the app already reads
 ]
 CLASS_INDEX: dict[str, int] = {name: i for i, name in enumerate(CLASSES)}
 
@@ -33,6 +34,7 @@ CLASS_COLORS: dict[str, tuple[int, int, int]] = {
     "forest": (30, 120, 50),
     "burned": (60, 40, 30),
     "other_crops_shrub": (170, 200, 120),
+    "orchard": (240, 140, 40),
 }
 
 UNLABELED = -1   # label array value for "no training label"
@@ -52,6 +54,17 @@ JRC_PERMANENT_MIN = 90  # JRC occurrence (%) at or above which water is permanen
 JRC_NODATA = 255        # data/context/<site>_jrc_occurrence_20m.tif
 WORLDCOVER_NODATA = 0   # data/context/<site>_worldcover_2021_20m.tif
 WORLDCOVER_WATER = 80
+
+# CORINE Land Cover 2018 codes (data/labels/<site>_clc2018.geojson, pipeline.ml.corine).
+# 72 % of WorldCover tree cover at Albufera lies in CORINE fruit orchards (Ilija, PR #7),
+# so with CORINE present, tree cover is split: orchard codes -> orchard, forest
+# codes -> forest, anything else stays unlabeled. 24x (mixed farmland) is left out:
+# its trees can be either.
+CORINE_RICE = ("213",)
+CORINE_ORCHARD = ("221", "222", "223")   # vineyards, fruit trees, olive groves
+CORINE_FOREST = ("311", "312", "313")    # broad-leaved, coniferous, mixed forest
+WORLDCOVER_TREE = 10
+WORLDCOVER_BUILT = 50
 
 # ESA WorldCover 2021 codes -> our classes. Codes not listed stay unlabeled:
 # 70 snow, 80 water (handled through JRC), 90 herbaceous wetland, 95 mangrove,

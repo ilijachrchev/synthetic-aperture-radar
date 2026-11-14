@@ -19,9 +19,11 @@ flowchart LR
     G["NISAR GCOV<br/>HH · HV · 20 m"] --> S["Shared NISAR stack<br/>per site, every date"]
     S --> CV["🖼️ CV model<br/>Ilija Chrchev"]
     S --> ML["🧮 ML model<br/>Luka Georgieski"]
-    U["NISAR GUNW<br/>ground motion"] -. planned validation .-> P["📈 Prediction model<br/>Zhivko Stoimchev"]
+    U["NISAR GUNW<br/>ground motion"] -. check .-> P["📈 Prediction model<br/>Zhivko Stoimchev"]
     E["EGMS history"] -. import pending .-> P
-    N["GNSS LOR1<br/>implemented baseline"] --> P
+    N["GNSS LOR1"] --> P
+    R["Rain: ECMWF IFS<br/>Open-Meteo"] --> P
+    S -. NISAR check .-> P
     D["Sentinel-1 water maps<br/>OPERA DSWx-S1"] -. labels .-> CV
     D -. history .-> P
     F["EMSR935 · EFFIS"] -. labels .-> CV
@@ -64,11 +66,11 @@ CV and ML read the same NISAR stack but answer different questions. Prediction u
 | | |
 |---|---|
 | **Sites** | Albufera region (rice, wetland, orchards, urban) · Serra d'Espadà (forest and burn) |
-| **Data** | The shared NISAR GCOV stack: every date, HH and HV in dB, on the EPSG:32630 grid |
-| **Labels** | ESA WorldCover land cover (10 m) · JRC Global Surface Water v1.5 occurrence, 1984 to 2024 (separates permanent water from seasonal water) · EFFIS burnt area · polygons drawn in QGIS for rice paddies and open water |
-| **Processing** | One row per pixel with time-series features: mean, std, min and max of HH and HV · HH/HV ratio · variability · date and size of the biggest drop and rise · number of dark (water) dates. Train and test on separate map blocks so neighbouring pixels do not leak |
-| **Model** | LightGBM or XGBoost. Feature importance shows which polarization and which part of the season matter most |
-| **Classes** | Rice paddy · permanent water · urban · forest · burned · other crops and shrub |
+| **Data** | The shared NISAR GCOV stack (`data/stack/<site>_<stack>.nc`): every date, HH and HV, 5×5 speckle filter in linear power, then dB, on the EPSG:32630 grid |
+| **Labels** | ESA WorldCover land cover (10 m) · JRC Global Surface Water v1.5 occurrence, 1984 to 2024 (separates permanent water from seasonal water) · CORINE Land Cover 2018: rice fields (213) and orchard vs forest for WorldCover tree cover · EFFIS burnt area · 50 rice fields drawn in QGIS (all inside CORINE rice) · the sea is left out |
+| **Processing** | One row per pixel with 29 time-series features: mean, std, min and max of HH and HV · HH/HV ratio · variability · date and size of the biggest drop and rise · lasting change (late minus early season, biggest drop of the mean after a date vs before it) · share of dark (water) dates. Train and test on separate 1 km blocks, balanced so every class gets about a quarter of its pixels in test |
+| **Model** | LightGBM. Feature importance shows which polarization and which part of the season matter most. "Burned" is only allowed where HV dropped by 1.0 dB or more and stayed down. A 3×3 majority filter and a 5-pixel minimum patch clean specks off the map |
+| **Classes** | Rice paddy · permanent water · urban · forest · burned · other crops and shrub · orchard |
 | **Check** | Confusion matrix and per-class F1 on held-out blocks |
 | **Delivers** | Class map COG + confidence COG + `metrics.json` + feature importance |
 | **Done when** | Both sites are classified, scored and listed in the manifest |
@@ -79,31 +81,40 @@ CV and ML read the same NISAR stack but answer different questions. Prediction u
 
 **Owner:** Zhivko Stoimchev (`@zstoimchev`)
 
-> 📈 Forecasts what comes next, always with a range and a score against a simple baseline.
+> 📈 Forecasts what comes next, always with a range and a score against a simple baseline. Code in [`pipeline/prediction/`](../pipeline/prediction/).
 
-**Implemented first milestone:** [Lorca forecasting pipeline](../pipeline/prediction/README.md), using public LOR1 GNSS data, three baselines, chronological evaluation, empirical ranges and frontend-ready exports. EGMS CSV ingestion is tested; actual EGMS import, NISAR validation and the Albufera forecast remain pending.
+**Status (14 Nov 2026):** three forecasts built, scored and committed with a date (#8, #14, #15, #17), plus a NISAR check of their inputs.
 
-**A. Ground sinking in Lorca (Alto Guadalentín)**
+| | Forecast | Data | Held-out result | NISAR check |
+|---|---|---|---|---|
+| **A** | [Lorca ground sinking](../pipeline/prediction/README.md) | GNSS LOR1 (NGL), daily since 2009 | Selection on 2023 picks persistence ("no further change"). On the 2025 test, linear trend beats persistence by 14 % at 24 days and 8 % at 36 days, trend + annual cycle by 8 % and 1 %. Reported, not switched to. Sinking slowed from about 95 to about 40 mm/yr after 2023 | ⚠️ Not yet: 13 GUNW pairs, Jun–Oct. Descending −53 vs GNSS −48 mm/yr, ascending +18 vs −35; per-date atmosphere ≈ 6–13 mm ≈ the signal so far. Descending should resolve the rate at 3σ by about mid-Nov. The asc + desc vertical/east split (6 common dates) gives −2 vs −36 mm/yr: noise-bound too |
+| **B** | [Albufera rice-field flooded area](../pipeline/prediction/albufera/README.md) | DSWx-S1, 413 passes since Aug 2024; CORINE rice mask, 14,791 ha | Climatology beats persistence by +42 / +60 / +64 % at 16 / 28 / 40 days on the 2026 season; 80 % ranges hold 73–80 % | ✅ NISAR and DSWx-S1 rise together in the autumn flooding |
+| **C** | [Rain-threshold flood alert](../pipeline/prediction/flood/README.md) | IFS 9 km rain (Open-Meteo) + DSWx-S1, Albufera and Pego-Oliva | Held-out DANA: 2 of 2 caught, 0 false alarms in the surrounding weeks (too few events for a skill claim). Replay: amber 2–3 days ahead, never red | ✅ NISAR new water lies 87 % inside the official DANA outline |
 
-| | |
-|---|---|
-| **Data** | EGMS Ortho vertical motion, 100 m grid, 2020 to 2025 (free EU Login) · GNSS station LOR1 (Nevada Geodetic Laboratory) · NISAR GUNW track 167 D, 25 Jun to 11 Oct 2026, 7 pairs |
-| **Processing** | Current: one vertical-displacement series, explicit units/reference date, missing observations retained as gaps. Planned GUNW integration: verify phase sign/wavelength, corrections and network connectivity, then compare in a compatible line-of-sight geometry and reference. MintPy requires GUNW HDF5 metadata, not only Harmony COGs |
-| **Model** | Persistence, linear trend, and trend + annual sine/cosine. Current ranges use chronological calibration errors; nominal coverage is evaluated, not guaranteed |
-| **Check** | Rolling-origin forecasts with 2023 development, 2024 calibration and a held-out 2025 test by default. Report actual scored dates/counts. Account for stale observations using effective leads. NISAR comparison remains pending |
-| **Delivers** | Forecast JSON per point (point estimate, estimated 80% and 95% ranges) · backtest CSV/scores · PNG/SVG chart. Later: forecast vs corrected NISAR comparison |
+**NISAR check** ([`nisar_check.py`](../pipeline/prediction/nisar_check.py), stacks `albufera_066_D_069` and `pego_oliva_066_D_069`, CV baseline from `pipeline.cv`):
 
-**B. Flooded area in the Albufera**
+- **Albufera rice, two NISAR tracks** (066 D evening, 058 A morning, 11 dates each; Sentinel-1 paired only within 2 h, as `pipeline.cv.evaluate`): share of the rice mask darker than −15 dB on NISAR vs the share DSWx-S1 maps as flooded.
+  - **Autumn, the flooding the forecast predicts:** 066 D 6 → 14 → 31 % vs DSWx-S1 2.5 → 10 → 22 %; 058 A 2 → 8 → 31 % vs 3 → 10 → 32 %, on 4, 16 and 28 Oct. On 28 Oct the two NISAR tracks agree (31.0 / 30.8 %); DSWx-S1 differs by 10 points between its morning and evening pass.
+  - **Why −15 dB** (fixed before the check, `pipeline.ml` fallback): it is confirmed on 058 A, which played no part in choosing it, and −18 dB breaks at the 28 Oct peak (10.3 / 1.6 % dark). Sensitivity, recomputed by `nisar_check.py` (Ilija's analysis in discussion #9):
 
-| | |
-|---|---|
-| **Data** | OPERA DSWx-S1 water history since Aug 2024 (two seasons) · NISAR dates for the current state. Uses the Sentinel-1 maps, not the CV masks, so it never waits on CV |
-| **Processing** | Flooded hectares per date inside the rice area |
-| **Model** | Day-of-year baseline + the current anomaly |
-| **Check** | Leave one season out · skill against persistence. Forecasts for the next passes are committed to git before that data is published |
-| **Delivers** | Forecast JSON (median and range per upcoming pass) + skill score |
+    | Threshold | 066 D, r (5 dates) | 066 D, r without June (4) | 058 A, r (10 dates) | 058 A, mean gap |
+    |---|---:|---:|---:|---:|
+    | −14 dB | 0.31 | 0.996 | 0.92 | 3.7 points |
+    | **−15 dB** | **0.34** | **0.997** | **0.98** | **1.3 points** |
+    | −16 dB | 0.39 | 0.998 | 0.98 | 2.5 points |
+    | −17 dB | 0.45 | 0.996 | 0.97 | 3.8 points |
+    | −18 dB | 0.65 | 0.984 | 0.96 | 4.5 points |
 
-**Done when:** both forecasts have ranges, backtest scores and a committed, timestamped forecast file.
+    Non-rice cropland stays at ≤ 1.7 % dark at −15 dB on both tracks.
+  - **June, an open question:** on 18 Jun both tracks see 44–47 % of the rice dark while DSWx-S1 sees about 2 %; it fades by late July on both. That fits water among young rice that C-band misses (paddies are flooded from May sowing to the August drainage), but it is not confirmed on the ground. It is a sensor difference, not a threshold effect.
+- **Pego-Oliva DANA, 16 → 28 Oct:** 212 ha of new NISAR water inside the EMSR935 mapped areas, **87 %** of it inside the official flood outline (62–93 % over ±1 dB); same region as `pipeline.cv.evaluate`, so it matches `cv_baseline.json`. DSWx-S1 inside the outline, on the 18 UTC passes: 234 → 408 ha.
+
+**Done when:** every forecast has ranges, backtest scores and a committed, timestamped forecast file. ✅ Met for A, B and C.
+
+**Still open:**
+- **Lorca with EGMS** (2020–2025, gap-free; needs an EU Login download, see the prediction README). This is the fair test of trend vs persistence.
+- **Lorca vs NISAR GUNW:** built (`pipeline/prediction/lorca_gunw.py`); re-run as new 12-day pairs reach CMR. See the Lorca README for the numbers and the one post-hoc change (plane + height detrend).
+- **Verifying the committed Albufera forecast** once the 26 Nov, 8 Dec and 20 Dec passes are published.
 
 ---
 

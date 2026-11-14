@@ -11,14 +11,21 @@ from rasterio.transform import from_origin
 from pipeline.prediction.albufera import area, forecast as fc, history, mask
 
 
-def test_rice_mask_drops_sea_lagoon_and_towns():
-    wc = np.array([[40, 40, 50, 80, 90]])
-    jrc = np.array([[50, 0, 50, 95, 30]])   # rice, never water, town, lagoon, wetland
-    sea = np.array([[0, 0, 0, 0, 0]])
-    assert mask.rice_mask(wc, jrc, sea).tolist() == [[True, False, False, False, True]]
-    assert not mask.rice_mask(wc, jrc, np.ones_like(sea)).any()
+def test_rice_mask_keeps_deep_or_flooded_corine_rice_only():
+    #          deep   edge+seasonal  edge+never-water  town  lagoon  not-CORINE  sea
+    rice = np.array([[1, 1, 1, 1, 1, 0, 1]], bool)
+    deep = np.array([[1, 0, 0, 1, 1, 0, 1]], bool)
+    wc = np.array([[40, 40, 40, 50, 80, 40, 80]])
+    jrc = np.array([[0, 40, 0, 40, 95, 40, 95]])
+    sea = np.array([[0, 0, 0, 0, 0, 0, 1]])
+    assert mask.rice_mask(rice, deep, wc, jrc, sea).tolist() == [[True, True, False, False, False, False, False]]
     with pytest.raises(ValueError):
-        mask.rice_mask(wc, jrc[:, :2], sea)
+        mask.rice_mask(rice, deep, wc, jrc[:, :2], sea)
+
+
+def test_jrc_no_data_is_not_permanent_water():
+    one = np.ones((1, 1), bool)
+    assert mask.rice_mask(one, one, np.array([[40]]), np.array([[255]]), np.array([[0]])).all()
 
 
 def test_summarize_pass_counts_flooded_classes_and_unobserved():

@@ -13,8 +13,786 @@
     "chart": "data/prediction/lorca/chart.png",
     "source_type": "gnss",
     "units": "mm",
-    "issued_at_utc": "2026-11-13T23:37:10+00:00",
-    "data_cutoff": "2026-10-17"
+    "issued_at_utc": "2026-11-14T12:03:52+00:00",
+    "data_cutoff": "2026-10-31"
+  },
+  {
+    "model": "prediction",
+    "site": "albufera",
+    "stack": "dswx-s1",
+    "layer": "flooded_area",
+    "date": "2026-11-14",
+    "id": "prediction-albufera-flooded-area",
+    "file": "data/prediction/albufera/forecast.json",
+    "metrics": "data/prediction/albufera/metrics.json",
+    "observations": "data/prediction/albufera/water_area.csv",
+    "chart": "data/prediction/albufera/chart.png",
+    "source_type": "dswx-s1",
+    "units": "ha",
+    "issued_at_utc": "2026-11-14T11:33:20+00:00",
+    "data_cutoff": "2026-11-10"
+  },
+  {
+    "model": "prediction",
+    "site": "albufera",
+    "stack": "open-meteo-ifs",
+    "layer": "flood_alert",
+    "date": "2026-11-14",
+    "id": "prediction-flood-alert-albufera",
+    "file": "data/prediction/flood/forecast.json",
+    "metrics": "data/prediction/flood/metrics.json",
+    "observations": "data/prediction/flood/water_albufera.csv",
+    "source_type": "open-meteo + dswx-s1",
+    "alert": "green",
+    "issued_at_utc": "2026-11-14T12:19:56+00:00"
+  },
+  {
+    "model": "prediction",
+    "site": "pego_oliva",
+    "stack": "open-meteo-ifs",
+    "layer": "flood_alert",
+    "date": "2026-11-14",
+    "id": "prediction-flood-alert-pego_oliva",
+    "file": "data/prediction/flood/forecast.json",
+    "metrics": "data/prediction/flood/metrics.json",
+    "observations": "data/prediction/flood/water_pego_oliva.csv",
+    "source_type": "open-meteo + dswx-s1",
+    "alert": "green",
+    "issued_at_utc": "2026-11-14T12:19:56+00:00"
+  },
+  {
+    "model": "ml",
+    "site": "albufera",
+    "stack": "066_D_069",
+    "date": "2026-06-18/2026-10-28",
+    "source": [
+      {
+        "date": "2026-06-18",
+        "granule_ur": "NISAR_L2_PR_GCOV_023_066_D_069_2005_DHDH_M_20260618T185321_20260618T185356_P05023_N_F_J_001",
+        "crid": "P05023",
+        "maturity": "PROVISIONAL",
+        "pols": "HH+HV"
+      },
+      {
+        "date": "2026-06-30",
+        "granule_ur": "NISAR_L2_PR_GCOV_024_066_D_069_2005_DHDH_M_20260630T185321_20260630T185356_P05023_N_F_J_001",
+        "crid": "P05023",
+        "maturity": "PROVISIONAL",
+        "pols": "HH+HV"
+      },
+      {
+        "date": "2026-07-12",
+        "granule_ur": "NISAR_L2_PR_GCOV_025_066_D_069_2005_DHDH_M_20260712T185320_20260712T185355_P05023_N_F_J_001",
+        "crid": "P05023",
+        "maturity": "PROVISIONAL",
+        "pols": "HH+HV"
+      },
+      {
+        "date": "2026-07-24",
+        "granule_ur": "NISAR_L2_PR_GCOV_026_066_D_069_2005_DHDH_M_20260724T185319_20260724T185354_P05023_N_F_J_001",
+        "crid": "P05023",
+        "maturity": "PROVISIONAL",
+        "pols": "HH+HV"
+      },
+      {
+        "date": "2026-08-17",
+        "granule_ur": "NISAR_L2_PR_GCOV_028_066_D_069_2005_DHDH_M_20260817T185318_20260817T185353_P05023_N_F_J_001",
+        "crid": "P05023",
+        "maturity": "PROVISIONAL",
+        "pols": "HH+HV"
+      },
+      {
+        "date": "2026-08-29",
+        "granule_ur": "NISAR_L2_PR_GCOV_029_066_D_069_2005_DHDH_M_20260829T185318_20260829T185353_P05023_N_F_J_001",
+        "crid": "P05023",
+        "maturity": "PROVISIONAL",
+        "pols": "HH+HV"
+      },
+      {
+        "date": "2026-09-10",
+        "granule_ur": "NISAR_L2_PR_GCOV_030_066_D_069_2005_DHDH_M_20260910T185318_20260910T185353_P05023_N_F_J_001",
+        "crid": "P05023",
+        "maturity": "PROVISIONAL",
+        "pols": "HH+HV"
+      },
+      {
+        "date": "2026-09-22",
+        "granule_ur": "NISAR_L2_PR_GCOV_031_066_D_069_2005_DHDH_M_20260922T185318_20260922T185353_P05023_N_F_J_001",
+        "crid": "P05023",
+        "maturity": "PROVISIONAL",
+        "pols": "HH+HV"
+      },
+      {
+        "date": "2026-10-04",
+        "granule_ur": "NISAR_L2_PR_GCOV_032_066_D_069_2005_DHDH_M_20261004T185318_20261004T185353_P05023_N_F_J_001",
+        "crid": "P05023",
+        "maturity": "PROVISIONAL",
+        "pols": "HH+HV"
+      },
+      {
+        "date": "2026-10-16",
+        "granule_ur": "NISAR_L2_PR_GCOV_033_066_D_069_2005_DHDH_M_20261016T185318_20261016T185353_P05023_N_F_J_001",
+        "crid": "P05023",
+        "maturity": "PROVISIONAL",
+        "pols": "HH+HV"
+      },
+      {
+        "date": "2026-10-28",
+        "granule_ur": "NISAR_L2_PR_GCOV_034_066_D_069_2005_DHDH_M_20261028T185318_20261028T185353_P05036_N_F_J_001",
+        "crid": "P05036",
+        "maturity": "VALIDATED",
+        "pols": "HH+HV"
+      }
+    ],
+    "valid_fraction": 0.6802513761634013,
+    "score": {
+      "macro_f1": 0.7907868068322251,
+      "overall_accuracy": 0.806735253957739
+    },
+    "layer": "class",
+    "file": "data/ml/albufera_066_D_069/class.tif",
+    "classes": [
+      "rice_paddy",
+      "permanent_water",
+      "urban",
+      "forest",
+      "burned",
+      "other_crops_shrub",
+      "orchard"
+    ]
+  },
+  {
+    "model": "ml",
+    "site": "albufera",
+    "stack": "066_D_069",
+    "date": "2026-06-18/2026-10-28",
+    "source": [
+      {
+        "date": "2026-06-18",
+        "granule_ur": "NISAR_L2_PR_GCOV_023_066_D_069_2005_DHDH_M_20260618T185321_20260618T185356_P05023_N_F_J_001",
+        "crid": "P05023",
+        "maturity": "PROVISIONAL",
+        "pols": "HH+HV"
+      },
+      {
+        "date": "2026-06-30",
+        "granule_ur": "NISAR_L2_PR_GCOV_024_066_D_069_2005_DHDH_M_20260630T185321_20260630T185356_P05023_N_F_J_001",
+        "crid": "P05023",
+        "maturity": "PROVISIONAL",
+        "pols": "HH+HV"
+      },
+      {
+        "date": "2026-07-12",
+        "granule_ur": "NISAR_L2_PR_GCOV_025_066_D_069_2005_DHDH_M_20260712T185320_20260712T185355_P05023_N_F_J_001",
+        "crid": "P05023",
+        "maturity": "PROVISIONAL",
+        "pols": "HH+HV"
+      },
+      {
+        "date": "2026-07-24",
+        "granule_ur": "NISAR_L2_PR_GCOV_026_066_D_069_2005_DHDH_M_20260724T185319_20260724T185354_P05023_N_F_J_001",
+        "crid": "P05023",
+        "maturity": "PROVISIONAL",
+        "pols": "HH+HV"
+      },
+      {
+        "date": "2026-08-17",
+        "granule_ur": "NISAR_L2_PR_GCOV_028_066_D_069_2005_DHDH_M_20260817T185318_20260817T185353_P05023_N_F_J_001",
+        "crid": "P05023",
+        "maturity": "PROVISIONAL",
+        "pols": "HH+HV"
+      },
+      {
+        "date": "2026-08-29",
+        "granule_ur": "NISAR_L2_PR_GCOV_029_066_D_069_2005_DHDH_M_20260829T185318_20260829T185353_P05023_N_F_J_001",
+        "crid": "P05023",
+        "maturity": "PROVISIONAL",
+        "pols": "HH+HV"
+      },
+      {
+        "date": "2026-09-10",
+        "granule_ur": "NISAR_L2_PR_GCOV_030_066_D_069_2005_DHDH_M_20260910T185318_20260910T185353_P05023_N_F_J_001",
+        "crid": "P05023",
+        "maturity": "PROVISIONAL",
+        "pols": "HH+HV"
+      },
+      {
+        "date": "2026-09-22",
+        "granule_ur": "NISAR_L2_PR_GCOV_031_066_D_069_2005_DHDH_M_20260922T185318_20260922T185353_P05023_N_F_J_001",
+        "crid": "P05023",
+        "maturity": "PROVISIONAL",
+        "pols": "HH+HV"
+      },
+      {
+        "date": "2026-10-04",
+        "granule_ur": "NISAR_L2_PR_GCOV_032_066_D_069_2005_DHDH_M_20261004T185318_20261004T185353_P05023_N_F_J_001",
+        "crid": "P05023",
+        "maturity": "PROVISIONAL",
+        "pols": "HH+HV"
+      },
+      {
+        "date": "2026-10-16",
+        "granule_ur": "NISAR_L2_PR_GCOV_033_066_D_069_2005_DHDH_M_20261016T185318_20261016T185353_P05023_N_F_J_001",
+        "crid": "P05023",
+        "maturity": "PROVISIONAL",
+        "pols": "HH+HV"
+      },
+      {
+        "date": "2026-10-28",
+        "granule_ur": "NISAR_L2_PR_GCOV_034_066_D_069_2005_DHDH_M_20261028T185318_20261028T185353_P05036_N_F_J_001",
+        "crid": "P05036",
+        "maturity": "VALIDATED",
+        "pols": "HH+HV"
+      }
+    ],
+    "valid_fraction": 0.6802513761634013,
+    "score": {
+      "macro_f1": 0.7907868068322251,
+      "overall_accuracy": 0.806735253957739
+    },
+    "layer": "confidence",
+    "file": "data/ml/albufera_066_D_069/confidence.tif",
+    "units": "percent, highest class probability"
+  },
+  {
+    "model": "ml",
+    "site": "albufera",
+    "stack": "058_A_021",
+    "date": "2026-06-18/2026-10-16",
+    "source": [
+      {
+        "date": "2026-06-18",
+        "granule_ur": "NISAR_L2_PR_GCOV_023_058_A_021_2005_DHDH_A_20260618T050655_20260618T050722_P05023_N_F_J_001",
+        "crid": "P05023",
+        "maturity": "PROVISIONAL",
+        "pols": "HH+HV"
+      },
+      {
+        "date": "2026-06-30",
+        "granule_ur": "NISAR_L2_PR_GCOV_024_058_A_021_2005_DHDH_A_20260630T050650_20260630T050721_P05023_N_F_J_001",
+        "crid": "P05023",
+        "maturity": "PROVISIONAL",
+        "pols": "HH+HV"
+      },
+      {
+        "date": "2026-07-12",
+        "granule_ur": "NISAR_L2_PR_GCOV_025_058_A_021_2005_DHDH_A_20260712T050653_20260712T050721_P05023_N_F_J_001",
+        "crid": "P05023",
+        "maturity": "PROVISIONAL",
+        "pols": "HH+HV"
+      },
+      {
+        "date": "2026-07-24",
+        "granule_ur": "NISAR_L2_PR_GCOV_026_058_A_021_2005_DHDH_A_20260724T050653_20260724T050720_P05023_N_F_J_001",
+        "crid": "P05023",
+        "maturity": "PROVISIONAL",
+        "pols": "HH+HV"
+      },
+      {
+        "date": "2026-08-17",
+        "granule_ur": "NISAR_L2_PR_GCOV_028_058_A_021_2005_DHDH_A_20260817T050652_20260817T050719_P05023_N_F_J_001",
+        "crid": "P05023",
+        "maturity": "PROVISIONAL",
+        "pols": "HH+HV"
+      },
+      {
+        "date": "2026-08-29",
+        "granule_ur": "NISAR_L2_PR_GCOV_029_058_A_021_2005_DHDH_A_20260829T050652_20260829T050719_P05023_N_F_J_001",
+        "crid": "P05023",
+        "maturity": "PROVISIONAL",
+        "pols": "HH+HV"
+      },
+      {
+        "date": "2026-09-10",
+        "granule_ur": "NISAR_L2_PR_GCOV_030_058_A_021_2005_DHDH_A_20260910T050651_20260910T050718_P05023_N_F_J_001",
+        "crid": "P05023",
+        "maturity": "PROVISIONAL",
+        "pols": "HH+HV"
+      },
+      {
+        "date": "2026-09-22",
+        "granule_ur": "NISAR_L2_PR_GCOV_031_058_A_021_2005_SHSH_A_20260922T050651_20260922T050719_P05023_N_F_J_001",
+        "crid": "P05023",
+        "maturity": "PROVISIONAL",
+        "pols": "HH"
+      },
+      {
+        "date": "2026-10-04",
+        "granule_ur": "NISAR_L2_PR_GCOV_032_058_A_021_2005_DHDH_A_20261004T050652_20261004T050719_P05023_N_F_J_001",
+        "crid": "P05023",
+        "maturity": "PROVISIONAL",
+        "pols": "HH+HV"
+      },
+      {
+        "date": "2026-10-16",
+        "granule_ur": "NISAR_L2_PR_GCOV_033_058_A_021_2005_DHDH_A_20261016T050652_20261016T050719_P05023_N_F_J_001",
+        "crid": "P05023",
+        "maturity": "PROVISIONAL",
+        "pols": "HH+HV"
+      }
+    ],
+    "valid_fraction": 0.6802423224568138,
+    "score": {
+      "macro_f1": 0.764348882821332,
+      "overall_accuracy": 0.8006883579245928
+    },
+    "layer": "class",
+    "file": "data/ml/albufera_058_A_021/class.tif",
+    "classes": [
+      "rice_paddy",
+      "permanent_water",
+      "urban",
+      "forest",
+      "burned",
+      "other_crops_shrub",
+      "orchard"
+    ]
+  },
+  {
+    "model": "ml",
+    "site": "albufera",
+    "stack": "058_A_021",
+    "date": "2026-06-18/2026-10-16",
+    "source": [
+      {
+        "date": "2026-06-18",
+        "granule_ur": "NISAR_L2_PR_GCOV_023_058_A_021_2005_DHDH_A_20260618T050655_20260618T050722_P05023_N_F_J_001",
+        "crid": "P05023",
+        "maturity": "PROVISIONAL",
+        "pols": "HH+HV"
+      },
+      {
+        "date": "2026-06-30",
+        "granule_ur": "NISAR_L2_PR_GCOV_024_058_A_021_2005_DHDH_A_20260630T050650_20260630T050721_P05023_N_F_J_001",
+        "crid": "P05023",
+        "maturity": "PROVISIONAL",
+        "pols": "HH+HV"
+      },
+      {
+        "date": "2026-07-12",
+        "granule_ur": "NISAR_L2_PR_GCOV_025_058_A_021_2005_DHDH_A_20260712T050653_20260712T050721_P05023_N_F_J_001",
+        "crid": "P05023",
+        "maturity": "PROVISIONAL",
+        "pols": "HH+HV"
+      },
+      {
+        "date": "2026-07-24",
+        "granule_ur": "NISAR_L2_PR_GCOV_026_058_A_021_2005_DHDH_A_20260724T050653_20260724T050720_P05023_N_F_J_001",
+        "crid": "P05023",
+        "maturity": "PROVISIONAL",
+        "pols": "HH+HV"
+      },
+      {
+        "date": "2026-08-17",
+        "granule_ur": "NISAR_L2_PR_GCOV_028_058_A_021_2005_DHDH_A_20260817T050652_20260817T050719_P05023_N_F_J_001",
+        "crid": "P05023",
+        "maturity": "PROVISIONAL",
+        "pols": "HH+HV"
+      },
+      {
+        "date": "2026-08-29",
+        "granule_ur": "NISAR_L2_PR_GCOV_029_058_A_021_2005_DHDH_A_20260829T050652_20260829T050719_P05023_N_F_J_001",
+        "crid": "P05023",
+        "maturity": "PROVISIONAL",
+        "pols": "HH+HV"
+      },
+      {
+        "date": "2026-09-10",
+        "granule_ur": "NISAR_L2_PR_GCOV_030_058_A_021_2005_DHDH_A_20260910T050651_20260910T050718_P05023_N_F_J_001",
+        "crid": "P05023",
+        "maturity": "PROVISIONAL",
+        "pols": "HH+HV"
+      },
+      {
+        "date": "2026-09-22",
+        "granule_ur": "NISAR_L2_PR_GCOV_031_058_A_021_2005_SHSH_A_20260922T050651_20260922T050719_P05023_N_F_J_001",
+        "crid": "P05023",
+        "maturity": "PROVISIONAL",
+        "pols": "HH"
+      },
+      {
+        "date": "2026-10-04",
+        "granule_ur": "NISAR_L2_PR_GCOV_032_058_A_021_2005_DHDH_A_20261004T050652_20261004T050719_P05023_N_F_J_001",
+        "crid": "P05023",
+        "maturity": "PROVISIONAL",
+        "pols": "HH+HV"
+      },
+      {
+        "date": "2026-10-16",
+        "granule_ur": "NISAR_L2_PR_GCOV_033_058_A_021_2005_DHDH_A_20261016T050652_20261016T050719_P05023_N_F_J_001",
+        "crid": "P05023",
+        "maturity": "PROVISIONAL",
+        "pols": "HH+HV"
+      }
+    ],
+    "valid_fraction": 0.6802423224568138,
+    "score": {
+      "macro_f1": 0.764348882821332,
+      "overall_accuracy": 0.8006883579245928
+    },
+    "layer": "confidence",
+    "file": "data/ml/albufera_058_A_021/confidence.tif",
+    "units": "percent, highest class probability"
+  },
+  {
+    "model": "ml",
+    "site": "espada",
+    "stack": "058_A_022",
+    "date": "2026-06-18/2026-10-28",
+    "source": [
+      {
+        "date": "2026-06-18",
+        "granule_ur": "NISAR_L2_PR_GCOV_023_058_A_022_2005_DHDH_A_20260618T050721_20260618T050756_P05023_N_F_J_001",
+        "crid": "P05023",
+        "maturity": "PROVISIONAL",
+        "pols": "HH+HV"
+      },
+      {
+        "date": "2026-06-30",
+        "granule_ur": "NISAR_L2_PR_GCOV_024_058_A_022_2005_DHDH_A_20260630T050720_20260630T050755_P05023_N_F_J_001",
+        "crid": "P05023",
+        "maturity": "PROVISIONAL",
+        "pols": "HH+HV"
+      },
+      {
+        "date": "2026-07-12",
+        "granule_ur": "NISAR_L2_PR_GCOV_025_058_A_022_2005_DHDH_A_20260712T050720_20260712T050755_P05023_N_F_J_001",
+        "crid": "P05023",
+        "maturity": "PROVISIONAL",
+        "pols": "HH+HV"
+      },
+      {
+        "date": "2026-07-24",
+        "granule_ur": "NISAR_L2_PR_GCOV_026_058_A_022_2005_DHDH_A_20260724T050719_20260724T050754_P05023_N_F_J_001",
+        "crid": "P05023",
+        "maturity": "PROVISIONAL",
+        "pols": "HH+HV"
+      },
+      {
+        "date": "2026-08-17",
+        "granule_ur": "NISAR_L2_PR_GCOV_028_058_A_022_2005_DHDH_A_20260817T050718_20260817T050753_P05023_N_F_J_001",
+        "crid": "P05023",
+        "maturity": "PROVISIONAL",
+        "pols": "HH+HV"
+      },
+      {
+        "date": "2026-08-29",
+        "granule_ur": "NISAR_L2_PR_GCOV_029_058_A_022_2005_DHDH_A_20260829T050718_20260829T050753_P05023_N_F_J_001",
+        "crid": "P05023",
+        "maturity": "PROVISIONAL",
+        "pols": "HH+HV"
+      },
+      {
+        "date": "2026-09-10",
+        "granule_ur": "NISAR_L2_PR_GCOV_030_058_A_022_2005_DHDH_A_20260910T050717_20260910T050752_P05023_N_F_J_001",
+        "crid": "P05023",
+        "maturity": "PROVISIONAL",
+        "pols": "HH+HV"
+      },
+      {
+        "date": "2026-09-22",
+        "granule_ur": "NISAR_L2_PR_GCOV_031_058_A_022_2005_SHSH_A_20260922T050718_20260922T050752_P05023_N_F_J_001",
+        "crid": "P05023",
+        "maturity": "PROVISIONAL",
+        "pols": "HH"
+      },
+      {
+        "date": "2026-10-04",
+        "granule_ur": "NISAR_L2_PR_GCOV_032_058_A_022_2005_DHDH_A_20261004T050718_20261004T050752_P05023_N_F_J_001",
+        "crid": "P05023",
+        "maturity": "PROVISIONAL",
+        "pols": "HH+HV"
+      },
+      {
+        "date": "2026-10-16",
+        "granule_ur": "NISAR_L2_PR_GCOV_033_058_A_022_2005_DHDH_A_20261016T050718_20261016T050753_P05023_N_F_J_001",
+        "crid": "P05023",
+        "maturity": "PROVISIONAL",
+        "pols": "HH+HV"
+      },
+      {
+        "date": "2026-10-28",
+        "granule_ur": "NISAR_L2_PR_GCOV_034_058_A_022_2005_DHDH_A_20261028T050718_20261028T050753_P05036_N_F_J_001",
+        "crid": "P05036",
+        "maturity": "VALIDATED",
+        "pols": "HH+HV"
+      }
+    ],
+    "valid_fraction": 0.926984270978729,
+    "score": {
+      "macro_f1": 0.7228698284899657,
+      "overall_accuracy": 0.7557721964393024
+    },
+    "layer": "class",
+    "file": "data/ml/espada_058_A_022/class.tif",
+    "classes": [
+      "rice_paddy",
+      "permanent_water",
+      "urban",
+      "forest",
+      "burned",
+      "other_crops_shrub",
+      "orchard"
+    ]
+  },
+  {
+    "model": "ml",
+    "site": "espada",
+    "stack": "058_A_022",
+    "date": "2026-06-18/2026-10-28",
+    "source": [
+      {
+        "date": "2026-06-18",
+        "granule_ur": "NISAR_L2_PR_GCOV_023_058_A_022_2005_DHDH_A_20260618T050721_20260618T050756_P05023_N_F_J_001",
+        "crid": "P05023",
+        "maturity": "PROVISIONAL",
+        "pols": "HH+HV"
+      },
+      {
+        "date": "2026-06-30",
+        "granule_ur": "NISAR_L2_PR_GCOV_024_058_A_022_2005_DHDH_A_20260630T050720_20260630T050755_P05023_N_F_J_001",
+        "crid": "P05023",
+        "maturity": "PROVISIONAL",
+        "pols": "HH+HV"
+      },
+      {
+        "date": "2026-07-12",
+        "granule_ur": "NISAR_L2_PR_GCOV_025_058_A_022_2005_DHDH_A_20260712T050720_20260712T050755_P05023_N_F_J_001",
+        "crid": "P05023",
+        "maturity": "PROVISIONAL",
+        "pols": "HH+HV"
+      },
+      {
+        "date": "2026-07-24",
+        "granule_ur": "NISAR_L2_PR_GCOV_026_058_A_022_2005_DHDH_A_20260724T050719_20260724T050754_P05023_N_F_J_001",
+        "crid": "P05023",
+        "maturity": "PROVISIONAL",
+        "pols": "HH+HV"
+      },
+      {
+        "date": "2026-08-17",
+        "granule_ur": "NISAR_L2_PR_GCOV_028_058_A_022_2005_DHDH_A_20260817T050718_20260817T050753_P05023_N_F_J_001",
+        "crid": "P05023",
+        "maturity": "PROVISIONAL",
+        "pols": "HH+HV"
+      },
+      {
+        "date": "2026-08-29",
+        "granule_ur": "NISAR_L2_PR_GCOV_029_058_A_022_2005_DHDH_A_20260829T050718_20260829T050753_P05023_N_F_J_001",
+        "crid": "P05023",
+        "maturity": "PROVISIONAL",
+        "pols": "HH+HV"
+      },
+      {
+        "date": "2026-09-10",
+        "granule_ur": "NISAR_L2_PR_GCOV_030_058_A_022_2005_DHDH_A_20260910T050717_20260910T050752_P05023_N_F_J_001",
+        "crid": "P05023",
+        "maturity": "PROVISIONAL",
+        "pols": "HH+HV"
+      },
+      {
+        "date": "2026-09-22",
+        "granule_ur": "NISAR_L2_PR_GCOV_031_058_A_022_2005_SHSH_A_20260922T050718_20260922T050752_P05023_N_F_J_001",
+        "crid": "P05023",
+        "maturity": "PROVISIONAL",
+        "pols": "HH"
+      },
+      {
+        "date": "2026-10-04",
+        "granule_ur": "NISAR_L2_PR_GCOV_032_058_A_022_2005_DHDH_A_20261004T050718_20261004T050752_P05023_N_F_J_001",
+        "crid": "P05023",
+        "maturity": "PROVISIONAL",
+        "pols": "HH+HV"
+      },
+      {
+        "date": "2026-10-16",
+        "granule_ur": "NISAR_L2_PR_GCOV_033_058_A_022_2005_DHDH_A_20261016T050718_20261016T050753_P05023_N_F_J_001",
+        "crid": "P05023",
+        "maturity": "PROVISIONAL",
+        "pols": "HH+HV"
+      },
+      {
+        "date": "2026-10-28",
+        "granule_ur": "NISAR_L2_PR_GCOV_034_058_A_022_2005_DHDH_A_20261028T050718_20261028T050753_P05036_N_F_J_001",
+        "crid": "P05036",
+        "maturity": "VALIDATED",
+        "pols": "HH+HV"
+      }
+    ],
+    "valid_fraction": 0.926984270978729,
+    "score": {
+      "macro_f1": 0.7228698284899657,
+      "overall_accuracy": 0.7557721964393024
+    },
+    "layer": "confidence",
+    "file": "data/ml/espada_058_A_022/confidence.tif",
+    "units": "percent, highest class probability"
+  },
+  {
+    "model": "ml",
+    "site": "espada",
+    "stack": "167_D_068",
+    "date": "2026-06-25/2026-10-23",
+    "source": [
+      {
+        "date": "2026-06-25",
+        "granule_ur": "NISAR_L2_PR_GCOV_023_167_D_068_2005_DHDH_A_20260625T190107_20260625T190142_P05023_N_F_J_001",
+        "crid": "P05023",
+        "maturity": "PROVISIONAL",
+        "pols": "HH+HV"
+      },
+      {
+        "date": "2026-07-07",
+        "granule_ur": "NISAR_L2_PR_GCOV_024_167_D_068_2005_DHDH_A_20260707T190106_20260707T190141_P05023_N_F_J_001",
+        "crid": "P05023",
+        "maturity": "PROVISIONAL",
+        "pols": "HH+HV"
+      },
+      {
+        "date": "2026-07-19",
+        "granule_ur": "NISAR_L2_PR_GCOV_025_167_D_068_2005_DHDH_A_20260719T190106_20260719T190141_P05023_N_F_J_001",
+        "crid": "P05023",
+        "maturity": "PROVISIONAL",
+        "pols": "HH+HV"
+      },
+      {
+        "date": "2026-08-24",
+        "granule_ur": "NISAR_L2_PR_GCOV_028_167_D_068_2005_DHDH_A_20260824T190104_20260824T190139_P05023_N_F_J_001",
+        "crid": "P05023",
+        "maturity": "PROVISIONAL",
+        "pols": "HH+HV"
+      },
+      {
+        "date": "2026-09-05",
+        "granule_ur": "NISAR_L2_PR_GCOV_029_167_D_068_2005_DHDH_A_20260905T190104_20260905T190138_P05023_N_F_J_001",
+        "crid": "P05023",
+        "maturity": "PROVISIONAL",
+        "pols": "HH+HV"
+      },
+      {
+        "date": "2026-09-17",
+        "granule_ur": "NISAR_L2_PR_GCOV_030_167_D_068_2005_DHDH_A_20260917T190103_20260917T190138_P05023_N_F_J_001",
+        "crid": "P05023",
+        "maturity": "PROVISIONAL",
+        "pols": "HH+HV"
+      },
+      {
+        "date": "2026-09-29",
+        "granule_ur": "NISAR_L2_PR_GCOV_031_167_D_068_2005_DHDH_A_20260929T190103_20260929T190138_P05023_N_F_J_001",
+        "crid": "P05023",
+        "maturity": "PROVISIONAL",
+        "pols": "HH+HV"
+      },
+      {
+        "date": "2026-10-11",
+        "granule_ur": "NISAR_L2_PR_GCOV_032_167_D_068_2005_DHDH_A_20261011T190103_20261011T190138_P05023_N_F_J_001",
+        "crid": "P05023",
+        "maturity": "PROVISIONAL",
+        "pols": "HH+HV"
+      },
+      {
+        "date": "2026-10-23",
+        "granule_ur": "NISAR_L2_PR_GCOV_033_167_D_068_2005_DHDH_A_20261023T190104_20261023T190138_P05036_N_F_J_001",
+        "crid": "P05036",
+        "maturity": "VALIDATED",
+        "pols": "HH+HV"
+      }
+    ],
+    "valid_fraction": 0.9269261298855528,
+    "score": {
+      "macro_f1": 0.7384410282436465,
+      "overall_accuracy": 0.7519281137480226
+    },
+    "layer": "class",
+    "file": "data/ml/espada_167_D_068/class.tif",
+    "classes": [
+      "rice_paddy",
+      "permanent_water",
+      "urban",
+      "forest",
+      "burned",
+      "other_crops_shrub",
+      "orchard"
+    ]
+  },
+  {
+    "model": "ml",
+    "site": "espada",
+    "stack": "167_D_068",
+    "date": "2026-06-25/2026-10-23",
+    "source": [
+      {
+        "date": "2026-06-25",
+        "granule_ur": "NISAR_L2_PR_GCOV_023_167_D_068_2005_DHDH_A_20260625T190107_20260625T190142_P05023_N_F_J_001",
+        "crid": "P05023",
+        "maturity": "PROVISIONAL",
+        "pols": "HH+HV"
+      },
+      {
+        "date": "2026-07-07",
+        "granule_ur": "NISAR_L2_PR_GCOV_024_167_D_068_2005_DHDH_A_20260707T190106_20260707T190141_P05023_N_F_J_001",
+        "crid": "P05023",
+        "maturity": "PROVISIONAL",
+        "pols": "HH+HV"
+      },
+      {
+        "date": "2026-07-19",
+        "granule_ur": "NISAR_L2_PR_GCOV_025_167_D_068_2005_DHDH_A_20260719T190106_20260719T190141_P05023_N_F_J_001",
+        "crid": "P05023",
+        "maturity": "PROVISIONAL",
+        "pols": "HH+HV"
+      },
+      {
+        "date": "2026-08-24",
+        "granule_ur": "NISAR_L2_PR_GCOV_028_167_D_068_2005_DHDH_A_20260824T190104_20260824T190139_P05023_N_F_J_001",
+        "crid": "P05023",
+        "maturity": "PROVISIONAL",
+        "pols": "HH+HV"
+      },
+      {
+        "date": "2026-09-05",
+        "granule_ur": "NISAR_L2_PR_GCOV_029_167_D_068_2005_DHDH_A_20260905T190104_20260905T190138_P05023_N_F_J_001",
+        "crid": "P05023",
+        "maturity": "PROVISIONAL",
+        "pols": "HH+HV"
+      },
+      {
+        "date": "2026-09-17",
+        "granule_ur": "NISAR_L2_PR_GCOV_030_167_D_068_2005_DHDH_A_20260917T190103_20260917T190138_P05023_N_F_J_001",
+        "crid": "P05023",
+        "maturity": "PROVISIONAL",
+        "pols": "HH+HV"
+      },
+      {
+        "date": "2026-09-29",
+        "granule_ur": "NISAR_L2_PR_GCOV_031_167_D_068_2005_DHDH_A_20260929T190103_20260929T190138_P05023_N_F_J_001",
+        "crid": "P05023",
+        "maturity": "PROVISIONAL",
+        "pols": "HH+HV"
+      },
+      {
+        "date": "2026-10-11",
+        "granule_ur": "NISAR_L2_PR_GCOV_032_167_D_068_2005_DHDH_A_20261011T190103_20261011T190138_P05023_N_F_J_001",
+        "crid": "P05023",
+        "maturity": "PROVISIONAL",
+        "pols": "HH+HV"
+      },
+      {
+        "date": "2026-10-23",
+        "granule_ur": "NISAR_L2_PR_GCOV_033_167_D_068_2005_DHDH_A_20261023T190104_20261023T190138_P05036_N_F_J_001",
+        "crid": "P05036",
+        "maturity": "VALIDATED",
+        "pols": "HH+HV"
+      }
+    ],
+    "valid_fraction": 0.9269261298855528,
+    "score": {
+      "macro_f1": 0.7384410282436465,
+      "overall_accuracy": 0.7519281137480226
+    },
+    "layer": "confidence",
+    "file": "data/ml/espada_167_D_068/confidence.tif",
+    "units": "percent, highest class probability"
   },
   {
     "model": "cv",

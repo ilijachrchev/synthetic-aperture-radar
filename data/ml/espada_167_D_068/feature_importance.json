@@ -1,0 +1,118 @@
+[
+  {
+    "feature": "hh_min",
+    "gain_share": 0.20186782128825853
+  },
+  {
+    "feature": "hh_mean",
+    "gain_share": 0.14836897314740632
+  },
+  {
+    "feature": "hv_step_drop",
+    "gain_share": 0.08167579428503344
+  },
+  {
+    "feature": "hv_min",
+    "gain_share": 0.07991863111619076
+  },
+  {
+    "feature": "hh_late_minus_early",
+    "gain_share": 0.06475552551697529
+  },
+  {
+    "feature": "hv_late_minus_early",
+    "gain_share": 0.06407749580899698
+  },
+  {
+    "feature": "hh_max",
+    "gain_share": 0.06217432417071899
+  },
+  {
+    "feature": "hv_max",
+    "gain_share": 0.05144716582612078
+  },
+  {
+    "feature": "hv_mean",
+    "gain_share": 0.03870118768074404
+  },
+  {
+    "feature": "hv_minus_hh_mean",
+    "gain_share": 0.028729716325906977
+  },
+  {
+    "feature": "dark_fraction",
+    "gain_share": 0.01586455220311473
+  },
+  {
+    "feature": "hh_std",
+    "gain_share": 0.015366239595208612
+  },
+  {
+    "feature": "hv_minus_hh_std",
+    "gain_share": 0.014489341827272448
+  },
+  {
+    "feature": "hh_rise_size",
+    "gain_share": 0.013666421541620392
+  },
+  {
+    "feature": "hv_std",
+    "gain_share": 0.012762009955593373
+  },
+  {
+    "feature": "hh_drop_size",
+    "gain_share": 0.012369876714985198
+  },
+  {
+    "feature": "hv_rise_size",
+    "gain_share": 0.011935812786007876
+  },
+  {
+    "feature": "hh_drop_doy",
+    "gain_share": 0.010913393468581936
+  },
+  {
+    "feature": "hv_drop_size",
+    "gain_share": 0.010033220531251432
+  },
+  {
+    "feature": "hv_variability",
+    "gain_share": 0.010020236464233638
+  },
+  {
+    "feature": "hh_variability",
+    "gain_share": 0.009575885297896625
+  },
+  {
+    "feature": "hv_rise_doy",
+    "gain_share": 0.00879343195097175
+  },
+  {
+    "feature": "hh_rise_doy",
+    "gain_share": 0.008487069737521518
+  },
+  {
+    "feature": "hv_drop_doy",
+    "gain_share": 0.007606968761691576
+  },
+  {
+    "feature": "hh_step_doy",
+    "gain_share": 0.007131386634208498
+  },
+  {
+    "feature": "hv_step_doy",
+    "gain_share": 0.005169059922570583
+  },
+  {
+    "feature": "hh_step_drop",
+    "gain_share": 0.004098457440917736
+  },
+  {
+    "feature": "n_valid_hh",
+    "gain_share": 0.0
+  },
+  {
+    "feature": "n_valid_hv",
+    "gain_share": 0.0
+  }
+]

@@ -1,0 +1,118 @@
+[
+  {
+    "feature": "hv_std",
+    "gain_share": 0.16429500883048678
+  },
+  {
+    "feature": "hv_max",
+    "gain_share": 0.1627710768164846
+  },
+  {
+    "feature": "hv_minus_hh_mean",
+    "gain_share": 0.1209459253721781
+  },
+  {
+    "feature": "hh_min",
+    "gain_share": 0.09967217562093515
+  },
+  {
+    "feature": "hv_min",
+    "gain_share": 0.08636447333843103
+  },
+  {
+    "feature": "hv_mean",
+    "gain_share": 0.08310541384693663
+  },
+  {
+    "feature": "hh_max",
+    "gain_share": 0.07184999480885436
+  },
+  {
+    "feature": "hh_std",
+    "gain_share": 0.02538674976143163
+  },
+  {
+    "feature": "hh_late_minus_early",
+    "gain_share": 0.02031927118472092
+  },
+  {
+    "feature": "hh_mean",
+    "gain_share": 0.01858184975097685
+  },
+  {
+    "feature": "hv_late_minus_early",
+    "gain_share": 0.017296922216226616
+  },
+  {
+    "feature": "hv_step_drop",
+    "gain_share": 0.012999609088967247
+  },
+  {
+    "feature": "hh_drop_size",
+    "gain_share": 0.01147900217118292
+  },
+  {
+    "feature": "hv_minus_hh_std",
+    "gain_share": 0.011059633342769664
+  },
+  {
+    "feature": "hh_variability",
+    "gain_share": 0.010843095375446867
+  },
+  {
+    "feature": "hv_variability",
+    "gain_share": 0.010667237333700418
+  },
+  {
+    "feature": "hh_drop_doy",
+    "gain_share": 0.009426617324513139
+  },
+  {
+    "feature": "hh_rise_size",
+    "gain_share": 0.009358097570962938
+  },
+  {
+    "feature": "hv_drop_size",
+    "gain_share": 0.008374067991970819
+  },
+  {
+    "feature": "hh_rise_doy",
+    "gain_share": 0.008126150656294458
+  },
+  {
+    "feature": "hv_rise_size",
+    "gain_share": 0.008098864646558176
+  },
+  {
+    "feature": "hv_rise_doy",
+    "gain_share": 0.006686240863656968
+  },
+  {
+    "feature": "dark_fraction",
+    "gain_share": 0.005478103951858736
+  },
+  {
+    "feature": "hv_drop_doy",
+    "gain_share": 0.005455055428943605
+  },
+  {
+    "feature": "hh_step_drop",
+    "gain_share": 0.005062901462429623
+  },
+  {
+    "feature": "hv_step_doy",
+    "gain_share": 0.0034224179466409046
+  },
+  {
+    "feature": "hh_step_doy",
+    "gain_share": 0.0028740432964408694
+  },
+  {
+    "feature": "n_valid_hh",
+    "gain_share": 0.0
+  },
+  {
+    "feature": "n_valid_hv",
+    "gain_share": 0.0
+  }
+]

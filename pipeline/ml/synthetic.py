@@ -49,6 +49,9 @@ def _signature(name: str, times: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
         hh[n // 3] += 7.0  # one windy date: water looks bright
     elif name == "urban":
         hh, hv = np.full(n, -3.0), np.full(n, -11.0)
+    elif name == "orchard":  # sparse tree rows: a bit darker than forest, mildly seasonal
+        hh = -9.5 + 0.8 * np.sin(doy / 40.0)
+        hv = -16.0 + 0.8 * np.sin(doy / 40.0)
     elif name == "forest":
         hh, hv = np.full(n, -8.0), np.full(n, -13.0)
     elif name == "burned":
@@ -72,7 +75,7 @@ def make_stack(
 
     # Parcels of random class, a lagoon, a burn scar over some forest, sea on the east.
     n_par = (size + parcel_px - 1) // parcel_px
-    weights = np.array([0.35, 0.0, 0.12, 0.2, 0.0, 0.33])
+    weights = np.array([0.30, 0.0, 0.12, 0.15, 0.0, 0.28, 0.15])  # last: orchard
     parcel_cls = rng.choice(len(config.CLASSES), size=(n_par, n_par), p=weights)
     truth = np.kron(parcel_cls, np.ones((parcel_px, parcel_px), int))[:size, :size]
     yy, xx = np.mgrid[:size, :size]

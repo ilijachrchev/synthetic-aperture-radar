@@ -1,0 +1,323 @@
+/* The flood game (game-app.tsx). The map is the page; one panel holds the step, the score and the reason for a cell.
+   What sits on the picture is light, because the picture is the same by day and by night; the panel takes the theme. */
+.gm {
+	--pad: clamp(14px, 1.6vw, 26px);
+	--on-map: #f4f9ff;
+	--pill: rgb(6 14 20 / 0.62);
+	--pill-line: rgb(255 255 255 / 0.14);
+	--panel: color-mix(in oklab, var(--bg) 84%, transparent);
+	position: fixed;
+	inset: 0;
+	overflow: hidden;
+	background: #050a12;
+	color: var(--ink);
+	font-family: var(--font-sans);
+}
+.gm button,
+.gm a {
+	cursor: pointer;
+}
+.gm-map {
+	position: absolute;
+	inset: 0;
+	opacity: 0;
+	transition: opacity 0.9s var(--ease);
+}
+.gm[data-ready] .gm-map {
+	opacity: 1;
+}
+.gm:not([data-ready])::after {
+	content: "Loading the radar passes";
+	position: absolute;
+	inset: 0;
+	z-index: 2;
+	display: grid;
+	place-items: center;
+	color: var(--on-map);
+	font-family: var(--font-mono);
+	font-size: 13px;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	pointer-events: none;
+}
+.gm .maplibregl-canvas {
+	outline: none;
+}
+/* the map cannot be turned and the credit is ours: no compass, no attribution box */
+.gm .maplibregl-ctrl-bottom-left,
+.gm .maplibregl-ctrl-bottom-right {
+	display: none;
+}
+
+/* the title, top left */
+.gm-top {
+	position: absolute;
+	top: var(--pad);
+	left: var(--pad);
+	z-index: 3;
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	color: var(--on-map);
+}
+.gm-back {
+	padding: 7px 12px;
+	border-radius: 999px;
+	background: var(--pill);
+	border: 1px solid var(--pill-line);
+	color: inherit;
+	text-decoration: none;
+	font-size: 13px;
+	backdrop-filter: blur(10px);
+}
+.gm-back::before {
+	content: "\2190  ";
+}
+.gm-title {
+	display: flex;
+	flex-direction: column;
+	gap: 1px;
+	padding: 6px 14px;
+	border-radius: 14px;
+	background: var(--pill);
+	border: 1px solid var(--pill-line);
+	backdrop-filter: blur(10px);
+}
+.gm-title .display {
+	font-family: var(--font-display);
+	font-weight: 900;
+	font-stretch: 62%;
+	text-transform: uppercase;
+	font-size: 20px;
+	line-height: 1;
+	letter-spacing: 0.01em;
+}
+.gm-place {
+	font-size: 11px;
+	opacity: 0.8;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+}
+
+/* the panel: on the right on a wide screen, a sheet at the bottom of a phone */
+.gm-panel {
+	position: absolute;
+	z-index: 3;
+	right: var(--pad);
+	top: calc(var(--pad) + 64px);
+	width: min(380px, calc(100vw - 2 * var(--pad)));
+	max-height: calc(100vh - 2 * var(--pad) - 110px);
+	overflow: auto;
+	padding: 18px 20px 16px;
+	border-radius: 18px;
+	background: var(--panel);
+	border: 1px solid var(--glass-line);
+	box-shadow: var(--shadow);
+	backdrop-filter: blur(16px);
+	font-size: 14.5px;
+	line-height: 1.45;
+}
+.gm-panel p {
+	margin: 0 0 10px;
+}
+.gm-step {
+	font-size: 11px;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--muted);
+}
+.gm-big {
+	font-size: 15px;
+	margin-bottom: 12px !important;
+}
+.gm-big b {
+	font-size: 34px;
+	line-height: 1;
+	font-weight: 600;
+	margin-right: 6px;
+	color: var(--accent-ink);
+}
+.gm-hint {
+	color: var(--muted);
+	font-size: 13px;
+}
+.gm-row {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin-top: 12px;
+}
+.gm-btn {
+	display: inline-flex;
+	align-items: center;
+	padding: 10px 16px;
+	border-radius: 999px;
+	border: 1px solid var(--line-strong);
+	background: transparent;
+	color: var(--ink);
+	font: inherit;
+	font-size: 14px;
+	font-weight: 600;
+	text-decoration: none;
+	transition: transform 0.2s var(--ease), background 0.2s;
+}
+.gm-btn:hover:not(:disabled) {
+	transform: translateY(-1px);
+}
+.gm-btn:disabled {
+	opacity: 0.45;
+	cursor: default;
+}
+.gm-primary {
+	background: var(--btn);
+	color: var(--on-btn);
+	border-color: transparent;
+}
+.gm-toggle {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin: 6px 0 10px;
+	font-size: 13.5px;
+	cursor: pointer;
+}
+.gm-toggle input {
+	accent-color: var(--accent);
+	width: 16px;
+	height: 16px;
+}
+.gm-key {
+	list-style: none;
+	margin: 0 0 8px;
+	padding: 0;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px 14px;
+	font-size: 13px;
+}
+.gm-key i {
+	display: inline-block;
+	width: 12px;
+	height: 12px;
+	border-radius: 3px;
+	margin-right: 6px;
+	vertical-align: -1px;
+}
+.gm-why {
+	margin: 6px 0 12px;
+	padding: 12px 14px;
+	border-radius: 12px;
+	border-left: 3px solid #ff6b6b;
+	background: color-mix(in oklab, var(--card) 70%, transparent);
+	font-size: 13.5px;
+}
+.gm-why[data-flood] {
+	border-left-color: #7cf29a;
+}
+.gm-why-head {
+	font-size: 11px;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	color: var(--muted);
+}
+.gm-why p:last-child {
+	margin-bottom: 0;
+}
+.gm-error {
+	position: absolute;
+	z-index: 4;
+	left: 50%;
+	top: 50%;
+	transform: translate(-50%, -50%);
+	padding: 14px 18px;
+	border-radius: 12px;
+	background: var(--pill);
+	color: var(--on-map);
+	font-size: 14px;
+}
+
+/* the comparison line and its slider */
+.gm-swipe {
+	position: absolute;
+	z-index: 2;
+	top: 0;
+	bottom: 0;
+	width: 2px;
+	margin-left: -1px;
+	background: #fff;
+	box-shadow: 0 0 0 1px rgb(0 0 0 / 0.3);
+	pointer-events: none;
+}
+.gm-swipe-tag {
+	position: absolute;
+	top: 50%;
+	padding: 5px 10px;
+	border-radius: 999px;
+	background: var(--pill);
+	border: 1px solid var(--pill-line);
+	color: var(--on-map);
+	font-family: var(--font-mono);
+	font-size: 11px;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	white-space: nowrap;
+}
+.gm-swipe-l {
+	right: 10px;
+}
+.gm-swipe-r {
+	left: 10px;
+}
+.gm-split {
+	position: absolute;
+	z-index: 3;
+	left: 0;
+	right: 0;
+	top: 50%;
+	width: 100%;
+	height: 44px;
+	margin: -22px 0 0;
+	opacity: 0;
+	cursor: ew-resize;
+}
+
+.gm-credit {
+	position: absolute;
+	z-index: 3;
+	left: var(--pad);
+	bottom: 10px;
+	right: var(--pad);
+	margin: 0;
+	color: rgb(244 249 255 / 0.7);
+	font-size: 10.5px;
+	line-height: 1.3;
+	pointer-events: none;
+}
+
+@media (max-width: 720px) {
+	.gm-top {
+		gap: 6px;
+	}
+	.gm-title .display {
+		font-size: 16px;
+	}
+	.gm-place {
+		display: none;
+	}
+	.gm-panel {
+		top: auto;
+		right: 0;
+		left: 0;
+		bottom: 0;
+		width: auto;
+		max-height: 44vh;
+		border-radius: 18px 18px 0 0;
+		padding: 14px 16px 18px;
+	}
+	.gm-credit {
+		display: none;
+	}
+	.gm-swipe-tag {
+		top: 24%;
+	}
+}

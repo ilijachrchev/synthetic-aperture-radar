@@ -1,0 +1,301 @@
+/* The landing: the line and two buttons centred on a lagoon panel, then the dashboard on a monitor that pins while the
+   four stories play on its screen, then the footer. Everything GSAP moves starts hidden only when a script is there. */
+.js .hx-title,
+.js .mon-in {
+	opacity: 0;
+}
+
+/* ---------- the panel ---------- */
+:root,
+[data-theme="light"] {
+	/* the lagoon by day, in the footer's blues: deep, a lighter body, glow in the wisps */
+	--smoke-0: #006d9e;
+	--smoke-1: #0b8fc0;
+	--smoke-2: #5fd2ea;
+}
+[data-theme="dark"] {
+	--smoke-0: #061820;
+	--smoke-1: #0b3342;
+	--smoke-2: #137f9c;
+}
+.hx {
+	position: relative;
+	isolation: isolate;
+}
+.hx-bg {
+	position: absolute;
+	z-index: -1;
+	left: 14px;
+	right: 14px;
+	top: 14px;
+	height: calc(100svh - 28px);
+	border-radius: 30px;
+	overflow: hidden;
+	background: linear-gradient(180deg, var(--smoke-0), var(--smoke-1));
+}
+/* a touch of shade at the top so the white line reads on the brightest water */
+.hx-bg::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background: linear-gradient(180deg, rgb(0 25 40 / 0.26) 0%, rgb(0 25 40 / 0.08) 38%, transparent 60%);
+	pointer-events: none;
+}
+.hx-smoke {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	opacity: 0;
+	transition: opacity 1.4s var(--ease);
+}
+.hx-smoke[data-on] {
+	opacity: 1;
+}
+
+/* ---------- the line and the two buttons, white on the panel in both themes ---------- */
+.hx-head {
+	/* wide enough for the line on one row at its largest size */
+	max-width: 1260px;
+	margin: 0 auto;
+	padding: clamp(104px, 15svh, 150px) 24px 0;
+	text-align: center;
+	color: #fff;
+}
+.hx-title {
+	margin: 0;
+	font-size: clamp(48px, 6.3vw, 104px);
+	text-wrap: balance;
+}
+.hx-line {
+	display: inline;
+}
+.hx-lead {
+	margin: 22px auto 0;
+	max-width: 620px;
+	text-wrap: balance;
+	color: rgb(255 255 255 / 0.86);
+}
+.hx-cta {
+	margin-top: 32px;
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: 12px;
+}
+.hx-cta .btn {
+	color: #0b0d0f;
+	background: #fff;
+	box-shadow: 0 14px 30px -16px rgb(0 0 0 / 0.5);
+}
+.hx-cta .btn-dot {
+	color: #fff;
+	background: #0b0d0f;
+}
+.hx-cta .btn-ghost {
+	color: #fff;
+	box-shadow: inset 0 0 0 1.5px rgb(255 255 255 / 0.55);
+}
+.hx-cta .btn-ghost:hover {
+	background: rgb(255 255 255 / 0.12);
+}
+
+/* ---------- the monitor's track: pinned in the middle while the stories play ---------- */
+.hx-track {
+	position: relative;
+	/* one screen to arrive, a lead with the dashboard, about a screen and a fifth per story, a short hold */
+	height: calc(100svh + var(--n) * 120svh + 50svh);
+	margin-top: clamp(16px, 3svh, 40px);
+}
+.hx-sticky {
+	position: sticky;
+	top: 0;
+	height: 100svh;
+	/* the floating navbar keeps the top; the monitor centres in what is left */
+	padding: 72px 0 8px;
+	display: grid;
+	place-items: center;
+	perspective: 2000px;
+	perspective-origin: 50% 0;
+}
+.mon {
+	/* a wide 16:9 screen; its height plus bezel and stand (about 92px) fits under the navbar */
+	width: min(1600px, 94vw, calc((100svh - 172px) * 1.7778));
+	margin: 0 auto;
+	transform-origin: 50% 0;
+	will-change: transform;
+}
+.mon-body {
+	padding: clamp(8px, 1.1vw, 16px);
+	border-radius: clamp(14px, 1.9vw, 28px);
+	background: linear-gradient(180deg, #1a1d21, #0c0e10);
+	box-shadow: 0 0 0 1px rgb(255 255 255 / 0.07) inset, 0 1px 0 rgb(255 255 255 / 0.12) inset, 0 60px 120px -40px rgb(0 30 45 / 0.55), 0 20px 40px -20px rgb(0 0 0 / 0.35);
+}
+.mon-glass {
+	position: relative;
+	/* the button on the screen is sized against the screen */
+	container-type: inline-size;
+	aspect-ratio: 16 / 9;
+	border-radius: clamp(5px, 0.7vw, 10px);
+	overflow: hidden;
+	background: #081217;
+}
+/* the films of the story pages: one on top of the other, the story on screen faded in */
+.mon-film {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	opacity: 0;
+	transition: opacity 0.7s var(--ease);
+}
+.mon-film[data-on] {
+	opacity: 1;
+}
+/* over the film, where its own page leaves room: which story this is, and the way into it */
+.mon-over {
+	position: absolute;
+	z-index: 2;
+	right: 2.2%;
+	bottom: 8%;
+	display: flex;
+	align-items: center;
+	gap: clamp(8px, 1.1cqw, 16px);
+}
+.mon-count {
+	font-size: clamp(10px, 1.05cqw, 15px);
+	color: rgb(244 249 255 / 0.82);
+	text-shadow: 0 1px 2px rgb(0 0 0 / 0.8);
+}
+.mon-go {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.5em;
+	height: clamp(30px, 3.3cqw, 48px);
+	padding: 0 clamp(12px, 1.5cqw, 22px);
+	border-radius: 999px;
+	background: #f4f9ff;
+	color: #071018;
+	font-size: clamp(12px, 1.12cqw, 16px);
+	font-weight: 700;
+	text-decoration: none;
+	white-space: nowrap;
+	box-shadow: 0 10px 30px rgb(0 0 0 / 0.35);
+	transition: transform 0.25s var(--ease);
+}
+.mon-go:hover {
+	transform: translateY(-1px);
+}
+/* under the monitor on a phone: the story by name, and the way into it */
+.mon-note {
+	display: none;
+}
+@media (max-width: 760px) {
+	.mon-over {
+		display: none;
+	}
+	.mon-note {
+		display: grid;
+		justify-items: center;
+		gap: 6px;
+		margin-top: 22px;
+		text-align: center;
+		color: var(--ink);
+	}
+	.mon-note p {
+		margin: 0;
+		font-size: 14px;
+		color: var(--ink-2);
+	}
+	.mon-note .mono {
+		font-size: 12px;
+		color: var(--muted);
+	}
+	.mon-note .mon-note-title {
+		font-size: 34px;
+		line-height: 1;
+		color: var(--ink);
+	}
+	.mon-note .mon-go {
+		height: 48px;
+		margin-top: 12px;
+		padding: 0 22px;
+		background: var(--btn);
+		color: var(--on-btn);
+		font-size: 15px;
+		box-shadow: none;
+	}
+}
+/* how far the reader is through the stories */
+.mon-progress {
+	position: absolute;
+	z-index: 2;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	height: 3px;
+	background: var(--accent);
+	transform: scaleX(0);
+	transform-origin: 0 50%;
+}
+/* the stand: a short neck and a flat foot, brushed metal by day and dark by night */
+.mon-neck {
+	width: 13%;
+	height: clamp(24px, 3.2vw, 46px);
+	margin: 0 auto;
+	background: linear-gradient(90deg, #b9bec3, #e7eaec 45%, #c9cdd1 60%, #a9aeb3);
+	clip-path: polygon(8% 0, 92% 0, 100% 100%, 0 100%);
+}
+.mon-foot {
+	width: 24%;
+	height: clamp(8px, 0.9vw, 12px);
+	margin: 0 auto;
+	border-radius: 0 0 8px 8px;
+	background: linear-gradient(180deg, #d9dde0, #a7acb1);
+	box-shadow: 0 18px 30px -12px rgb(0 0 0 / 0.35);
+}
+[data-theme="dark"] .mon-neck {
+	background: linear-gradient(90deg, #22272c, #3a4148 45%, #2b3137 60%, #1b2025);
+}
+[data-theme="dark"] .mon-foot {
+	background: linear-gradient(180deg, #353c43, #1b2025);
+}
+
+
+@media (max-width: 900px) {
+	.hx-line {
+		display: block;
+	}
+	.hx-title {
+		font-size: clamp(52px, 14vw, 96px);
+	}
+}
+@media (max-width: 860px) {
+	.hx-bg {
+		left: 8px;
+		right: 8px;
+		top: 8px;
+		height: calc(100svh - 16px);
+		border-radius: 22px;
+	}
+}
+@media (max-width: 640px) {
+	.hx-head {
+		padding: 96px 16px 0;
+	}
+	.hx-cta {
+		gap: 8px;
+	}
+	.hx-cta .btn,
+	.hx-cta .btn-ghost {
+		font-size: 16px;
+	}
+	.hx-cta .btn {
+		gap: 10px;
+		padding-right: 18px;
+	}
+	.hx-cta .btn-ghost {
+		padding: 0 18px;
+	}
+}
