@@ -83,7 +83,9 @@ def _cmd_run(args: argparse.Namespace) -> None:
           f"water threshold {dark_db:.1f} dB")
 
     # Spatial split, train, score.
-    train_mask, test_mask = split.split_blocks(st.shape, block_px=args.block_px, seed=args.seed)
+    labels_usable = np.where(usable.reshape(st.shape), y_map, config.UNLABELED)
+    train_mask, test_mask = split.split_blocks(st.shape, block_px=args.block_px, seed=args.seed,
+                                               labels=labels_usable)
     y = y_map.ravel()
     labelled = (y != config.UNLABELED) & usable
     tr = train.sample_per_class(y, labelled & train_mask.ravel(), args.max_per_class, args.seed)
@@ -111,7 +113,10 @@ def _cmd_run(args: argparse.Namespace) -> None:
         "label_sources": sources,
         "water_threshold_hh_db": dark_db,
         "split": {"block_px": args.block_px, "gap_px": config.GAP_PX,
-                  "test_fraction": config.TEST_FRACTION, "seed": args.seed},
+                  "test_fraction": config.TEST_FRACTION, "seed": args.seed, "balanced_by_class": True,
+                  "test_share_per_class": {
+                      n: round(float((labels_usable[test_mask] == i).sum() / max(1, (labels_usable == i).sum())), 3)
+                      for i, n in enumerate(config.CLASSES)}},
         "train_pixels": int(tr.size),
         "label_pixels": counts,
         "sea_pixels": int(sea.sum()),

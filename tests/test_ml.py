@@ -72,6 +72,21 @@ def test_split_has_gap_and_no_overlap():
     assert not (binary_dilation(test_mask, iterations=2) & train_mask).any()
 
 
+def test_split_gives_a_rare_clustered_class_its_share_of_test():
+    # 20 x 20 blocks of 10 px. Common class everywhere; "rice" only in a
+    # 4 x 3 group of blocks in one corner (like the first Albufera polygons).
+    y = np.full((200, 200), config.CLASS_INDEX["other_crops_shrub"], np.int16)
+    y[0:40, 0:30] = config.CLASS_INDEX["rice_paddy"]
+    rice = y == config.CLASS_INDEX["rice_paddy"]
+    for seed in range(10):
+        train_mask, test_mask = split.split_blocks(y.shape, block_px=10, gap_px=1, seed=seed, labels=y)
+        share = (rice & test_mask).sum() / rice.sum()
+        assert 0.2 <= share <= 0.4                              # about a quarter, never none
+        assert (rice & train_mask).sum() >= 0.5 * rice.sum()    # training keeps enough
+        assert abs(test_mask.mean() - 0.25) < 0.05              # overall test size unchanged
+        assert not (train_mask & test_mask).any()
+
+
 # --- data: the shared stack format ---------------------------------------------
 
 @pytest.fixture(scope="module")
