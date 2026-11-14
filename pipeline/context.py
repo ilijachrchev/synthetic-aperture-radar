@@ -4,7 +4,8 @@ Rasters are clipped around each site's stack grid and saved under
 data/raw/context/ (not committed; rerun this module to rebuild them), then
 resampled onto the exact 20 m stack grid of the site and saved to data/context/
 (committed, small): <site>_worldcover_2021_20m.tif (mode resampling, class codes
-kept) and <site>_jrc_occurrence_20m.tif (bilinear, percent). Small tables go to
+kept), <site>_jrc_occurrence_20m.tif (bilinear, percent) and <site>_sea_20m.tif
+(permanent water connected to the sea edge, 1 sea, 0 not sea). Small tables go to
 data/context/ too.
 
 - ESA WorldCover 2021 v200 land cover, 10 m (CC BY 4.0), for CV and ML.
@@ -34,6 +35,7 @@ from pathlib import Path
 import numpy as np
 import rasterio
 import requests
+from scipy import ndimage
 from rasterio import Env as GDALConfig
 from rasterio.merge import merge
 from rasterio.warp import Resampling, reproject, transform_bounds
@@ -158,6 +160,41 @@ def context_on_grid(site: Site) -> list[Path]:
     return written
 
 
+def sea_mask(water: np.ndarray, edges: tuple[str, ...], cut_px: int = 2) -> np.ndarray:
+    """Sea = permanent water connected to the given grid edges.
+
+    Thin links (canals, harbour mouths up to about 2 * cut_px pixels wide) are cut
+    first, so a lagoon joined to the sea by a canal stays separate. Pixels outside
+    the grid count as water while cutting, so the edge itself is not eroded away.
+    """
+    if not edges:
+        return np.zeros(water.shape, dtype=bool)
+    core = ndimage.binary_erosion(water, iterations=cut_px, border_value=1)
+    labels, _ = ndimage.label(core, structure=np.ones((3, 3)))
+    edge_pixels = {"east": labels[:, -1], "west": labels[:, 0], "north": labels[0, :], "south": labels[-1, :]}
+    touching = np.unique(np.concatenate([edge_pixels[e] for e in edges]))
+    sea_core = np.isin(labels, touching[touching > 0])
+    return water & ndimage.binary_dilation(sea_core, iterations=cut_px + 1)
+
+
+def sea_on_grid(site: Site) -> Path:
+    """Sea mask on the site's 20 m stack grid (1 sea, 0 not sea), from the grid-aligned context layers."""
+    grid = site_grid(site)
+    with rasterio.open(CONTEXT_DIR / f"{site.name}_worldcover_2021_20m.tif") as wc, \
+            rasterio.open(CONTEXT_DIR / f"{site.name}_jrc_occurrence_20m.tif") as jrc:
+        cover, occurrence = wc.read(1), jrc.read(1)
+    water = (cover == 80) | ((occurrence >= 90) & (occurrence != 255))
+    sea = sea_mask(water, site.sea_edges)
+    path = CONTEXT_DIR / f"{site.name}_sea_20m.tif"
+    with rasterio.open(path, "w", driver="GTiff", height=grid.height, width=grid.width, count=1, dtype="uint8",
+                       crs=grid.crs, transform=grid.transform, compress="deflate", tiled=True,
+                       blockxsize=512, blockysize=512) as dst:
+        dst.write(sea.astype("uint8"), 1)
+    print(f"{site.name}: {path.name}, sea {100 * sea.mean():.1f}% of the grid, other permanent water "
+          f"{100 * (water & ~sea).mean():.1f}%")
+    return path
+
+
 MJD_EPOCH = date(1858, 11, 17)  # Modified Julian Date day 0
 
 
@@ -208,6 +245,7 @@ def main() -> None:
         if site.name != "panama":  # land cover and water history are for the Spanish sites
             fetch_rasters(site)
             context_on_grid(site)
+            sea_on_grid(site)
     fetch_lor1()
     fetch_panama_event()
 

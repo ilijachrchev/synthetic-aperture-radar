@@ -27,6 +27,7 @@ class Site:
     bbox: tuple[float, float, float, float]
     crs: str  # analysis grid (UTM zone that contains the site)
     models: tuple[str, ...]
+    sea_edges: tuple[str, ...] = ()  # grid edges the open sea touches (for the sea mask)
 
 
 SITES: dict[str, Site] = {
@@ -38,6 +39,7 @@ SITES: dict[str, Site] = {
             bbox=(-0.45, 39.15, -0.22, 39.45),
             crs="EPSG:32630",
             models=("cv", "ml", "prediction"),
+            sea_edges=("east",),
         ),
         Site(
             name="pego_oliva",
@@ -47,6 +49,7 @@ SITES: dict[str, Site] = {
             bbox=(-0.25, 38.78, 0.06, 39.02),
             crs="EPSG:32630",
             models=("cv",),
+            sea_edges=("east",),
         ),
         Site(
             name="espada",
@@ -54,6 +57,7 @@ SITES: dict[str, Site] = {
             bbox=(-0.50, 39.78, -0.10, 40.02),
             crs="EPSG:32630",
             models=("cv", "ml"),
+            sea_edges=("east",),
         ),
         Site(
             name="lorca",

@@ -50,6 +50,24 @@ def test_warp_to_grid_covers_the_grid_and_keeps_class_codes(tmp_path):
         dst.write(codes, 1)
     out = warp_to_grid(path, site, Resampling.mode, 0)
     assert set(np.unique(out)) == {40, 80}  # no empty edges, no blended codes
+
+
+def test_sea_mask_keeps_a_canal_linked_lagoon_separate():
+    import numpy as np
+
+    from pipeline.context import sea_mask
+
+    water = np.zeros((60, 60), bool)
+    water[:, 45:] = True            # open sea along the east edge
+    water[20:35, 10:25] = True      # inland lagoon
+    water[27:29, 25:45] = True      # a 2 px canal from the lagoon to the sea
+    sea = sea_mask(water, ("east",))
+    assert sea[:, 50:].all()                    # the sea, including the edge column
+    assert not sea[20:35, 10:25].any()          # the lagoon stays separate
+    assert not sea_mask(water, ()).any()        # a site without sea edges has no sea
+
+
+def test_mjd_to_date_matches_ngl_rows():
     # First two LOR1 rows: MJD 55086 is 09SEP12, MJD 55087 is 09SEP13.
     assert mjd_to_date(55086) == date(2009, 9, 12)
     assert mjd_to_date(55087) == date(2009, 9, 13)

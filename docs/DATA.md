@@ -35,9 +35,10 @@ One NetCDF file per site and track: `data/stack/<site>_<stack>.nc`. Each track s
 Inside each file, dims `time x y x`:
 
 - `HH`, `HV`: gamma0 backscatter in **linear power**, NaN where the pixel is not valid. For dB use `to_db` (10·log10).
-- `valid`: 1 where the pixel is usable (GCOV mask 1 to 5, HH finite and positive, clean resampling), else 0.
+- `valid`: 1 where the pixel is usable (GCOV mask 1 to 5, HH finite and positive, clean resampling), else 0. It is defined on HH: on dual-pol dates every valid pixel also has a positive HV (checked on all six stacks); on HH-only dates HV is NaN.
 - `looks`: number of looks (NaN unless fetched with `--with-looks`).
 - Per date: `granule_ur`, `crid`, `maturity`, `pols`. The 058 A stacks have one HH-only date (2026-09-22): HV is all NaN there.
+- Processing versions: the newest date of four stacks is VALIDATED (CRID P05036), the other dates PROVISIONAL (P05023). On stable urban pixels the jump into that date is -0.10 to -0.34 dB in HH, inside the normal 12-day changes (up to 0.63 dB), so all dates can be compared. Filter on `crid` if you prefer to keep them apart.
 
 ```python
 from pipeline.cv.data import open_stack, to_db
@@ -66,6 +67,7 @@ Not in git: they are large (an estimated 100 to 200 MB each) and can be rebuilt.
 |---|---|---|
 | `data/context/<site>_worldcover_2021_20m.tif` | ESA WorldCover 2021 on the site grid: 10 tree, 20 shrub, 30 grass, 40 crop, 50 built, 60 bare, 80 water, 90 herbaceous wetland, 0 no data | CV, ML |
 | `data/context/<site>_jrc_occurrence_20m.tif` | JRC Global Surface Water v1.5, share of time a pixel was water 1984 to 2024 (0 to 100 %, 255 no data), on the site grid | ML |
+| `data/context/<site>_sea_20m.tif` | Sea mask on the site grid (1 sea, 0 not sea): permanent water connected to the east edge, with thin canals cut so the Albufera lagoon stays separate. Albufera 28 % sea, Pego-Oliva 34 %, Espadà 2 % | ML, map |
 | `data/labels/pego_oliva_emsr935_flood.geojson` | Copernicus EMS EMSR935 flood outline, DANA "Adam" (imagery 20 to 21 Oct) | CV |
 | `data/labels/pego_oliva_emsr935_aoi.geojson` | The two EMSR935 mapped areas: inside them every flooded pixel was outlined, so a flood map is scored only there | CV |
 | `data/labels/pego_oliva_generalitat_footprint.geojson` | Official DANA river-flood footprint, 1,022.8 ha | CV |
@@ -74,5 +76,7 @@ Not in git: they are large (an estimated 100 to 200 MB each) and can be rebuilt.
 | `data/context/lorca_gnss_LOR1_up.csv` | GNSS station LOR1 daily height | Prediction |
 
 Put an outline on a stack grid with `pipeline.cv.data.rasterize_on(ds, geodataframe)`.
+
+The catalogs in `data/catalog/` stay in git on purpose: the fetchers read them, and they pin exactly which NISAR files the stacks were built from (CMR keeps changing as new and reprocessed files arrive). Rebuild them with `python -m pipeline.catalog --all`.
 
 Not in git, rebuilt by the pipeline: `data/raw/` (NISAR subsets, the same-day Sentinel-1 water maps in `data/raw/dswx/<site>/<stack>/<date>/` with an `index.json`, raw clips) and `data/stack/`.
