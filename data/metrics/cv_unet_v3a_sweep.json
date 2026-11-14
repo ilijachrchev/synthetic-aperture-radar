@@ -1,0 +1,49 @@
+{
+ "model": "data/models/cv_unet_v3a.pt",
+ "site": "albufera",
+ "split": "held-out validation blocks",
+ "rows": [
+  {
+   "threshold": 0.2,
+   "open_median_iou": 0.1028,
+   "open_pooled_iou": 0.2407,
+   "any_median_iou": 0.0772,
+   "any_pooled_iou": 0.2116
+  },
+  {
+   "threshold": 0.3,
+   "open_median_iou": 0.1198,
+   "open_pooled_iou": 0.2587,
+   "any_median_iou": 0.0692,
+   "any_pooled_iou": 0.2215
+  },
+  {
+   "threshold": 0.4,
+   "open_median_iou": 0.1253,
+   "open_pooled_iou": 0.2702,
+   "any_median_iou": 0.063,
+   "any_pooled_iou": 0.2261
+  },
+  {
+   "threshold": 0.5,
+   "open_median_iou": 0.1277,
+   "open_pooled_iou": 0.2791,
+   "any_median_iou": 0.0607,
+   "any_pooled_iou": 0.2279
+  },
+  {
+   "threshold": 0.6,
+   "open_median_iou": 0.1349,
+   "open_pooled_iou": 0.278,
+   "any_median_iou": 0.0578,
+   "any_pooled_iou": 0.2219
+  },
+  {
+   "threshold": 0.7,
+   "open_median_iou": 0.136,
+   "open_pooled_iou": 0.2672,
+   "any_median_iou": 0.051,
+   "any_pooled_iou": 0.208
+  }
+ ]
+}

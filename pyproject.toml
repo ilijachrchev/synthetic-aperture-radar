@@ -46,3 +46,5 @@ include = ["pipeline*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+# The U-Net tests save full-size checkpoints (about 125 MB each); keep temp folders only of failed tests.
+tmp_path_retention_policy = "failed"
