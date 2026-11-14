@@ -37,6 +37,30 @@ One NetCDF file per site and track: `data/stack/<site>_<stack>.nc`. Each track s
 
 These shared stacks cover the whole site box. One extra stack is for CV testing only: `pego_oliva_167_D_069` (9 dates, 25 Jun to 23 Oct). Its frame covers about 63 % of the box, and only 34 ha of the EMSR935 flood outline is seen on both 11 and 23 Oct. Build it with `--min-coverage 0.6` on `pipeline.nisar_fetch` and `pipeline.dswx`. For `pipeline.dswx`, list all three Pego-Oliva stacks with `--stack`, because the index is rewritten.
 
+### Extra stacks for the CV model only
+
+`config.CV_STACKS` adds three wetlands that only the CV model uses: two for training and a second unseen test site. They are not in `STACKS`, so `pipeline.run` and the ML model never download them. Frames may cover only part of the box; the rest stays invalid. Results: [CV_RESULTS.md](CV_RESULTS.md).
+
+| Site | Stacks | Dates | Usable labelled scenes |
+|---|---|---|---|
+| ebro (training) | 058_A_022 · 066_D_068 · 167_D_068 | 11 · 11 · 9 | 0 · 1 · 4 |
+| camargue (training) | 101_A_023 · 173_A_024 | 10 · 11 | 3 · 6 |
+| donana (test) | 023_D_070 · 116_A_020 · 015_A_020 | 11 · 10 · 10 | 11 · 5 · 1 |
+
+"Usable" means a same-day DSWx-S1 map within 2 h that covers at least 10 % of the usable pixels. Many matched passes miss the site: their tiles touch the box but the swath does not (`python -m pipeline.cv.quality` lists them).
+
+Build one site (the raw NISAR subsets can be deleted once its stacks are built):
+
+```bash
+python -m pipeline.catalog --site ebro
+python -m pipeline.context --site ebro
+python -m pipeline.nisar_fetch --site ebro --stack 058_A_022 --min-coverage 0.15   # each stack of the site
+python -m pipeline.stack --site ebro --stack 058_A_022                              # each stack of the site
+python -m pipeline.dswx --site ebro --stack 058_A_022 --stack 066_D_068 --stack 167_D_068 --min-coverage 0.15
+```
+
+List every stack of the site in the `pipeline.dswx` call: it rewrites the site's label index with only the stacks given.
+
 Inside each file, dims `time x y x`:
 
 - `HH`, `HV`: gamma0 backscatter in **linear power**, NaN where the pixel is not valid. For dB use `to_db` (10·log10).
