@@ -49,6 +49,11 @@ class Series:
             raise ValueError("Observation dates must be unique and increasing")
 
     @property
+    def steps(self) -> tuple[float, ...]:
+        """Ordinal days of known equipment changes (from source["equipment_changes"])."""
+        return tuple(float(date.fromisoformat(d).toordinal()) for d in self.source.get("equipment_changes", []))
+
+    @property
     def days(self) -> np.ndarray:
         return np.array([d.toordinal() for d in self.dates], dtype=float)
 
@@ -146,6 +151,43 @@ def load_ngl(path: Path, station: str, max_sigma_mm: float = 20.0) -> Series:
         if provenance.get("sha256") != source["sha256"]:
             raise ValueError("Download metadata checksum does not match the station file")
         source["retrieved_at_utc"] = provenance["retrieved_at_utc"]
+    return _series(station, rows, source)
+
+
+def load_context_csv(path: Path, station: str, max_sigma_mm: float = 20.0) -> Series:
+    """The station series committed by pipeline.context (data/context/lorca_gnss_LOR1_up.csv).
+
+    Columns: date, decimal_year, up_m, sigma_up_m, antenna_height_m (from NGL tenv3).
+    Antenna height changes are recorded as equipment changes, for step terms in the
+    trend models. NGL heights already refer to the ground marker; LOR1 does not jump
+    up by the 7.7 cm antenna change of 2023-08-03 (issue #16).
+    """
+    if not np.isfinite(max_sigma_mm) or max_sigma_mm <= 0:
+        raise ValueError("max_sigma_mm must be positive and finite")
+    rows, rejected, changes, last_ant = [], 0, [], None
+    with path.open(encoding="utf-8", newline="") as handle:
+        reader = csv.DictReader(handle)
+        required = {"date", "up_m", "sigma_up_m", "antenna_height_m"}
+        if not required <= set(reader.fieldnames or []):
+            raise ValueError(f"Not a pipeline.context GNSS file: missing {sorted(required - set(reader.fieldnames or []))}")
+        for row in reader:
+            day = date.fromisoformat(row["date"])
+            ant = float(row["antenna_height_m"])
+            if last_ant is not None and ant != last_ant:
+                changes.append(day.isoformat())
+            last_ant = ant
+            value, sigma = float(row["up_m"]) * 1000, float(row["sigma_up_m"]) * 1000
+            if not np.isfinite(value) or not np.isfinite(sigma) or not 0 < sigma <= max_sigma_mm:
+                rejected += 1
+                continue
+            rows.append((day, value))
+    source = {"type": "gnss", "provider": "Nevada Geodetic Laboratory", "url": f"{NGL_ROOT}/{station}.tenv3",
+              "format_url": NGL_FORMAT_URL, "station": station, "reference_frame": "IGS20",
+              "component": "vertical", "units": "mm", "positive_direction": "up",
+              "input_file": path.as_posix(), "sha256": file_sha256(path),
+              "quality_filter": {"max_vertical_sigma_mm": max_sigma_mm, "rejected_rows_in_source": rejected},
+              "equipment_changes": changes,
+              "corrections": "Step term at each equipment change in the trend models; no earthquake or loading corrections"}
     return _series(station, rows, source)
 
 

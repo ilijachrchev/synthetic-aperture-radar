@@ -14,7 +14,7 @@ from urllib.error import URLError
 import numpy as np
 
 from . import __version__
-from .data import Series, fetch_ngl, load_egms, load_ngl, utc_now
+from .data import Series, fetch_ngl, load_context_csv, load_egms, load_ngl, utc_now
 from .manifest import upsert as upsert_manifest
 from .evaluation import interval_radius, rolling_backtest, select_models, summarize, training_window
 from .models import MODEL_NAMES, fit_model
@@ -27,8 +27,11 @@ def parser() -> argparse.ArgumentParser:
     fetch.add_argument("--station", default="LOR1")
     fetch.add_argument("--directory", type=Path, default=Path("data/raw/ngl"))
     run = commands.add_parser("run", help="Evaluate models and export a forecast from a local input")
-    run.add_argument("--format", choices=("ngl", "egms"), default="ngl")
-    run.add_argument("--input", type=Path, help="Default: data/raw/ngl/LOR1.tenv3")
+    run.add_argument("--format", choices=("repo", "ngl", "egms"), default="repo",
+                     help="repo: the committed data/context/lorca_gnss_<point>_up.csv (default); "
+                          "ngl: a fresh tenv3 from fetch; egms: an EGMS Ortho vertical CSV")
+    run.add_argument("--input", type=Path, help="Default: data/context/lorca_gnss_LOR1_up.csv (repo) "
+                                                "or data/raw/ngl/LOR1.tenv3 (ngl)")
     run.add_argument("--point-id", default="LOR1", help="NGL station or exact EGMS pid")
     run.add_argument("--site", default="lorca")
     run.add_argument("--output", type=Path, default=Path("data/prediction/lorca"))
@@ -99,18 +102,23 @@ def run(args: argparse.Namespace) -> dict:
         raise ValueError("A numeric no-data sentinel must be finite")
     path = args.input
     if path is None:
-        if args.format != "ngl":
+        if args.format == "egms":
             raise ValueError("EGMS input requires --input path/to/vertical.csv and --point-id PID")
-        path = Path("data/raw/ngl") / f"{args.point_id}.tenv3"
+        path = (Path("data/context") / f"{args.site}_gnss_{args.point_id}_up.csv" if args.format == "repo"
+                else Path("data/raw/ngl") / f"{args.point_id}.tenv3")
     if not path.is_file():
-        raise ValueError(f"Input not found: {path}. First run: python -m pipeline.prediction fetch")
+        hint = "python -m pipeline.context" if args.format == "repo" else "python -m pipeline.prediction fetch"
+        raise ValueError(f"Input not found: {path}. First run: {hint}")
     existing_path = args.output / "forecast.json"
     if existing_path.exists():
         existing = json.loads(existing_path.read_text())
-        expected_source = "gnss" if args.format == "ngl" else "egms_ortho_vertical"
+        expected_source = "egms_ortho_vertical" if args.format == "egms" else "gnss"
         if (existing.get("point_id"), existing.get("site"), existing.get("source", {}).get("type")) != (args.point_id, args.site, expected_source):
             raise ValueError("Output contains a different point/site/source; choose a separate --output directory")
-    loaded = load_ngl(path, args.point_id, args.max_sigma_mm) if args.format == "ngl" else load_egms(path, args.point_id, args.nodata_value)
+    loaders = {"repo": lambda: load_context_csv(path, args.point_id, args.max_sigma_mm),
+               "ngl": lambda: load_ngl(path, args.point_id, args.max_sigma_mm),
+               "egms": lambda: load_egms(path, args.point_id, args.nodata_value)}
+    loaded = loaders[args.format]()
     series = loaded.between(args.data_start, args.as_of)
     age = (args.as_of - series.dates[-1]).days
     required_horizons = tuple(sorted(set(horizons) | {h + age for h in horizons}))
@@ -132,7 +140,7 @@ def run(args: argparse.Namespace) -> dict:
     selected = select_models(scores["selection"])
     train_days, train_values = training_window(series, series.days[-1], args.window_days,
                                                args.min_observations, args.min_span_days)
-    fits = {name: fit_model(name, train_days, train_values) for name in MODEL_NAMES}
+    fits = {name: fit_model(name, train_days, train_values, series.steps) for name in MODEL_NAMES}
     issued = utc_now()
     gaps = [{"after": a.isoformat(), "before": b.isoformat(), "missing_days": (b - a).days - 1}
             for a, b in zip(series.dates, series.dates[1:]) if (b - a).days > 30]
