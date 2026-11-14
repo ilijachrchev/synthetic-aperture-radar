@@ -247,11 +247,14 @@ export class WaterLayer {
 		this.load(`f${index}`, this.url(this.frames[index].file), true)
 	}
 
-	/** true when every frame of the current view is ready to draw */
+	/** true when every frame of the current view is on the card and the layer has drawn (its program is compiled) */
 	ready() {
 		const { a, b, ref } = this.view
-		return this.slots.has('base') && this.slots.has(`f${a}`) && this.slots.has(`f${b}`) && (ref < 0 || this.slots.has(`f${ref}`))
+		return this.drawn && this.slots.has('base') && this.slots.has(`f${a}`) && this.slots.has(`f${b}`) && (ref < 0 || this.slots.has(`f${ref}`))
 	}
+
+	/** the layer has drawn at least once: the page shows the map only from then on */
+	private drawn = false
 
 	private load(key: string, url: string, soon: boolean) {
 		if (this.gone || this.slots.has(key)) return
@@ -330,19 +333,30 @@ export class WaterLayer {
 		return p
 	}
 
-	/** Put decoded frames on the card. Done inside render, where MapLibre expects its GL state to be touched. A
-	 *  frame the screen needs goes up at once; one fetched ahead of time waits until the camera is still, one at a time. */
+	/** Put decoded frames on the card. Done inside render, where MapLibre expects its GL state to be touched. The
+	 *  frames the screen needs go up together, at once: while the map starts a frame of MapLibre can take a tenth of
+	 *  a second, and one frame each would hold the first view for several of them. A frame fetched ahead of time
+	 *  waits until the camera is still, and goes up alone. */
 	private upload(gl: WebGL2RenderingContext) {
-		let i = this.pending.findIndex((p) => p.soon)
-		if (i < 0 && this.pending.length && performance.now() - this.lastIdleUpload > IDLE_UPLOAD_MS && !this.map?.isMoving()) {
-			i = 0
+		const soon = this.pending.filter((p) => p.soon)
+		if (soon.length) {
+			for (const job of soon.slice(0, 6)) {
+				this.pending.splice(this.pending.indexOf(job), 1)
+				this.put(gl, job)
+			}
+		} else if (this.pending.length && performance.now() - this.lastIdleUpload > IDLE_UPLOAD_MS && !this.map?.isMoving()) {
 			this.lastIdleUpload = performance.now()
-		}
-		if (i < 0) {
+			this.put(gl, this.pending.shift()!)
+		} else {
 			if (this.pending.length) this.map?.triggerRepaint()
 			return
 		}
-		const job = this.pending.splice(i, 1)[0]
+		this.touch()
+		this.onFrame?.()
+	}
+
+	/** one decoded frame onto the card */
+	private put(gl: WebGL2RenderingContext, job: { key: string; bitmap: ImageBitmap }) {
 		const tex = gl.createTexture()!
 		gl.activeTexture(gl.TEXTURE0)
 		gl.bindTexture(gl.TEXTURE_2D, tex)
@@ -366,8 +380,6 @@ export class WaterLayer {
 				this.slots.delete(old[0])
 			}
 		}
-		this.touch()
-		this.onFrame?.()
 	}
 
 	/** Runs once a frame on both paths, before anything is drawn: frames go on the card here, and a picture that
@@ -437,6 +449,10 @@ export class WaterLayer {
 		gl.enable(gl.BLEND)
 		gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA)
 		gl.bindVertexArray(this.vao)
+		if (!this.drawn) {
+			this.drawn = true
+			this.onFrame?.()
+		}
 		return true
 	}
 
