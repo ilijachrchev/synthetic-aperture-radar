@@ -45,7 +45,7 @@ export function Monitor({ films, track }: { films: Film[]; track: HTMLElement | 
 	const videos = useRef<(HTMLVideoElement | null)[]>([])
 	const bar = useRef<HTMLSpanElement>(null)
 	const curRef = useRef(0)
-	// the furthest film that has been given its file: the one on screen, and the next once that one can play through
+	// the furthest film that has been given its file: the one on screen, and the next once that one is fully loaded
 	const reach = useRef(-1)
 	const [through, setThrough] = useState<boolean[]>(() => films.map(() => false))
 	const [cur, setCur] = useState(0)
@@ -131,8 +131,8 @@ export function Monitor({ films, track }: { films: Film[]; track: HTMLElement | 
 		return () => timers.forEach((t) => window.clearTimeout(t))
 	}, [cur, seen, calm, near])
 
-	// one film at a time: the next one only starts to load once the one on screen has enough to play to its end, so
-	// the page and the first film do not share the line with a second film nobody is watching yet
+	// one film at a time: the next one only starts to load once the one on screen is fully loaded, so the page and
+	// the first film do not share the line with a second film nobody is watching yet
 	if (near && !calm) reach.current = Math.max(reach.current, Math.min(N - 1, cur + (through[cur] ? 1 : 0)))
 	const film = films[cur]
 	return (
@@ -151,7 +151,12 @@ export function Monitor({ films, track }: { films: Film[]; track: HTMLElement | 
 							loop
 							playsInline
 							preload="auto"
-							onCanPlayThrough={() => setThrough((t) => (t[i] ? t : t.map((v, k) => v || k === i)))}
+							onProgress={(e) => {
+								// the whole film is in: the next one may start to load
+								const v = e.currentTarget
+								const end = v.buffered.length ? v.buffered.end(v.buffered.length - 1) : 0
+								if (v.duration && end >= v.duration - 0.5) setThrough((t) => (t[i] ? t : t.map((x, k) => x || k === i)))
+							}}
 							aria-label={`${f.title}, ${f.place}: the story playing on its 3D map page`}
 						/>
 					))}
