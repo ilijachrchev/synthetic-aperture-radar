@@ -10,7 +10,7 @@
 |:---:|---|---|---|---|
 | 🖼️ | [**CV**: surface masks](#cv-model) | **Ilija Chrchev** (`@ilijachrchev`) | Where is the water, flooded vegetation or burned ground in this scene? | Mask maps per date + accuracy scores |
 | 🧮 | [**ML**: change classes](#ml-model) | **Luka Georgieski** | What kind of land is this pixel, and how does it change through the season? | Class map + confusion matrix |
-| 📈 | [**Prediction**: forecasts](#prediction-model) | ⬜ *Open: add your name* | What happens next, and how sure are we? | Forecasts with ranges + backtest scores |
+| 📈 | [**Prediction**: forecasts](#prediction-model) | **Zhivko Stoimchev** (`@zstoimchev`) | What happens next, and how sure are we? | Forecasts with ranges + backtest scores |
 
 ## How they fit together
 
@@ -19,8 +19,9 @@ flowchart LR
     G["NISAR GCOV<br/>HH · HV · 20 m"] --> S["Shared NISAR stack<br/>per site, every date"]
     S --> CV["🖼️ CV model<br/>Ilija Chrchev"]
     S --> ML["🧮 ML model<br/>Luka Georgieski"]
-    U["NISAR GUNW<br/>ground motion"] --> P["📈 Prediction model<br/>owner: open"]
-    E["EGMS history"] --> P
+    U["NISAR GUNW<br/>ground motion"] -. planned validation .-> P["📈 Prediction model<br/>Zhivko Stoimchev"]
+    E["EGMS history"] -. import pending .-> P
+    N["GNSS LOR1<br/>implemented baseline"] --> P
     D["Sentinel-1 water maps<br/>OPERA DSWx-S1"] -. labels .-> CV
     D -. history .-> P
     F["EMSR935 · EFFIS"] -. labels .-> CV
@@ -76,19 +77,21 @@ CV and ML read the same NISAR stack but answer different questions. Prediction u
 
 ## Prediction model
 
-**Owner:** `⬜ Open: add your name here`
+**Owner:** Zhivko Stoimchev (`@zstoimchev`)
 
 > 📈 Forecasts what comes next, always with a range and a score against a simple baseline.
+
+**Implemented first milestone:** [Lorca forecasting pipeline](../pipeline/prediction/README.md), using public LOR1 GNSS data, three baselines, chronological evaluation, empirical ranges and frontend-ready exports. EGMS CSV ingestion is tested; actual EGMS import, NISAR validation and the Albufera forecast remain pending.
 
 **A. Ground sinking in Lorca (Alto Guadalentín)**
 
 | | |
 |---|---|
 | **Data** | EGMS Ortho vertical motion, 100 m grid, 2020 to 2025 (free EU Login) · GNSS station LOR1 (Nevada Geodetic Laboratory) · NISAR GUNW track 167 D, 25 Jun to 11 Oct 2026, 7 pairs |
-| **Processing** | Clip EGMS to Lorca, one time series per point · NISAR phase to motion: d = -λ/(4π) · φ, with λ about 24.4 cm · subtract a stable reference pixel · remove the ionosphere screen shipped in each file · chain the 12, 24 and 36-day pairs into one series |
-| **Model** | Linear trend + yearly sine per point, with conformal ranges (MAPIE) |
-| **Check** | Backtest: train 2020 to 2023, test 2024 to 2025, against constant and straight-line baselines. Then the real test: the EGMS forecast for Jun to Oct 2026 against what NISAR measured, an independent sensor |
-| **Delivers** | Forecast JSON per point (median, 80% and 95% ranges) · backtest scores · forecast vs NISAR comparison |
+| **Processing** | Current: one vertical-displacement series, explicit units/reference date, missing observations retained as gaps. Planned GUNW integration: verify phase sign/wavelength, corrections and network connectivity, then compare in a compatible line-of-sight geometry and reference. MintPy requires GUNW HDF5 metadata, not only Harmony COGs |
+| **Model** | Persistence, linear trend, and trend + annual sine/cosine. Current ranges use chronological calibration errors; nominal coverage is evaluated, not guaranteed |
+| **Check** | Rolling-origin forecasts with 2023 development, 2024 calibration and a held-out 2025 test by default. Report actual scored dates/counts. Account for stale observations using effective leads. NISAR comparison remains pending |
+| **Delivers** | Forecast JSON per point (point estimate, estimated 80% and 95% ranges) · backtest CSV/scores · PNG/SVG chart. Later: forecast vs corrected NISAR comparison |
 
 **B. Flooded area in the Albufera**
 

@@ -36,6 +36,19 @@ An open-source, interactive web app that turns NISAR L-band radar data into maps
 
 > 🚧 **Work in progress.** Built during the hackathon (13 to 15 Nov 2026). Models and owners: [docs/MODELS.md](docs/MODELS.md). Data facts and sources: [docs/RESEARCH.md](docs/RESEARCH.md).
 
+## Run the prediction baseline
+
+The first implemented component forecasts vertical displacement at Lorca's LOR1 GNSS station, compares persistence, linear trend and annual-seasonal baselines, and exports JSON, scores and charts. This example uses public NGL observations; EGMS CSV ingestion is supported, while NISAR validation remains to be implemented.
+
+```bash
+python -m pip install -e ".[dev,prediction]"
+python -m pipeline.prediction fetch --station LOR1
+python -m pipeline.prediction run
+python -m unittest discover -s tests -v
+```
+
+Outputs: [`data/prediction/lorca/`](data/prediction/lorca/) and [`data/manifest.json`](data/manifest.json). See the [prediction guide](pipeline/prediction/README.md) for the frozen 14 November example, data cutoffs, backtests, limitations and EGMS import instructions.
+
 ## How it works
 
 ```mermaid
@@ -134,7 +147,7 @@ To be added.
 
 Space Apps asks every team to disclose how SI tools were used.
 
-- Research notes and documentation in this repository were drafted with an SI assistant (Claude Code). Facts were checked against primary sources (NASA CMR, USGS, official docs).
+- Research notes and documentation in this repository were drafted with SI assistance (Claude Code). The Lorca prediction pipeline was developed with OpenAI Codex, and the Albufera forecast, the shared manifest writer and the prediction docs with Claude Code; provider observations remain real data and forecasts are statistical estimates. Facts were checked against primary sources (NASA CMR, USGS, official docs).
 - The project idea and all decisions are the team's own.
 - SI-assisted commits carry a `Co-Authored-By` trailer. SI-generated images will carry a visible watermark.
 
