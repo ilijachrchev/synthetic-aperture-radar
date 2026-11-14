@@ -239,7 +239,7 @@ The burn is "burn the radar confirms": the echo 1.5 dB down on two passes in a r
 
 With Sentinel-1 chosen, the flood page says "22 Oct, the next radar pass: 527 ha of open water", then "The water goes down slowly", and ends on the 250 ha of 10 Nov.
 
-The films were recorded from the production build with `web/scripts/record_flood.py` (the screencast of the installed Chrome, the smoothest of up to four takes at 30 to 39 frames a second): flood 26 s, fire 29 s, rice 22 s, at 1920 x 1080. They are in `web/.cache/film/`, not in git. The video of the hackathon is 30 s for everything, so they are material for the cut, not the cut.
+The films are recorded from the production build with `web/scripts/record_flood.py --steady`, frame by frame on the page's own clock (14 Nov, 21:15): flood 27 s, fire 32 s, rice 23 s, at 1920 x 1080 and 30 frames a second, every frame a new one. The first films (17:00) were the screencast of the installed Chrome while the graphics card was busy: about 17 new frames a second with freezes up to a third of a second, which is what made the monitor of the landing look laggy. They are in `web/.cache/film/`, not in git. The video of the hackathon is 30 s for everything, so they are material for the cut, not the cut.
 
 ## 12. Storyboard
 
@@ -332,12 +332,12 @@ Frames and films:
 ```bash
 python scripts/shoot_flood.py out --story flood --cinema --theme dark --size 1920x1080 --base http://localhost:3000
 python scripts/shoot_flood.py out --story fire --shots before burning estimate first october official --cinema --base http://localhost:3000
-python scripts/record_flood.py out --url "http://localhost:3000/flood?story" --seconds 70 --screencast
+python scripts/record_flood.py out --url "http://localhost:3000/flood?story" --seconds 70 --steady
 python scripts/make_storyboard.py --real 04_after=out/after.png --mock m1_sink=mock/lorca.png
 ```
 
 - `shoot_flood.py`: `--story` picks the page, `--shots` the moments (all when left out), `--cinema` the film look, `--theme` day or night, `--base` the server.
-- `record_flood.py` waits until the way in has loaded, then records until the story ends or `--seconds` have passed. With `--screencast` it takes the frames from the Chrome or Edge of the computer and makes the film with the `ffmpeg` on the path; on a busy computer take it a few times and keep the smoothest.
+- `record_flood.py` waits until the way in has loaded, then records until the story ends or `--seconds` have passed. With `--steady` it moves the page's clock on by one frame at a time (`performance.now`, the timers, `requestAnimationFrame` and the CSS animations of the page follow it), waits until the tiles, the radar frames and the picture of that moment are in and takes the picture: a smooth film on any computer, in about two minutes a story. With `--screencast` it takes the frames the Chrome or Edge of the computer sends, which stutters on a busy computer.
 - Both scripts fall back to the Chrome or Edge of the computer when Playwright has no browser of its own, so nothing has to be downloaded.
 - `make_storyboard.py` writes the frames at 1,920 px and stamps every mockup with a visible mark.
 
@@ -348,7 +348,7 @@ python scripts/landing_films.py                                  # encode the re
 python scripts/landing_films.py --record http://localhost:3000   # record the three stories first
 ```
 
-- It writes `web/public/films/<page>.mp4` (1,280 x 720, 4 to 5 MB each), the first frame as `<page>.jpg` and a late frame as `<page>-still.jpg` for people who ask for less motion.
+- It records with `record_flood.py --steady` (one take is enough) and writes `web/public/films/<page>.mp4` (1,280 x 720, 30 frames a second, 4 to 6 MB each), the first frame as `<page>.jpg` and a late frame as `<page>-still.jpg` for people who ask for less motion.
 - Run it again after the layers are baked again: a film shows the numbers of the day it was recorded.
 - The old 2D explorer at `/map` is retired. `/map?story=fire` opens `/fire`; `/map` and every other old address open `/flood` (redirects in `web/next.config.ts`). The old value stays in the address, so `?story` plays the film only when it has no value.
 
