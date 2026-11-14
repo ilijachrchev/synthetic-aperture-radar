@@ -1,11 +1,12 @@
 import Link from 'next/link'
 import { SITE } from '@/content/site'
 import { Mark } from './brand'
+import { HalftoneLand } from './halftone-land'
 import './site-footer.css'
 
-// The footer, ported from 8x.social: a card rising over the page with its top corners rounded, the brand and one
-// line on the left, three link columns on the right, a hairline bar, then the card opens onto the page's ground and
-// the giant wordmark climbs over it. Colours follow this site's two themes.
+// The footer, ported from 8x.social: a light card rising over the dark close with its top corners rounded, the
+// brand and one line on the left, three link columns on the right, a hairline bar, then a halftone land with
+// drifting mist and the giant wordmark climbing over it. Colours follow this site's two themes.
 const COLUMNS = [
 	{
 		title: 'Landing',
@@ -119,7 +120,9 @@ export function SiteFooter() {
 						<li>Not endorsed by NASA</li>
 					</ul>
 				</div>
-				<div className="foot8-land" aria-hidden />
+				<div className="foot8-land">
+					<HalftoneLand className="foot8-canvas" />
+				</div>
 				<div className="foot8-mark" aria-hidden>
 					<span>{SITE.name}</span>
 				</div>
