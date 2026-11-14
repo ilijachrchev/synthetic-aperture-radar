@@ -13,27 +13,28 @@
     "component": "vertical",
     "units": "mm",
     "positive_direction": "up",
-    "latitude": 37.6538928785,
-    "longitude": -1.6867701674,
-    "sha256": "b780c774c2f6106caa0da186d372f0e6500ddff320dd794dfecd640ab1d3f563",
+    "input_file": "data/context/lorca_gnss_LOR1_up.csv",
+    "sha256": "8c6bb9816f0d65c725763ce8d194e68fc89d147b077b07f8de96973bba084e2f",
     "quality_filter": {
       "max_vertical_sigma_mm": 20.0,
       "rejected_rows_in_source": 0
     },
-    "corrections": "No equipment-step, earthquake, or loading corrections applied",
-    "retrieved_at_utc": "2026-11-13T23:25:59+00:00",
+    "equipment_changes": [
+      "2023-08-03"
+    ],
+    "corrections": "Step term at each equipment change in the trend models; no earthquake or loading corrections",
     "reference_date": "2020-01-01",
-    "reference_value_before_rebasing_mm": 364799.45900000003
+    "reference_value_before_rebasing_mm": 364799.46
   },
   "component": "vertical",
   "units": "mm",
   "positive_direction": "up",
   "reference_date": "2020-01-01",
-  "issued_at_utc": "2026-11-13T23:37:10+00:00",
+  "issued_at_utc": "2026-11-14T12:03:52+00:00",
   "forecast_origin": "2026-11-14",
-  "data_cutoff": "2026-10-17",
-  "observation_age_days": 28,
-  "last_observation_mm": -372.56100000004517,
+  "data_cutoff": "2026-10-31",
+  "observation_age_days": 14,
+  "last_observation_mm": -386.5999999999767,
   "requested_horizons_days": [
     12,
     24,
@@ -50,46 +51,46 @@
     {
       "target_date": "2026-11-26",
       "horizon_days": 12,
-      "lead_from_last_observation_days": 40,
+      "lead_from_last_observation_days": 26,
       "model": "persistence",
-      "value_mm": -372.56100000004517,
+      "value_mm": -386.5999999999767,
       "delta_since_last_observation_mm": 0.0,
       "intervals": {
         "80": {
           "nominal_coverage": 0.8,
-          "calibration_n": 47,
-          "lower_mm": -385.25400000001537,
-          "upper_mm": -359.86800000007497,
+          "calibration_n": 49,
+          "lower_mm": -395.71999999997206,
+          "upper_mm": -377.4799999999814,
           "status": "estimated"
         },
         "95": {
           "nominal_coverage": 0.95,
-          "calibration_n": 47,
-          "lower_mm": -390.5910000000149,
-          "upper_mm": -354.53100000007544,
+          "calibration_n": 49,
+          "lower_mm": -400.29999999998836,
+          "upper_mm": -372.8999999999651,
           "status": "estimated"
         }
       },
       "backtest_at_effective_lead": {
-        "n": 16,
-        "mae_mm": 6.173000000009779,
-        "rmse_mm": 7.2271267977137565,
+        "n": 18,
+        "mae_mm": 4.307777777770146,
+        "rmse_mm": 5.032273619123958,
         "first_origin": "2025-08-02",
-        "last_origin": "2025-11-15",
-        "first_target": "2025-09-11",
+        "last_origin": "2025-11-29",
+        "first_target": "2025-08-28",
         "last_target": "2025-12-25",
         "intervals": {
           "80": {
-            "calibration_n": 47,
-            "radius_mm": 12.692999999970198,
-            "empirical_coverage": 1.0,
-            "mean_width_mm": 25.385999999940395
+            "calibration_n": 49,
+            "radius_mm": 9.119999999995343,
+            "empirical_coverage": 0.9444444444444444,
+            "mean_width_mm": 18.239999999990687
           },
           "95": {
-            "calibration_n": 47,
-            "radius_mm": 18.029999999969732,
+            "calibration_n": 49,
+            "radius_mm": 13.700000000011642,
             "empirical_coverage": 1.0,
-            "mean_width_mm": 36.059999999939464
+            "mean_width_mm": 27.400000000023283
           }
         },
         "skill_vs_persistence": 0.0
@@ -98,46 +99,46 @@
     {
       "target_date": "2026-12-08",
       "horizon_days": 24,
-      "lead_from_last_observation_days": 52,
+      "lead_from_last_observation_days": 38,
       "model": "persistence",
-      "value_mm": -372.56100000004517,
+      "value_mm": -386.5999999999767,
       "delta_since_last_observation_mm": 0.0,
       "intervals": {
         "80": {
           "nominal_coverage": 0.8,
-          "calibration_n": 45,
-          "lower_mm": -383.46400000009453,
-          "upper_mm": -361.6579999999958,
+          "calibration_n": 47,
+          "lower_mm": -395.5,
+          "upper_mm": -377.69999999995343,
           "status": "estimated"
         },
         "95": {
           "nominal_coverage": 0.95,
-          "calibration_n": 45,
-          "lower_mm": -391.98499999998603,
-          "upper_mm": -353.1370000001043,
+          "calibration_n": 47,
+          "lower_mm": -405.3199999999488,
+          "upper_mm": -367.88000000000466,
           "status": "estimated"
         }
       },
       "backtest_at_effective_lead": {
-        "n": 15,
-        "mae_mm": 8.832333333336283,
-        "rmse_mm": 9.38963447993372,
+        "n": 17,
+        "mae_mm": 5.954705882348422,
+        "rmse_mm": 6.936583749775931,
         "first_origin": "2025-08-02",
-        "last_origin": "2025-11-08",
-        "first_target": "2025-09-23",
+        "last_origin": "2025-11-22",
+        "first_target": "2025-09-09",
         "last_target": "2025-12-30",
         "intervals": {
           "80": {
-            "calibration_n": 45,
-            "radius_mm": 10.90300000004936,
-            "empirical_coverage": 0.6666666666666666,
-            "mean_width_mm": 21.80600000009872
+            "calibration_n": 47,
+            "radius_mm": 8.900000000023283,
+            "empirical_coverage": 0.7647058823529411,
+            "mean_width_mm": 17.800000000046566
           },
           "95": {
-            "calibration_n": 45,
-            "radius_mm": 19.42399999994086,
+            "calibration_n": 47,
+            "radius_mm": 18.71999999997206,
             "empirical_coverage": 1.0,
-            "mean_width_mm": 38.84799999988172
+            "mean_width_mm": 37.43999999994412
           }
         },
         "skill_vs_persistence": 0.0
@@ -146,46 +147,46 @@
     {
       "target_date": "2026-12-20",
       "horizon_days": 36,
-      "lead_from_last_observation_days": 64,
+      "lead_from_last_observation_days": 50,
       "model": "persistence",
-      "value_mm": -372.56100000004517,
+      "value_mm": -386.5999999999767,
       "delta_since_last_observation_mm": 0.0,
       "intervals": {
         "80": {
           "nominal_coverage": 0.8,
-          "calibration_n": 44,
-          "lower_mm": -387.4880000000121,
-          "upper_mm": -357.63400000007823,
+          "calibration_n": 46,
+          "lower_mm": -398.820000000007,
+          "upper_mm": -374.37999999994645,
           "status": "estimated"
         },
         "95": {
           "nominal_coverage": 0.95,
-          "calibration_n": 44,
-          "lower_mm": -393.0720000000438,
-          "upper_mm": -352.05000000004657,
+          "calibration_n": 46,
+          "lower_mm": -407.2699999999604,
+          "upper_mm": -365.929999999993,
           "status": "estimated"
         }
       },
       "backtest_at_effective_lead": {
-        "n": 13,
-        "mae_mm": 10.054000000008203,
-        "rmse_mm": 10.858605321984754,
+        "n": 15,
+        "mae_mm": 7.392000000008071,
+        "rmse_mm": 8.447752363797582,
         "first_origin": "2025-08-02",
-        "last_origin": "2025-10-25",
-        "first_target": "2025-10-05",
+        "last_origin": "2025-11-08",
+        "first_target": "2025-09-21",
         "last_target": "2025-12-28",
         "intervals": {
           "80": {
-            "calibration_n": 44,
-            "radius_mm": 14.926999999966938,
-            "empirical_coverage": 0.9230769230769231,
-            "mean_width_mm": 29.853999999933876
+            "calibration_n": 46,
+            "radius_mm": 12.220000000030268,
+            "empirical_coverage": 0.8666666666666667,
+            "mean_width_mm": 24.440000000060536
           },
           "95": {
-            "calibration_n": 44,
-            "radius_mm": 20.510999999998603,
+            "calibration_n": 46,
+            "radius_mm": 20.669999999983702,
             "empirical_coverage": 1.0,
-            "mean_width_mm": 41.021999999997206
+            "mean_width_mm": 41.339999999967404
           }
         },
         "skill_vs_persistence": 0.0
@@ -197,46 +198,46 @@
       {
         "target_date": "2026-11-26",
         "horizon_days": 12,
-        "lead_from_last_observation_days": 40,
+        "lead_from_last_observation_days": 26,
         "model": "persistence",
-        "value_mm": -372.56100000004517,
+        "value_mm": -386.5999999999767,
         "delta_since_last_observation_mm": 0.0,
         "intervals": {
           "80": {
             "nominal_coverage": 0.8,
-            "calibration_n": 47,
-            "lower_mm": -385.25400000001537,
-            "upper_mm": -359.86800000007497,
+            "calibration_n": 49,
+            "lower_mm": -395.71999999997206,
+            "upper_mm": -377.4799999999814,
             "status": "estimated"
           },
           "95": {
             "nominal_coverage": 0.95,
-            "calibration_n": 47,
-            "lower_mm": -390.5910000000149,
-            "upper_mm": -354.53100000007544,
+            "calibration_n": 49,
+            "lower_mm": -400.29999999998836,
+            "upper_mm": -372.8999999999651,
             "status": "estimated"
           }
         },
         "backtest_at_effective_lead": {
-          "n": 16,
-          "mae_mm": 6.173000000009779,
-          "rmse_mm": 7.2271267977137565,
+          "n": 18,
+          "mae_mm": 4.307777777770146,
+          "rmse_mm": 5.032273619123958,
           "first_origin": "2025-08-02",
-          "last_origin": "2025-11-15",
-          "first_target": "2025-09-11",
+          "last_origin": "2025-11-29",
+          "first_target": "2025-08-28",
           "last_target": "2025-12-25",
           "intervals": {
             "80": {
-              "calibration_n": 47,
-              "radius_mm": 12.692999999970198,
-              "empirical_coverage": 1.0,
-              "mean_width_mm": 25.385999999940395
+              "calibration_n": 49,
+              "radius_mm": 9.119999999995343,
+              "empirical_coverage": 0.9444444444444444,
+              "mean_width_mm": 18.239999999990687
             },
             "95": {
-              "calibration_n": 47,
-              "radius_mm": 18.029999999969732,
+              "calibration_n": 49,
+              "radius_mm": 13.700000000011642,
               "empirical_coverage": 1.0,
-              "mean_width_mm": 36.059999999939464
+              "mean_width_mm": 27.400000000023283
             }
           },
           "skill_vs_persistence": 0.0
@@ -245,46 +246,46 @@
       {
         "target_date": "2026-12-08",
         "horizon_days": 24,
-        "lead_from_last_observation_days": 52,
+        "lead_from_last_observation_days": 38,
         "model": "persistence",
-        "value_mm": -372.56100000004517,
+        "value_mm": -386.5999999999767,
         "delta_since_last_observation_mm": 0.0,
         "intervals": {
           "80": {
             "nominal_coverage": 0.8,
-            "calibration_n": 45,
-            "lower_mm": -383.46400000009453,
-            "upper_mm": -361.6579999999958,
+            "calibration_n": 47,
+            "lower_mm": -395.5,
+            "upper_mm": -377.69999999995343,
             "status": "estimated"
           },
           "95": {
             "nominal_coverage": 0.95,
-            "calibration_n": 45,
-            "lower_mm": -391.98499999998603,
-            "upper_mm": -353.1370000001043,
+            "calibration_n": 47,
+            "lower_mm": -405.3199999999488,
+            "upper_mm": -367.88000000000466,
             "status": "estimated"
           }
         },
         "backtest_at_effective_lead": {
-          "n": 15,
-          "mae_mm": 8.832333333336283,
-          "rmse_mm": 9.38963447993372,
+          "n": 17,
+          "mae_mm": 5.954705882348422,
+          "rmse_mm": 6.936583749775931,
           "first_origin": "2025-08-02",
-          "last_origin": "2025-11-08",
-          "first_target": "2025-09-23",
+          "last_origin": "2025-11-22",
+          "first_target": "2025-09-09",
           "last_target": "2025-12-30",
           "intervals": {
             "80": {
-              "calibration_n": 45,
-              "radius_mm": 10.90300000004936,
-              "empirical_coverage": 0.6666666666666666,
-              "mean_width_mm": 21.80600000009872
+              "calibration_n": 47,
+              "radius_mm": 8.900000000023283,
+              "empirical_coverage": 0.7647058823529411,
+              "mean_width_mm": 17.800000000046566
             },
             "95": {
-              "calibration_n": 45,
-              "radius_mm": 19.42399999994086,
+              "calibration_n": 47,
+              "radius_mm": 18.71999999997206,
               "empirical_coverage": 1.0,
-              "mean_width_mm": 38.84799999988172
+              "mean_width_mm": 37.43999999994412
             }
           },
           "skill_vs_persistence": 0.0
@@ -293,46 +294,46 @@
       {
         "target_date": "2026-12-20",
         "horizon_days": 36,
-        "lead_from_last_observation_days": 64,
+        "lead_from_last_observation_days": 50,
         "model": "persistence",
-        "value_mm": -372.56100000004517,
+        "value_mm": -386.5999999999767,
         "delta_since_last_observation_mm": 0.0,
         "intervals": {
           "80": {
             "nominal_coverage": 0.8,
-            "calibration_n": 44,
-            "lower_mm": -387.4880000000121,
-            "upper_mm": -357.63400000007823,
+            "calibration_n": 46,
+            "lower_mm": -398.820000000007,
+            "upper_mm": -374.37999999994645,
             "status": "estimated"
           },
           "95": {
             "nominal_coverage": 0.95,
-            "calibration_n": 44,
-            "lower_mm": -393.0720000000438,
-            "upper_mm": -352.05000000004657,
+            "calibration_n": 46,
+            "lower_mm": -407.2699999999604,
+            "upper_mm": -365.929999999993,
             "status": "estimated"
           }
         },
         "backtest_at_effective_lead": {
-          "n": 13,
-          "mae_mm": 10.054000000008203,
-          "rmse_mm": 10.858605321984754,
+          "n": 15,
+          "mae_mm": 7.392000000008071,
+          "rmse_mm": 8.447752363797582,
           "first_origin": "2025-08-02",
-          "last_origin": "2025-10-25",
-          "first_target": "2025-10-05",
+          "last_origin": "2025-11-08",
+          "first_target": "2025-09-21",
           "last_target": "2025-12-28",
           "intervals": {
             "80": {
-              "calibration_n": 44,
-              "radius_mm": 14.926999999966938,
-              "empirical_coverage": 0.9230769230769231,
-              "mean_width_mm": 29.853999999933876
+              "calibration_n": 46,
+              "radius_mm": 12.220000000030268,
+              "empirical_coverage": 0.8666666666666667,
+              "mean_width_mm": 24.440000000060536
             },
             "95": {
-              "calibration_n": 44,
-              "radius_mm": 20.510999999998603,
+              "calibration_n": 46,
+              "radius_mm": 20.669999999983702,
               "empirical_coverage": 1.0,
-              "mean_width_mm": 41.021999999997206
+              "mean_width_mm": 41.339999999967404
             }
           },
           "skill_vs_persistence": 0.0
@@ -343,145 +344,145 @@
       {
         "target_date": "2026-11-26",
         "horizon_days": 12,
-        "lead_from_last_observation_days": 40,
+        "lead_from_last_observation_days": 26,
         "model": "linear",
-        "value_mm": -387.5807822991264,
-        "delta_since_last_observation_mm": -15.019782299081214,
+        "value_mm": -387.2535989269268,
+        "delta_since_last_observation_mm": -0.6535989269501101,
         "intervals": {
           "80": {
             "nominal_coverage": 0.8,
-            "calibration_n": 47,
-            "lower_mm": -411.3226304340601,
-            "upper_mm": -363.83893416419266,
+            "calibration_n": 49,
+            "lower_mm": -398.00363360875434,
+            "upper_mm": -376.5035642450993,
             "status": "estimated"
           },
           "95": {
             "nominal_coverage": 0.95,
-            "calibration_n": 47,
-            "lower_mm": -417.3932677396796,
-            "upper_mm": -357.7682968585732,
+            "calibration_n": 49,
+            "lower_mm": -404.9852734377618,
+            "upper_mm": -369.52192441609185,
             "status": "estimated"
           }
         },
         "backtest_at_effective_lead": {
-          "n": 16,
-          "mae_mm": 3.1070067609341834,
-          "rmse_mm": 3.7478412482568615,
+          "n": 18,
+          "mae_mm": 3.458644195795491,
+          "rmse_mm": 4.222479614854825,
           "first_origin": "2025-08-02",
-          "last_origin": "2025-11-15",
-          "first_target": "2025-09-11",
+          "last_origin": "2025-11-29",
+          "first_target": "2025-08-28",
           "last_target": "2025-12-25",
           "intervals": {
             "80": {
-              "calibration_n": 47,
-              "radius_mm": 23.74184813493372,
+              "calibration_n": 49,
+              "radius_mm": 10.750034681827515,
               "empirical_coverage": 1.0,
-              "mean_width_mm": 47.48369626986744
+              "mean_width_mm": 21.50006936365503
             },
             "95": {
-              "calibration_n": 47,
-              "radius_mm": 29.81248544055319,
+              "calibration_n": 49,
+              "radius_mm": 17.731674510834978,
               "empirical_coverage": 1.0,
-              "mean_width_mm": 59.62497088110638
+              "mean_width_mm": 35.463349021669956
             }
           },
-          "skill_vs_persistence": 0.496677991101691
+          "skill_vs_persistence": 0.1971163847765136
         }
       },
       {
         "target_date": "2026-12-08",
         "horizon_days": 24,
-        "lead_from_last_observation_days": 52,
+        "lead_from_last_observation_days": 38,
         "model": "linear",
-        "value_mm": -388.9437921648202,
-        "delta_since_last_observation_mm": -16.382792164775026,
+        "value_mm": -388.60823461631446,
+        "delta_since_last_observation_mm": -2.008234616337745,
         "intervals": {
           "80": {
             "nominal_coverage": 0.8,
-            "calibration_n": 45,
-            "lower_mm": -414.59432231961256,
-            "upper_mm": -363.29326201002783,
+            "calibration_n": 47,
+            "lower_mm": -400.4344652735246,
+            "upper_mm": -376.7820039591043,
             "status": "estimated"
           },
           "95": {
             "nominal_coverage": 0.95,
-            "calibration_n": 45,
-            "lower_mm": -419.4126726533327,
-            "upper_mm": -358.47491167630767,
+            "calibration_n": 47,
+            "lower_mm": -406.402575231205,
+            "upper_mm": -370.81389400142393,
             "status": "estimated"
           }
         },
         "backtest_at_effective_lead": {
-          "n": 15,
-          "mae_mm": 2.4582886701893623,
-          "rmse_mm": 3.284280952680485,
+          "n": 17,
+          "mae_mm": 3.0477908990693483,
+          "rmse_mm": 4.425926404402297,
           "first_origin": "2025-08-02",
-          "last_origin": "2025-11-08",
-          "first_target": "2025-09-23",
+          "last_origin": "2025-11-22",
+          "first_target": "2025-09-09",
           "last_target": "2025-12-30",
           "intervals": {
             "80": {
-              "calibration_n": 45,
-              "radius_mm": 25.650530154792364,
-              "empirical_coverage": 1.0,
-              "mean_width_mm": 51.30106030958473
+              "calibration_n": 47,
+              "radius_mm": 11.826230657210147,
+              "empirical_coverage": 0.9411764705882353,
+              "mean_width_mm": 23.652461314420293
             },
             "95": {
-              "calibration_n": 45,
-              "radius_mm": 30.468880488512525,
+              "calibration_n": 47,
+              "radius_mm": 17.79434061489053,
               "empirical_coverage": 1.0,
-              "mean_width_mm": 60.93776097702505
+              "mean_width_mm": 35.58868122978106
             }
           },
-          "skill_vs_persistence": 0.7216716605440003
+          "skill_vs_persistence": 0.488171043324921
         }
       },
       {
         "target_date": "2026-12-20",
         "horizon_days": 36,
-        "lead_from_last_observation_days": 64,
+        "lead_from_last_observation_days": 50,
         "model": "linear",
-        "value_mm": -390.30680203051406,
-        "delta_since_last_observation_mm": -17.745802030468894,
+        "value_mm": -389.96287030570215,
+        "delta_since_last_observation_mm": -3.362870305725437,
         "intervals": {
           "80": {
             "nominal_coverage": 0.8,
-            "calibration_n": 44,
-            "lower_mm": -415.80711344535064,
-            "upper_mm": -364.8064906156775,
+            "calibration_n": 46,
+            "lower_mm": -403.86132055257394,
+            "upper_mm": -376.06442005883036,
             "status": "estimated"
           },
           "95": {
             "nominal_coverage": 0.95,
-            "calibration_n": 44,
-            "lower_mm": -422.5221877547407,
-            "upper_mm": -358.09141630628744,
+            "calibration_n": 46,
+            "lower_mm": -407.62489547223885,
+            "upper_mm": -372.30084513916546,
             "status": "estimated"
           }
         },
         "backtest_at_effective_lead": {
-          "n": 13,
-          "mae_mm": 3.5556703087574726,
-          "rmse_mm": 4.006028197796938,
+          "n": 15,
+          "mae_mm": 4.182583139564705,
+          "rmse_mm": 4.818467030125819,
           "first_origin": "2025-08-02",
-          "last_origin": "2025-10-25",
-          "first_target": "2025-10-05",
+          "last_origin": "2025-11-08",
+          "first_target": "2025-09-21",
           "last_target": "2025-12-28",
           "intervals": {
             "80": {
-              "calibration_n": 44,
-              "radius_mm": 25.500311414836574,
+              "calibration_n": 46,
+              "radius_mm": 13.89845024687179,
               "empirical_coverage": 1.0,
-              "mean_width_mm": 51.00062282967315
+              "mean_width_mm": 27.79690049374358
             },
             "95": {
-              "calibration_n": 44,
-              "radius_mm": 32.21538572422662,
+              "calibration_n": 46,
+              "radius_mm": 17.662025166536694,
               "empirical_coverage": 1.0,
-              "mean_width_mm": 64.43077144845324
+              "mean_width_mm": 35.32405033307339
             }
           },
-          "skill_vs_persistence": 0.6463427184449402
+          "skill_vs_persistence": 0.43417435882573896
         }
       }
     ],
@@ -489,145 +490,145 @@
       {
         "target_date": "2026-11-26",
         "horizon_days": 12,
-        "lead_from_last_observation_days": 40,
+        "lead_from_last_observation_days": 26,
         "model": "trend_seasonal",
-        "value_mm": -389.5119470433881,
-        "delta_since_last_observation_mm": -16.95094704334292,
+        "value_mm": -389.31931119320456,
+        "delta_since_last_observation_mm": -2.7193111932278384,
         "intervals": {
           "80": {
             "nominal_coverage": 0.8,
-            "calibration_n": 47,
-            "lower_mm": -417.251483853117,
-            "upper_mm": -361.7724102336592,
+            "calibration_n": 49,
+            "lower_mm": -397.5018354619422,
+            "upper_mm": -381.1367869244669,
             "status": "estimated"
           },
           "95": {
             "nominal_coverage": 0.95,
-            "calibration_n": 47,
-            "lower_mm": -422.3566147212552,
-            "upper_mm": -356.667279365521,
+            "calibration_n": 49,
+            "lower_mm": -400.5051326031679,
+            "upper_mm": -378.1334897832412,
             "status": "estimated"
           }
         },
         "backtest_at_effective_lead": {
-          "n": 16,
-          "mae_mm": 3.800096029619308,
-          "rmse_mm": 4.659853064160882,
+          "n": 18,
+          "mae_mm": 3.6377185578465463,
+          "rmse_mm": 4.388903258248905,
           "first_origin": "2025-08-02",
-          "last_origin": "2025-11-15",
-          "first_target": "2025-09-11",
+          "last_origin": "2025-11-29",
+          "first_target": "2025-08-28",
           "last_target": "2025-12-25",
           "intervals": {
             "80": {
-              "calibration_n": 47,
-              "radius_mm": 27.739536809728918,
-              "empirical_coverage": 1.0,
-              "mean_width_mm": 55.479073619457836
+              "calibration_n": 49,
+              "radius_mm": 8.182524268737666,
+              "empirical_coverage": 0.9444444444444444,
+              "mean_width_mm": 16.36504853747533
             },
             "95": {
-              "calibration_n": 47,
-              "radius_mm": 32.84466767786711,
+              "calibration_n": 49,
+              "radius_mm": 11.185821409963353,
               "empirical_coverage": 1.0,
-              "mean_width_mm": 65.68933535573422
+              "mean_width_mm": 22.371642819926706
             }
           },
-          "skill_vs_persistence": 0.3844004487909788
+          "skill_vs_persistence": 0.15554637553064432
         }
       },
       {
         "target_date": "2026-12-08",
         "horizon_days": 24,
-        "lead_from_last_observation_days": 52,
+        "lead_from_last_observation_days": 38,
         "model": "trend_seasonal",
-        "value_mm": -391.86917590188926,
-        "delta_since_last_observation_mm": -19.308175901844095,
+        "value_mm": -391.65327058761767,
+        "delta_since_last_observation_mm": -5.053270587640952,
         "intervals": {
           "80": {
             "nominal_coverage": 0.8,
-            "calibration_n": 45,
-            "lower_mm": -421.1770218825111,
-            "upper_mm": -362.56132992126743,
+            "calibration_n": 47,
+            "lower_mm": -399.68079116224163,
+            "upper_mm": -383.6257500129937,
             "status": "estimated"
           },
           "95": {
             "nominal_coverage": 0.95,
-            "calibration_n": 45,
-            "lower_mm": -424.59156940392995,
-            "upper_mm": -359.1467823998486,
+            "calibration_n": 47,
+            "lower_mm": -404.66750194706356,
+            "upper_mm": -378.6390392281718,
             "status": "estimated"
           }
         },
         "backtest_at_effective_lead": {
-          "n": 15,
-          "mae_mm": 3.7531977703086983,
-          "rmse_mm": 4.8026790419303556,
+          "n": 17,
+          "mae_mm": 3.858919790520765,
+          "rmse_mm": 4.925910216958031,
           "first_origin": "2025-08-02",
-          "last_origin": "2025-11-08",
-          "first_target": "2025-09-23",
+          "last_origin": "2025-11-22",
+          "first_target": "2025-09-09",
           "last_target": "2025-12-30",
           "intervals": {
             "80": {
-              "calibration_n": 45,
-              "radius_mm": 29.307845980621835,
-              "empirical_coverage": 1.0,
-              "mean_width_mm": 58.61569196124367
+              "calibration_n": 47,
+              "radius_mm": 8.027520574623964,
+              "empirical_coverage": 0.8235294117647058,
+              "mean_width_mm": 16.055041149247927
             },
             "95": {
-              "calibration_n": 45,
-              "radius_mm": 32.72239350204069,
+              "calibration_n": 47,
+              "radius_mm": 13.014231359445887,
               "empirical_coverage": 1.0,
-              "mean_width_mm": 65.44478700408138
+              "mean_width_mm": 26.028462718891774
             }
           },
-          "skill_vs_persistence": 0.5750615801440792
+          "skill_vs_persistence": 0.35195459410349894
         }
       },
       {
         "target_date": "2026-12-20",
         "horizon_days": 36,
-        "lead_from_last_observation_days": 64,
+        "lead_from_last_observation_days": 50,
         "model": "trend_seasonal",
-        "value_mm": -394.1678584276474,
-        "delta_since_last_observation_mm": -21.60685842760222,
+        "value_mm": -393.9279393636156,
+        "delta_since_last_observation_mm": -7.3279393636389045,
         "intervals": {
           "80": {
             "nominal_coverage": 0.8,
-            "calibration_n": 44,
-            "lower_mm": -424.09060393246784,
-            "upper_mm": -364.24511292282693,
+            "calibration_n": 46,
+            "lower_mm": -403.0407850107548,
+            "upper_mm": -384.81509371647644,
             "status": "estimated"
           },
           "95": {
             "nominal_coverage": 0.95,
-            "calibration_n": 44,
-            "lower_mm": -434.03283402421926,
-            "upper_mm": -354.3028828310755,
+            "calibration_n": 46,
+            "lower_mm": -410.1556707473405,
+            "upper_mm": -377.70020797989076,
             "status": "estimated"
           }
         },
         "backtest_at_effective_lead": {
-          "n": 13,
-          "mae_mm": 5.09392347951507,
-          "rmse_mm": 6.1979472961172375,
+          "n": 15,
+          "mae_mm": 5.081406536973433,
+          "rmse_mm": 6.100633241744352,
           "first_origin": "2025-08-02",
-          "last_origin": "2025-10-25",
-          "first_target": "2025-10-05",
+          "last_origin": "2025-11-08",
+          "first_target": "2025-09-21",
           "last_target": "2025-12-28",
           "intervals": {
             "80": {
-              "calibration_n": 44,
-              "radius_mm": 29.922745504820455,
-              "empirical_coverage": 1.0,
-              "mean_width_mm": 59.84549100964091
+              "calibration_n": 46,
+              "radius_mm": 9.112845647139181,
+              "empirical_coverage": 0.8666666666666667,
+              "mean_width_mm": 18.225691294278363
             },
             "95": {
-              "calibration_n": 44,
-              "radius_mm": 39.86497559657187,
+              "calibration_n": 46,
+              "radius_mm": 16.22773138372486,
               "empirical_coverage": 1.0,
-              "mean_width_mm": 79.72995119314373
+              "mean_width_mm": 32.45546276744972
             }
           },
-          "skill_vs_persistence": 0.49334359662712224
+          "skill_vs_persistence": 0.31258028450109787
         }
       }
     ]
@@ -635,7 +636,7 @@
   "warnings": [
     "Empirical ranges do not guarantee nominal coverage for dependent or changing time series",
     "Retrospective backtests use the current provider release, not archived publication vintages",
-    "Last observation precedes forecast origin by 28 days; intervals use the longer effective leads",
+    "Last observation precedes forecast origin by 14 days; intervals use the longer effective leads",
     "Large observation gaps exist; no missing observations were filled"
   ],
   "nisar_validation": {
