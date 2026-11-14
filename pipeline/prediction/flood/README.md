@@ -52,6 +52,8 @@ Two held-out events is far too few for a skill claim. Read it as "the rule fired
 
 With the rule as set, the alert was **amber 2–3 days before the DANA, never red**. The 5-day lookahead column was looked at after the replay (thanks to @ilijachrchev's review on #15), so it is shown in italics and does not set the rule. It would have been red 3–4 days ahead, but also more prone to false alarms, which we have not tested.
 
+**NISAR check of the DANA** (`python -m pipeline.prediction.nisar_check`, track 066 D, 16 → 28 Oct): **212 ha of new water inside the EMSR935 mapped areas, 87 % of it inside the official flood outline** (62–93 % over a ±1 dB threshold). The CV baseline (`pipeline.cv`) runs on the same scoring region as `pipeline.cv.evaluate` (flood traces and `permanent_water()` left out), so this matches `data/metrics/cv_baseline.json`. DSWx-S1 inside the outline, on the 18 UTC passes within 1 h of NISAR, went from 234 to 408 ha.
+
 **Label check against the official outlines** (`metrics.json → dana_passes_pego_oliva`): DSWx-S1 water in the zone went from about 400 ha (16–17 Oct) to about 700 ha (22–23 Oct), and inside the EMSR935 flood outline from about 200 to about 450 ha. Inside the Generalitat's 1,023 ha river-flood footprint it saw only about 8 ha: that water had drained before the first pass, 3 days after the peak.
 
 ## Caveats

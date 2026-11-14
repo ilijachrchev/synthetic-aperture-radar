@@ -6,6 +6,8 @@ Sources: PRs #1 to #5 on `ilijachrchev/synthetic-aperture-radar` and their discu
 
 ---
 
+> **Status, 14 Nov 2026 14:00:** steps 0, 1 and 3 below are done and merged (#8, #14, #15, #17), and the flood alert (option C from #9) was added. Step 1 found that the antenna is not the cause (see the Lorca README). The NISAR check of step 4's idea is done for Albufera and the DANA (`nisar_check.py`, see MODELS.md). Still open: step 2 (EGMS, needs an EU Login download) and the GUNW part of step 4. Current summary: [MODELS.md → Prediction model](MODELS.md#prediction-model).
+
 ## 1. What the team decided, and why
 
 | Decision | Where | Why |

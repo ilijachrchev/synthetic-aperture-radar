@@ -19,9 +19,11 @@ flowchart LR
     G["NISAR GCOV<br/>HH · HV · 20 m"] --> S["Shared NISAR stack<br/>per site, every date"]
     S --> CV["🖼️ CV model<br/>Ilija Chrchev"]
     S --> ML["🧮 ML model<br/>Luka Georgieski"]
-    U["NISAR GUNW<br/>ground motion"] -. planned validation .-> P["📈 Prediction model<br/>Zhivko Stoimchev"]
+    U["NISAR GUNW<br/>ground motion"] -. planned check .-> P["📈 Prediction model<br/>Zhivko Stoimchev"]
     E["EGMS history"] -. import pending .-> P
-    N["GNSS LOR1<br/>implemented baseline"] --> P
+    N["GNSS LOR1"] --> P
+    R["Rain: ECMWF IFS<br/>Open-Meteo"] --> P
+    S -. NISAR check .-> P
     D["Sentinel-1 water maps<br/>OPERA DSWx-S1"] -. labels .-> CV
     D -. history .-> P
     F["EMSR935 · EFFIS"] -. labels .-> CV
@@ -79,31 +81,27 @@ CV and ML read the same NISAR stack but answer different questions. Prediction u
 
 **Owner:** Zhivko Stoimchev (`@zstoimchev`)
 
-> 📈 Forecasts what comes next, always with a range and a score against a simple baseline.
+> 📈 Forecasts what comes next, always with a range and a score against a simple baseline. Code in [`pipeline/prediction/`](../pipeline/prediction/).
 
-**Implemented first milestone:** [Lorca forecasting pipeline](../pipeline/prediction/README.md), using public LOR1 GNSS data, three baselines, chronological evaluation, empirical ranges and frontend-ready exports. EGMS CSV ingestion is tested; actual EGMS import, NISAR validation and the Albufera forecast remain pending.
+**Status (14 Nov 2026):** three forecasts built, scored and committed with a date (#8, #14, #15, #17), plus a NISAR check of their inputs.
 
-**A. Ground sinking in Lorca (Alto Guadalentín)**
+| | Forecast | Data | Held-out result | NISAR check |
+|---|---|---|---|---|
+| **A** | [Lorca ground sinking](../pipeline/prediction/README.md) | GNSS LOR1 (NGL), daily since 2009 | Selection on 2023 picks persistence ("no further change"). On the 2025 test, linear trend beats persistence by 14 % at 24 days and 8 % at 36 days, trend + annual cycle by 8 % and 1 %. Reported, not switched to. Sinking slowed from about 95 to about 40 mm/yr after 2023 | Not done (GUNW, see below) |
+| **B** | [Albufera rice-field flooded area](../pipeline/prediction/albufera/README.md) | DSWx-S1, 413 passes since Aug 2024; CORINE rice mask, 14,791 ha | Climatology beats persistence by +42 / +60 / +64 % at 16 / 28 / 40 days on the 2026 season; 80 % ranges hold 73–80 % | ✅ NISAR and DSWx-S1 rise together in the autumn flooding |
+| **C** | [Rain-threshold flood alert](../pipeline/prediction/flood/README.md) | IFS 9 km rain (Open-Meteo) + DSWx-S1, Albufera and Pego-Oliva | Held-out DANA: 2 of 2 caught, 0 false alarms in the surrounding weeks (too few events for a skill claim). Replay: amber 2–3 days ahead, never red | ✅ NISAR new water lies 87 % inside the official DANA outline |
 
-| | |
-|---|---|
-| **Data** | EGMS Ortho vertical motion, 100 m grid, 2020 to 2025 (free EU Login) · GNSS station LOR1 (Nevada Geodetic Laboratory) · NISAR GUNW track 167 D, 25 Jun to 11 Oct 2026, 7 pairs |
-| **Processing** | Current: one vertical-displacement series, explicit units/reference date, missing observations retained as gaps. Planned GUNW integration: verify phase sign/wavelength, corrections and network connectivity, then compare in a compatible line-of-sight geometry and reference. MintPy requires GUNW HDF5 metadata, not only Harmony COGs |
-| **Model** | Persistence, linear trend, and trend + annual sine/cosine. Current ranges use chronological calibration errors; nominal coverage is evaluated, not guaranteed |
-| **Check** | Rolling-origin forecasts with 2023 development, 2024 calibration and a held-out 2025 test by default. Report actual scored dates/counts. Account for stale observations using effective leads. NISAR comparison remains pending |
-| **Delivers** | Forecast JSON per point (point estimate, estimated 80% and 95% ranges) · backtest CSV/scores · PNG/SVG chart. Later: forecast vs corrected NISAR comparison |
+**NISAR check** ([`nisar_check.py`](../pipeline/prediction/nisar_check.py), stacks `albufera_066_D_069` and `pego_oliva_066_D_069`, CV baseline from `pipeline.cv`):
 
-**B. Flooded area in the Albufera**
+- **Albufera rice, 11 NISAR dates, 5 with a Sentinel-1 pass within 2 h** (the 18 UTC pass; same pairing rule as `pipeline.cv.evaluate`): share of the rice mask darker than −15 dB on NISAR vs the share DSWx-S1 maps as flooded. **Autumn:** 6 → 14 → 31 % (NISAR) vs 2.5 → 10 → 22 % (DSWx-S1) on 4, 16 and 28 Oct. **Summer:** NISAR sees 44 % dark on 18 Jun, falling to 0 by late July, while DSWx-S1 sees about 2 %. That fits paddies flooded from May sowing until the August drainage, i.e. water among young rice that the C-band map misses, but it is not confirmed on the ground. Non-rice cropland stays at 0–1 % throughout. Correlation over the 5 paired dates: r = 0.34 (−15 dB, pulled down by 18 Jun), 0.65 (−18 dB); the per-scene Otsu threshold gives 0.14, because it follows the whole scene. Five points, so read the series, not r.
+- **Pego-Oliva DANA, 16 → 28 Oct:** 212 ha of new NISAR water inside the EMSR935 mapped areas, **87 %** of it inside the official flood outline (62–93 % over ±1 dB); same region as `pipeline.cv.evaluate`, so it matches `cv_baseline.json`. DSWx-S1 inside the outline, on the 18 UTC passes: 234 → 408 ha.
 
-| | |
-|---|---|
-| **Data** | OPERA DSWx-S1 water history since Aug 2024 (two seasons) · NISAR dates for the current state. Uses the Sentinel-1 maps, not the CV masks, so it never waits on CV |
-| **Processing** | Flooded hectares per date inside the rice area |
-| **Model** | Day-of-year baseline + the current anomaly |
-| **Check** | Leave one season out · skill against persistence. Forecasts for the next passes are committed to git before that data is published |
-| **Delivers** | Forecast JSON (median and range per upcoming pass) + skill score |
+**Done when:** every forecast has ranges, backtest scores and a committed, timestamped forecast file. ✅ Met for A, B and C.
 
-**Done when:** both forecasts have ranges, backtest scores and a committed, timestamped forecast file.
+**Still open:**
+- **Lorca with EGMS** (2020–2025, gap-free; needs an EU Login download, see the prediction README). This is the fair test of trend vs persistence.
+- **Lorca vs NISAR GUNW** (track 167 D): about half a day and risky (HDF5 metadata, ionosphere, line of sight vs vertical). Planned, not started.
+- **Verifying the committed Albufera forecast** once the 26 Nov, 8 Dec and 20 Dec passes are published.
 
 ---
 
