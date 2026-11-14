@@ -136,11 +136,17 @@ export function MapApp({ stories, embed = false, visible }: { stories: StoryCfg[
 		const map = mapRef.current
 		if (!map) return
 		const box = map.getContainer()
-		// read everything first so a frame lays out once: the map's offset and the panels a marker must not sit under
-		const o = box.getBoundingClientRect()
-		// the app can be drawn scaled (inside the landing's hero): screen pixels per map pixel
-		const k = o.width / (box.clientWidth || 1)
-		const panels = box.parentElement ? [...box.parentElement.querySelectorAll<HTMLElement>(':scope > .mp-rail, :scope > .mp-card, :scope > .mp-dock')].map((el) => el.getBoundingClientRect()) : []
+		// read everything first so a frame lays out once. The panels a marker must not sit under are measured in the
+		// app's own pixels (offsets within the app, the same space as the map's points), so the test holds when the
+		// app is drawn scaled or tilted on the landing's monitor.
+		const panels = box.parentElement
+			? [...box.parentElement.querySelectorAll<HTMLElement>(':scope > .mp-rail, :scope > .mp-card, :scope > .mp-dock')].map((el) => ({
+					left: el.offsetLeft,
+					top: el.offsetTop,
+					right: el.offsetLeft + el.offsetWidth,
+					bottom: el.offsetTop + el.offsetHeight,
+				}))
+			: []
 		const [w, s, e, nn] = place.box
 		const tl = map.project([w, nn])
 		const br = map.project([e, s])
@@ -152,22 +158,20 @@ export function MapApp({ stories, embed = false, visible }: { stories: StoryCfg[
 			ov.current.style.height = `${hh}px`
 		}
 		if (after.current) {
-			const x = swipeRef.current * o.width - tl.x
+			const x = swipeRef.current * box.clientWidth - tl.x
 			after.current.style.clipPath = `inset(0 0 0 ${Math.min(ww, Math.max(0, x))}px)`
 		}
 		if (swipeEl.current) {
 			swipeEl.current.style.top = `${tl.y}px`
 			swipeEl.current.style.height = `${hh}px`
 		}
-		allPlaces.forEach((p, k) => {
-			const el = pins.current[k]
+		allPlaces.forEach((p, i) => {
+			const el = pins.current[i]
 			if (!el) return
 			const pt = map.project(p.c)
 			el.style.transform = `translate3d(${pt.x}px, ${pt.y}px, 0)`
 			// a marker is an icon above its point and a name below it; one that would sit under a panel steps away
-			const x = o.left + pt.x * k
-			const y = o.top + pt.y * k
-			el.toggleAttribute('data-under', panels.some((r) => x + 50 * k > r.left && x - 50 * k < r.right && y + 26 * k > r.top && y - 46 * k < r.bottom))
+			el.toggleAttribute('data-under', panels.some((r) => pt.x + 50 > r.left && pt.x - 50 < r.right && pt.y + 26 > r.top && pt.y - 46 < r.bottom))
 		})
 	}, [place.box, allPlaces])
 
