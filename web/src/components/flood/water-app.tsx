@@ -17,9 +17,9 @@ type Scene = { day: string; file: string; time_utc: string; platform: string; cl
 type Optical = { bounds: Bounds; credit: string; scenes: Scene[] }
 type Outline = { title: string; when?: string; credit: string; features: unknown[] }
 type Outlines = { ems: Outline; generalitat: Outline; depth: Outline }
-type Data = { meta: WaterMeta; rain: RainFile | null; optical: Optical; outlines: Outlines | null }
+type Data = { meta: WaterMeta; rain: RainFile | null; optical: Optical; outlines: Outlines | null; outline: Record<string, Outline> | null }
 /** the days of a story as numbers */
-type Days = { t0: number; t1: number; storm0: number | null; storm1: number | null; ems0: number | null; ems1: number | null }
+type Days = { t0: number; t1: number; storm0: number | null; storm1: number | null; ems0: number | null; ems1: number | null; event: number | null; eventEnd: number | null }
 /** one radar series cut to the days of the story, with its clock and what "new" water is measured against */
 type Active = {
 	series: WaterSeries
@@ -45,7 +45,9 @@ const BASE_TILES = 'https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless-2017_3857/d
 const NAMES_TILES = 'https://tiles.maps.eox.at/wmts/1.0.0/overlay_bright_3857/default/g/{z}/{y}/{x}.png'
 /** the hold on every pass while playing, and how long a whole story takes to play */
 const DWELL_MS = 320
-const PLAY_SECONDS = { storm: 23, season: 16 }
+const PLAY_SECONDS = { storm: 23, season: 16, fire: 15 }
+/** while playing, the day a fire burns takes this long, or it would be over in a tenth of a second */
+const EVENT_MS = 1500
 const X_PAD = 16
 const clamp01 = (x: number) => Math.min(1, Math.max(0, x))
 const ha = (x: number) => Math.round(x).toLocaleString('en-US')
@@ -63,8 +65,8 @@ function useData(story: Story) {
 				if (!r.ok) throw new Error(`${name}: ${r.status}`)
 				return r.json()
 			})
-		Promise.all([get('meta.json'), get('optical.json'), story.storm ? get('rain.json') : null, story.ems ? get('outlines.json') : null])
-			.then(([meta, optical, rain, outlines]: [WaterMeta, Optical, RainFile | null, Outlines | null]) => !gone && setData({ meta, rain, optical, outlines }))
+		Promise.all([get('meta.json'), get('optical.json'), story.storm ? get('rain.json') : null, story.ems ? get('outlines.json') : null, story.outline ? get('outline.json') : null])
+			.then(([meta, optical, rain, outlines, outline]: [WaterMeta, Optical, RainFile | null, Outlines | null, Record<string, Outline> | null]) => !gone && setData({ meta, rain, optical, outlines, outline }))
 			.catch((e: Error) => !gone && setError(e.message))
 		return () => {
 			gone = true
@@ -173,6 +175,14 @@ const Timeline = memo(function Timeline({ story, days, data, active, others, w }
 
 			{/* the Copernicus EMS mapping days and the days a Sentinel-2 picture exists */}
 			{days.ems0 !== null && days.ems1 !== null && <line className="fl-tl-ems" x1={X(days.ems0)} x2={X(days.ems1)} y1={36} y2={36} />}
+			{days.event !== null && story.event && (
+				<>
+					<line className="fl-tl-event" x1={X(days.event)} x2={X(days.event)} y1={14} y2={Y0} />
+					<text className="fl-tl-note fl-tl-eventnote" x={X(days.event) + 6} y={22} textAnchor="start">
+						{story.event.label}
+					</text>
+				</>
+			)}
 			{data.optical.scenes
 				.filter((s) => Date.parse(s.time_utc) >= t0)
 				.map((s) => (
@@ -240,6 +250,8 @@ export function WaterApp({ story }: { story: Story }) {
 			storm1: story.storm ? Date.parse(story.storm.to) : null,
 			ems0: story.ems ? Date.parse(story.ems.from) : null,
 			ems1: story.ems ? Date.parse(story.ems.to) : null,
+			event: story.event ? Date.parse(story.event.t) : null,
+			eventEnd: story.event?.until ? Date.parse(story.event.until) : null,
 		}),
 		[story],
 	)
@@ -252,11 +264,16 @@ export function WaterApp({ story }: { story: Story }) {
 	const active = useMemo<Active | null>(() => {
 		if (!data || !choices.length) return null
 		const series = inWindow(choices.find((s) => s.id === seriesId) ?? choices[0], days)
-		const model = floodModel(series, data.rain)
+		const model = floodModel(series, data.rain, days.event !== null && days.eventEnd !== null ? { from: days.event, to: days.eventEnd } : null)
 		const base = { series, layerSeries: series, model, nisar: series.sensor === 'NISAR', twoClass: series.frames.some((f) => f.veg_ha > 0) }
 		// a storm is measured against the last pass before the rain
 		if (days.storm0 !== null && model.times[0] < days.storm0) {
 			const ref = model.before(days.storm0)
+			return { ...base, ref, refFrom: model.times[ref] + 60e3, refHa: model.areaOfPass(ref)[0], refAlways: false }
+		}
+		// a fire is measured against the last pass before it started
+		if (days.event !== null && model.times[0] < days.event) {
+			const ref = model.before(days.event)
 			return { ...base, ref, refFrom: model.times[ref] + 60e3, refHa: model.areaOfPass(ref)[0], refAlways: false }
 		}
 		// a season is measured against the water every pass has: one more frame after the passes
@@ -278,6 +295,22 @@ export function WaterApp({ story }: { story: Story }) {
 		const last = series.frames.length - 1
 		const what = twoClass ? 'open water' : 'water'
 		const sees = nisar ? 'NISAR sees' : 'Sentinel-1 sees'
+		if (story.kind === 'fire' && days.event !== null) {
+			const areas = series.frames.map((_, i) => model.areaOfPass(i)[0])
+			const firstBurn = areas.findIndex((a) => a > 0)
+			const mapped = story.outline && data.outline ? (data.outline[story.outline.key].features[0] as { properties: { effis_area_ha: number } }).properties.effis_area_ha : 0
+			const list = [{ from: model.first, text: 'Before the fire. Pass after pass NISAR gets the same echo back from the forest canopy.' }]
+			if (firstBurn > 0) {
+				const record = days.eventEnd !== null && mapped ? `. By ${utcDay(days.eventEnd, false)} EFFIS has mapped ${ha(mapped)} ha.` : ' (EFFIS).'
+				list.push({ from: days.event, text: `${utcDay(days.event, false)}: the fire starts${record} The next NISAR pass comes on ${utcDay(model.times[firstBurn], false)}; until then the scar is an estimate.` })
+				list.push({ from: model.times[firstBurn] - 3 * HOUR, text: `${utcDay(model.times[firstBurn], false)}: where the canopy burned, the echo dropped. The radar confirms ${ha(areas[firstBurn])} ha.` })
+				list.push({
+					from: model.times[Math.min(last, firstBurn + 1)] + 2 * DAY,
+					text: `Pass after pass the radar confirms more: ${ha(areas[last])} ha by ${utcDay(model.last, false)}, against ${ha(mapped)} ha in the EFFIS outline. A pixel counts only when two passes in a row agree.`,
+				})
+			}
+			return list
+		}
 		if (story.kind === 'season') {
 			const areas = series.frames.map((_, i) => model.areaOfPass(i)[0])
 			const usual = [...areas].sort((a, b) => a - b)[Math.floor(areas.length / 2)]
@@ -341,6 +374,14 @@ export function WaterApp({ story }: { story: Story }) {
 			}
 
 			const map = mapRef.current
+			if (story.outline && map?.getLayer('ref-line')) {
+				const outl = opt.current.showOutlines && T >= Date.parse(story.outline.from) ? '1' : '0'
+				if (outl !== s.outl) {
+					s.outl = outl
+					map.setPaintProperty('ref-line', 'line-opacity', outl === '1' ? 1 : 0)
+					map.setPaintProperty('ref-case', 'line-opacity', outl === '1' ? 0.5 : 0)
+				}
+			}
 			if (days.ems0 !== null && days.storm0 !== null) {
 				const outl = `${opt.current.showOutlines && T >= days.ems0 ? 1 : 0}${opt.current.showOutlines && T >= days.storm0 + DAY ? 1 : 0}`
 				if (outl !== s.outl && map?.getLayer('ems-line')) {
@@ -370,10 +411,25 @@ export function WaterApp({ story }: { story: Story }) {
 			}
 			put(
 				e.seen,
-				frame && frame.seen < 0.98 ? `This pass saw ${Math.round(frame.seen * 100)} % of the site` : !frame && v.storm ? (v.loss > 0 ? 'Rain over: the shoreline settles towards the next pass' : 'The shoreline rises with the rain') : '',
+				frame && frame.seen < 0.98
+					? `This pass saw ${Math.round(frame.seen * 100)} % of the site`
+					: frame || !v.driven
+						? ''
+						: v.storm
+							? v.loss > 0
+								? 'Rain over: the shoreline settles towards the next pass'
+								: 'The shoreline rises with the rain'
+							: days.event === null || T < days.event
+								? ''
+								: v.loss > 0
+									? `Not seen yet: this is the scar of the ${utcDay(model.times[v.b], false)} pass`
+									: 'The fire burns: timed by the EFFIS record',
 			)
 			const word = twoClass ? 'open water' : 'water'
-			if (active.refAlways) put(e.delta, `${ha(Math.max(0, open - active.refHa))} ha more than the ${ha(active.refHa)} ha that are always there`)
+			if (story.kind === 'fire') {
+				const mapped = story.outline && data.outline ? (data.outline[story.outline.key].features[0] as { properties: { effis_area_ha: number } }).properties.effis_area_ha : 0
+				put(e.delta, open > 0.5 ? `against ${ha(mapped)} ha in the EFFIS outline` : 'No burn confirmed yet')
+			} else if (active.refAlways) put(e.delta, `${ha(Math.max(0, open - active.refHa))} ha more than the ${ha(active.refHa)} ha that are always there`)
 			else if (hasRef) {
 				const d = open - active.refHa
 				put(e.delta, `${d >= 0 ? '+' : ''}${ha(d)} ha of ${word} since ${utcDay(model.times[ref], false)}`)
@@ -458,6 +514,12 @@ export function WaterApp({ story }: { story: Story }) {
 				// the water layers go under this empty layer, the reference lines over it
 				map.addLayer({ id: 'over-water', type: 'background', paint: { 'background-opacity': 0 } })
 
+				if (story.outline && data.outline) {
+					map.addSource('ref', { type: 'geojson', data: { type: 'FeatureCollection', features: data.outline[story.outline.key].features } } as never)
+					const fade = { duration: 700, delay: 0 }
+					map.addLayer({ id: 'ref-case', type: 'line', source: 'ref', paint: { 'line-color': '#2a0619', 'line-width': 3.6, 'line-opacity': 0, 'line-opacity-transition': fade } })
+					map.addLayer({ id: 'ref-line', type: 'line', source: 'ref', paint: { 'line-color': '#ff7ac8', 'line-width': 1.6, 'line-opacity': 0, 'line-opacity-transition': fade } })
+				}
 				if (data.outlines) {
 					const fc = (features: unknown[]) => ({ type: 'geojson', data: { type: 'FeatureCollection', features } }) as never
 					map.addSource('ems', fc(data.outlines.ems.features))
@@ -548,7 +610,8 @@ export function WaterApp({ story }: { story: Story }) {
 	useEffect(() => {
 		const map = mapRef.current
 		if (!map || !mapReady || !data || !active) return
-		const layer = new WaterLayer({ id: `water-${active.series.id}`, root: story.root, meta: data.meta, series: active.layerSeries })
+		const rgb = story.layer?.rgb
+		const layer = new WaterLayer({ id: `water-${active.series.id}`, root: story.root, meta: data.meta, series: active.layerSeries, style: rgb ? { open: rgb.open, glow: rgb.glow, edge: rgb.edge, fill: rgb.fill, line: rgb.line } : undefined })
 		layer.onFrame = () => layer.ready() && setReady(true)
 		water.current = layer
 		map.addLayer(layer.layer, 'over-water')
@@ -580,7 +643,10 @@ export function WaterApp({ story }: { story: Story }) {
 			if (s.playing) {
 				if (s.dwell > 0) s.dwell -= dt
 				else {
-					const next = s.T + dt * pace * speed.current
+					// time slows for the day the fire burns
+					const burning = days.event !== null && days.eventEnd !== null && s.T >= days.event && s.T < days.eventEnd
+					const slow = burning ? Math.min(1, (days.eventEnd! - days.event!) / (pace * EVENT_MS)) : 1
+					const next = s.T + dt * pace * speed.current * slow
 					const hit = model.times.find((t) => t > s.T + 1 && t <= next)
 					if (hit !== undefined) {
 						s.T = hit
@@ -610,7 +676,7 @@ export function WaterApp({ story }: { story: Story }) {
 		}
 		raf = requestAnimationFrame(loop)
 		return () => cancelAnimationFrame(raf)
-	}, [active, apply, story])
+	}, [active, apply, story, days])
 
 	// toggles
 	useEffect(() => {
@@ -864,7 +930,7 @@ export function WaterApp({ story }: { story: Story }) {
 	const storm = story.kind === 'storm'
 
 	return (
-		<div className="fl" data-ready={ready || undefined} data-far={far || undefined} data-cinema={cinema || undefined}>
+		<div className="fl" data-kind={story.kind} data-ready={ready || undefined} data-far={far || undefined} data-cinema={cinema || undefined}>
 			<div ref={mapEl} className="fl-map" />
 			{story.storm && <div ref={set('rain')} className="fl-rain" aria-hidden />}
 			{compare && (
@@ -873,7 +939,7 @@ export function WaterApp({ story }: { story: Story }) {
 						{before ? `${utcDay(Date.parse(before.time_utc))}${storm ? ', before' : ''}` : 'Before'}
 					</span>
 					<span className="fl-swipe-tag" data-side="right">
-						Radar water
+						{story.layer?.toggle ?? 'Radar water'}
 					</span>
 					<i />
 				</div>
@@ -913,7 +979,7 @@ export function WaterApp({ story }: { story: Story }) {
 						<span>
 							ha of
 							<br />
-							{twoClass ? 'open water' : 'water'}
+							{story.layer?.unit ?? (twoClass ? 'open water' : 'water')}
 						</span>
 					</p>
 					<p className="fl-row" hidden={!twoClass}>
@@ -928,19 +994,26 @@ export function WaterApp({ story }: { story: Story }) {
 
 				<aside className="fl-legend">
 					<p>
-						<i data-k="open" /> {storm ? (twoClass ? 'Open water' : 'Water') : 'Water that is always there'}
+						<i data-k={story.layer ? 'new' : 'open'} /> {story.layer?.main ?? (storm ? (twoClass ? 'Open water' : 'Water') : 'Water that is always there')}
 					</p>
 					{twoClass && (
 						<p>
 							<i data-k="veg" /> Flooded vegetation
 						</p>
 					)}
-					<p>
-						<i data-k="new" /> {storm ? 'New since the storm' : 'Water of the season'}
-					</p>
+					{!story.layer && (
+						<p>
+							<i data-k="new" /> {storm ? 'New since the storm' : 'Water of the season'}
+						</p>
+					)}
 					<p>
 						<i data-k="est" /> Between passes: an estimate
 					</p>
+					{story.outline && (
+						<p>
+							<i data-k="ems" /> {story.outline.label}
+						</p>
+					)}
 					{story.ems && (
 						<>
 							<p>
@@ -975,9 +1048,9 @@ export function WaterApp({ story }: { story: Story }) {
 							))}
 						</div>
 						<button type="button" className="fl-tog" aria-pressed={showWater} onClick={() => setShowWater((v) => !v)}>
-							Radar water
+							{story.layer?.toggle ?? 'Radar water'}
 						</button>
-						{story.ems && (
+						{(story.ems || story.outline) && (
 							<button type="button" className="fl-tog" aria-pressed={showOutlines} onClick={() => setShowOutlines((v) => !v)}>
 								Outlines
 							</button>
@@ -1015,7 +1088,12 @@ export function WaterApp({ story }: { story: Story }) {
 				<div className="fl-foot">
 					<p ref={set('pic')} className="fl-picnote" />
 					<p className="fl-keys">
-						<i data-k="pass" /> {active?.series.sensor ?? 'radar'} pass <i data-k="nisar" /> NISAR pass <i data-k="pic" /> Sentinel-2 picture
+						{!active?.nisar && (
+							<>
+								<i data-k="pass" /> {active?.series.sensor ?? 'radar'} pass{' '}
+							</>
+						)}
+						<i data-k="nisar" /> NISAR pass <i data-k="pic" /> Sentinel-2 picture
 						{story.ems && (
 							<>
 								{' '}

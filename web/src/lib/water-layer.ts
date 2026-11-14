@@ -45,7 +45,7 @@ export type WaterMeta = {
 	/** west, south, east, north in degrees */
 	bounds: [number, number, number, number]
 	pixel_m: number
-	encoding: { linear_px: number; range_px: number; samples: number }
+	encoding: { linear_px: number; range_px: number; reach_px?: number; samples: number }
 	base: string
 	series: WaterSeries[]
 	baked_utc: string
@@ -77,6 +77,10 @@ export type WaterStyle = {
 	forecast: number
 	/** 0 draws the exact radar pixels, about 0.85 rounds their corners by less than a pixel */
 	soft: number
+	/** how solid the fill is, 1 for water; lower lets the picture under the layer show (a burn scar) */
+	fill: number
+	/** how strong the shoreline and its halo are, 1 for water; lower for a layer made of many small patches */
+	line: number
 }
 
 export const WATER_STYLE: WaterStyle = {
@@ -88,6 +92,8 @@ export const WATER_STYLE: WaterStyle = {
 	opacity: 1,
 	forecast: 0,
 	soft: 0.85,
+	fill: 1,
+	line: 1,
 }
 
 const FRAG = `#version 300 es
@@ -109,6 +115,9 @@ uniform float u_hasRef;
 uniform float u_opacity;
 uniform float u_forecast;
 uniform float u_soft;
+uniform float u_fill;
+uniform float u_line;
+uniform float u_reach;
 uniform float u_lin;
 uniform float u_range;
 uniform vec3 u_cOpen;
@@ -130,10 +139,12 @@ void main() {
 	vec3 tb = texture(u_b, v_uv, u_soft).rgb;
 	float sea = texture(u_base, v_uv).r;
 
-	float anyA = dist(ta.g);
-	float anyB = dist(tb.g);
-	float openA = dist(ta.b);
-	float openB = dist(tb.b);
+	// outside the water a distance counts for at most u_reach, so new water far from the old does not wait for
+	// the last moment: it starts in its deepest part and grows out (the bake counts hectares the same way)
+	float anyA = min(dist(ta.g), u_reach);
+	float anyB = min(dist(tb.g), u_reach);
+	float openA = min(dist(ta.b), u_reach);
+	float openB = min(dist(tb.b), u_reach);
 	// a pixel on its way into the water follows the gain clock, a pixel on its way out the loss clock
 	float sAny = mix(anyA, anyB, anyB < anyA ? u_gain : u_loss);
 	float sOpen = mix(openA, openB, openB < openA ? u_gain : u_loss);
@@ -180,7 +191,7 @@ void main() {
 	float dots = smoothstep(0.66, 0.36, length(fract(fc / 5.0) - 0.5) * 2.0);
 	float aOpen = mix(0.5, 0.8, fresh);
 	float aVeg = mix(0.2, 0.36, fresh) + dots * mix(0.36, 0.58, fresh);
-	float fill = water * mix(aVeg, aOpen, open);
+	float fill = water * mix(aVeg, aOpen, open) * u_fill;
 
 	// between two passes the fill is hatched: it is an estimate, not a measurement
 	float hatch = smoothstep(0.2, 0.34, abs(fract((fc.x + fc.y) / 6.0) - 0.5));
@@ -194,10 +205,10 @@ void main() {
 	float ripple = smoothstep(0.74, 1.0, wave) * smoothstep(-30.0, -3.0, px) * step(px, 0.0) * moving;
 
 	// shoreline: one crisp line, strong on a body of water that moved, faint on specks, dashed on an estimate
-	float weight = mix(0.2, 1.0, mass) * mix(0.55, 1.0, moved);
+	float weight = mix(0.2, 1.0, mass) * mix(0.55, 1.0, moved) * u_line;
 	float dash = smoothstep(0.42, 0.58, abs(fract((fc.x - fc.y) / 11.0) - 0.5) * 2.0);
 	float line = clamp(1.55 - abs(px), 0.0, 1.0) * weight * mix(1.0, dash, shifting);
-	float halo = exp(-max(px, 0.0) / 7.0) * step(0.0, px) * mass * moved * (0.34 + 0.5 * u_flash);
+	float halo = exp(-max(px, 0.0) / 7.0) * step(0.0, px) * mass * moved * (0.34 + 0.5 * u_flash) * u_line;
 
 	// forecast: no solid water, only stripes inside the likely extent and a dashed outline
 	float stripes = smoothstep(0.34, 0.46, abs(fract((fc.x + fc.y) / 12.0) - 0.5));
@@ -231,7 +242,7 @@ void main() {
 
 const UNIFORMS = [
 	'u_matrix', 'u_a', 'u_b', 'u_ref', 'u_base', 'u_size', 'u_gain', 'u_loss', 'u_obs', 'u_time', 'u_flow', 'u_flash', 'u_hasRef',
-	'u_opacity', 'u_forecast', 'u_soft', 'u_lin', 'u_range', 'u_cOpen', 'u_cVeg', 'u_cGlow', 'u_cEdge', 'u_cUnseen',
+	'u_opacity', 'u_forecast', 'u_soft', 'u_fill', 'u_line', 'u_reach', 'u_lin', 'u_range', 'u_cOpen', 'u_cVeg', 'u_cGlow', 'u_cEdge', 'u_cUnseen',
 ]
 const MAX_TEXTURES = 8
 const FLASH_MS = 650
@@ -441,6 +452,9 @@ export class WaterLayer {
 		gl.uniform1f(u.u_opacity, s.opacity)
 		gl.uniform1f(u.u_forecast, s.forecast)
 		gl.uniform1f(u.u_soft, s.soft)
+		gl.uniform1f(u.u_fill, s.fill)
+		gl.uniform1f(u.u_line, s.line)
+		gl.uniform1f(u.u_reach, this.meta.encoding.reach_px ?? this.meta.encoding.range_px)
 		gl.uniform1f(u.u_lin, this.meta.encoding.linear_px)
 		gl.uniform1f(u.u_range, this.meta.encoding.range_px)
 		gl.uniform3fv(u.u_cOpen, s.open)

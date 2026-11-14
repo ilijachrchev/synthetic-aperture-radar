@@ -3,11 +3,13 @@
     python scripts/shoot_flood.py OUT_DIR
     python scripts/shoot_flood.py OUT_DIR --shots nisar_before ems_peak --size 1920x1080 --cinema
     python scripts/shoot_flood.py OUT_DIR --story rice
+    python scripts/shoot_flood.py OUT_DIR --story fire
 
 Every frame is the running app drawing real data: nothing is composited afterwards. A shot is a moment on the time
 axis plus what is switched on; the page exposes window.__flood for exactly this (see flood-app.tsx).
 
-Needs playwright (pip install playwright, then: playwright install chromium).
+Needs playwright (pip install playwright). It uses the browser of Playwright (playwright install chromium) and,
+when that is missing, the Chrome or Edge of this computer.
 Written with SI assistance (Claude Code), reviewed by the team.
 """
 import argparse
@@ -48,10 +50,32 @@ RICE_SHOTS = {
     "rice_october": {"at": "2026-10-28T18:53:18Z"},
     "rice_october_close": {"at": "2026-10-28T18:53:18Z", "camera": {"center": [-0.33, 39.27], "zoom": 12.6}},
 }
+# the Serra d'Espada fire (page /fire): burned ground the radar confirms, with the EFFIS outline
+FIRE_SHOTS = {
+    "fire_before": {"at": "2026-07-24T05:07:19Z"},
+    "fire_burning": {"at": "2026-07-25T19:00:00Z"},
+    "fire_estimate": {"at": "2026-08-06T12:00:00Z"},
+    "fire_first": {"at": "2026-08-17T05:07:18Z"},
+    "fire_october": {"at": "2026-10-16T05:07:18Z"},
+    "fire_close": {"at": "2026-10-16T05:07:18Z", "camera": {"center": [-0.262, 39.89], "zoom": 12.4}},
+}
 STORIES = {
+    "fire": {"shots": FIRE_SHOTS, "camera": {"center": [-0.262, 39.89], "zoom": 11.55}, "series": "burn_058_A_022"},
     "flood": {"shots": SHOTS, "camera": {"center": MARSH, "zoom": 12.45}, "series": NISAR},
     "rice": {"shots": RICE_SHOTS, "camera": {"center": [-0.318, 39.288], "zoom": 11.3}, "series": NISAR},
 }
+
+
+def launch(p, headed=False, channel=None):
+    """The browser of Playwright if it is installed, else the Chrome or Edge of this computer (no download needed)."""
+    args = ["--use-angle=d3d11", "--enable-gpu", "--ignore-gpu-blocklist"]
+    last = None
+    for name in ([channel] if channel else [None, "chrome", "msedge"]):
+        try:
+            return p.chromium.launch(headless=not headed, channel=name, args=args)
+        except Exception as e:  # no such browser on this computer: try the next one
+            last = e
+    raise last
 
 
 def main():
@@ -64,6 +88,7 @@ def main():
     ap.add_argument("--scale", type=float, default=1.0)
     ap.add_argument("--theme", default="dark", choices=["light", "dark"], help="day or night")
     ap.add_argument("--headed", action="store_true")
+    ap.add_argument("--channel", choices=["chrome", "msedge"], help="use this installed browser, not the one of Playwright")
     ap.add_argument("--cinema", action="store_true", help="film mode: only what the story needs on screen")
     args = ap.parse_args()
     w, h = (int(v) for v in args.size.split("x"))
@@ -73,7 +98,7 @@ def main():
     url = f"{args.base}/{args.story}?still"
 
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=not args.headed, args=["--use-angle=d3d11", "--enable-gpu", "--ignore-gpu-blocklist"])
+        browser = launch(p, args.headed, args.channel)
         page = browser.new_page(viewport={"width": w, "height": h}, device_scale_factor=args.scale)
         errors = []
         page.on("console", lambda m: errors.append(m.text) if m.type == "error" else None)

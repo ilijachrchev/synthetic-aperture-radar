@@ -2,6 +2,7 @@
 
     python scripts/bake_water.py --site pego_oliva --start 2026-10-16 --end 2026-11-10 --data-root ../data
     python scripts/bake_water.py --site albufera --start 2026-06-18 --end 2026-10-28 --clock 18:53 --days 2026-06-18 ...
+    python scripts/bake_water.py --site espada --layer burn --no-s1 --start 2026-06-18 --end 2026-10-28 --data-root ../data
 
 For one site it gathers every radar water map in a date range and writes, under public/layers/<site>/:
 
@@ -23,6 +24,10 @@ Series:
 The distance fields are what lets the shoreline move between two passes instead of fading: the app mixes the
 fields of the passes before and after the playhead and draws water where the mix is below zero. At a pass the
 picture is the map of that pass. Between passes it is an interpolation, and the app says so.
+
+Between two passes the app does not let a distance outside the water count for more than REACH_PX pixels. So new
+water far from any old water does not wait until the last moment to appear: it starts in its deepest part about
+halfway through the gap and grows out to its edge, and water that goes shrinks towards its middle the same way.
 
 Distances are in grid pixels, negative inside water, packed into one byte: steps of 1/8 pixel up to 4 pixels from
 an edge, then a square-root ramp out to 300 pixels (see ENC_* below; the shader in src/lib/water-layer.ts decodes
@@ -60,11 +65,13 @@ ORIGIN = WORLD / 2
 ENC_LINEAR_PX = 4.0   # 1/8 pixel steps out to here
 ENC_RANGE_PX = 300.0  # the ramp ends here
 SAMPLES = 17          # area between two passes is measured at this many steps
+REACH_PX = 12.0       # between passes, ground farther than this from water counts as this far (see below)
 
 # west, south, east, north in degrees: the pipeline site boxes (pipeline/config.py)
 SITES = {
     "albufera": {"title": "Albufera lagoon and rice fields", "bbox": (-0.45, 39.15, -0.22, 39.45)},
     "pego_oliva": {"title": "Pego-Oliva marsh", "bbox": (-0.25, 38.78, 0.06, 39.02)},
+    "espada": {"title": "Serra d'Espada burn scar", "bbox": (-0.50, 39.78, -0.10, 40.02)},
 }
 S1_UNSEEN = (251, 255)
 
@@ -187,14 +194,15 @@ def s1_classes(p, transform, width, height):
 
 # ---------------------------------------------------------------- NISAR water layers from the CV model
 
-def nisar_frames(data_root, site, transform, width, height, stacks=None):
-    """The CV model layers for a site from data/manifest.json, grouped by stack, each on the grid."""
+def nisar_frames(data_root, site, transform, width, height, stacks=None, layer="water"):
+    """The CV layers of one kind for a site from data/manifest.json, grouped by stack, each on the grid.
+    Class 1 is the thing mapped (water, or burned ground), 2 flooded vegetation, 255 no data."""
     manifest = data_root / "manifest.json"
     if not manifest.exists():
         return {}
     by_stack = {}
     for e in json.loads(manifest.read_text(encoding="utf-8")):
-        if e.get("model") != "cv" or e.get("site") != site or e.get("layer") != "water":
+        if e.get("model") != "cv" or e.get("site") != site or e.get("layer") != layer:
             continue
         if stacks and e.get("stack") not in stacks:
             continue
@@ -290,7 +298,7 @@ def bake_series(name, frames, sea, row_ha, out_dir):
     steps = [k / (SAMPLES - 1) for k in range(SAMPLES)]
     area_full = np.broadcast_to(area, land.shape)
     for i in range(len(fields) - 1):
-        (ga, ba), (gb, bb) = fields[i], fields[i + 1]
+        (ga, ba), (gb, bb) = [[np.minimum(f, REACH_PX) for f in pair] for pair in (fields[i], fields[i + 1])]
         # a pixel whose two fields share a sign never flips, so only the window that holds a flip is mixed
         flips = ((ga < 0) != (gb < 0)) | ((ba < 0) != (bb < 0))
         fixed = hectares(ga, ga, ba, ba, 0.0, 0.0, land & ~flips, area_full)
@@ -322,6 +330,7 @@ def main():
     ap.add_argument("--out", type=Path, default=WEB / "public" / "layers")
     ap.add_argument("--no-s1", action="store_true")
     ap.add_argument("--stacks", nargs="*", help="NISAR stacks to bake, for example 066_D_069 (default: all in the manifest)")
+    ap.add_argument("--layer", default="water", choices=["water", "burn"], help="which CV layer of the manifest to bake")
     ap.add_argument("--days", nargs="*", help="keep only the Sentinel-1 passes of these days (YYYY-MM-DD)")
     ap.add_argument("--clock", help="with --days: on each day keep the one pass nearest this UTC time (HH:MM)")
     args = ap.parse_args()
@@ -360,12 +369,16 @@ def main():
         records, between, always = bake_series("s1", frames, sea, row_ha, out_dir)
         series.append({"id": "s1", "sensor": "Sentinel-1", "band": "C band", "classes": ["open water", "flooded vegetation"],
                        "product": "OPERA DSWx-S1 B01_WTR (JPL, via PO.DAAC)", "frames": records, "between": between, "always": always})
-    for stack, frames in nisar_frames(args.data_root, args.site, transform, width, height, args.stacks).items():
-        records, between, always = bake_series(f"nisar_{stack}", frames, sea, row_ha, out_dir)
+    for stack, frames in nisar_frames(args.data_root, args.site, transform, width, height, args.stacks, args.layer).items():
+        name = f"nisar_{stack}" if args.layer == "water" else f"{args.layer}_{stack}"
+        records, between, always = bake_series(name, frames, sea, row_ha, out_dir)
         two = any(r["veg_ha"] > 0 for r in records)
-        series.append({"id": f"nisar_{stack}", "sensor": "NISAR", "band": "L band", "stack": stack,
-                       "classes": ["open water", "flooded vegetation"] if two else ["water"],
-                       "product": "NISAR GCOV water, the team CV model", "frames": records, "between": between, "always": always})
+        if args.layer == "burn":
+            classes, product = ["burned"], "NISAR GCOV burn: the HV echo at least 1.5 dB below the last pass before the fire, on two passes in a row"
+        else:
+            classes, product = (["open water", "flooded vegetation"] if two else ["water"]), "NISAR GCOV water, the team CV model"
+        series.append({"id": name, "sensor": "NISAR", "band": "L band", "stack": stack, "classes": classes,
+                       "product": product, "frames": records, "between": between, "always": always})
 
     x0, y1 = transform.c, transform.f
     x1, y0 = x0 + width * RES, y1 - height * RES
@@ -376,7 +389,7 @@ def main():
         "site": args.site, "title": site["title"], "width": width, "height": height, "zoom": ZOOM,
         "bounds": [round(west, 7), round(south, 7), round(east, 7), round(north, 7)],
         "pixel_m": round(float(np.sqrt(row_ha.mean() * 1e4)), 2),
-        "encoding": {"linear_px": ENC_LINEAR_PX, "range_px": ENC_RANGE_PX, "samples": SAMPLES},
+        "encoding": {"linear_px": ENC_LINEAR_PX, "range_px": ENC_RANGE_PX, "reach_px": REACH_PX, "samples": SAMPLES},
         "base": "base.png", "series": series,
         "baked_utc": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
     }

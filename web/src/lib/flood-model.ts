@@ -6,6 +6,8 @@
 //   2. Between passes the picture is an interpolation (observed 0), and the page says so.
 //   3. Where a storm fell between two passes, water rises with the rain and only falls once the rain has stopped,
 //      so it never rises under a dry sky and never shrinks while it pours. Elsewhere both run evenly with the clock.
+//   4. Where a fire started between two passes, nothing burns before its start and all of it has burned by the
+//      time its record was last updated. It stays an estimate until the next pass.
 import type { WaterGap, WaterSeries } from './water-layer'
 
 export type RainFile = {
@@ -30,7 +32,12 @@ export type FloodView = {
 	pass: number | null
 	/** true when this gap follows the rain */
 	storm: boolean
+	/** true when this gap follows something with a clock of its own: the rain, or a fire */
+	driven: boolean
 }
+
+/** something that happened at a known time between two passes, from the record that dates it */
+export type ModelEvent = { from: number; to: number }
 
 export type FloodModel = ReturnType<typeof floodModel>
 
@@ -41,7 +48,24 @@ const at = (rows: [number, number][], x: number): [number, number] => {
 	return [rows[i][0] + (rows[i + 1][0] - rows[i][0]) * k, rows[i][1] + (rows[i + 1][1] - rows[i][1]) * k]
 }
 
-export function floodModel(series: WaterSeries, rain: RainFile | null) {
+/** The gain clock at which a gap shows this share of what it gains: the baked table, read backwards. A shape that
+ *  grows out of its middle gains most of its area late, so an even clock would show nothing and then all of it. */
+const gainFor = (rows: [number, number][], share: number) => {
+	const sum = (r: [number, number]) => r[0] + r[1]
+	const from = sum(rows[0])
+	const to = sum(rows[rows.length - 1])
+	const x = Math.min(1, Math.max(0, share))
+	if (to <= from) return x
+	const target = from + (to - from) * x
+	for (let k = 0; k < rows.length - 1; k++) {
+		const lo = sum(rows[k])
+		const hi = sum(rows[k + 1])
+		if (target <= hi) return (k + (hi > lo ? (target - lo) / (hi - lo) : 0)) / (rows.length - 1)
+	}
+	return 1
+}
+
+export function floodModel(series: WaterSeries, rain: RainFile | null, event: ModelEvent | null = null) {
 	const frames = series.frames
 	const times = frames.map((f) => Date.parse(f.time_utc ?? `${f.date}T12:00:00Z`))
 	const first = times[0]
@@ -78,6 +102,9 @@ export function floodModel(series: WaterSeries, rain: RainFile | null) {
 		return hi
 	})
 
+	// the gap the event starts in, if any
+	const eventGap = event ? times.findIndex((t, i) => i < times.length - 1 && t <= event.from && event.from < times[i + 1]) : -1
+
 	/** index of the pass at or before T */
 	const before = (T: number) => {
 		let lo = 0
@@ -92,8 +119,8 @@ export function floodModel(series: WaterSeries, rain: RainFile | null) {
 
 	const viewAt = (T: number): FloodView => {
 		const n = times.length - 1
-		if (T <= first) return { a: 0, b: Math.min(1, n), gain: 0, loss: 0, observed: 1, pass: 0, storm: false }
-		if (T >= last) return { a: Math.max(0, n - 1), b: n, gain: 1, loss: 1, observed: 1, pass: n, storm: false }
+		if (T <= first) return { a: 0, b: Math.min(1, n), gain: 0, loss: 0, observed: 1, pass: 0, storm: false, driven: false }
+		if (T >= last) return { a: Math.max(0, n - 1), b: n, gain: 1, loss: 1, observed: 1, pass: n, storm: false, driven: false }
 		const a = before(T)
 		const b = a + 1
 		const gap = times[b] - times[a]
@@ -105,13 +132,20 @@ export function floodModel(series: WaterSeries, rain: RainFile | null) {
 			gain = Math.min(1, (rainUpTo(T) - rainUpTo(times[a])) / (pairRain[a] * RAIN_DONE))
 			loss = T <= rainEnd[a] ? 0 : (T - rainEnd[a]) / (times[b] - rainEnd[a])
 		}
+		const dated = !storm && event !== null && a === eventGap
+		if (dated) {
+			const end = Math.min(event.to, times[b])
+			// the hectares rise evenly while it burns
+			gain = T <= event.from ? 0 : gainFor(series.between[a].gain, (T - event.from) / Math.max(1, end - event.from))
+			loss = T <= end ? 0 : (T - end) / Math.max(1, times[b] - end)
+		}
 		// "observed" holds for a short while either side of a pass, then gives way to the estimate
 		const near = Math.min(T - times[a], times[b] - T)
 		const window = Math.min(4 * HOUR, gap * 0.22)
 		const x = Math.min(1, near / window)
 		const observed = 1 - x * x * (3 - 2 * x)
 		const pass = T - times[a] < 60e3 ? a : times[b] - T < 60e3 ? b : null
-		return { a, b, gain: Math.min(1, Math.max(0, gain)), loss: Math.min(1, Math.max(0, loss)), observed, pass, storm }
+		return { a, b, gain: Math.min(1, Math.max(0, gain)), loss: Math.min(1, Math.max(0, loss)), observed, pass, storm, driven: storm || dated }
 	}
 
 	/** hectares [open water, flooded vegetation] the picture shows at T */
@@ -120,7 +154,7 @@ export function floodModel(series: WaterSeries, rain: RainFile | null) {
 		const g: WaterGap = series.between[v.a]
 		if (T <= first) return g.both[0]
 		if (T >= last) return g.both[g.both.length - 1]
-		if (!v.storm) return at(g.both, v.gain)
+		if (!v.driven) return at(g.both, v.gain)
 		return v.loss > 0 ? at(g.loss, v.loss) : at(g.gain, v.gain)
 	}
 

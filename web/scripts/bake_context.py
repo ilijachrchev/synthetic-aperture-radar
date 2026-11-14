@@ -79,13 +79,29 @@ def rain(start, end):
     }
 
 
+def fire(labels, out):
+    """The EFFIS burnt area of the Serra d'Espada fire as one outline, with the area and the date EFFIS gives."""
+    src = labels / "espada_effis_burnt_area.geojson"
+    row = gpd.read_file(src).iloc[0]
+    shape = outline(src, 12.0)
+    shape[0]["properties"].update({"effis_area_ha": float(row["effis_area_ha"]), "firedate": str(row["firedate"]), "effis_id": str(row["effis_id"])})
+    out.mkdir(parents=True, exist_ok=True)
+    doc = {"effis": {"title": "EFFIS burnt area", "when": f"fire of {str(row['firedate'])[:10]}",
+                     "credit": "Burnt areas: EFFIS, European Forest Fire Information System, (c) European Union, CC BY 4.0", "features": shape}}
+    (out / "outline.json").write_text(json.dumps(doc, separators=(",", ":")), encoding="utf-8")
+    print(f"EFFIS outline: {shape[0]['properties']} -> {(out / 'outline.json').stat().st_size / 1e3:.0f} kB")
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--data-root", type=Path, default=WEB.parent / "data")
     ap.add_argument("--out", type=Path, default=WEB / "public" / "layers" / "pego_oliva")
     ap.add_argument("--no-rain", action="store_true", help="only rebuild the outlines")
+    ap.add_argument("--fire", action="store_true", help="bake the EFFIS burnt area of the Serra d'Espada fire instead")
     args = ap.parse_args()
     labels = args.data_root / "labels"
+    if args.fire:
+        return fire(labels, WEB / "public" / "layers" / "espada")
     args.out.mkdir(parents=True, exist_ok=True)
 
     ems = outline(labels / "pego_oliva_emsr935_flood.geojson", 8.0, close_m=6.5, min_ha=0.5)

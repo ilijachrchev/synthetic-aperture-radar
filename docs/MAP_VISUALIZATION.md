@@ -6,7 +6,7 @@
 
 </div>
 
-Written 14 Nov 2026 on branch `feat/map-viz`. The prototype is two pages of the web app (`web/`): `/flood` and `/rice`.
+Written 14 Nov 2026 on branch `feat/map-viz`. The prototype is three pages of the web app (`web/`): `/flood`, `/rice` and `/fire`.
 
 ![The NISAR pass of 28 Oct 2026 over the Pego-Oliva marsh, drawn over the real Sentinel-2 picture of that day](storyboard/05_after.jpg)
 
@@ -46,7 +46,7 @@ All times UTC, October and November 2026.
 | 18 to 19 Oct | The rain. 193 mm in the weather model at the marsh, up to 27 mm in one hour | [data] Open-Meteo, AROME 1.5 km |
 | 20 to 21 Oct | Copernicus EMS maps the flood from other satellites: **1,118 ha** | [data] `data/labels` (EMSR935) |
 | 21 Oct 11:00 | Sentinel-2 picture: **0 % cloud**. The marsh under orange water, sediment running into the sea. | [data] Earth Search |
-| 22 Oct 06:09 | First Sentinel-1 pass after the storm: **524 ha** of open water (it saw 82 % of the site) | [data] OPERA DSWx-S1 |
+| 22 Oct 06:09 | First Sentinel-1 pass after the storm. It saw 82 % of the site and measured 524 ha of open water there. The map shows **527 ha**, because in the strip the pass missed it keeps the last state that was seen (3 ha of open water) | [data] OPERA DSWx-S1 |
 | 23 Oct 19:01 | NISAR pass, track 167 D, covers 63 % of the site | [data] CMR, `docs/DATA.md` |
 | 28 Oct 05:06 | NISAR pass, track 058 A (new in CMR, being added to the stacks) | [data] CMR |
 | 28 Oct 18:53 | NISAR pass, track 066 D: **447 ha** of water, 334 ha more than on 16 Oct | [data] `data/cv` |
@@ -94,7 +94,7 @@ What this means for the story:
 | Cloudflare Pages | 25 MiB per file, and it answers range requests with a full 200 [doc, rechecked], so COG readers fail there |
 | Hugging Face datasets | Range and CORS worked in a test; one report of failures in January 2026 |
 
-Baked frames are fetched whole, so the page works on any of them. The layers weigh 12 MB for the marsh and 11 MB for the Albufera in the repo.
+Baked frames are fetched whole, so the page works on any of them. The layers weigh 12 MB for the marsh, 11 MB for the Albufera and 13 MB for Serra d'Espadà in the repo.
 
 ## 4. Real imagery and how to credit it
 
@@ -155,12 +155,15 @@ The shader (`web/src/lib/water-layer.ts`) mixes the fields of the pass before an
 - **At a pass the picture is that pass.** The mix is one field alone. "Exact pixels" shows the radar pixels with no rounding of their corners.
 - **Between passes a shoreline travels** across the ground. It is an interpolation, drawn hatched and dashed, and the readout says "Between passes, an estimate".
 - **Two clocks.** A pixel on its way into the water follows the gain clock, a pixel on its way out the loss clock. In an ordinary gap both run evenly. In a gap with at least 15 mm of rain the gain clock follows the cumulative rain and the loss clock starts when 97 % of the rain has fallen. For NISAR between 16 and 28 Oct this gives 113 ha, then 456 ha when the rain stops (everything wet on either pass), then 447 ha at the pass.
+- **A fire has its own clock.** In the gap that holds the start of a fire, the gain clock follows the record of the fire: nothing before its start (EFFIS: 25 Jul, 07:09 UTC), all of it by the last update of that record (26 Jul, 06:55 UTC, with 9,222 ha mapped), and the hectares rise evenly in between. After that the scar stays hatched, an estimate, until the next pass. Playback slows for the day the fire burns. An even clock from pass to pass would have shown 3 ha on 6 Aug, eleven days after EFFIS had mapped the fire. Of the scar the pass of 17 Aug confirms, 89 % lies inside that EFFIS outline [data].
+- **Far water starts in its middle.** Between passes a distance outside the water counts for at most 12 pixels (about 180 m). So new water far from any old water does not pop in at the last moment: it starts in its deepest part about halfway through the gap and grows out to its edge. A burn scar burns in the same way. The hectares between passes are counted with the same rule.
 - **Specks stay quiet.** The shoreline is drawn strong on a body of water that moved and faint on single pixels, so radar speckle does not sparkle.
 - **Ripples** run outward where water gains ground and inward where it gives it back, only while the series plays.
 - **A pass pulses.** When the playhead reaches a real pass the shoreline flashes once.
 - **Only the doubt is hatched.** Water that both passes have stays solid between them; the hatching and the dashes mark only what the two passes disagree on.
 - **Rain falls** on the picture in the hours the weather model has rain, harder when it rains harder.
 - Where a pass did not see a pixel, the last state that was seen is kept, so a shoreline never moves only because a pass missed it.
+- **Hectares are counted on the grid of the map** (Web Mercator, about 15 m here), every pixel with its true ground area. The pipeline counts on its own 20 m grid, so the two can differ by a fraction of a percent: the burn of 16 Oct is 5,340 ha on the map and 5,330 ha in the table of the CV session.
 
 The first and last day rasters of the CV export are not used: this method needs only the per-date layers and also handles ground that floods, drains and floods again.
 
@@ -170,8 +173,8 @@ The first and last day rasters of the CV export are not used: this method needs 
 |---|---|---|---|
 | **DANA flood, Pego-Oliva** | NISAR water 066 D, Sentinel-1 water, four Sentinel-2 pictures, EMS, footprint, depths, rain | Water rises with the rain, the outline of the peak appears, the pass confirms, Sentinel-1 shows the fall | **Built**: `/flood` |
 | **Rice season, Albufera** | NISAR water 066 D, 11 passes from 18 Jun to 28 Oct, six clear Sentinel-2 pictures | From June to September the map hardly moves (about 2,470 ha, the lagoon). From 4 Oct the paddies fill: 7,325 ha on 28 Oct. New water is measured against the 2,371 ha every pass has. | **Built**: `/rice` |
-| **Burn scar, Serra d'Espadà** | Burn layer per pass (asked from the CV session), EFFIS outline | The scar burns in between 24 Jul and 17 Aug with an ember edge, then stays dark. NASA FIRMS hot spots could time the spread [not checked]. | Mockup below |
-| **Sinking ground, Lorca** | `data/prediction/lorca`: LOR1 since 2020, forecast for 12, 24 and 36 days with 80 % and 95 % ranges | A ring at the station, the line falling on a chart, then the forecast as a band that widens | Mockup below |
+| **Burn scar, Serra d'Espadà** | Burn layer of the CV session on track 058 A (11 passes), five clear Sentinel-2 pictures, the EFFIS outline (9,222 ha) | Nothing until the fire starts on 25 Jul (EFFIS). No NISAR pass on any track came between 24 Jul and 17 Aug, so the scar of the 17 Aug pass (1,449 ha) burns in hatched during the one day between the start of the fire and the last update of the EFFIS record, and stays an estimate until that pass confirms it. Then the confirmed burn grows to 5,340 ha by 16 Oct as more pixels pass the rule (the echo 1.5 dB down on two passes in a row). It is "burn the radar confirms", about half of what EFFIS mapped, not the spread of the fire. | **Built**: `/fire` |
+| **Sinking ground, Lorca** | `data/prediction/lorca`: LOR1 since 2020, forecast for 12, 24 and 36 days with 80 % and 95 % ranges | A ring at the station, the line falling on a chart, then the forecast as a band that widens | Not built. Mockup below |
 | **Rain to flood, after today** | A probability raster per forecast day (planned) | Stripes for the likely extent, a second outline for the range, a "today" line on the axis | Shader mode exists (`forecast: 1`), needs data. Mockup below. |
 
 ## 7. Storyboard
@@ -188,13 +191,13 @@ Frames marked **real** are screenshots of the running app on real data (`web/scr
 | 4 | 9.0 to 11.0 s | The peak, seen by others | Still | 21 Oct: the clear picture shows the flood in true colour, the Copernicus outline draws in pink: 1,118 ha. | real<br><a href="storyboard/04_peak.jpg"><img src="storyboard/04_peak.jpg" width="230" alt="frame 04"></a> |
 | 5 | 11.0 to 13.5 s | The pass | Still | 28 Oct: the shoreline pulses, hatching goes, 447 ha, "+334 ha since 16 Oct". | real<br><a href="storyboard/05_after.jpg"><img src="storyboard/05_after.jpg" width="230" alt="frame 05"></a> |
 | 6 | 13.5 to 17.0 s | The check | Still | Swipe from right to left: before on the left, radar water over the 21 Oct picture on the right. | real<br><a href="storyboard/06_compare.jpg"><img src="storyboard/06_compare.jpg" width="230" alt="frame 06"></a> |
-| 7 | 17.0 to 19.5 s | Sentinel-1 fills the gap | Still | Switch to Sentinel-1: 22 Oct, 524 ha, then the fall to 250 ha by 10 Nov. | real<br><a href="storyboard/07_sentinel1.jpg"><img src="storyboard/07_sentinel1.jpg" width="230" alt="frame 07"></a> |
+| 7 | 17.0 to 19.5 s | Sentinel-1 fills the gap | Still | Switch to Sentinel-1: 22 Oct, 527 ha on the map (the pass saw 82 % of the site), then the fall to 250 ha by 10 Nov. | real<br><a href="storyboard/07_sentinel1.jpg"><img src="storyboard/07_sentinel1.jpg" width="230" alt="frame 07"></a> |
 | 8 | 19.5 to 22.5 s | Farm water | Cut to the Albufera, 39.288 N 0.318 W, zoom 11.3 | The season plays: the lagoon stays, the paddies fill in October. "Rice fields are flooded on purpose: farm water, not storm water." | real<br><a href="storyboard/08_rice.jpg"><img src="storyboard/08_rice.jpg" width="230" alt="frame 08"></a> |
-| 9 | 22.5 to 25.0 s | Fire | Cut to Serra d'Espadà, zoom 11.2 | The scar burns in with an ember edge inside the EFFIS line. | mockup<br><a href="storyboard/09_fire_mock.jpg"><img src="storyboard/09_fire_mock.jpg" width="230" alt="frame 09"></a> |
+| 9 | 22.5 to 25.0 s | Fire | Cut to Serra d'Espadà, 39.89 N 0.262 W, zoom 11.55 | The scar burns in with an ember edge inside the pink EFFIS line: 1,449 ha on 17 Aug, 5,340 ha by 16 Oct, against 9,222 ha mapped by EFFIS. | real<br><a href="storyboard/09_fire.jpg"><img src="storyboard/09_fire.jpg" width="230" alt="frame 09"></a> |
 | 10 | 25.0 to 27.5 s | Sinking | Cut to Lorca, zoom 11.5 | Ring on LOR1, the chart falls, the forecast band opens. | mockup<br><a href="storyboard/10_sink_mock.jpg"><img src="storyboard/10_sink_mock.jpg" width="230" alt="frame 10"></a> |
 | 11 | 27.5 to 30.0 s | What comes next | Back to the marsh | "Today" line, the forecast in stripes with its range. End card: name, link, team, credits. | mockup<br><a href="storyboard/11_forecast_mock.jpg"><img src="storyboard/11_forecast_mock.jpg" width="230" alt="frame 11"></a> |
 
-Shots 1 to 6 already play by themselves: open `/flood?story`. Shot 8 does too: `/rice?story`. `web/scripts/record_flood.py` records them as a film file and as frames.
+Shots 1 to 6 already play by themselves: open `/flood?story`. Shots 8 and 9 do too: `/rice?story` and `/fire?story`. `web/scripts/record_flood.py` records them as a film file and as frames.
 
 ### The live app
 
@@ -206,6 +209,7 @@ Shots 1 to 6 already play by themselves: open `/flood?story`. Shot 8 does too: `
 6. "Compare" swipes, "From space" flies out to the storm, "Sources" lists every credit.
 7. Space plays and pauses, the arrow keys step from pass to pass.
 8. The rice season is the same page with another story: [summer](storyboard/a5_rice_summer.jpg), [the paddies filling](storyboard/a4_rice_filling.jpg), [28 Oct close up](storyboard/a6_rice_close.jpg).
+9. So is the fire: [the day it burns](storyboard/a7_fire_burning.jpg), [the estimate before the first pass](storyboard/a8_fire_estimate.jpg), [the first pass after](storyboard/a9_fire_first.jpg).
 
 ### References looked at
 
@@ -217,7 +221,7 @@ Zoom Earth (`zoom.earth`, the storm of 18 Oct 2026): the map fills the screen an
 |---|---|---|
 | CV, water | Per pass, as now | `data/cv/<site>_<stack>/<date>_water.tif`, EPSG:3857, uint8: 0 not water, 1 water, 2 flooded vegetation, 255 no data or sea, plus the manifest entry |
 | CV, probability | Per pass (coming) | `<date>_water_p.tif`, uint8 = round(P x 200), 255 no data. Lets the map draw the uncertain band at a pass. |
-| CV, burn | Per pass, Espadà (asked) | `<date>_burn.tif`, uint8: 0, 1 burned, 255 |
+| CV, burn | Per pass, Espadà (delivered) | `<date>_burn.tif`, uint8: 0, 1 burned, 255, manifest layer `burn` |
 | Prediction, flood | Per forecast day | A probability raster on the site grid plus median and range in hectares. The map draws stripes above 50 % and the range as outlines. |
 | Prediction, Lorca | As now | `forecast.json` and `observations.csv` |
 | ML, classes | As now | A class COG; the map can tint the water by class (rice, permanent water) |
@@ -229,6 +233,8 @@ The bake picks up every CV water layer listed in `data/manifest.json` by itself.
 - The gauge total of 634 mm at Pego (AEMET) [not checked].
 - The NISAR layer in GIBS: listed with data on 16 and 28 Oct [doc], but an earlier note found broken tiles at zoom 12 and 13. Not used.
 - FIRMS hot spots for the fire: access and dates [not checked].
+- The EFFIS outline in `data/labels` says it was last updated on 26 Jul 2026, one day into the fire. A later and larger outline may exist [not checked]. The Sentinel-2 picture of 28 Jul still shows the smoke of the fire in the north of it.
+- The burn layer against the EFFIS outline on 28 Oct: 4,932 ha inside, precision 0.93 (figures of the CV session). The share inside the outline was recomputed here on the exported layers: 92.5 % on 28 Oct, 88.9 % on 17 Aug [data]. The hectares of the CV session were not recomputed. The end date of the fire is not in the files used here, so the page only names its start.
 - Phones: the layout adapts, the layers were only tested on a desktop graphics card.
 - The film recording runs in a headless browser; a final cut should be recorded on a real screen.
 - Frame rate: 60 a second at rest and 59 to 60 while playing on a laptop graphics card (RTX 4070), measured in a headless browser. One frame runs long (about 0.1 s) each time a new Sentinel-2 picture is put on the graphics card.
@@ -242,7 +248,7 @@ pnpm install
 pnpm dev
 ```
 
-Then open `http://localhost:3000/flood` or `/rice` (add `?story` for the film, `?still` for a page that does not play by itself).
+Then open `http://localhost:3000/flood`, `/rice` or `/fire` (add `?story` for the film, `?still` for a page that does not play by itself).
 
 Rebuild the layers (Python with rasterio, scipy, geopandas, earthaccess; the pipeline environment has them):
 
@@ -252,8 +258,12 @@ python scripts/fetch_optical.py --site pego_oliva --days 2026-10-08 2026-10-18 2
 python scripts/bake_context.py --data-root ../data
 python scripts/bake_water.py --site albufera --start 2026-06-18 --end 2026-10-28 --no-s1 --stacks 066_D_069 --data-root ../data
 python scripts/fetch_optical.py --site albufera --days 2026-06-30 2026-07-28 2026-08-29 2026-09-08 2026-10-08 2026-10-21
+python scripts/bake_water.py --site espada --layer burn --no-s1 --start 2026-06-18 --end 2026-10-28 --data-root ../data
+python scripts/fetch_optical.py --site espada --days 2026-07-23 2026-07-28 2026-08-19 2026-09-11 2026-10-21
+python scripts/bake_context.py --fire --data-root ../data
 python scripts/shoot_flood.py out --cinema --size 1920x1080
 python scripts/shoot_flood.py out --story rice --cinema --size 1920x1080
+python scripts/shoot_flood.py out --story fire --cinema --size 1920x1080
 python scripts/record_flood.py out --url "http://localhost:3000/flood?story"
 ```
 

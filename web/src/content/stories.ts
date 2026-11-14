@@ -8,8 +8,9 @@ export type Story = {
 	root: string
 	title: string
 	place: string
-	/** 'storm': water rises with the rain between two passes. 'season': water comes and goes pass by pass */
-	kind: 'storm' | 'season'
+	/** 'storm': water rises with the rain between two passes. 'season': water comes and goes pass by pass.
+	    'fire': burned ground the radar confirms, which only grows */
+	kind: 'storm' | 'season' | 'fire'
 	/** radar series in order of preference: the first one the baked files hold opens the page */
 	series: string[]
 	/** the days the time axis shows */
@@ -24,6 +25,13 @@ export type Story = {
 	/** outlines.json holds the Copernicus EMS outline, drawn from imagery of these days */
 	ems?: { from: string; to: string }
 	places: { name: string; at: [number, number] }[]
+	/** one reference line of its own (outline.json), shown from a day on */
+	outline?: { key: string; label: string; from: string }
+	/** the moment the story turns on, marked on the time axis; the last pass before it is the reference.
+	 *  `until` is when its record was last updated: by then everything in the record had happened */
+	event?: { t: string; until?: string; label: string }
+	/** words and colours when the layer is not water */
+	layer?: { unit: string; main: string; toggle: string; rgb: { open: [number, number, number]; glow: [number, number, number]; edge: [number, number, number]; fill: number; line: number } }
 	/** the short credit line that is always on screen, and the full list behind "Sources" */
 	credit: string
 	credits: { what: string; who: string }[]
@@ -33,6 +41,9 @@ export type Story = {
 const BASE = { what: 'Base map', who: 'EOxCloudless https://cloudless.eox.at by EOX IT Services GmbH (Contains modified Copernicus Sentinel data 2017), CC BY 4.0' }
 const NISAR = { what: 'NISAR water', who: 'NASA-ISRO NISAR L2 GCOV (NASA ASF DAAC), water mapped by the team CV model' }
 const PICTURES = { what: 'Pictures', who: 'Contains modified Copernicus Sentinel data 2026 (Sentinel-2 L2A, Earth Search)' }
+
+/** passes of one track over a site, from the granule names in NASA CMR (data/catalog/<site>.json) */
+const onTrack = (track: string, times: string[]) => times.map((t) => ({ t, track }))
 
 export const DANA: Story = {
 	key: 'dana',
@@ -92,7 +103,18 @@ export const RICE: Story = {
 	series: ['nisar_066_D_069'],
 	window: { from: '2026-06-14T00:00:00Z', to: '2026-11-01T00:00:00Z' },
 	camera: { center: [-0.318, 39.288], zoom: 11.3 },
-	otherNisar: [],
+	otherNisar: [
+		...onTrack('058 A', [
+			'2026-06-18T05:06:55Z', '2026-06-30T05:06:50Z', '2026-07-12T05:06:53Z', '2026-07-24T05:06:53Z',
+			'2026-08-17T05:06:52Z', '2026-08-29T05:06:52Z', '2026-09-10T05:06:51Z', '2026-09-22T05:06:51Z',
+			'2026-10-04T05:06:52Z', '2026-10-16T05:06:52Z', '2026-10-28T05:06:52Z',
+		]),
+		...onTrack('167 D', [
+			'2026-06-25T19:01:07Z', '2026-07-07T19:01:06Z', '2026-07-19T19:01:06Z', '2026-08-24T19:01:04Z',
+			'2026-09-05T19:01:04Z', '2026-09-17T19:01:03Z', '2026-09-29T19:01:03Z', '2026-10-11T19:01:03Z',
+			'2026-10-23T19:01:04Z',
+		]),
+	],
 	places: [
 		{ name: 'València', at: [-0.3763, 39.4699] },
 		{ name: 'Sueca', at: [-0.3111, 39.2026] },
@@ -106,4 +128,54 @@ export const RICE: Story = {
 	},
 }
 
-export const STORIES: Record<string, Story> = { dana: DANA, rice: RICE }
+export const FIRE: Story = {
+	key: 'fire',
+	root: '/layers/espada',
+	title: 'Espadà fire',
+	place: "Serra d'Espadà, Castelló",
+	kind: 'fire',
+	series: ['burn_058_A_022'],
+	window: { from: '2026-06-14T00:00:00Z', to: '2026-11-01T00:00:00Z' },
+	camera: { center: [-0.262, 39.89], zoom: 11.55 },
+	// no NISAR pass on any track between 24 Jul and 17 Aug: the fire fell in the gap
+	otherNisar: [
+		...onTrack('066 D', [
+			'2026-06-18T18:52:48Z', '2026-06-30T18:52:47Z', '2026-07-12T18:52:46Z', '2026-07-24T18:52:46Z',
+			'2026-08-17T18:52:44Z', '2026-08-29T18:52:44Z', '2026-09-10T18:52:44Z', '2026-09-22T18:52:44Z',
+			'2026-10-04T18:52:44Z', '2026-10-16T18:52:44Z', '2026-10-28T18:52:44Z',
+		]),
+		...onTrack('167 D', [
+			'2026-06-25T19:01:07Z', '2026-07-07T19:01:06Z', '2026-07-19T19:01:06Z', '2026-08-24T19:01:04Z',
+			'2026-09-05T19:01:04Z', '2026-09-17T19:01:03Z', '2026-09-29T19:01:03Z', '2026-10-11T19:01:03Z',
+			'2026-10-23T19:01:04Z',
+		]),
+	],
+	// EFFIS burnt area 570518: fire date 25 Jul 2026 09:09 local time (07:09 UTC), last update 26 Jul 08:55 local
+	// time (06:55 UTC), 9,222 ha. The outline is shown from that last update on.
+	event: { t: '2026-07-25T07:09:00Z', until: '2026-07-26T06:55:42Z', label: 'fire starts, 25 Jul (EFFIS)' },
+	outline: { key: 'effis', label: 'EFFIS burnt area', from: '2026-07-26T06:55:42Z' },
+	layer: {
+		unit: 'burned ground',
+		main: 'Burn the radar confirms',
+		toggle: 'Radar burn',
+		rgb: { open: [0.42, 0.07, 0.01], glow: [1.0, 0.42, 0.1], edge: [1.0, 0.66, 0.24], fill: 0.86, line: 0.5 },
+	},
+	places: [
+		{ name: 'Onda', at: [-0.2603, 39.9634] },
+		{ name: 'Nules', at: [-0.1563, 39.8532] },
+		{ name: 'Eslida', at: [-0.3046, 39.8822] },
+	],
+	credit: 'NISAR: NASA-ISRO · Sentinel-2: Copernicus · Burnt area: EFFIS, © European Union · EOX',
+	credits: [
+		{ what: 'NISAR burn', who: 'NASA-ISRO NISAR L2 GCOV (NASA ASF DAAC): the cross-polarised echo at least 1.5 dB below the last pass before the fire, on two passes in a row (the team CV method)' },
+		PICTURES,
+		{ what: 'Burnt area', who: 'EFFIS, European Forest Fire Information System, © European Union, CC BY 4.0' },
+		BASE,
+	],
+	meta: {
+		title: "Serra d'Espadà fire · Dancing with the SARs",
+		description: "The burn scar of the July 2026 fire in the Serra d'Espadà, as NISAR confirms it pass after pass, over real satellite pictures.",
+	},
+}
+
+export const STORIES: Record<string, Story> = { dana: DANA, rice: RICE, fire: FIRE }

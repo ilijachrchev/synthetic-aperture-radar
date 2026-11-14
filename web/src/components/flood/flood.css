@@ -899,3 +899,23 @@
 		animation: none;
 	}
 }
+
+/* ---------------------------------------------------------------- a fire: the same marks in ember colours */
+.fl[data-kind="fire"] {
+	--w-open: #ff7a2e;
+	--w-new: #ffb347;
+}
+.fl[data-kind="fire"] .fl-legend i[data-k="new"] {
+	background: #7a1f08;
+	box-shadow:
+		0 0 0 1.5px #ffb347,
+		0 0 9px #ff6a1a;
+}
+.fl-tl-event {
+	stroke: var(--w-open);
+	stroke-width: 1.5;
+	stroke-dasharray: 2 3;
+}
+.fl-tl-eventnote {
+	fill: var(--ink-2);
+}
