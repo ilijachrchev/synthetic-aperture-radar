@@ -43,3 +43,6 @@ next-env.d.ts
 # written by next dev itself, holds an em dash, never committed
 AGENTS.md
 .impeccable
+
+# copied from node_modules by scripts/copy-maplibre-worker.mjs
+/public/maplibre

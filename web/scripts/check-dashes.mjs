@@ -10,7 +10,7 @@ const ROOT = join(fileURLToPath(new URL('.', import.meta.url)), '..')
 const BANNED = [0x2012, 0x2013, 0x2014, 0x2015, 0x2e3a, 0x2e3b, 0xfe58, 0xfe31, 0xfe32].map((c) => String.fromCharCode(c))
 const ENTITY = /&(?:ndash|mdash|horbar|#821[1-3];|#x201[2-5]);?/gi
 const TEXT = new Set(['.ts', '.tsx', '.js', '.mjs', '.cjs', '.css', '.json', '.md', '.mdx', '.txt', '.svg', '.html', '.py', '.yaml', '.yml'])
-const SKIP_DIRS = new Set(['node_modules', '.next', '.git', 'out', 'radar', 'img', 'video'])
+const SKIP_DIRS = new Set(['node_modules', '.next', '.git', 'out', 'radar', 'img', 'video', 'maplibre'])
 // AGENTS.md is written by `next dev` itself and is not committed (see .gitignore).
 const SKIP_FILES = new Set(['AGENTS.md', 'pnpm-lock.yaml', 'next-env.d.ts'])
 

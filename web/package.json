@@ -3,13 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "dev": "node scripts/copy-maplibre-worker.mjs && next dev",
+    "build": "node scripts/check-dashes.mjs && node scripts/copy-maplibre-worker.mjs && next build",
     "start": "next start",
     "lint": "eslint",
     "check:dashes": "node scripts/check-dashes.mjs",
-    "prebuild": "node scripts/check-dashes.mjs",
-    "radar": "python -I scripts/fetch_radar.py"
+    "radar": "python -I scripts/fetch_radar.py",
+    "postinstall": "node scripts/copy-maplibre-worker.mjs"
   },
   "dependencies": {
     "lucide-react": "^1.73.0",
