@@ -9,9 +9,14 @@
 // Wetting and drying run on two clocks (gain, loss). In an ordinary gap they run together. Across a storm the
 // water rises first and falls after, so the page runs the gain clock with the rain and the loss clock afterwards.
 //
+// With 3D terrain on, MapLibre does not call render: it asks the layer to draw into each terrain tile
+// (renderToTerrainTile) and lays those tiles over the ground, so the water follows the relief like the base map.
+// The fragment shader is the same on both paths: it only knows its place on the baked grid.
+//
 // No framework in here: it is a MapLibre custom layer and can be used from any page.
 import type { CustomLayerInterface, CustomRenderMethodInput, Map as MapLibreMap } from 'maplibre-gl'
-import { QUAD_VERT, buildProgram, quadMatrix, unitQuad, withClip } from './gl-quad'
+import { QUAD_VERT, TILE_VERT, buildProgram, quadMatrix, tileRect, unitQuad, withClip } from './gl-quad'
+import { WATER_FRAG } from './water-shader'
 
 export type WaterFrame = {
 	file: string
@@ -85,7 +90,7 @@ export type WaterStyle = {
 
 export const WATER_STYLE: WaterStyle = {
 	open: [0.07, 0.5, 1.0],
-	veg: [0.16, 0.88, 0.66],
+	veg: [0.5, 0.78, 1.0],
 	glow: [0.5, 0.88, 1.0],
 	edge: [0.94, 0.99, 1.0],
 	unseen: [0.72, 0.78, 0.9],
@@ -96,158 +101,18 @@ export const WATER_STYLE: WaterStyle = {
 	line: 1,
 }
 
-const FRAG = `#version 300 es
-precision highp float;
-in vec2 v_uv;
-out vec4 fragColor;
-uniform sampler2D u_a;
-uniform sampler2D u_b;
-uniform sampler2D u_ref;
-uniform sampler2D u_base;
-uniform vec2 u_size;
-uniform float u_gain;
-uniform float u_loss;
-uniform float u_obs;
-uniform float u_time;
-uniform float u_flow;
-uniform float u_flash;
-uniform float u_hasRef;
-uniform float u_opacity;
-uniform float u_forecast;
-uniform float u_soft;
-uniform float u_fill;
-uniform float u_line;
-uniform float u_reach;
-uniform float u_lin;
-uniform float u_range;
-uniform vec3 u_cOpen;
-uniform vec3 u_cVeg;
-uniform vec3 u_cGlow;
-uniform vec3 u_cEdge;
-uniform vec3 u_cUnseen;
-
-// one byte back to a distance in grid pixels, the inverse of encode() in scripts/bake_water.py
-float dist(float v) {
-	float c = v * 255.0 - 128.0;
-	float a = abs(c);
-	float s = a <= 32.0 ? a * (u_lin / 32.0) : u_lin + (u_range - u_lin) * ((a - 32.0) / 95.0) * ((a - 32.0) / 95.0);
-	return sign(c) * s;
-}
-
-void main() {
-	vec3 ta = texture(u_a, v_uv, u_soft).rgb;
-	vec3 tb = texture(u_b, v_uv, u_soft).rgb;
-	float sea = texture(u_base, v_uv).r;
-
-	// outside the water a distance counts for at most u_reach, so new water far from the old does not wait for
-	// the last moment: it starts in its deepest part and grows out (the bake counts hectares the same way)
-	float anyA = min(dist(ta.g), u_reach);
-	float anyB = min(dist(tb.g), u_reach);
-	float openA = min(dist(ta.b), u_reach);
-	float openB = min(dist(tb.b), u_reach);
-	// a pixel on its way into the water follows the gain clock, a pixel on its way out the loss clock
-	float sAny = mix(anyA, anyB, anyB < anyA ? u_gain : u_loss);
-	float sOpen = mix(openA, openB, openB < openA ? u_gain : u_loss);
-
-	// grid pixels per screen pixel, and the slope of the field with a floor so flat patches stay sane
-	float texel = max(length(fwidth(v_uv) * u_size) * 0.7071, 1e-5);
-	float gAny = max(fwidth(sAny), texel * 0.35);
-	float gOpen = max(fwidth(sOpen), texel * 0.35);
-	float px = sAny / gAny; // signed distance to the shoreline in screen pixels, negative in water
-
-	float water = clamp(0.5 - px, 0.0, 1.0);
-	float open = clamp(0.5 - sOpen / gOpen, 0.0, 1.0);
-
-	// is this a body of water or a speck? Read the field 8 pixels wide: specks average out, bodies do not
-	float wide = mix(dist(textureLod(u_a, v_uv, 3.0).g), dist(textureLod(u_b, v_uv, 3.0).g), 0.5 * (u_gain + u_loss));
-	float mass = 1.0 - smoothstep(-0.5, 3.0, wide);
-
-	// against the reference pass: water it did not have is new, and a shoreline it did not have has moved
-	float fresh = 0.0;
-	float moved = 0.0;
-	if (u_hasRef > 0.5) {
-		vec3 tr = texture(u_ref, v_uv, u_soft).rgb;
-		float refAny = dist(tr.g);
-		float refOpen = dist(tr.b);
-		float freshAny = clamp(0.5 + refAny / max(fwidth(refAny), texel * 0.35), 0.0, 1.0);
-		float freshOpen = clamp(0.5 + refOpen / max(fwidth(refOpen), texel * 0.35), 0.0, 1.0);
-		fresh = max(freshAny, open * freshOpen);
-		moved = smoothstep(0.75, 3.0, abs(refAny - sAny));
-	}
-
-	vec2 fc = gl_FragCoord.xy;
-	// only what the two passes disagree on is an estimate: water that both passes have is as sure between them
-	float inA = clamp(0.5 - anyA / max(fwidth(anyA), texel * 0.35), 0.0, 1.0);
-	float inB = clamp(0.5 - anyB / max(fwidth(anyB), texel * 0.35), 0.0, 1.0);
-	float between = (1.0 - u_obs) * (1.0 - inA * inB);
-	float shifting = (1.0 - u_obs) * smoothstep(0.5, 2.0, abs(anyB - anyA));
-
-	// fill: open water is a clean wash, flooded vegetation is a lighter wash under fine dots
-	vec3 cOpen = mix(u_cOpen * vec3(0.9, 0.82, 0.86), u_cOpen, fresh);
-	vec3 cVeg = mix(u_cVeg * 0.74, u_cVeg, fresh);
-	vec3 col = mix(cVeg, cOpen, open);
-	float depth = clamp(-sAny / 18.0, 0.0, 1.0);
-	col *= 1.0 - 0.2 * depth;
-	float dots = smoothstep(0.66, 0.36, length(fract(fc / 5.0) - 0.5) * 2.0);
-	float aOpen = mix(0.5, 0.8, fresh);
-	float aVeg = mix(0.2, 0.36, fresh) + dots * mix(0.36, 0.58, fresh);
-	float fill = water * mix(aVeg, aOpen, open) * u_fill;
-
-	// between two passes the fill is hatched: it is an estimate, not a measurement
-	float hatch = smoothstep(0.2, 0.34, abs(fract((fc.x + fc.y) / 6.0) - 0.5));
-	fill *= mix(1.0, 0.66 + 0.34 * hatch, between);
-
-	// ripples run with the shoreline: outward where water gains ground, inward where it gives it back
-	float delta = anyB - anyA;
-	float moving = smoothstep(1.0, 9.0, abs(delta)) * u_flow * mass;
-	float dir = delta < 0.0 ? 1.0 : -1.0;
-	float wave = sin(px * 0.5 - dir * u_time * 4.2);
-	float ripple = smoothstep(0.74, 1.0, wave) * smoothstep(-30.0, -3.0, px) * step(px, 0.0) * moving;
-
-	// shoreline: one crisp line, strong on a body of water that moved, faint on specks, dashed on an estimate
-	float weight = mix(0.2, 1.0, mass) * mix(0.55, 1.0, moved) * u_line;
-	float dash = smoothstep(0.42, 0.58, abs(fract((fc.x - fc.y) / 11.0) - 0.5) * 2.0);
-	float line = clamp(1.55 - abs(px), 0.0, 1.0) * weight * mix(1.0, dash, shifting);
-	float halo = exp(-max(px, 0.0) / 7.0) * step(0.0, px) * mass * moved * (0.34 + 0.5 * u_flash) * u_line;
-
-	// forecast: no solid water, only stripes inside the likely extent and a dashed outline
-	float stripes = smoothstep(0.34, 0.46, abs(fract((fc.x + fc.y) / 12.0) - 0.5));
-	fill = mix(fill, water * (0.1 + 0.34 * (1.0 - stripes)), u_forecast);
-	line = mix(line, clamp(1.55 - abs(px), 0.0, 1.0) * dash, u_forecast);
-	// (the forecast outline is always dashed)
-	halo *= 1.0 - u_forecast;
-	ripple *= 1.0 - u_forecast;
-
-	vec3 rgb = col;
-	float alpha = fill;
-	rgb = mix(rgb, u_cEdge, clamp(ripple * 0.55, 0.0, 1.0));
-	alpha = max(alpha, ripple * 0.5 * water);
-	// the halo sits on the land side of the shoreline, the line on top of both
-	rgb = mix(rgb, u_cGlow, halo * (1.0 - water));
-	alpha = max(alpha, halo * (1.0 - water));
-	rgb = mix(rgb, u_cEdge, line);
-	alpha = max(alpha, line);
-
-	// ground this pass did not see: thin grey hatching, only while the picture is a pass
-	float seen = mix(ta.r, tb.r, step(0.5, 0.5 * (u_gain + u_loss)));
-	float miss = (1.0 - smoothstep(0.35, 0.65, seen)) * u_obs * (1.0 - u_forecast);
-	float missHatch = 1.0 - smoothstep(0.06, 0.12, abs(fract((fc.x + fc.y) / 9.0) - 0.5));
-	float missA = miss * missHatch * 0.3;
-	rgb = mix(rgb, u_cUnseen, missA * (1.0 - alpha));
-	alpha = max(alpha, missA);
-
-	alpha *= (1.0 - smoothstep(0.35, 0.65, sea)) * u_opacity;
-	fragColor = vec4(rgb * alpha, alpha);
-}`
+const FRAG = WATER_FRAG
 
 const UNIFORMS = [
-	'u_matrix', 'u_a', 'u_b', 'u_ref', 'u_base', 'u_size', 'u_gain', 'u_loss', 'u_obs', 'u_time', 'u_flow', 'u_flash', 'u_hasRef',
+	'u_matrix', 'u_rect', 'u_clip', 'u_a', 'u_b', 'u_ref', 'u_base', 'u_size', 'u_gain', 'u_loss', 'u_obs', 'u_time', 'u_flow', 'u_flash', 'u_hasRef',
 	'u_opacity', 'u_forecast', 'u_soft', 'u_fill', 'u_line', 'u_reach', 'u_lin', 'u_range', 'u_cOpen', 'u_cVeg', 'u_cGlow', 'u_cEdge', 'u_cUnseen',
 ]
 const MAX_TEXTURES = 8
 const FLASH_MS = 650
 
 type Slot = { tex: WebGLTexture; used: number }
+type Prog = { program: WebGLProgram; u: Record<string, WebGLUniformLocation | null> }
+type TerrainTile = Parameters<NonNullable<CustomLayerInterface['renderToTerrainTile']>>[1]
 
 export class WaterLayer {
 	readonly id: string
@@ -255,10 +120,12 @@ export class WaterLayer {
 	style: WaterStyle
 	private map: MapLibreMap | null = null
 	private gl: WebGL2RenderingContext | null = null
-	private program: WebGLProgram | null = null
+	/** the layer drawn by the camera, and the same layer drawn into one terrain tile */
+	private flat: Prog | null = null
+	private draped: Prog | null = null
 	private vao: WebGLVertexArrayObject | null = null
 	private buffer: WebGLBuffer | null = null
-	private uniforms: Record<string, WebGLUniformLocation | null> = {}
+	private revision = 0
 	private slots = new Map<string, Slot>()
 	private loading = new Set<string>()
 	private pending: { key: string; bitmap: ImageBitmap }[] = []
@@ -286,7 +153,10 @@ export class WaterLayer {
 			renderingMode: '2d',
 			onAdd: (map, gl) => this.onAdd(map, gl),
 			onRemove: () => this.onRemove(),
+			prerender: (gl) => this.prerender(gl),
 			render: (gl, input) => this.render(gl, input),
+			renderToTerrainTile: (gl, tile) => this.renderTile(gl, tile),
+			terrainTileRevision: 0,
 		}
 	}
 
@@ -296,29 +166,41 @@ export class WaterLayer {
 		this.want(this.view.a)
 		this.want(this.view.b)
 		if (this.view.ref >= 0) this.want(this.view.ref)
-		this.map?.triggerRepaint()
+		this.touch()
 	}
 
 	/** 0 to 1: how much the ripples run (1 while the series plays) */
 	setFlow(flow: number) {
 		this.flow = flow
-		this.map?.triggerRepaint()
+		this.touch()
 	}
 
 	/** a short pulse on the shoreline: the playhead has just reached a real pass */
 	flash() {
 		this.flashAt = performance.now()
-		this.map?.triggerRepaint()
+		this.touch()
 	}
 
 	setStyle(style: Partial<WaterStyle>) {
 		this.style = { ...this.style, ...style }
-		this.map?.triggerRepaint()
+		this.touch()
 	}
 
 	/** draw only between these fractions of the width of the map (for the swipe) */
 	setClip(x0: number, x1: number) {
 		this.clip = [x0, x1]
+		this.touch()
+	}
+
+	/** Draw again although nothing was set: the light on the water moves with the clock. */
+	repaint() {
+		this.touch()
+	}
+
+	/** What the layer draws has changed. Draped over terrain the tiles are kept as textures, and MapLibre only
+	 *  draws them again when this number moves. */
+	private touch() {
+		this.layer.terrainTileRevision = ++this.revision
 		this.map?.triggerRepaint()
 	}
 
@@ -356,10 +238,15 @@ export class WaterLayer {
 	private onAdd(map: MapLibreMap, gl: WebGL2RenderingContext) {
 		this.map = map
 		this.gl = gl
-		const program = buildProgram(gl, QUAD_VERT, FRAG)
-		this.program = program
-		for (const name of UNIFORMS) this.uniforms[name] = gl.getUniformLocation(program, name)
-		const quad = unitQuad(gl, program)
+		const make = (vert: string): Prog => {
+			const program = buildProgram(gl, vert, FRAG)
+			const u: Prog['u'] = {}
+			for (const name of UNIFORMS) u[name] = gl.getUniformLocation(program, name)
+			return { program, u }
+		}
+		this.flat = make(QUAD_VERT)
+		this.draped = make(TILE_VERT)
+		const quad = unitQuad(gl, this.flat.program)
 		this.vao = quad.vao
 		this.buffer = quad.buffer
 		this.load('base', `${this.root}/${this.meta.base}`)
@@ -371,7 +258,7 @@ export class WaterLayer {
 		const gl = this.gl
 		if (gl) {
 			for (const s of this.slots.values()) gl.deleteTexture(s.tex)
-			if (this.program) gl.deleteProgram(this.program)
+			for (const p of [this.flat, this.draped]) if (p) gl.deleteProgram(p.program)
 			if (this.buffer) gl.deleteBuffer(this.buffer)
 			if (this.vao) gl.deleteVertexArray(this.vao)
 		}
@@ -409,29 +296,34 @@ export class WaterLayer {
 				this.slots.delete(old[0])
 			}
 		}
-		if (this.pending.length) this.map?.triggerRepaint()
+		this.touch()
 		this.onFrame?.()
 	}
 
-	private render(gl: WebGL2RenderingContext, input: CustomRenderMethodInput) {
+	/** Runs once a frame on both paths, before anything is drawn: frames go on the card here, and a picture that
+	 *  moves by itself (ripples, the pulse of a pass) asks for the next frame. */
+	private prerender(gl: WebGL2RenderingContext) {
 		this.upload(gl)
+		if (this.flow > 0.001 || performance.now() - this.flashAt < FLASH_MS) this.touch()
+	}
+
+	/** Everything the two paths share: the frames, the clocks, the colours. False when there is nothing to draw yet. */
+	private begin(gl: WebGL2RenderingContext, p: Prog) {
 		const { a, b, ref, gain, loss, observed } = this.view
 		const A = this.slots.get(`f${a}`)
 		const B = this.slots.get(`f${b}`)
 		const base = this.slots.get('base')
-		if (!this.program || !A || !B || !base) return
+		if (!A || !B || !base) return false
 		const R = ref >= 0 ? this.slots.get(`f${ref}`) : undefined
 		A.used = B.used = ++this.tick
 		if (R) R.used = this.tick
-		if (this.style.opacity <= 0.001) return
+		if (this.style.opacity <= 0.001) return false
 
-		const mat = quadMatrix(input.defaultProjectionData.mainMatrix as unknown as ArrayLike<number>, this.meta.bounds)
 		const now = performance.now()
 		const flash = Math.max(0, 1 - (now - this.flashAt) / FLASH_MS)
-		const u = this.uniforms
+		const u = p.u
 		const s = this.style
-		gl.useProgram(this.program)
-		gl.uniformMatrix4fv(u.u_matrix, false, mat)
+		gl.useProgram(p.program)
 		const bind = (unit: number, tex: WebGLTexture, loc: WebGLUniformLocation | null) => {
 			gl.activeTexture(gl.TEXTURE0 + unit)
 			gl.bindTexture(gl.TEXTURE_2D, tex)
@@ -466,10 +358,29 @@ export class WaterLayer {
 		gl.enable(gl.BLEND)
 		gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA)
 		gl.bindVertexArray(this.vao)
+		return true
+	}
+
+	/** the flat map: one rectangle through the camera of the map */
+	private render(gl: WebGL2RenderingContext, input: CustomRenderMethodInput) {
+		// the camera matrix below is a Mercator one. On the globe (far out, without terrain) it would put the
+		// rectangle in the wrong place, so the layer waits until the globe has turned flat, near zoom 12
+		if (input.shaderData.variantName !== 'mercator') return
+		if (!this.flat || !this.begin(gl, this.flat)) return
+		gl.uniformMatrix4fv(this.flat.u.u_matrix, false, quadMatrix(input.defaultProjectionData.mainMatrix as unknown as ArrayLike<number>, this.meta.bounds))
 		withClip(gl, this.clip, () => gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4))
 		gl.bindVertexArray(null)
+	}
 
-		// ripples and the pass pulse need a frame every tick; a still picture does not
-		if (this.flow > 0.001 || flash > 0) this.map?.triggerRepaint()
+	/** 3D terrain: the part of one terrain tile that the site covers. The swipe line is a line on the screen and
+	 *  has no place in a tile, so it does not apply here. */
+	private renderTile(gl: WebGL2RenderingContext, tile: TerrainTile) {
+		const at = tileRect(this.meta.bounds, tile.tileID)
+		if (!at || !this.draped || !this.begin(gl, this.draped)) return
+		gl.uniform4fv(this.draped.u.u_rect, at.rect)
+		gl.uniform4fv(this.draped.u.u_clip, at.clip)
+		gl.disable(gl.CULL_FACE)
+		gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4)
+		gl.bindVertexArray(null)
 	}
 }

@@ -3,8 +3,8 @@
     python scripts/record_flood.py OUT_DIR --url "http://localhost:3220/flood?story" --seconds 24
     python scripts/record_flood.py OUT_DIR --url "http://localhost:3220/fire?story" --screencast
 
-Opens the page with ?story, which plays the film mode by itself (from space, down to the marsh, the passes, the
-swipe). Writes OUT_DIR/film.mp4 and OUT_DIR/frames/f_<seconds>.jpg, which are real frames of the running app on
+Opens the page with ?story, which plays the film by itself (the Earth, one move down onto the place, the passes,
+then the official map and the measured depths). The page first loads its way in behind a veil; the film starts after it. Writes OUT_DIR/film.mp4 and OUT_DIR/frames/f_<seconds>.jpg, which are real frames of the running app on
 real data: they are the storyboard.
 
 Two ways to record, same picture:
@@ -118,7 +118,7 @@ def main():
         page.on("pageerror", lambda e: errors.append(str(e)))
         page.add_init_script(f"try {{ localStorage.setItem('theme', '{args.theme}') }} catch (e) {{}}")
         page.goto(args.url, wait_until="domcontentloaded")
-        page.wait_for_selector(".fl[data-cinema]", timeout=120000)
+        page.wait_for_selector(".st[data-cinema]:not([data-veil])", timeout=180000)
         start = time.time()
         lead = start - opened  # the film file also holds the loading of the page: cut it off below
         n = 0
