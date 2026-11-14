@@ -1,6 +1,23 @@
 [
   {
     "model": "prediction",
+    "site": "lorca",
+    "stack": "gnss_LOR1",
+    "layer": "vertical_motion",
+    "date": "2026-11-14",
+    "id": "prediction-lorca-LOR1",
+    "point_id": "LOR1",
+    "file": "data/prediction/lorca/forecast.json",
+    "metrics": "data/prediction/lorca/metrics.json",
+    "observations": "data/prediction/lorca/observations.csv",
+    "chart": "data/prediction/lorca/chart.png",
+    "source_type": "gnss",
+    "units": "mm",
+    "issued_at_utc": "2026-11-14T12:03:52+00:00",
+    "data_cutoff": "2026-10-31"
+  },
+  {
+    "model": "prediction",
     "site": "albufera",
     "stack": "dswx-s1",
     "layer": "flooded_area",
@@ -27,7 +44,7 @@
     "observations": "data/prediction/flood/water_albufera.csv",
     "source_type": "open-meteo + dswx-s1",
     "alert": "green",
-    "issued_at_utc": "2026-11-14T11:41:27+00:00"
+    "issued_at_utc": "2026-11-14T12:19:56+00:00"
   },
   {
     "model": "prediction",
@@ -41,23 +58,6 @@
     "observations": "data/prediction/flood/water_pego_oliva.csv",
     "source_type": "open-meteo + dswx-s1",
     "alert": "green",
-    "issued_at_utc": "2026-11-14T11:41:27+00:00"
-  },
-  {
-    "model": "prediction",
-    "site": "lorca",
-    "stack": "gnss_LOR1",
-    "layer": "vertical_motion",
-    "date": "2026-11-14",
-    "id": "prediction-lorca-LOR1",
-    "point_id": "LOR1",
-    "file": "data/prediction/lorca/forecast.json",
-    "metrics": "data/prediction/lorca/metrics.json",
-    "observations": "data/prediction/lorca/observations.csv",
-    "chart": "data/prediction/lorca/chart.png",
-    "source_type": "gnss",
-    "units": "mm",
-    "issued_at_utc": "2026-11-14T12:03:52+00:00",
-    "data_cutoff": "2026-10-31"
+    "issued_at_utc": "2026-11-14T12:19:56+00:00"
   }
 ]

@@ -147,26 +147,35 @@ def cmd_fit(args) -> dict:
                                                   "flooded_in_emsr935_ha", "flooded_in_generalitat_ha")}
                    for r in water_rows if "2026-10-14" <= r["date"] <= "2026-11-10"]
 
+    # Replay with exactly the live rule (first LIVE_DAYS days of the run). A 5-day lookahead
+    # is kept as a labelled post-hoc sensitivity: it was looked at after the replay (review on #15).
     replay = []
     for run_day in REPLAY_RUNS:
         run = rain.past_run(get_site("pego_oliva"), date.fromisoformat(run_day), days=5)
-        total = model.max_window_total(np.nan_to_num(run["max_mm"]))
+        daily = np.nan_to_num(run["max_mm"])
+        total = model.alert_rule_total(daily)
+        lookahead = model.max_window_total(daily)
         replay.append({"run": run_day, "forecast_days": run["dates"],
-                       "daily_max_mm": [round(float(v), 1) for v in np.nan_to_num(run["max_mm"])],
-                       "max_3d_mm": round(total, 1),
-                       "alert": "red" if total >= threshold else ("amber" if total >= 0.5 * threshold else "green")})
+                       "daily_max_mm": [round(float(v), 1) for v in daily],
+                       "rule_3d_mm": round(total, 1), "alert": model.deterministic_level(total, threshold),
+                       "posthoc_5d_lookahead_max_3d_mm": round(lookahead, 1),
+                       "posthoc_5d_lookahead_alert": model.deterministic_level(lookahead, threshold)})
 
     issued = datetime.now(timezone.utc).replace(microsecond=0).isoformat()
     live = {}
     for name in SITES:
+        run = rain.live_run(get_site(name), days=5)
+        total = model.alert_rule_total(run["max_mm"])
         ens = rain.ensemble(get_site(name), days=7)
-        totals = np.array([model.max_window_total(np.nan_to_num(m[:3])) for m in ens["members"]])
-        share = float(np.mean(totals >= threshold))
-        live[name] = {"window": f"{ens['dates'][0]} to {ens['dates'][2]}", "members": int(len(totals)),
-                      "share_above_threshold": round(share, 3), "alert": model.alert_level(share),
-                      "max_3d_mm": {"median": round(float(np.median(totals)), 1),
-                                    "p90": round(float(np.percentile(totals, 90)), 1),
-                                    "max": round(float(totals.max()), 1)}}
+        totals = np.array([model.alert_rule_total(m) for m in ens["members"]])
+        live[name] = {"window": f"{run['dates'][0]} to {run['dates'][model.LIVE_DAYS - 1]}",
+                      "product": "ECMWF IFS 9 km deterministic", "rule_3d_mm": round(total, 1),
+                      "alert": model.deterministic_level(total, threshold),
+                      "ensemble_context": {"product": "ECMWF IFS 0.25 deg ensemble (smoother; context only)",
+                                           "members": int(len(totals)),
+                                           "share_above_threshold": round(float(np.mean(totals >= threshold)), 3),
+                                           "median_3d_mm": round(float(np.median(totals)), 1),
+                                           "p90_3d_mm": round(float(np.percentile(totals, 90)), 1)}}
 
     forecast = {
         "schema_version": 1, "id": "prediction-flood-alert", "issued_at_utc": issued,
@@ -177,22 +186,32 @@ def cmd_fit(args) -> dict:
         "threshold_fitted_mm_3d": fitted,
         "why_not_fitted": "Only 4 new-flood labels in training, 3 after 7-29 mm of rain (water management or radar "
                           "noise); the best-Peirce threshold then alarms on almost any rain. See metrics.json.",
-        "alert_rule": f"share of ECMWF ensemble members whose largest 3-day total in the next 3 days reaches the threshold: "
-                      f"red >= {model.ALERT['red']}, amber >= {model.ALERT['amber']}",
-        "rain_source": "Open-Meteo: ECMWF IFS 9 km archive (history), IFS single runs (replay), "
-                       "ECMWF IFS 0.25 deg 51-member ensemble (live); site value = max over a 0.1 deg lattice",
+        "alert_rule": f"3-day rain total over the first {model.LIVE_DAYS} days of the deterministic IFS 9 km run "
+                      f"(day 0 = run day): red >= threshold, amber >= {model.AMBER_FRACTION} x threshold. "
+                      "Same rule for the live alert and the DANA replay",
+        "rain_source": "Open-Meteo, ECMWF IFS 9 km for history (archive), replay (single runs) and live (forecast); "
+                       "site value = wettest point of a 0.1 deg lattice. The 0.25 deg ensemble is context only",
         "label_rule": {"baseline_days": model.BASELINE_DAYS, "min_excess_ha": model.MIN_EXCESS_HA,
                        "k_spread": model.K_SPREAD, "window_days": model.WINDOW_DAYS, "max_gap_days": model.MAX_GAP_DAYS},
         "holdout": HOLDOUT, "live": live, "dana_replay_pego_oliva": replay,
         "logistic": {"a": round(a, 4), "b": round(b, 4), "form": "p = 1 / (1 + exp(-(a + b ln(1 + rain_mm))))"},
         "caveats": [
-            "Gridded rain misses extremes: the IFS cell saw about 72 mm in the DANA, AEMET Pego 634 mm.",
+            "Gridded rain misses extremes. DANA 18-20 Oct at Pego-Oliva: 165.7 mm at the wettest IFS lattice point, "
+            "81.2 mm on the lattice mean, 634 mm at the AEMET Pego station.",
             "Few flood events since Aug 2024, so the threshold is loose and the probability is not calibrated.",
             "The 100 mm anchor comes from station totals; ours is the wettest IFS grid point, a different product.",
             "Local rain only: river water from upstream and sea surge (both mattered in 2024 and 2026) are not inputs.",
             "Label = new water on the next radar pass; floods that drain between passes are missed.",
         ],
     }
+    alarm_rows = [s for s in train if s["rain_3d_max_mm"] >= threshold]
+    storm_list = model.storms(alarm_rows)
+    scores["train_storms"] = {
+        "alarm_samples": len(alarm_rows), "storms": len(storm_list),
+        "storms_with_new_flood_label": int(sum(bool(s["new_flood"]) for s in storm_list)),
+        "storms_with_rise_over_90_ha_but_no_label": int(sum(bool((not s["new_flood"]) and s["max_excess_ha"] >= 90)
+                                                             for s in storm_list)),
+        "list": storm_list}
     metrics = {"issued_at_utc": issued, "threshold_mm_3d": threshold, "base_rate_train": round(base, 4),
                "samples": {"train": len(train), "test": len(test),
                            "train_events": int(y_tr.sum()), "test_events": int(y_te.sum())},
@@ -211,10 +230,14 @@ def cmd_fit(args) -> dict:
     print("train:", {k: scores['train'][k] for k in ('hits', 'misses', 'false_alarms', 'peirce_skill', 'brier_skill')})
     print("test: ", {k: scores['test'].get(k) for k in ('hits', 'misses', 'false_alarms', 'peirce_skill', 'brier_skill')})
     print("fitted:", {k: {m: scores['fitted_threshold'][k][m] for m in ('hits', 'misses', 'false_alarms')} for k in ('train', 'test')})
+    st = scores["train_storms"]
+    print(f"training alarms: {st['alarm_samples']} samples in {st['storms']} storms, "
+          f"{st['storms_with_new_flood_label']} labelled flood, {st['storms_with_rise_over_90_ha_but_no_label']} rose >= 90 ha unlabelled")
     for r in replay:
-        print(f"  replay run {r['run']}: max 3-day {r['max_3d_mm']} mm -> {r['alert']}")
+        print(f"  replay run {r['run']}: rule {r['rule_3d_mm']} mm -> {r['alert']}  "
+              f"(post-hoc 5-day lookahead {r['posthoc_5d_lookahead_max_3d_mm']} mm -> {r['posthoc_5d_lookahead_alert']})")
     for n, v in live.items():
-        print(f"  live {n}: {v['alert']} ({v['share_above_threshold']:.0%} of members)")
+        print(f"  live {n}: {v['alert']} ({v['rule_3d_mm']} mm; ensemble {v['ensemble_context']['share_above_threshold']:.0%} above)")
     return forecast
 
 
