@@ -82,6 +82,8 @@ The water threshold is Otsu over every HH value **with the sea** (without it the
 - **Burned needs an HV drop:** a pixel may only be called burned if its HV fell by 1.5 dB or more and stayed down (`--burned-min-hv-drop`, 0 = off). The same rule in the CV baseline matches EFFIS at precision 0.94 to 0.99. Without it the first real run called 15,605 ha burned for a 9,230 ha fire. Scores use the same rule as the map.
 - At most 20,000 train pixels per class, with balanced class weights.
 - Scores on the held-out blocks: overall accuracy, kappa, macro F1, per-class precision/recall/F1, confusion matrix.
+- **What the scores mean:** the labels come from WorldCover, JRC, CORINE, EFFIS and the drawn fields, so every score is **agreement with those maps** on ground the model never saw, not accuracy against field visits. Say "agrees with CORINE rice 97 % of the time", not "97 % accurate". `metrics.json` carries the same note (`scores_are`).
+- **Specks clean-up:** after the map is drawn, a 3×3 majority filter replaces a pixel when 5 or more of its 9 neighbours agree on another class (`--majority 1` turns it off). Single-pixel specks vanish; nodata (sea, too few dates) is never filled in. Scores are taken from this final map, and `metrics.json` also keeps the scores from before the filter.
 
 ## Outputs (`data/ml/<site>_<stack>/`)
 
@@ -91,6 +93,7 @@ The water threshold is Otsu over every HH value **with the sea** (without it the
 | `confidence.tif` / `confidence_utm.tif` | Highest class probability, 0 to 100 %, 255 = nodata |
 | `metrics.json` | Scores, confusion matrix, label counts and sources, hectares per class (pixels × 0.04 ha), dates used and left out, split settings |
 | `feature_importance.json` | LightGBM gain share per feature |
+| `model.txt` | The trained LightGBM model. `lightgbm.Booster(model_file="model.txt").predict(X)` reuses it without training; columns follow `model_classes` in `metrics.json`, features follow `feature_names` |
 
 A real (non-fake) run also adds `class` and `confidence` entries to `data/manifest.json`, with the source granule of every date. ML entries are keyed on (model, site, stack, layer), so a rerun replaces its own entry.
 
@@ -99,6 +102,7 @@ A real (non-fake) run also adds `class` and `confidence` entries to `data/manife
 - [x] Reads the shared stack format; tested on a fake stack and on the real label files
 - [x] Rice labels: CORINE 2018 rice plus 50 hand-drawn fields
 - [x] First real run (Ilija, PR #7, before these fixes): Albufera accuracy 0.710, macro F1 0.733; Espadà 0.552, 0.421
-- [ ] Rerun on the real stacks with these fixes (needs the stacks: `data-v1` release, or `python -m pipeline.run`)
+- [x] Second real run (Ilija, PR #13, with these fixes): Albufera 0.798 / 0.773; Espadà 0.710 / 0.660 (agreement with the labels, accuracy / macro F1). Burned precision 0.99, rice F1 0.97
+- [ ] Burned rule 1.5 vs 1.0 dB and the majority filter on the real stacks
 
 <sub>SI disclosure: this code was drafted with an SI assistant (Claude Code) and reviewed by the team.</sub>

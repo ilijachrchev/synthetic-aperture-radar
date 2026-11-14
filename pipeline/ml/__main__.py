@@ -95,11 +95,17 @@ def _cmd_run(args: argparse.Namespace) -> None:
     if tr.size == 0 or te.size == 0:
         sys.exit("not enough labelled pixels in train or test blocks")
     model = train.fit(X[tr], y[tr], seed=args.seed)
-    metrics = train.evaluate(model, X[te], y[te], forbid={c: m[te] for c, m in forbid.items()})
-    print(f"test: accuracy {metrics['overall_accuracy']:.3f}, macro F1 {metrics['macro_f1']:.3f}, "
-          f"kappa {metrics['kappa']:.3f}")
 
+    # Map, then the specks clean-up; the scores come from the final map, so they
+    # describe exactly what the app shows. The filter sees predictions, not labels.
     class_map, confidence = train.predict_map(model, X, usable, st.shape, forbid=forbid)
+    raw = train.evaluate(None, None, y[te], pred=class_map.ravel()[te])
+    class_map = train.majority_filter(class_map, size=args.majority)
+    metrics = train.evaluate(None, None, y[te], pred=class_map.ravel()[te])
+    metrics["before_majority_filter"] = {k: raw[k] for k in ("overall_accuracy", "macro_f1", "kappa")}
+    print(f"test: accuracy {metrics['overall_accuracy']:.3f}, macro F1 {metrics['macro_f1']:.3f}, "
+          f"kappa {metrics['kappa']:.3f}  (before the {args.majority}x{args.majority} majority filter: "
+          f"{raw['overall_accuracy']:.3f} / {raw['macro_f1']:.3f} / {raw['kappa']:.3f})")
 
     # Outputs.
     out_dir = Path(args.out_dir) / f"{st.site}_{args.stack}"
@@ -115,12 +121,18 @@ def _cmd_run(args: argparse.Namespace) -> None:
         "water_threshold_hh_db": dark_db, "water_threshold_rule": dark_rule,
         "speckle_filter_px": args.filter_px,
         "burned_min_hv_drop_db": args.burned_min_hv_drop if args.burned_min_hv_drop > 0 else None,
+        "majority_filter_px": args.majority,
+        "scores_are": "agreement with the labels (WorldCover, JRC, CORINE, EFFIS, drawn fields) "
+                      "on held-out 1 km blocks, not ground-truth accuracy",
         "split": {"block_px": args.block_px, "gap_px": config.GAP_PX,
                   "test_fraction": config.TEST_FRACTION, "seed": args.seed, "balanced_by_class": True,
                   "test_share_per_class": {
                       n: round(float((labels_usable[test_mask] == i).sum() / max(1, (labels_usable == i).sum())), 3)
                       for i, n in enumerate(config.CLASSES)}},
         "train_pixels": int(tr.size),
+        "model_file": "model.txt",
+        "model_classes": [config.CLASSES[int(c)] for c in model.classes_],
+        "feature_names": features.FEATURE_NAMES,
         "label_pixels": counts,
         "sea_pixels": int(sea.sum()),
         "class_area_ha": train.class_areas_ha(class_map),
@@ -129,6 +141,10 @@ def _cmd_run(args: argparse.Namespace) -> None:
     }
     export.write_json(run_info, out_dir / "metrics.json")
     export.write_json(importance, out_dir / "feature_importance.json")
+    # The trained model itself, reusable without training again:
+    # lightgbm.Booster(model_file=...).predict(X) gives one column per config.CLASSES entry
+    # in the order of model.classes_ (also in metrics.json as "model_classes").
+    model.booster_.save_model(str(out_dir / "model.txt"))
     print("top features:", ", ".join(f"{d['feature']} {d['gain_share']:.0%}" for d in importance[:5]))
 
     if st.synthetic:
@@ -174,6 +190,8 @@ def main(argv: list[str] | None = None) -> None:
                    help=f"speckle filter window in pixels, 0 = off (default {data.FILTER_PX})")
     r.add_argument("--burned-min-hv-drop", type=float, default=1.5,
                    help="only call a pixel burned if HV dropped this many dB and stayed down; 0 = off")
+    r.add_argument("--majority", type=int, default=3,
+                   help="majority filter window on the class map (clears single-pixel specks); 1 = off")
     r.add_argument("--truth-var", help="use a label variable inside the stack (fake stacks only)")
     r.add_argument("--stack-dir", default=str(config.STACK_DIR))
     r.add_argument("--out-dir", default=str(config.ML_OUT_DIR))

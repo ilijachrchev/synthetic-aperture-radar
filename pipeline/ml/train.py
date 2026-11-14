@@ -6,6 +6,7 @@ Written with SI assistance (Claude Code), reviewed by the team.
 from __future__ import annotations
 
 import numpy as np
+from scipy.ndimage import uniform_filter
 from lightgbm import LGBMClassifier
 from sklearn.metrics import accuracy_score, cohen_kappa_score, confusion_matrix, precision_recall_fscore_support
 
@@ -51,11 +52,35 @@ def predict_proba_full(model: LGBMClassifier, X: np.ndarray) -> np.ndarray:
     return proba
 
 
-def evaluate(model: LGBMClassifier, X: np.ndarray, y: np.ndarray,
-             forbid: dict[int, np.ndarray] | None = None) -> dict:
-    """Scores on held-out rows. forbid: the same rules the map uses, indexed like X."""
-    proba = _apply_rules(predict_proba_full(model, X), forbid, np.arange(X.shape[0]))
-    pred = np.argmax(proba, axis=1)
+def majority_filter(class_map: np.ndarray, size: int = 3, min_votes: int = 5) -> np.ndarray:
+    """Replace a pixel by the most common class in its size x size window when
+    that class has at least min_votes pixels; nodata pixels never vote and stay nodata.
+
+    Clears single-pixel specks: in the first real run 766 water patches at Espadà,
+    most of them one pixel, on grassland and trees (Ilija, PR #13).
+    """
+    if size <= 1:
+        return class_map
+    valid = class_map != config.NODATA_U8
+    votes = np.stack([
+        np.rint(uniform_filter((class_map == c).astype(np.float32), size=size, mode="constant") * size * size)
+        for c in range(len(config.CLASSES))
+    ])
+    winner = np.argmax(votes, axis=0).astype(np.uint8)
+    strong = np.max(votes, axis=0) >= min_votes
+    out = class_map.copy()
+    change = valid & strong & (winner != class_map)
+    out[change] = winner[change]
+    return out
+
+
+def evaluate(model: LGBMClassifier | None, X: np.ndarray | None, y: np.ndarray,
+             forbid: dict[int, np.ndarray] | None = None, pred: np.ndarray | None = None) -> dict:
+    """Scores on held-out rows. forbid: the same rules the map uses, indexed like X.
+    pred: score these predicted classes instead (e.g. the final, filtered map)."""
+    if pred is None:
+        proba = _apply_rules(predict_proba_full(model, X), forbid, np.arange(X.shape[0]))
+        pred = np.argmax(proba, axis=1)
     all_classes = list(range(len(config.CLASSES)))
     p, r, f1, support = precision_recall_fscore_support(
         y, pred, labels=all_classes, zero_division=0

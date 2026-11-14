@@ -4,7 +4,7 @@ Saves data/labels/<site>_clc2018.geojson with the classes the ML labels use:
 
     213            rice fields                    -> rice_paddy (shrunk by labels.RICE_SHRINK_M)
     221 222 223    vineyards, fruit trees, olives -> splits WorldCover tree cover: orchard
-    241 to 244     mixed agricultural areas      -> orchard where WorldCover sees trees
+    241 to 244     mixed agricultural areas      -> fetched but not used: their trees can be orchard or forest
     311 312 313    broad-leaved, coniferous, mixed forest -> forest
 
 CORINE is mapped at 1:100,000 (25 ha minimum unit) from 2018 imagery, so it is

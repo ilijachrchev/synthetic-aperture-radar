@@ -226,6 +226,11 @@ def test_command_end_to_end_on_fake_stack(tmp_path):
     run = out_dir / "synthetic_066_D_069"
     m = json.loads((run / "metrics.json").read_text())
     assert m["overall_accuracy"] > 0.9                 # fake classes are easy by design
+    # The saved model reloads and gives class probabilities without retraining.
+    import lightgbm
+    booster = lightgbm.Booster(model_file=str(run / "model.txt"))
+    assert booster.num_feature() == len(m["feature_names"])
+    assert set(m["model_classes"]) <= set(config.CLASSES)
     assert len(m["dates"]) == 11 and m["dates_left_out"] == []
     assert m["sea_pixels"] > 0
     assert not manifest.exists()                       # fake runs never touch the manifest
@@ -374,3 +379,15 @@ def test_real_albufera_labels_with_corine():
     if ALBUFERA_DRAWN.exists():                               # every hand-drawn field stays rice
         drawn = labels.rasterize_polygons(ALBUFERA_DRAWN, grid)
         assert (y[drawn == config.CLASS_INDEX["rice_paddy"]] == config.CLASS_INDEX["rice_paddy"]).all()
+
+
+def test_majority_filter_clears_specks_and_keeps_shapes_and_nodata():
+    m = np.full((20, 20), config.CLASS_INDEX["forest"], np.uint8)
+    m[5, 5] = config.CLASS_INDEX["permanent_water"]            # a lone speck
+    m[10:18, 10:18] = config.CLASS_INDEX["permanent_water"]    # a real lake
+    m[0:3, 15:20] = config.NODATA_U8                           # sea / not classified
+    out = train.majority_filter(m)
+    assert out[5, 5] == config.CLASS_INDEX["forest"]
+    assert (out[11:17, 11:17] == config.CLASS_INDEX["permanent_water"]).all()
+    assert (out[0:3, 15:20] == config.NODATA_U8).all()         # nodata never filled
+    assert np.array_equal(train.majority_filter(m, size=1), m)
