@@ -1,5 +1,5 @@
 {
-  "issued_at_utc": "2026-11-14T12:59:30+00:00",
+  "issued_at_utc": "2026-11-14T14:00:04+00:00",
   "method": "pipeline.cv.baseline: Otsu per scene on 5x5-filtered HH (dB); +-1 dB threshold range",
   "albufera_rice": {
     "site": "albufera",
@@ -32,7 +32,8 @@
         },
         "dswx": {
           "date": "2026-06-18",
-          "day_gap": 0,
+          "pass_id": "20260618T175427_S1A",
+          "gap_h": 0.98,
           "flooded_pct": 1.7
         }
       },
@@ -60,11 +61,7 @@
             "+1": 13686.5
           }
         },
-        "dswx": {
-          "date": "2026-06-30",
-          "day_gap": 0,
-          "flooded_pct": 0.2
-        }
+        "dswx": null
       },
       {
         "date": "2026-07-12",
@@ -90,11 +87,7 @@
             "+1": 12530.4
           }
         },
-        "dswx": {
-          "date": "2026-07-12",
-          "day_gap": 0,
-          "flooded_pct": 0.3
-        }
+        "dswx": null
       },
       {
         "date": "2026-07-24",
@@ -120,11 +113,7 @@
             "+1": 3523.6
           }
         },
-        "dswx": {
-          "date": "2026-07-24",
-          "day_gap": 0,
-          "flooded_pct": 0.3
-        }
+        "dswx": null
       },
       {
         "date": "2026-08-17",
@@ -150,11 +139,7 @@
             "+1": 4861.6
           }
         },
-        "dswx": {
-          "date": "2026-08-17",
-          "day_gap": 0,
-          "flooded_pct": 0.2
-        }
+        "dswx": null
       },
       {
         "date": "2026-08-29",
@@ -180,11 +165,7 @@
             "+1": 5989.0
           }
         },
-        "dswx": {
-          "date": "2026-08-29",
-          "day_gap": 0,
-          "flooded_pct": 0.2
-        }
+        "dswx": null
       },
       {
         "date": "2026-09-10",
@@ -210,11 +191,7 @@
             "+1": 11355.4
           }
         },
-        "dswx": {
-          "date": "2026-09-10",
-          "day_gap": 0,
-          "flooded_pct": 0.1
-        }
+        "dswx": null
       },
       {
         "date": "2026-09-22",
@@ -242,7 +219,8 @@
         },
         "dswx": {
           "date": "2026-09-22",
-          "day_gap": 0,
+          "pass_id": "20260922T180201_S1D",
+          "gap_h": 0.85,
           "flooded_pct": 0.2
         }
       },
@@ -272,8 +250,9 @@
         },
         "dswx": {
           "date": "2026-10-04",
-          "day_gap": 0,
-          "flooded_pct": 2.7
+          "pass_id": "20261004T180201_S1D",
+          "gap_h": 0.85,
+          "flooded_pct": 2.5
         }
       },
       {
@@ -302,7 +281,8 @@
         },
         "dswx": {
           "date": "2026-10-16",
-          "day_gap": 0,
+          "pass_id": "20261016T180201_S1D",
+          "gap_h": 0.85,
           "flooded_pct": 9.8
         }
       },
@@ -332,16 +312,17 @@
         },
         "dswx": {
           "date": "2026-10-28",
-          "day_gap": 0,
-          "flooded_pct": 26.9
+          "pass_id": "20261028T180201_S1D",
+          "gap_h": 0.85,
+          "flooded_pct": 21.7
         }
       }
     ],
-    "paired_dates": 11,
-    "pearson_r_all_dates": {
-      "-15": 0.523,
-      "-18": 0.756,
-      "otsu": 0.115
+    "paired_dates": 5,
+    "pearson_r_paired_dates": {
+      "-15": 0.337,
+      "-18": 0.654,
+      "otsu": 0.143
     },
     "autumn": {
       "dates": [
@@ -355,9 +336,9 @@
         31.0
       ],
       "dswx_flooded_pct": [
-        2.7,
+        2.5,
         9.8,
-        26.9
+        21.7
       ],
       "pearson_r_-15": null,
       "note": "too few autumn dates for a correlation; compare the two series directly"
@@ -373,34 +354,36 @@
       "before": -11.85,
       "after": -12.03
     },
-    "outline_ha_scored": 889.6,
+    "outline_ha_scored": 877.3,
     "nisar_new_water": {
       "-1": {
-        "new_water_ha": 220.6,
-        "inside_outline_ha": 204.4,
-        "share_inside_outline": 0.926
+        "new_water_ha": 213.2,
+        "inside_outline_ha": 198.8,
+        "share_inside_outline": 0.932
       },
       "+0": {
-        "new_water_ha": 217.0,
-        "inside_outline_ha": 186.1,
-        "share_inside_outline": 0.858
+        "new_water_ha": 212.3,
+        "inside_outline_ha": 184.1,
+        "share_inside_outline": 0.867
       },
       "+1": {
-        "new_water_ha": 232.1,
-        "inside_outline_ha": 142.0,
-        "share_inside_outline": 0.612
+        "new_water_ha": 228.2,
+        "inside_outline_ha": 141.5,
+        "share_inside_outline": 0.62
       }
     },
     "dswx_in_emsr935_outline_ha": {
       "before": {
         "date": "2026-10-16",
-        "day_gap": 0,
-        "value": 156.42000000000002
+        "pass_id": "20261016T180145_S1D",
+        "gap_h": 0.86,
+        "value": 234.16
       },
       "after": {
         "date": "2026-10-28",
-        "day_gap": 0,
-        "value": 398.54
+        "pass_id": "20261028T180144_S1D",
+        "gap_h": 0.86,
+        "value": 407.72
       }
     },
     "note": "EMSR935 imagery is from 20 Oct; NISAR 28 Oct is 9 days after the peak, so part of the water had drained."

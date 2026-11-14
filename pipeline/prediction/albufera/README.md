@@ -46,18 +46,19 @@ Outputs: `data/prediction/albufera/` (`forecast.json`, `metrics.json`, `backtest
 
 ## NISAR check
 
-`python -m pipeline.prediction.nisar_check` (needs the `albufera_066_D_069` stack from `pipeline.nisar_fetch` + `pipeline.stack`). Share of the rice mask darker than −15 dB on NISAR (5×5 filtered HH) vs the share DSWx-S1 maps as flooded on the same day:
+`python -m pipeline.prediction.nisar_check` (needs the `albufera_066_D_069` stack from `pipeline.nisar_fetch` + `pipeline.stack`). Share of the rice mask darker than −15 dB on NISAR (5×5 filtered HH) vs the share DSWx-S1 maps as flooded on the Sentinel-1 pass within 2 h (the 18 UTC pass, as in `pipeline.cv.evaluate`; 5 of the 11 dates have one):
 
 | Date | NISAR dark | DSWx-S1 flooded | Non-rice cropland (NISAR) |
 |---|---:|---:|---:|
 | 18 Jun | 43.7 % | 1.7 % | 1.2 % |
-| 12 Jul | 5.4 % | 0.3 % | 0.2 % |
-| Aug – Sep (5 dates) | 0.1–0.3 % | 0.1–0.2 % | 0.0 % |
-| 4 Oct | 5.8 % | 2.7 % | 0.0 % |
+| 30 Jun | 13.4 % | – | 0.3 % |
+| 12 Jul | 5.4 % | – | 0.2 % |
+| 24 Jul – 22 Sep (5 dates) | 0.1–0.3 % | 0.2 % (22 Sep only) | 0.0–0.1 % |
+| 4 Oct | 5.8 % | 2.5 % | 0.0 % |
 | 16 Oct | 13.7 % | 9.8 % | 0.1 % |
-| 28 Oct | 31.0 % | 26.9 % | 0.3 % |
+| 28 Oct | 31.0 % | 21.7 % | 0.3 % |
 
-In the autumn flooding this forecast predicts, the L-band and C-band series rise together. In June, NISAR sees much more water. The rice calendar has the paddies flooded from May sowing to the August drainage, so this is most likely water among young rice that DSWx-S1 misses, but it is not confirmed on the ground. A fixed threshold is used because the per-scene Otsu threshold follows the whole scene (sea, towns) and called about 90 % of the rice "water" in June and September. Correlation over all 11 dates: 0.52 at −15 dB, 0.76 at −18 dB, 0.12 with Otsu.
+In the autumn flooding this forecast predicts, the L-band and C-band series rise together. In June, NISAR sees much more water. The rice calendar has the paddies flooded from May sowing to the August drainage, so this is most likely water among young rice that DSWx-S1 misses, but it is not confirmed on the ground. A fixed threshold is used because the per-scene Otsu threshold follows the whole scene (sea, towns) and called about 90 % of the rice "water" in June and 64 % and 39 % on the two September dates. Correlation over the 5 paired dates: 0.34 at −15 dB (18 Jun pulls it down), 0.65 at −18 dB, 0.14 with Otsu; with five points, read the series rather than r.
 
 ## Caveats
 

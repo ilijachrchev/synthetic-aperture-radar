@@ -112,7 +112,7 @@ LOR1 had an antenna-height change on 2023-08-03 (0 → 0.0771 m), the first day 
 
 The 2023 selection period sits right after that change, so its 3-year training windows mix two regimes, and the trend models lose to persistence there (MAE 11–14 mm vs 6–8 mm). The trend models now take a **step term at each equipment change** (`models.py`, from the antenna column), which is standard for GNSS. It does not change the selection: the regime change is in the rate, not just the level.
 
-On the held-out 2025 test, linear and trend + annual cycle do beat persistence at 24 and 36 days (+8 to +14 %). Selection was on 2023, and switching after seeing the test would be choosing on it. The EGMS history (2020–2025, no gap) is the fair way to revisit this.
+On the held-out 2025 test, linear trend beats persistence by 14 % at 24 days and 8 % at 36 days, trend + annual cycle by 8 % and 1 %. Selection was on 2023, and switching after seeing the test would be choosing on it. The EGMS history (2020–2025, no gap) is the fair way to revisit this.
 
 ## Use an actual EGMS Ortho Vertical CSV
 
