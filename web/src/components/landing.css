@@ -7,9 +7,46 @@
 }
 
 /* ---------- hero ---------- */
+:root,
+[data-theme="light"] {
+	/* the panel's water, quiet by day: pale lagoon, a touch deeper, white light */
+	--smoke-0: #e8f7fb;
+	--smoke-1: #c9ebf4;
+	--smoke-2: #fdffff;
+}
+[data-theme="dark"] {
+	--smoke-0: #061820;
+	--smoke-1: #0b3342;
+	--smoke-2: #137f9c;
+}
 .hx {
 	position: relative;
 	padding-bottom: 40px;
+	isolation: isolate;
+}
+/* the panel: rounded, inset like the stories' window, filling the first screen under the nav */
+.hx-bg {
+	position: absolute;
+	z-index: -1;
+	left: 14px;
+	right: 14px;
+	top: 84px;
+	height: calc(100svh - 98px);
+	border-radius: 30px;
+	overflow: hidden;
+	background: linear-gradient(180deg, var(--smoke-0), var(--smoke-1));
+	box-shadow: inset 0 0 0 1px var(--line);
+}
+.hx-smoke {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	opacity: 0;
+	transition: opacity 1.4s var(--ease);
+}
+.hx-smoke[data-on] {
+	opacity: 1;
 }
 .hx-head {
 	max-width: 1100px;
@@ -136,6 +173,15 @@
 	}
 	.mon {
 		width: 92vw;
+	}
+}
+@media (max-width: 860px) {
+	.hx-bg {
+		left: 8px;
+		right: 8px;
+		top: 68px;
+		height: calc(100svh - 76px);
+		border-radius: 22px;
 	}
 }
 @media (max-width: 640px) {

@@ -4,13 +4,20 @@ import { HERO, STORIES_HEAD } from '@/content/landing'
 import type { StoryCfg } from './map/map-app'
 import { Monitor } from './monitor'
 import { SiteNav } from './site-nav'
+import { Smoke } from './smoke'
 import { type Chapter, StoryScroll } from './story-scroll'
 import './landing.css'
 
-/** The hero: the line and the two things to do, centred, and the dashboard on a monitor rising from below. */
+/**
+ * The hero: the line and the two things to do, centred on a rounded lagoon panel with slow water moving in it, and the
+ * dashboard on a monitor resting on the panel's lower edge, rising into full view as the page scrolls.
+ */
 export function Hero({ stories }: { stories: StoryCfg[] }) {
 	return (
 		<section className="hx">
+			<div className="hx-bg" aria-hidden>
+				<Smoke className="hx-smoke" />
+			</div>
 			<SiteNav />
 			<div className="hx-head">
 				<h1 className="display hx-title">
