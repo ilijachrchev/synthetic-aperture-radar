@@ -16,6 +16,13 @@ Steps (in this order):
     python -m pipeline.streets terrain    # 5 m terrain, depressions filled, flow, HAND (about 10 minutes, 4 GB RAM)
     python -m pipeline.streets simulate   # rain on terrain at 25 m, SIMULATED (numba venv: about 20 minutes)
     python -m pipeline.streets score      # every method on the same pixels: data/streets/results.json
+
+Two more runs (docs/STREETS.md, "Two more simulations"): run A with the rain of two ECMWF IFS HRES
+forecasts, run B with the gauged rain and buildings as obstacles:
+    python -m pipeline.streets fetch-forecast    # the two IFS runs from Open-Meteo's Single Runs API
+    python -m pipeline.streets sim-prepare       # inputs.npz of each run (after terrain and terrain --only buildings)
+    python pipeline/inertial_kernel.py <folder>/inputs.npz <folder>/outputs.npz   # one process per run (numba)
+    python -m pipeline.streets sim-collect       # maximum depth, gauge check: results.json -> simulation_runs
     python -m pipeline.streets layers     # small web layers in data/streets/
     python -m pipeline.streets depth      # flood depth ESTIMATED from the outlines and terrain (2024, 2026)
     python -m pipeline.streets marks      # the surveyed water marks of 2024 in the 10 towns as a web layer
