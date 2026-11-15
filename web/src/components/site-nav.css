@@ -241,3 +241,89 @@
 		right: 0;
 	}
 }
+
+/* ---------------------------------------------------------------- the map pages: folded to one item and >> */
+.snav-here {
+	display: inline-flex;
+	align-items: center;
+	height: 30px;
+	padding: 0 12px;
+	border-radius: 999px;
+	background: var(--snav-on);
+	color: var(--snav-on-ink);
+	font-size: 13px;
+	font-weight: 700;
+}
+.snav[data-variant="map"] .snav-items > a:first-child:not([aria-current]) {
+	color: var(--snav-ink);
+}
+.snav-toggle {
+	display: grid;
+	place-items: center;
+	width: 30px;
+	height: 30px;
+	margin-left: 2px;
+	padding: 0;
+	border: 0;
+	border-radius: 50%;
+	background: none;
+	color: var(--snav-ink);
+	transition: background 0.25s var(--ease);
+}
+.snav-toggle:hover {
+	background: rgb(255 255 255 / 0.14);
+}
+/* what the button opens slides in beside the item, in place */
+.snav[data-variant="map"][data-open] .snav-items > a,
+.snav[data-variant="map"][data-open] .snav-more {
+	animation: snav-in 0.28s var(--ease) both;
+}
+.snav[data-variant="map"][data-open] .snav-items > :nth-child(2) {
+	animation-delay: 0.03s;
+}
+.snav[data-variant="map"][data-open] .snav-items > :nth-child(3) {
+	animation-delay: 0.06s;
+}
+.snav[data-variant="map"][data-open] .snav-items > :nth-child(4) {
+	animation-delay: 0.09s;
+}
+@keyframes snav-in {
+	from {
+		opacity: 0;
+		transform: translateX(-8px);
+	}
+}
+@media (max-width: 760px) {
+	/* a phone keeps the folded pill too; opened, the pages stack in a column */
+	.snav[data-variant="map"] .snav-items {
+		display: inline-flex;
+	}
+	.snav[data-variant="map"][data-open] .snav-items {
+		flex-direction: column;
+		align-items: stretch;
+		gap: 2px;
+		padding: 6px;
+		border-radius: 18px;
+		min-width: 210px;
+	}
+	.snav[data-variant="map"][data-open] .snav-items > a,
+	.snav[data-variant="map"][data-open] .snav-more > button {
+		justify-content: flex-start;
+		height: 38px;
+		font-size: 14px;
+	}
+	.snav[data-variant="map"][data-open] .snav-toggle {
+		align-self: flex-end;
+	}
+	.snav[data-variant="map"][data-open] .snav-pop {
+		position: static;
+		width: auto;
+		margin-top: 4px;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.snav[data-variant="map"][data-open] .snav-items > a,
+	.snav[data-variant="map"][data-open] .snav-more {
+		animation: none;
+	}
+}
