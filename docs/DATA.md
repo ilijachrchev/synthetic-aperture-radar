@@ -114,28 +114,31 @@ Not in git, rebuilt by the pipeline: `data/raw/` (NISAR subsets, the same-day Se
 
 ## NISAR water labels per pass
 
-The labels for the "where will the water go" model and the layers for the app (discussion #29): `python -m pipeline.cv.labels` (code and rules in `pipeline/cv/labels.py`). Every NISAR pass with HV, on the 20 m site grid: Albufera 066_D_069 (11 passes) and 058_A_021 (10, the HH-only 22 Sep is left out); Pego-Oliva the same two plus 167_D_069 (9 passes, about 64 % of the land in the box). Two or three small uint8 GeoTIFFs per pass in `data/labels_nisar/<site>_<stack>/` (in git, 9.7 MB for all 51 passes):
+The NISAR labels for the "where will the water go" model (PR #33) and layers for the app (discussion #29): `python -m pipeline.cv.labels`, run from the repository root (code and rules in `pipeline/cv/labels.py`). Every NISAR pass with HV, on the 20 m site grid: Albufera 066_D_069 (11 passes) and 058_A_021 (10, the HH-only 22 Sep is left out); Pego-Oliva the same two plus 167_D_069 (9 passes, about 64 % of the land in the box). In `data/labels_nisar/<site>_<stack>/` (in git, 8.0 MB in all):
 
 | File | Values |
 |---|---|
 | `<date>_class.tif` | 0 not water, 1 open water, 2 water under plants (possible, not validated), 3 not assessed (built-up), 255 no data or sea |
 | `<date>_confidence.tif` | 0 to 100 on classes 0 to 2, in steps of 5; 255 elsewhere |
-| `<date>_s1.tif` | Sentinel-1's map (DSWx-S1 at most 2 h from the pass) in the same codes, 2 = its inundated vegetation; only on passes that have one |
+| `dana_<before>_<after>.tif` | Still flooded after the DANA, open water on the stack's own track (16 to 28 Oct on 066 D and 058 A, 11 to 23 Oct on 167 D): 0 dry on both dates, 1 water on both, 2 new water, 3 water gone, 4 permanent water, 255 not compared (no data or sea on either date, or built-up) |
+
+`data/labels_nisar/<site>_passes.json` lists the passes in time order: `pass_id`, `date`, `begin_utc`, `platform`, `track`, `direction`, `stack`, `granules` and the two file paths.
 
 - **Open water**: the v1 U-Net ensemble at its pre-registered threshold, p(open water) of at least 0.3, read from the cached probabilities in `data/interim/cv_prob/v1` (no model runs).
 - **Water under plants**: a candidate rule, not validated, because no source we have can see water under plants. On vegetated WorldCover land (tree, shrub, grass, crop, herbaceous wetland): 5x5 filtered HH at least 3 dB above its median over the stack while HV stays within 1.5 dB of its median.
 - **Not assessed**: WorldCover built-up. The radar cannot see water between buildings at 20 m, so there a model should rely on terrain and rain.
 - **Confidence**: the share of the available checks that agree with the class, with equal weights: the model's margin to 0.3 (always), HH below -15 dB, coherence below 0.25 where a GUNW pair exists (none after 21 Oct, so not on 23 and 28 Oct), and the optical DSWx-HLS map within 1 day where it is clear. Class 2 has only the model's p(any water) as a check and is capped at 50. A vote, not a probability.
 
-`data/metrics/nisar_labels_summary.json` holds the hectares per class per pass, how much of the labelled ground an optical or a coherence check covers and how often it agrees, Sentinel-1 next to NISAR, and what was still flooded after the DANA (16 to 28 Oct on 066 D and 058 A, 11 to 23 Oct on 167 D), per site and per municipality.
+`data/metrics/nisar_labels_summary.json` holds the hectares per class per pass, how much of the labelled ground an optical or a coherence check covers and how often it agrees, and the DANA change per site and per municipality.
 
-The table for the model (one parquet per site, one row per pixel and pass whose class is not 255: Albufera 25.2 million rows, 19 MB; Pego-Oliva 32.2 million rows, 32 MB) is not in git; rebuild it from the GeoTIFFs:
+For the model, `load(site)` gives the classes in the shape of PR #33's `pipeline.prediction.spatial.labels.load(site)`: a (pass, y, x) uint8 stack in time order with its water codes (0 dry, 1 wet = open water, 255 unknown; water under plants counts as wet only with `under_plants_as_wet=True`) and the pass list. `merge` puts NISAR next to the Sentinel-1 passes, in time order. In `_site()` of `pipeline/prediction/spatial/__main__.py`:
 
-```bash
-python -m pipeline.cv.labels --export --no-build   # -> data/interim/nisar-labels/<site>_nisar_labels.parquet
+```python
+from pipeline.cv.labels import load as nisar_load, merge
+stack, passes = merge(labels.load(name), nisar_load(name))   # or nisar_load(name) alone, instead of DSWx-S1
 ```
 
-Columns: `x`, `y` (pixel centre, EPSG:32630 m), `row`, `col`, `date`, `track` (the stack, track_direction_frame), `label` (the class), `confidence` (255 on class 3), `s1_label` (255 without a same-pass map), `split` (`test` from 15 Oct to 15 Nov 2026, the DANA window, else `train`) and `permanent_water` (WorldCover water or JRC occurrence of 90 % or more). It needs `pyarrow`.
+Then delete `data/interim/spatial/<site>/counts.npz`, the cached wet counts of the old labels. NISAR alone: with PR #33's timing (an issue pass 3 to 12 days before the target), 17 of the 21 Albufera passes and 26 of the 30 Pego-Oliva passes get one; 18 Jun (the first date) and 17 Aug (after the 24-day gap from 24 Jul) do not.
 
 Read before use:
 
@@ -143,3 +146,4 @@ Read before use:
 - Open water at Pego-Oliva in summer (about 40 to 75 ha per pass) is mostly not confirmed by optical (0 to 6 % of it on the clear dates of Jul and Aug); its mean confidence is 26 to 39.
 - Albufera's open water on 28 Oct outside permanent water is confirmed by optical where clear (99 %), but these data cannot tell DANA rain from the planned winter flooding of the harvested rice fields.
 - The two Albufera tracks disagree on 18 Jun (open water 2,776 ha on 066 D at 18:53 UTC, 8,497 ha on 058 A at 05:06 UTC), with no clear optical image that day to settle it.
+- The v1 model was trained with Sentinel-1 labels at Albufera, so there these labels are not independent of DSWx-S1; Pego-Oliva was one of its test sites.
