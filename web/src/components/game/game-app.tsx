@@ -13,6 +13,7 @@ import Link from 'next/link'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { GAME } from '@/content/game'
 import type { RainFile } from '@/lib/flood-model'
+import { type ModelGame, loadModelGame, modelPicks } from '@/lib/model-answer'
 import { TERRAIN } from '@/lib/scene3d'
 import { maxZoomOf, tilesOf, transformTile } from '@/lib/tiles'
 import { WaterLayer, type WaterMeta } from '@/lib/water-layer'
@@ -47,6 +48,7 @@ type Cell = {
 	flood: boolean
 }
 type Game = {
+	made_utc: string
 	cell_m: number
 	flood_share: number
 	grid: { rows: number; cols: number; box: [number, number, number, number] }
@@ -56,7 +58,8 @@ type Game = {
 	totals: { cells: number; flooded: number; new_ha: number; hidden_ha: number; ems_ha: number | null; new_in_ems: number | null }
 	cells: Cell[]
 }
-type Data = { meta: WaterMeta; game: Game; rain: RainFile | null }
+/** model: the model's score for every cell (scripts/bake_prediction.py), when it was made on this game.json */
+type Data = { meta: WaterMeta; game: Game; rain: RainFile | null; model: ModelGame | null }
 type Phase = 'brief' | 'pick' | 'reveal'
 /** how a cell is drawn: marked by the player, then after the reveal a hit, a miss, or a flooded cell nobody marked */
 type Mark = 'none' | 'pick' | 'hit' | 'miss' | 'late'
@@ -77,9 +80,10 @@ function useData() {
 			}
 			return (await r.json()) as T
 		}
-		Promise.all([get<WaterMeta>('meta.json'), get<Game>('game.json'), get<RainFile>('rain.json', true)])
-			.then(([meta, game, rain]) => {
-				if (!gone && meta && game) setData({ meta, game, rain })
+		Promise.all([get<WaterMeta>('meta.json'), get<Game>('game.json'), get<RainFile>('rain.json', true), loadModelGame(GAME.root)])
+			.then(([meta, game, rain, model]) => {
+				// the model's scores line up only with the game.json they were made on
+				if (!gone && meta && game) setData({ meta, game, rain, model: model && model.game_made_utc === game.made_utc ? model : null })
 			})
 			.catch((e: Error) => !gone && setError(e.message))
 		return () => {
@@ -156,16 +160,21 @@ export function GameApp() {
 
 	const game = data?.game ?? null
 	const flooded = useMemo(() => game?.cells.filter((c) => c.flood) ?? [], [game])
+	// the model plays too: its cells with the highest likelihood of new water, as many as the player may mark
+	const model = data?.model ?? null
+	const modelPick = useMemo(() => (model ? modelPicks(model, GAME.picks) : []), [model])
 	const score = useMemo(() => {
 		if (!game) return null
 		const hits = [...picked].filter((i) => game.cells[i]?.flood).length
 		const rule = lowestRule(game.cells, GAME.picks)
 		return {
 			hits,
+			// the same rule for the model as for the player
+			modelHits: modelPick.filter((i) => game.cells[i]?.flood).length,
 			ruleHits: rule.filter((c) => c.flood).length,
 			chance: (GAME.picks * flooded.length) / game.cells.length,
 		}
-	}, [game, picked, flooded])
+	}, [game, picked, flooded, modelPick])
 	const storm = useMemo(() => stormRain(data?.rain ?? null), [data])
 
 	// the map, once the data is here
@@ -266,6 +275,16 @@ export function GameApp() {
 					filter: ['==', ['id'], -1],
 					layout: { visibility: 'none' },
 				} as never)
+				// the model's cells, dashed, after the reveal
+				map.addLayer({
+					id: 'cells-model',
+					type: 'line',
+					source: 'cells',
+					// a little inside the square, so it stays apart from the cell's own outline
+					paint: { 'line-color': '#ffffff', 'line-width': 2.2, 'line-dasharray': [1.4, 1.1], 'line-offset': -3.5 },
+					filter: ['in', ['id'], ['literal', []]],
+					layout: { visibility: 'none' },
+				} as never)
 				map.on('mouseenter', 'cells-fill', () => {
 					if (map && phaseRef.current !== 'brief') map.getCanvas().style.cursor = 'pointer'
 				})
@@ -304,6 +323,8 @@ export function GameApp() {
 		if (!map || !ready || !game) return
 		const vis = phase === 'brief' ? 'none' : 'visible'
 		for (const id of ['cells-fill', 'cells-line', 'cells-focus']) map.setLayoutProperty(id, 'visibility', vis)
+		map.setFilter('cells-model', ['in', ['id'], ['literal', modelPick]] as never)
+		map.setLayoutProperty('cells-model', 'visibility', phase === 'reveal' && modelPick.length ? 'visible' : 'none')
 		const frame = phase === 'reveal' ? game.after.frame : game.before.frame
 		nisar.current?.set({ a: frame, b: frame, gain: 0, loss: 0, observed: 1, ref: phase === 'reveal' ? game.before.frame : -1 })
 		if (phase === 'reveal') nisar.current?.flash()
@@ -315,7 +336,7 @@ export function GameApp() {
 			map.setFeatureState({ source: 'cells', id: c.i }, { mark })
 		}
 		map.triggerRepaint()
-	}, [phase, picked, ready, game])
+	}, [phase, picked, ready, game, modelPick])
 
 	useEffect(() => {
 		const map = mapRef.current
@@ -420,11 +441,24 @@ export function GameApp() {
 						<p className="gm-big">
 							<b className="mono">{score.hits}</b> of {picked.size} right
 						</p>
+						{model && modelPick.length > 0 && (
+							<p className="gm-big">
+								<b className="mono">{score.modelHits}</b> of {modelPick.length} for our model
+							</p>
+						)}
 						<p>
 							{storm !== null ? `${storm} mm fell on 18 and 19 Oct, against the ${GAME.alert.mm3d} mm forecast. ` : ''}
 							The radar found <b>{Math.round(game.totals.new_ha)} ha</b> of new water in {flooded.length} cells. Marking the {GAME.picks} lowest cells would have found{' '}
 							<b>{score.ruleHits}</b>; marking at random, about {score.chance.toFixed(1)}.
 						</p>
+						{model && modelPick.length > 0 && (
+							<p>
+								Our model marked the {modelPick.length} cells drawn dashed, where it expected the most new water, starting from the {model.issued_from_sensor} map of {day(model.issue_time_utc)}.{' '}
+								{model.rain === 'fell'
+									? `It had a head start: it was given the rain that actually fell, while you only had the ${GAME.alert.mm3d} mm forecast.`
+									: `It was given the forecast rain, as you were.`}
+							</p>
+						)}
 						<ul className="gm-key">
 							<li>
 								<i style={{ background: '#7cf29a' }} /> right
@@ -435,6 +469,11 @@ export function GameApp() {
 							<li>
 								<i style={{ background: '#8de6ff' }} /> flooded, not marked
 							</li>
+							{model && modelPick.length > 0 && (
+								<li>
+									<i style={{ background: 'transparent', border: '1.5px dashed currentColor', boxSizing: 'border-box' }} /> our model
+								</li>
+							)}
 						</ul>
 						<p className="gm-hint">Tap any cell to read why.</p>
 						{focused && (
@@ -446,6 +485,11 @@ export function GameApp() {
 								{why(focused, game).map((line) => (
 									<p key={line}>{line}</p>
 								))}
+								{model && model.scores[focused.i] != null && (
+									<p>
+										Our model: {model.scores[focused.i]} of 100 for new water here{modelPick.includes(focused.i) ? ', one of its cells' : ''}.
+									</p>
+								)}
 							</div>
 						)}
 						<label className="gm-toggle">

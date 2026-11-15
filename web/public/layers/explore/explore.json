@@ -1,0 +1,221 @@
+{
+ "made_by": "web/scripts/bake_explore.py",
+ "baked_utc": "2026-11-15T04:13:06Z",
+ "vectors": {
+  "zones_horta_sud": {
+   "file": "zones_horta_sud.json",
+   "bytes": 804938,
+   "features": 3,
+   "source": "data/zones/zones_horta_sud.geojson"
+  },
+  "zones_pego_oliva": {
+   "file": "zones_pego_oliva.json",
+   "bytes": 1061480,
+   "features": 3,
+   "source": "data/zones/zones_pego_oliva.geojson"
+  },
+  "floods_2024": {
+   "file": "floods_2024.json",
+   "bytes": 1662904,
+   "features": 72,
+   "source": "data/zones/floods_dana_2024_horta_sud.geojson"
+  },
+  "buildings_2024": {
+   "file": "buildings_2024.json",
+   "bytes": 350236,
+   "features": 2238,
+   "source": "data/zones/buildings_dana_2024_horta_sud.geojson"
+  },
+  "floods_2026": {
+   "file": "floods_2026.json",
+   "bytes": 855991,
+   "features": 15,
+   "source": "data/zones/floods_dana_adam_2026_pego_oliva.geojson"
+  },
+  "municipalities": {
+   "file": "municipalities.json",
+   "bytes": 25974,
+   "features": 12,
+   "source": "data/zones/municipalities.geojson"
+  },
+  "water_marks_2024": {
+   "file": "water_marks_2024.json",
+   "bytes": 453343,
+   "features": 2699,
+   "source": "data/streets/water_marks_2024.geojson",
+   "points": 2699,
+   "by_class": {
+    "1 to 2 m": 1361,
+    "0.2 to 1 m": 652,
+    "above 2 m": 645,
+    "below 0.2 m": 41
+   },
+   "by_survey": {
+    "IVE": 1939,
+    "SGRT": 385,
+    "UPV": 362,
+    "town hall": 13
+   },
+   "publisher": "Institut Cartogràfic Valencià (ICV), Generalitat Valenciana",
+   "licence": "CC BY 4.0 Generalitat (WFS capabilities of 2702_DANA2024: AccessConstraints; Fees: no conditions)",
+   "service": "https://terramapas.icv.gva.es/2702_DANA2024",
+   "numbers_source": "data/streets/results.json water_marks_layer"
+  },
+  "simulated_2024": {
+   "file": "simulated_2024.json",
+   "bytes": 655326,
+   "features": 3,
+   "source": "data/streets/simulated_max_depth.geojson",
+   "label": "SIMULATED",
+   "infiltration": "none (all rain runs off: an upper bound)",
+   "cell_m": 25.0,
+   "buildings_pct": 34.2,
+   "zones_buildings_pct": 42.1,
+   "torrent_buildings_pct": 18.9,
+   "torrent_zones_buildings_pct": 7.0,
+   "rule": "Method 4, SIMULATED: deepest simulated cells of each town (25 m run), as many as the town's cells in the official union area",
+   "numbers_source": "data/streets/results.json methods.simulated_rain_equal_area_union and methods.official_union (buildings_covered_pct, total and Torrent)"
+  }
+ },
+ "sites": {
+  "pego_oliva": {
+   "name": "Pego-Oliva",
+   "nisar": {
+    "stack": "066_D_069",
+    "before": "2026-10-16",
+    "after": "2026-10-28",
+    "bounds": [
+     -0.259552,
+     38.7721532,
+     0.0703812,
+     39.0278522
+    ],
+    "size": [
+     1922,
+     1914
+    ],
+    "pictures": {
+     "before": {
+      "file": "nisar_pego_oliva_before.webp",
+      "bytes": 2408
+     },
+     "after": {
+      "file": "nisar_pego_oliva_after.webp",
+      "bytes": 3598
+     }
+    },
+    "open_water": {
+     "before_ha": 185.28,
+     "after_ha": 444.88,
+     "new_ha": 270.4,
+     "on_both_ha": 174.48,
+     "gone_ha": 10.8
+    },
+    "drawn": {
+     "new_ha": 271.4,
+     "on_both_ha": 174.2
+    },
+    "rule": "open water of the v1 U-Net ensemble at 0.3, outside permanent water, on land labelled on both dates (PR #35)",
+    "sources": {
+     "layer": "data/labels_nisar/pego_oliva_066_D_069/dana_2026-10-16_2026-10-28.tif",
+     "numbers": "data/metrics/nisar_labels_summary.json sites.pego_oliva.dana.stacks.066_D_069.open_water"
+    },
+    "still": {
+     "file": "still_flooded_pego_oliva.webp",
+     "bytes": 1404,
+     "date": "2026-10-28",
+     "outline": "EMSR935 flooded_area, imagery 20 to 21 Oct 2026, not permanent water",
+     "outline_ha": 877.4,
+     "seen_ha": 864.84,
+     "open_water_ha": 264.28,
+     "open_water_share": 0.3056,
+     "drawn_ha": 265.0,
+     "source": "data/metrics/nisar_labels_summary.json sites.pego_oliva.dana.emsr935_flooded_area_still_water.per_pass['066_D_069 2026-10-28']"
+    },
+    "data": {
+     "file": "nisar_pego_oliva.bin",
+     "bytes": 75009,
+     "planes": [
+      "dana_code",
+      "still_flooded"
+     ],
+     "codes": {
+      "0": "dry on both dates",
+      "1": "open water on both dates",
+      "2": "new open water",
+      "3": "open water gone",
+      "4": "permanent water",
+      "255": "not compared (no data, sea or built-up)"
+     }
+    }
+   }
+  },
+  "albufera": {
+   "name": "Albufera",
+   "nisar": {
+    "stack": "066_D_069",
+    "before": "2026-10-16",
+    "after": "2026-10-28",
+    "bounds": [
+     -0.4610825,
+     39.1444401,
+     -0.2078819,
+     39.4554144
+    ],
+    "size": [
+     1475,
+     2341
+    ],
+    "pictures": {
+     "before": {
+      "file": "nisar_albufera_before.webp",
+      "bytes": 6280
+     },
+     "after": {
+      "file": "nisar_albufera_after.webp",
+      "bytes": 14042
+     }
+    },
+    "open_water": {
+     "before_ha": 2006.28,
+     "after_ha": 5053.56,
+     "new_ha": 3090.28,
+     "on_both_ha": 1963.28,
+     "gone_ha": 43.0
+    },
+    "drawn": {
+     "new_ha": 3091.9,
+     "on_both_ha": 1964.9
+    },
+    "rule": "open water of the v1 U-Net ensemble at 0.3, outside permanent water, on land labelled on both dates (PR #35)",
+    "sources": {
+     "layer": "data/labels_nisar/albufera_066_D_069/dana_2026-10-16_2026-10-28.tif",
+     "numbers": "data/metrics/nisar_labels_summary.json sites.albufera.dana.stacks.066_D_069.open_water"
+    },
+    "data": {
+     "file": "nisar_albufera.bin",
+     "bytes": 103610,
+     "planes": [
+      "dana_code",
+      "still_flooded"
+     ],
+     "codes": {
+      "0": "dry on both dates",
+      "1": "open water on both dates",
+      "2": "new open water",
+      "3": "open water gone",
+      "4": "permanent water",
+      "255": "not compared (no data, sea or built-up)"
+     }
+    }
+   }
+  }
+ },
+ "zones": {
+  "frequent": "T10, high probability (1 in 10 each year)",
+  "occasional": "T100, medium probability (1 in 100 each year)",
+  "rare": "T500, low probability (1 in 500 each year)",
+  "source": "SNCZI, Ministerio para la Transicion Ecologica (MITECO), through data/zones (PR #36)"
+ },
+ "note": "Two DANAs, never mixed: 29 Oct 2024 at L'Horta Sud (before NISAR had data, context only) and DANA Adam, 18 to 19 Oct 2026, at Pego-Oliva (NISAR saw it). docs/ZONES.md"
+}
