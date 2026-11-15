@@ -1,0 +1,88 @@
+{
+  "variant": "mono_storm_neigh",
+  "options": {
+    "labels": "s1",
+    "mono": true,
+    "storm": true,
+    "neigh": true
+  },
+  "features": [
+    "hand_m",
+    "elevation_m",
+    "slope_deg",
+    "jrc_occurrence_pct",
+    "worldcover_class",
+    "rice_flag",
+    "s1_wet_freq",
+    "doy_sin",
+    "doy_cos",
+    "rain_prior_7d_mm",
+    "rain_prior_30d_mm",
+    "rain_between_mm",
+    "rain_between_max1d_mm",
+    "days_since_rain_peak",
+    "lead_days",
+    "prev_water",
+    "prev_water_age_d",
+    "prev_water_missing",
+    "prev_wet_share_100m",
+    "prev_wet_share_500m"
+  ],
+  "terrain_only_features": [
+    "hand_m",
+    "elevation_m",
+    "slope_deg",
+    "jrc_occurrence_pct",
+    "worldcover_class",
+    "rice_flag",
+    "s1_wet_freq",
+    "doy_sin",
+    "doy_cos"
+  ],
+  "categorical": [
+    "worldcover_class"
+  ],
+  "units": {
+    "hand_m": "m above the nearest drainage (ASF GLO-30 HAND, 30 m)",
+    "elevation_m": "m (Copernicus GLO-30)",
+    "slope_deg": "degrees, from the elevation on the 20 m grid",
+    "jrc_occurrence_pct": "% of 1984-2021 months with water (JRC)",
+    "worldcover_class": "ESA WorldCover 2021 class code",
+    "rice_flag": "1 inside the Albufera rice mask",
+    "s1_wet_freq": "share of the passes up to the issue pass (never one from the held-out window) that saw water here",
+    "doy_sin": "season",
+    "doy_cos": "season",
+    "rain_prior_7d_mm": "mm in the 7 days before the issue day",
+    "rain_prior_30d_mm": "mm in the 30 days before the issue day",
+    "rain_between_mm": "mm from the issue day to the day before the target",
+    "rain_between_max1d_mm": "wettest day of that interval, mm",
+    "days_since_rain_peak": "days from that wettest day to the target",
+    "lead_days": "days from the issue pass to the target",
+    "prev_water": "1 water, 0 dry at the latest pass up to the issue pass",
+    "prev_water_age_d": "days from that observation to the target",
+    "prev_water_missing": "1 where no such observation exists",
+    "prev_wet_share_100m": "share of water among the observed pixels of the issue-time map in the 100 m square around the pixel",
+    "prev_wet_share_500m": "the same in the 500 m square"
+  },
+  "monotone": {
+    "features": [
+      "rain_prior_7d_mm",
+      "rain_prior_30d_mm",
+      "rain_between_mm",
+      "rain_between_max1d_mm"
+    ],
+    "method": "intermediate"
+  },
+  "storm_weight": "1 + rain_between_mm / 25, at most 10",
+  "neighbourhood_windows_px": [
+    5,
+    25
+  ],
+  "target": "water (DSWx-S1 class 1 or 3) at the target pass; 0 = class 0; other classes are not used",
+  "timing": {
+    "min_lead_days": 3.0,
+    "max_lead_days": 12.0,
+    "max_observation_age_days": 10.0
+  },
+  "grid": "pipeline.stack.site_grid, EPSG:32630, 20 m"
+}

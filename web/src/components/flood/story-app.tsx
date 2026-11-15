@@ -924,6 +924,9 @@ export function StoryApp({ story }: { story: Story }) {
 			},
 			map: () => mapRef.current,
 			settled: () => !!water.current?.ready() && !!pic.current?.current() && !!mapRef.current?.loaded() && !mapRef.current?.isMoving(),
+			/** everything this moment needs has arrived (tiles, radar frames, picture), also while the camera moves: the
+			 *  films are made frame by frame on this (scripts/record_flood.py --steady) */
+			complete: () => !!water.current?.ready() && !!pic.current?.current() && !!mapRef.current?.areTilesLoaded(),
 			/** tiles served by the app and tiles that had to go to their own server */
 			tiles: () => ({ ...tileCount }),
 		}

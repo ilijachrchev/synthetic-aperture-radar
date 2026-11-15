@@ -1,0 +1,33 @@
+{
+ "what": "The numbers of step 5 (Would we have seen it coming?). Edit them here, no code: the page reads this file as it is. An option whose status is \"arriving\" shows a quiet arriving state instead of numbers.",
+ "options": [
+  {
+   "key": "real",
+   "label": "Real rain",
+   "status": "in",
+   "found_pct": 76.0,
+   "really_flooded_pct": 73.4,
+   "flagged_km": 531.65,
+   "streets": "s",
+   "line": "Run with the rain that fell on 29 Oct 2024.",
+   "source": "data/streets/results.json streets.main.methods.simulated_depth_above_0p3m.A.total (hit_rate_pct, precision_pct, flagged_km)"
+  },
+  {
+   "key": "night_before",
+   "label": "The night before",
+   "status": "arriving",
+   "found_pct": null,
+   "really_flooded_pct": null,
+   "flagged_km": null,
+   "streets": "m_forecast",
+   "line": "Run with the ECMWF forecast issued the evening before, 28 Oct 2024.",
+   "source": "street-sim run A, ECMWF IFS HRES run of 28 Oct 2024 12 UTC (docs/STREETS.md, Two more simulations): results.json, when it lands"
+  }
+ ],
+ "agreement": {
+  "value": 76.8,
+  "text": "Two official records of this flood agree on about {value}% of the streets.",
+  "source": "data/streets/results.json streets.main.summary.key_b.agreement_inside_outlines_pct (key A, the Copernicus EMS map and the water marks, against key B, the UPV depth map, inside the UPV outlines)"
+ },
+ "closing": "Open code, every test written down before the answer was seen."
+}

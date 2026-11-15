@@ -1,0 +1,141 @@
+{
+  "site": "albufera",
+  "model": "spatial water likelihood (LightGBM)",
+  "variant": "mono_neigh+blend",
+  "exported_score": "blend",
+  "model_sha256_16": "2eea321ceebe7d37",
+  "rain_source": "Open-Meteo, ECMWF IFS 9 km, wettest lattice point of the site per day",
+  "holdout": {
+    "start": "2026-10-15",
+    "end": "2026-11-15"
+  },
+  "validation_status": "retrospective check on the held-out October 2026 window against Sentinel-1 maps (data/prediction/spatial/improve); not yet scored against Copernicus EMSR935",
+  "scenario_id": "replay_2026-10-28",
+  "mode": "reconstruction",
+  "mode_note": "rain between issue and target is the rain that fell (IFS archive), not a forecast",
+  "issued_from_pass": "20261023T175350_S1D",
+  "issue_time_utc": "2026-10-23T17:53:50.000Z",
+  "target_pass": "20261028T060923_S1C",
+  "target_time_utc": "2026-10-28T06:09:23.000Z",
+  "lead_days": 4.51,
+  "rain": {
+    "rain_prior_7d_mm": 258.1,
+    "rain_prior_30d_mm": 427.70000000000005,
+    "rain_between_mm": 0.0,
+    "rain_between_max1d_mm": 0.0,
+    "days_since_rain_peak": 5.0
+  },
+  "check_against_sentinel1": {
+    "rain_and_state": {
+      "water_ap": 0.8114,
+      "new_water_ap": 0.407,
+      "water_at_threshold": {
+        "precision": 0.7793,
+        "recall": 0.776,
+        "f1": 0.7777,
+        "iou": 0.6362,
+        "predicted_w": 130782.0,
+        "observed_w": 131343.0
+      },
+      "new_water_at_threshold": {
+        "precision": 0.3979,
+        "recall": 0.462,
+        "f1": 0.4275,
+        "iou": 0.2719,
+        "predicted_w": 26462.0,
+        "observed_w": 22788.0
+      }
+    },
+    "blend": {
+      "water_ap": 0.7955,
+      "new_water_ap": 0.4105,
+      "water_at_threshold": {
+        "precision": 0.7681,
+        "recall": 0.752,
+        "f1": 0.76,
+        "iou": 0.6129,
+        "predicted_w": 128592.0,
+        "observed_w": 131343.0
+      },
+      "new_water_at_threshold": {
+        "precision": 0.4127,
+        "recall": 0.5291,
+        "f1": 0.4637,
+        "iou": 0.3018,
+        "predicted_w": 29211.0,
+        "observed_w": 22788.0
+      }
+    },
+    "terrain_only": {
+      "water_ap": 0.7527,
+      "new_water_ap": 0.3969,
+      "water_at_threshold": {
+        "precision": 0.767,
+        "recall": 0.7067,
+        "f1": 0.7356,
+        "iou": 0.5818,
+        "predicted_w": 121006.0,
+        "observed_w": 131343.0
+      },
+      "new_water_at_threshold": {
+        "precision": 0.4568,
+        "recall": 0.4449,
+        "f1": 0.4508,
+        "iou": 0.291,
+        "predicted_w": 22198.0,
+        "observed_w": 22788.0
+      }
+    },
+    "past_wet_share": {
+      "water_ap": 0.6929,
+      "new_water_ap": 0.3277,
+      "water_at_threshold": {
+        "precision": 0.6704,
+        "recall": 0.17,
+        "f1": 0.2712,
+        "iou": 0.1569,
+        "predicted_w": 33301.0,
+        "observed_w": 131343.0
+      },
+      "new_water_at_threshold": {
+        "precision": 0.3551,
+        "recall": 0.0728,
+        "f1": 0.1208,
+        "iou": 0.0643,
+        "predicted_w": 4669.0,
+        "observed_w": 22788.0
+      }
+    }
+  },
+  "score": "relative water likelihood 0-1 learned from Sentinel-1 water maps; not a calibrated flood probability",
+  "files": {
+    "water_likelihood_utm.tif": "float32 0-1, NaN outside land, EPSG:32630 20 m",
+    "new_water_likelihood_utm.tif": "the same, only where the previous water map says dry",
+    "evidence_utm.tif": "uint8 flags, see evidence",
+    "water_likelihood_web.tif": "uint8 0-100, 255 no data, Web Mercator COG",
+    "new_water_likelihood_web.tif": "uint8 0-100, 255 no data, Web Mercator COG"
+  },
+  "evidence": {
+    "0": "prediction from terrain, rain and the previous water map",
+    "1": "permanent water (JRC occurrence >= 90 %): context, not flooding",
+    "2": "built-up land: radar water maps are unreliable here, so nothing was learned from towns; the value is extrapolated from fields",
+    "3": "no water map before the issue time: new water cannot be told from old",
+    "4": "rarely or never mapped by Sentinel-1 (terrain mask, shadow): extrapolated",
+    "255": "sea or outside the land grid"
+  },
+  "thresholds": {
+    "water": 0.2946479241707799,
+    "new_water": 0.17653340825370928
+  },
+  "area_ha": {
+    "likely_water": 5143.7,
+    "likely_new_water": 1168.4,
+    "counted_on": "evidence 0 pixels only"
+  },
+  "native_resolution": {
+    "rain": "ECMWF IFS 9 km, one value per site and day",
+    "terrain": "30 m",
+    "water_maps": "30 m"
+  },
+  "attribution": "OPERA DSWx-S1 (NASA JPL), Open-Meteo / ECMWF IFS (CC BY 4.0), ASF GLO-30 HAND, Copernicus DEM GLO-30, ESA WorldCover 2021, JRC Global Surface Water"
+}

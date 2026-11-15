@@ -1,0 +1,180 @@
+{
+  "reading": "Every variant is scored on the same held-out Sentinel-1 passes of 15 Oct to 15 Nov 2026 with the full model (rain_and_state). storm passes = 22 and 23 Oct. Scores are average precision.",
+  "variants": {
+    "base": {
+      "labels": "s1",
+      "soil_moisture": false,
+      "rounds": {
+        "terrain_only": 208,
+        "rain_and_state": 379
+      },
+      "soil_importance_gain_share": 0,
+      "sites": {
+        "albufera": {
+          "all_held_out_passes": {
+            "water_ap": 0.81,
+            "new_water_ap": 0.4663
+          },
+          "storm_passes_mean": {
+            "water_ap": 0.8151,
+            "new_water_ap": 0.6472
+          },
+          "terrain_only_new_water_ap": 0.41,
+          "past_wet_share_new_water_ap": 0.3256
+        },
+        "pego_oliva": {
+          "all_held_out_passes": {
+            "water_ap": 0.6401,
+            "new_water_ap": 0.3763
+          },
+          "storm_passes_mean": {
+            "water_ap": 0.516,
+            "new_water_ap": 0.452
+          },
+          "terrain_only_new_water_ap": 0.3077,
+          "past_wet_share_new_water_ap": 0.3154
+        }
+      }
+    },
+    "soil": {
+      "labels": "s1",
+      "soil_moisture": true,
+      "rounds": {
+        "terrain_only": 208,
+        "rain_and_state": 379
+      },
+      "soil_importance_gain_share": 0.0009,
+      "sites": {
+        "albufera": {
+          "all_held_out_passes": {
+            "water_ap": 0.8109,
+            "new_water_ap": 0.485
+          },
+          "storm_passes_mean": {
+            "water_ap": 0.8175,
+            "new_water_ap": 0.6764
+          },
+          "terrain_only_new_water_ap": 0.41,
+          "past_wet_share_new_water_ap": 0.3256
+        },
+        "pego_oliva": {
+          "all_held_out_passes": {
+            "water_ap": 0.6461,
+            "new_water_ap": 0.3633
+          },
+          "storm_passes_mean": {
+            "water_ap": 0.5091,
+            "new_water_ap": 0.4282
+          },
+          "terrain_only_new_water_ap": 0.3077,
+          "past_wet_share_new_water_ap": 0.3154
+        }
+      }
+    },
+    "nisar": {
+      "labels": "s1+nisar",
+      "soil_moisture": false,
+      "rounds": {
+        "terrain_only": 238,
+        "rain_and_state": 238
+      },
+      "soil_importance_gain_share": 0,
+      "sites": {
+        "albufera": {
+          "all_held_out_passes": {
+            "water_ap": 0.4826,
+            "new_water_ap": 0.1553
+          },
+          "storm_passes_mean": {
+            "water_ap": 0.8002,
+            "new_water_ap": 0.5785
+          },
+          "terrain_only_new_water_ap": 0.4038,
+          "past_wet_share_new_water_ap": 0.3273
+        },
+        "pego_oliva": {
+          "all_held_out_passes": {
+            "water_ap": 0.6329,
+            "new_water_ap": 0.37
+          },
+          "storm_passes_mean": {
+            "water_ap": 0.5272,
+            "new_water_ap": 0.4875
+          },
+          "terrain_only_new_water_ap": 0.312,
+          "past_wet_share_new_water_ap": 0.3211
+        }
+      }
+    },
+    "nisar_soil": {
+      "labels": "s1+nisar",
+      "soil_moisture": true,
+      "rounds": {
+        "terrain_only": 238,
+        "rain_and_state": 238
+      },
+      "soil_importance_gain_share": 0.0019,
+      "sites": {
+        "albufera": {
+          "all_held_out_passes": {
+            "water_ap": 0.8139,
+            "new_water_ap": 0.4728
+          },
+          "storm_passes_mean": {
+            "water_ap": 0.809,
+            "new_water_ap": 0.6491
+          },
+          "terrain_only_new_water_ap": 0.4038,
+          "past_wet_share_new_water_ap": 0.3273
+        },
+        "pego_oliva": {
+          "all_held_out_passes": {
+            "water_ap": 0.6256,
+            "new_water_ap": 0.3628
+          },
+          "storm_passes_mean": {
+            "water_ap": 0.511,
+            "new_water_ap": 0.4627
+          },
+          "terrain_only_new_water_ap": 0.312,
+          "past_wet_share_new_water_ap": 0.3211
+        }
+      }
+    },
+    "nisar_flag": {
+      "labels": "s1+nisar",
+      "soil_moisture": false,
+      "rounds": {
+        "terrain_only": 238,
+        "rain_and_state": 238
+      },
+      "soil_importance_gain_share": 0,
+      "sites": {
+        "albufera": {
+          "all_held_out_passes": {
+            "water_ap": 0.8103,
+            "new_water_ap": 0.4641
+          },
+          "storm_passes_mean": {
+            "water_ap": 0.8219,
+            "new_water_ap": 0.6508
+          },
+          "terrain_only_new_water_ap": 0.4038,
+          "past_wet_share_new_water_ap": 0.3273
+        },
+        "pego_oliva": {
+          "all_held_out_passes": {
+            "water_ap": 0.6292,
+            "new_water_ap": 0.366
+          },
+          "storm_passes_mean": {
+            "water_ap": 0.5183,
+            "new_water_ap": 0.4665
+          },
+          "terrain_only_new_water_ap": 0.312,
+          "past_wet_share_new_water_ap": 0.3211
+        }
+      }
+    }
+  }
+}

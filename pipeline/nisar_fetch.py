@@ -130,10 +130,11 @@ def collection_concept_id(short_name: str) -> str:
 
 
 def plan(site: Site, stack_id: str, overwrite: bool = False, dates: set[str] | None = None,
-         bandwidth: str | None = DEFAULT_BANDWIDTH) -> dict[str, list[dict[str, Any]]]:
+         bandwidth: str | None = DEFAULT_BANDWIDTH,
+         min_coverage: float = MIN_COVERAGE) -> dict[str, list[dict[str, Any]]]:
     """Granules still to fetch, grouped by collection (one Harmony job per collection)."""
     jobs: dict[str, list[dict[str, Any]]] = {}
-    for g in select_granules(load_catalog(site), stack_id, bandwidth):
+    for g in select_granules(load_catalog(site), stack_id, bandwidth, min_coverage):
         day = acquisition_stamp(g)[:8]
         if dates and day not in dates:
             continue
@@ -209,9 +210,10 @@ def run_job(site: Site, stack_id: str, short_name: str, granules: list[dict[str,
 
 def fetch_stack(site: Site, stack_id: str, *, layers: tuple[str, ...] = DEFAULT_LAYERS,
                 bandwidth: str | None = DEFAULT_BANDWIDTH, overwrite: bool = False,
-                dates: set[str] | None = None, dry_run: bool = False) -> int:
+                dates: set[str] | None = None, dry_run: bool = False,
+                min_coverage: float = MIN_COVERAGE) -> int:
     """Plan and run the Harmony jobs of one stack; returns how many granules were requested."""
-    jobs = plan(site, stack_id, overwrite, dates, bandwidth)
+    jobs = plan(site, stack_id, overwrite, dates, bandwidth, min_coverage)
     total = sum(len(v) for v in jobs.values())
     print(f"{site.name} {stack_id}: {total} granule(s) to fetch, layers {', '.join(layers)}", flush=True)
     for short_name, granules in jobs.items():
@@ -231,6 +233,9 @@ def main() -> None:
     parser.add_argument("--date", action="append", help="only this acquisition date (YYYYMMDD); repeatable")
     parser.add_argument("--with-looks", action="store_true", help="also fetch numberOfLooks (not needed by the baseline)")
     parser.add_argument("--bandwidth", default=DEFAULT_BANDWIDTH, help="range bandwidth mode to keep (default 20+5)")
+    parser.add_argument("--min-coverage", type=float, default=MIN_COVERAGE,
+                        help=f"share of the site box a frame must cover (default {MIN_COVERAGE}, the whole box; "
+                             "lower it only for extra test stacks, never for the shared STACKS)")
     args = parser.parse_args()
 
     fetch_stack(
@@ -238,6 +243,7 @@ def main() -> None:
         layers=GCOV_LAYERS if args.with_looks else DEFAULT_LAYERS,
         bandwidth=args.bandwidth, overwrite=args.overwrite,
         dates=set(args.date) if args.date else None, dry_run=args.dry_run,
+        min_coverage=args.min_coverage,
     )
 
 

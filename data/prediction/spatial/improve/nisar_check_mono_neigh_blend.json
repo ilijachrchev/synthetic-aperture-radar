@@ -1,0 +1,48 @@
+{
+  "candidate": "mono_neigh+blend",
+  "reading": "hit_rate = share of NISAR's new open water (PR #35 change layer, code 2) that the map marks at its frozen new-water threshold; precision = share of the marked pixels that NISAR saw as new open water. Pixels: the model's domain where the pre-storm map has a new-water likelihood (dry on the issue map). all_assessed = NISAR codes 0 to 3 (everything NISAR compared except permanent water: water on both dates and water gone count as misses of 'new'), the protocol of the team's first check (b4c69d9: 26 % and 15 %); dry_before = codes 0 and 2 only (NISAR also dry on 16 Oct)",
+  "sites": {
+    "albufera": {
+      "map": "data/prediction/spatial/albufera/replay_2026-10-28_prestorm",
+      "threshold_new_water": 0.17653340825370928,
+      "evidence_0_share_of_scored": 1.0,
+      "all_assessed": {
+        "candidates_ha": 36134.2,
+        "nisar_new_water_ha": 2596.8,
+        "marked_ha": 3277.6,
+        "hit_rate": 0.7985,
+        "precision": 0.6326,
+        "new_water_ap": 0.7322
+      },
+      "dry_before": {
+        "candidates_ha": 35867.1,
+        "nisar_new_water_ha": 2596.8,
+        "marked_ha": 3060.5,
+        "hit_rate": 0.7985,
+        "precision": 0.6775,
+        "new_water_ap": 0.7749
+      }
+    },
+    "pego_oliva": {
+      "map": "data/prediction/spatial/pego_oliva/replay_2026-10-28_prestorm",
+      "threshold_new_water": 0.17653340825370928,
+      "evidence_0_share_of_scored": 1.0,
+      "all_assessed": {
+        "candidates_ha": 42351.0,
+        "nisar_new_water_ha": 216.7,
+        "marked_ha": 456.7,
+        "hit_rate": 0.3439,
+        "precision": 0.1632,
+        "new_water_ap": 0.1445
+      },
+      "dry_before": {
+        "candidates_ha": 42229.9,
+        "nisar_new_water_ha": 216.7,
+        "marked_ha": 371.2,
+        "hit_rate": 0.3439,
+        "precision": 0.2008,
+        "new_water_ap": 0.1701
+      }
+    }
+  }
+}

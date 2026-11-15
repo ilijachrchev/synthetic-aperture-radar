@@ -1,0 +1,91 @@
+{
+  "variant": "mono_neigh",
+  "fit_version": "fit_albufera_oct",
+  "reading": "mono_neigh and the terrain-only model refitted with the held-out passes of albufera added (15 Oct to 15 Nov 2026); trees, settings and thresholds frozen from the development check of the variant. The other site's held-out passes are in nothing.",
+  "params": {
+    "objective": "binary",
+    "learning_rate": 0.05,
+    "num_leaves": 15,
+    "min_data_in_leaf": 200,
+    "feature_fraction": 0.8,
+    "bagging_fraction": 0.8,
+    "bagging_freq": 1,
+    "lambda_l2": 1.0,
+    "max_cat_to_onehot": 16,
+    "verbose": -1,
+    "seed": 0,
+    "num_threads": 8,
+    "monotone_constraints": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+      1,
+      1,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "monotone_constraints_method": "intermediate"
+  },
+  "rounds": {
+    "terrain_only": 208,
+    "rain_and_state": 387
+  },
+  "sites": {
+    "albufera": {
+      "target_passes_used": 405,
+      "samples": 2333451,
+      "added_held_out_targets": [
+        "20261016T060923_S1C",
+        "20261016T180201_S1D",
+        "20261017T060124_S1D",
+        "20261017T175337_S1C",
+        "20261022T060936_S1D",
+        "20261023T060111_S1C",
+        "20261023T175350_S1D",
+        "20261028T060923_S1C",
+        "20261028T180201_S1D",
+        "20261029T175337_S1C",
+        "20261103T060936_S1D",
+        "20261103T180148_S1C",
+        "20261104T060112_S1C",
+        "20261104T175350_S1D",
+        "20261109T060922_S1C",
+        "20261109T180201_S1D",
+        "20261110T060124_S1D",
+        "20261110T175337_S1C"
+      ],
+      "added_samples": 150601,
+      "rain_between_mm": {
+        "max": 258.1,
+        "p99": 211.3,
+        "p90": 53.6,
+        "targets_over_100mm": 21
+      }
+    },
+    "pego_oliva": {
+      "target_passes_used": 390,
+      "samples": 2891109,
+      "added_held_out_targets": [],
+      "added_samples": 0,
+      "rain_between_mm": {
+        "max": 193.8,
+        "p99": 151.3,
+        "p90": 60.1,
+        "targets_over_100mm": 14
+      }
+    }
+  }
+}

@@ -1,0 +1,37 @@
+{
+ "model": [
+  "data/models/cv_unet_v3c_s1.pt"
+ ],
+ "site": "albufera",
+ "split": "held-out validation blocks",
+ "rows": [
+  {
+   "threshold": 0.3,
+   "open_median_iou": 0.1111,
+   "open_pooled_iou": 0.2547,
+   "any_median_iou": 0.0618,
+   "any_pooled_iou": 0.2088
+  },
+  {
+   "threshold": 0.4,
+   "open_median_iou": 0.1293,
+   "open_pooled_iou": 0.2611,
+   "any_median_iou": 0.0639,
+   "any_pooled_iou": 0.2102
+  },
+  {
+   "threshold": 0.5,
+   "open_median_iou": 0.1336,
+   "open_pooled_iou": 0.26,
+   "any_median_iou": 0.0671,
+   "any_pooled_iou": 0.2054
+  },
+  {
+   "threshold": 0.6,
+   "open_median_iou": 0.1502,
+   "open_pooled_iou": 0.2518,
+   "any_median_iou": 0.0653,
+   "any_pooled_iou": 0.1944
+  }
+ ]
+}

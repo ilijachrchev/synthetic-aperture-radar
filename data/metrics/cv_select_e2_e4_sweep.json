@@ -1,0 +1,61 @@
+{
+ "model": [
+  "data/models/cv_e2_aec_s0.pt",
+  "data/models/cv_e2_aec_s1.pt",
+  "data/models/cv_e2_aec_s2.pt",
+  "data/models/cv_e4_aec_current_s0.pt"
+ ],
+ "site": "albufera, ebro, camargue",
+ "split": "held-out validation blocks",
+ "rows": [
+  {
+   "threshold": 0.3,
+   "open_median_iou": 0.0338,
+   "open_pooled_iou": 0.3605,
+   "any_median_iou": 0.0378,
+   "any_pooled_iou": 0.3061
+  },
+  {
+   "threshold": 0.35,
+   "open_median_iou": 0.0686,
+   "open_pooled_iou": 0.3554,
+   "any_median_iou": 0.0375,
+   "any_pooled_iou": 0.3021
+  },
+  {
+   "threshold": 0.4,
+   "open_median_iou": 0.0682,
+   "open_pooled_iou": 0.3453,
+   "any_median_iou": 0.0074,
+   "any_pooled_iou": 0.2946
+  },
+  {
+   "threshold": 0.45,
+   "open_median_iou": 0.11,
+   "open_pooled_iou": 0.3316,
+   "any_median_iou": 0.0,
+   "any_pooled_iou": 0.2829
+  },
+  {
+   "threshold": 0.5,
+   "open_median_iou": 0.1159,
+   "open_pooled_iou": 0.3154,
+   "any_median_iou": 0.0,
+   "any_pooled_iou": 0.2679
+  },
+  {
+   "threshold": 0.55,
+   "open_median_iou": 0.0879,
+   "open_pooled_iou": 0.2929,
+   "any_median_iou": 0.0,
+   "any_pooled_iou": 0.2507
+  },
+  {
+   "threshold": 0.6,
+   "open_median_iou": 0.0831,
+   "open_pooled_iou": 0.2676,
+   "any_median_iou": 0.0,
+   "any_pooled_iou": 0.2298
+  }
+ ]
+}

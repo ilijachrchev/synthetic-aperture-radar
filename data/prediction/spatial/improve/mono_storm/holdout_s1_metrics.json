@@ -1,0 +1,5727 @@
+{
+  "reading": "Held-out Sentinel-1 passes of 15 Oct to 15 Nov 2026, scored once after the choice of improve/selection.json, against the Sentinel-1 map of the same pass, on the training domain. New water = pixels dry at the issue pass. 250 m cells: every pixel takes its cell's mean score; hit rate and false alarms count min(marked, observed) per cell.",
+  "variant": "mono_storm",
+  "thresholds_frozen_from": "improve/mono_storm/development_metrics.json",
+  "sites": {
+    "albufera": {
+      "pooled_over_held_out_passes": {
+        "n": 3598349,
+        "weighted_wet_share": 0.1034,
+        "n_new_candidates": 3211842,
+        "weighted_new_water_share": 0.0285,
+        "methods": {
+          "rain_and_state": {
+            "water_ap": 0.8031,
+            "new_water_ap": 0.4105,
+            "water_at_threshold": {
+              "precision": 0.718,
+              "recall": 0.8032,
+              "f1": 0.7582,
+              "iou": 0.6105,
+              "predicted_w": 416216.0,
+              "observed_w": 372065.0
+            },
+            "new_water_at_threshold": {
+              "precision": 0.3461,
+              "recall": 0.7237,
+              "f1": 0.4683,
+              "iou": 0.3057,
+              "predicted_w": 191394.0,
+              "observed_w": 91537.0
+            }
+          },
+          "blend": {
+            "water_ap": 0.803,
+            "new_water_ap": 0.4725,
+            "water_at_threshold": {
+              "precision": 0.7545,
+              "recall": 0.7837,
+              "f1": 0.7688,
+              "iou": 0.6244,
+              "predicted_w": 386444.0,
+              "observed_w": 372065.0
+            },
+            "new_water_at_threshold": {
+              "precision": 0.3993,
+              "recall": 0.6385,
+              "f1": 0.4913,
+              "iou": 0.3256,
+              "predicted_w": 146384.0,
+              "observed_w": 91537.0
+            }
+          },
+          "terrain_only": {
+            "water_ap": 0.7655,
+            "new_water_ap": 0.41,
+            "water_at_threshold": {
+              "precision": 0.7072,
+              "recall": 0.7764,
+              "f1": 0.7402,
+              "iou": 0.5875,
+              "predicted_w": 408495.0,
+              "observed_w": 372065.0
+            },
+            "new_water_at_threshold": {
+              "precision": 0.373,
+              "recall": 0.6128,
+              "f1": 0.4637,
+              "iou": 0.3019,
+              "predicted_w": 150389.0,
+              "observed_w": 91537.0
+            }
+          },
+          "persistence": {
+            "water_ap": 0.5727,
+            "new_water_ap": 0.0285
+          },
+          "past_wet_share": {
+            "water_ap": 0.6479,
+            "new_water_ap": 0.3256,
+            "water_at_threshold": {
+              "precision": 0.6511,
+              "recall": 0.2054,
+              "f1": 0.3122,
+              "iou": 0.185,
+              "predicted_w": 117360.0,
+              "observed_w": 372065.0
+            },
+            "new_water_at_threshold": {
+              "precision": 0.3432,
+              "recall": 0.0777,
+              "f1": 0.1268,
+              "iou": 0.0677,
+              "predicted_w": 20737.0,
+              "observed_w": 91537.0
+            }
+          }
+        }
+      },
+      "pooled_note": "a fixed random sample of 200000 domain pixels per pass (the PR #33 sample)",
+      "pooled_250m_cells": {
+        "rain_and_state": {
+          "new_water_ap": 0.3674,
+          "hit_rate": 0.7829,
+          "precision": 0.3736,
+          "false_alarm_ratio": 0.6264,
+          "cells": 141435,
+          "observed_new_water_ha": 19153.6,
+          "marked_ha": 40135.0
+        },
+        "blend": {
+          "new_water_ap": 0.4,
+          "hit_rate": 0.7039,
+          "precision": 0.439,
+          "false_alarm_ratio": 0.561,
+          "cells": 141435,
+          "observed_new_water_ha": 19153.6,
+          "marked_ha": 30711.1
+        },
+        "terrain_only": {
+          "new_water_ap": 0.3313,
+          "hit_rate": 0.6726,
+          "precision": 0.4084,
+          "false_alarm_ratio": 0.5916,
+          "cells": 141435,
+          "observed_new_water_ha": 19153.6,
+          "marked_ha": 31546.4
+        },
+        "past_wet_share": {
+          "new_water_ap": 0.2596,
+          "hit_rate": 0.1137,
+          "precision": 0.5025,
+          "false_alarm_ratio": 0.4975,
+          "cells": 141435,
+          "observed_new_water_ha": 19153.6,
+          "marked_ha": 4335.2
+        }
+      },
+      "all_pixels_at_threshold_20m": {
+        "rain_and_state": {
+          "hit_rate": 0.7222,
+          "false_alarm_ratio": 0.6554,
+          "marked_ha": 40135.0,
+          "observed_new_water_ha": 19153.6
+        },
+        "blend": {
+          "hit_rate": 0.6389,
+          "false_alarm_ratio": 0.6016,
+          "marked_ha": 30711.1,
+          "observed_new_water_ha": 19153.6
+        },
+        "terrain_only": {
+          "hit_rate": 0.6115,
+          "false_alarm_ratio": 0.6287,
+          "marked_ha": 31546.4,
+          "observed_new_water_ha": 19153.6
+        },
+        "past_wet_share": {
+          "hit_rate": 0.0758,
+          "false_alarm_ratio": 0.6652,
+          "marked_ha": 4335.2,
+          "observed_new_water_ha": 19153.6
+        }
+      },
+      "storm_passes": [
+        "20261022T060936_S1D",
+        "20261023T060111_S1C",
+        "20261023T175350_S1D"
+      ],
+      "passes": [
+        {
+          "pass_id": "20261016T060923_S1C",
+          "date": "2026-10-16",
+          "issue_pass": "20261011T175350_S1D",
+          "lead_days": 4.51,
+          "rain_prior_7d_mm": 18.5,
+          "rain_prior_30d_mm": 211.2,
+          "rain_between_mm": 1.0,
+          "rain_between_max1d_mm": 0.9,
+          "days_since_rain_peak": 2.0,
+          "observed_new_water_ha": 784.5,
+          "n": 1040950,
+          "weighted_wet_share": 0.04482,
+          "n_new_candidates": 993414,
+          "weighted_new_water_share": 0.01974,
+          "methods": {
+            "rain_and_state": {
+              "water_ap": 0.6185,
+              "new_water_ap": 0.2971,
+              "water_at_threshold": {
+                "precision": 0.6194,
+                "recall": 0.5862,
+                "f1": 0.6023,
+                "iou": 0.431,
+                "predicted_w": 44145.0,
+                "observed_w": 46651.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.249,
+                "recall": 0.7047,
+                "f1": 0.368,
+                "iou": 0.2255,
+                "predicted_w": 55508.0,
+                "observed_w": 19613.0
+              }
+            },
+            "blend": {
+              "water_ap": 0.6156,
+              "new_water_ap": 0.2904,
+              "water_at_threshold": {
+                "precision": 0.5345,
+                "recall": 0.7008,
+                "f1": 0.6064,
+                "iou": 0.4352,
+                "predicted_w": 61165.0,
+                "observed_w": 46651.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.2111,
+                "recall": 0.7295,
+                "f1": 0.3274,
+                "iou": 0.1958,
+                "predicted_w": 67778.0,
+                "observed_w": 19613.0
+              }
+            },
+            "terrain_only": {
+              "water_ap": 0.5284,
+              "new_water_ap": 0.2774,
+              "water_at_threshold": {
+                "precision": 0.3816,
+                "recall": 0.8036,
+                "f1": 0.5175,
+                "iou": 0.349,
+                "predicted_w": 98245.0,
+                "observed_w": 46651.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.1852,
+                "recall": 0.7557,
+                "f1": 0.2975,
+                "iou": 0.1747,
+                "predicted_w": 80036.0,
+                "observed_w": 19613.0
+              }
+            },
+            "persistence": {
+              "water_ap": 0.3485,
+              "new_water_ap": 0.0197
+            },
+            "past_wet_share": {
+              "water_ap": 0.4908,
+              "new_water_ap": 0.2953,
+              "water_at_threshold": {
+                "precision": 0.5138,
+                "recall": 0.3668,
+                "f1": 0.428,
+                "iou": 0.2723,
+                "predicted_w": 33301.0,
+                "observed_w": 46651.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.3387,
+                "recall": 0.1104,
+                "f1": 0.1665,
+                "iou": 0.0908,
+                "predicted_w": 6392.0,
+                "observed_w": 19613.0
+              }
+            }
+          },
+          "cells_250m": {
+            "rain_and_state": {
+              "new_water_ap": 0.2037,
+              "hit_rate": 0.8144,
+              "precision": 0.2878,
+              "false_alarm_ratio": 0.7122,
+              "cells": 7896,
+              "observed_new_water_ha": 784.5,
+              "marked_ha": 2220.3
+            },
+            "blend": {
+              "new_water_ap": 0.206,
+              "hit_rate": 0.8176,
+              "precision": 0.2366,
+              "false_alarm_ratio": 0.7634,
+              "cells": 7896,
+              "observed_new_water_ha": 784.5,
+              "marked_ha": 2711.1
+            },
+            "terrain_only": {
+              "new_water_ap": 0.2063,
+              "hit_rate": 0.8305,
+              "precision": 0.2035,
+              "false_alarm_ratio": 0.7965,
+              "cells": 7896,
+              "observed_new_water_ha": 784.5,
+              "marked_ha": 3201.4
+            },
+            "past_wet_share": {
+              "new_water_ap": 0.1961,
+              "hit_rate": 0.1687,
+              "precision": 0.5175,
+              "false_alarm_ratio": 0.4825,
+              "cells": 7896,
+              "observed_new_water_ha": 784.5,
+              "marked_ha": 255.7
+            }
+          }
+        },
+        {
+          "pass_id": "20261016T180201_S1D",
+          "date": "2026-10-16",
+          "issue_pass": "20261011T175350_S1D",
+          "lead_days": 5.01,
+          "rain_prior_7d_mm": 18.5,
+          "rain_prior_30d_mm": 211.2,
+          "rain_between_mm": 1.0,
+          "rain_between_max1d_mm": 0.9,
+          "days_since_rain_peak": 2.0,
+          "observed_new_water_ha": 636.0,
+          "n": 1041278,
+          "weighted_wet_share": 0.04256,
+          "n_new_candidates": 993742,
+          "weighted_new_water_share": 0.016,
+          "methods": {
+            "rain_and_state": {
+              "water_ap": 0.7379,
+              "new_water_ap": 0.2995,
+              "water_at_threshold": {
+                "precision": 0.6575,
+                "recall": 0.657,
+                "f1": 0.6572,
+                "iou": 0.4894,
+                "predicted_w": 44281.0,
+                "observed_w": 44314.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.2361,
+                "recall": 0.7554,
+                "f1": 0.3598,
+                "iou": 0.2194,
+                "predicted_w": 50863.0,
+                "observed_w": 15899.0
+              }
+            },
+            "blend": {
+              "water_ap": 0.7209,
+              "new_water_ap": 0.2945,
+              "water_at_threshold": {
+                "precision": 0.5618,
+                "recall": 0.7902,
+                "f1": 0.6567,
+                "iou": 0.4889,
+                "predicted_w": 62330.0,
+                "observed_w": 44314.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.1963,
+                "recall": 0.7953,
+                "f1": 0.3149,
+                "iou": 0.1868,
+                "predicted_w": 64418.0,
+                "observed_w": 15899.0
+              }
+            },
+            "terrain_only": {
+              "water_ap": 0.5814,
+              "new_water_ap": 0.2726,
+              "water_at_threshold": {
+                "precision": 0.3956,
+                "recall": 0.8769,
+                "f1": 0.5452,
+                "iou": 0.3748,
+                "predicted_w": 98245.0,
+                "observed_w": 44314.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.1672,
+                "recall": 0.8419,
+                "f1": 0.279,
+                "iou": 0.1621,
+                "predicted_w": 80036.0,
+                "observed_w": 15899.0
+              }
+            },
+            "persistence": {
+              "water_ap": 0.3986,
+              "new_water_ap": 0.016
+            },
+            "past_wet_share": {
+              "water_ap": 0.5418,
+              "new_water_ap": 0.2925,
+              "water_at_threshold": {
+                "precision": 0.5769,
+                "recall": 0.4336,
+                "f1": 0.4951,
+                "iou": 0.329,
+                "predicted_w": 33301.0,
+                "observed_w": 44314.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.3385,
+                "recall": 0.1361,
+                "f1": 0.1942,
+                "iou": 0.1075,
+                "predicted_w": 6392.0,
+                "observed_w": 15899.0
+              }
+            }
+          },
+          "cells_250m": {
+            "rain_and_state": {
+              "new_water_ap": 0.21,
+              "hit_rate": 0.8414,
+              "precision": 0.263,
+              "false_alarm_ratio": 0.737,
+              "cells": 7896,
+              "observed_new_water_ha": 636.0,
+              "marked_ha": 2034.5
+            },
+            "blend": {
+              "new_water_ap": 0.2088,
+              "hit_rate": 0.868,
+              "precision": 0.2142,
+              "false_alarm_ratio": 0.7858,
+              "cells": 7896,
+              "observed_new_water_ha": 636.0,
+              "marked_ha": 2576.7
+            },
+            "terrain_only": {
+              "new_water_ap": 0.1972,
+              "hit_rate": 0.9061,
+              "precision": 0.18,
+              "false_alarm_ratio": 0.82,
+              "cells": 7896,
+              "observed_new_water_ha": 636.0,
+              "marked_ha": 3201.4
+            },
+            "past_wet_share": {
+              "new_water_ap": 0.2008,
+              "hit_rate": 0.1955,
+              "precision": 0.4862,
+              "false_alarm_ratio": 0.5138,
+              "cells": 7896,
+              "observed_new_water_ha": 636.0,
+              "marked_ha": 255.7
+            }
+          }
+        },
+        {
+          "pass_id": "20261017T060124_S1D",
+          "date": "2026-10-17",
+          "issue_pass": "20261011T175350_S1D",
+          "lead_days": 5.51,
+          "rain_prior_7d_mm": 18.5,
+          "rain_prior_30d_mm": 211.2,
+          "rain_between_mm": 1.0,
+          "rain_between_max1d_mm": 0.9,
+          "days_since_rain_peak": 3.0,
+          "observed_new_water_ha": 609.4,
+          "n": 1041325,
+          "weighted_wet_share": 0.03976,
+          "n_new_candidates": 993789,
+          "weighted_new_water_share": 0.01533,
+          "methods": {
+            "rain_and_state": {
+              "water_ap": 0.6901,
+              "new_water_ap": 0.2792,
+              "water_at_threshold": {
+                "precision": 0.5935,
+                "recall": 0.6464,
+                "f1": 0.6188,
+                "iou": 0.4481,
+                "predicted_w": 45089.0,
+                "observed_w": 41398.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.2133,
+                "recall": 0.7588,
+                "f1": 0.333,
+                "iou": 0.1997,
+                "predicted_w": 54196.0,
+                "observed_w": 15234.0
+              }
+            },
+            "blend": {
+              "water_ap": 0.6751,
+              "new_water_ap": 0.2717,
+              "water_at_threshold": {
+                "precision": 0.5067,
+                "recall": 0.7835,
+                "f1": 0.6154,
+                "iou": 0.4444,
+                "predicted_w": 64022.0,
+                "observed_w": 41398.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.1814,
+                "recall": 0.7817,
+                "f1": 0.2945,
+                "iou": 0.1727,
+                "predicted_w": 65639.0,
+                "observed_w": 15234.0
+              }
+            },
+            "terrain_only": {
+              "water_ap": 0.5516,
+              "new_water_ap": 0.2469,
+              "water_at_threshold": {
+                "precision": 0.3622,
+                "recall": 0.8596,
+                "f1": 0.5097,
+                "iou": 0.342,
+                "predicted_w": 98245.0,
+                "observed_w": 41398.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.1548,
+                "recall": 0.813,
+                "f1": 0.26,
+                "iou": 0.1494,
+                "predicted_w": 80036.0,
+                "observed_w": 15234.0
+              }
+            },
+            "persistence": {
+              "water_ap": 0.3625,
+              "new_water_ap": 0.0153
+            },
+            "past_wet_share": {
+              "water_ap": 0.5315,
+              "new_water_ap": 0.2777,
+              "water_at_threshold": {
+                "precision": 0.5735,
+                "recall": 0.4614,
+                "f1": 0.5114,
+                "iou": 0.3435,
+                "predicted_w": 33301.0,
+                "observed_w": 41398.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.3104,
+                "recall": 0.1302,
+                "f1": 0.1835,
+                "iou": 0.101,
+                "predicted_w": 6392.0,
+                "observed_w": 15234.0
+              }
+            }
+          },
+          "cells_250m": {
+            "rain_and_state": {
+              "new_water_ap": 0.2023,
+              "hit_rate": 0.852,
+              "precision": 0.2395,
+              "false_alarm_ratio": 0.7605,
+              "cells": 7896,
+              "observed_new_water_ha": 609.4,
+              "marked_ha": 2167.8
+            },
+            "blend": {
+              "new_water_ap": 0.2001,
+              "hit_rate": 0.8561,
+              "precision": 0.1987,
+              "false_alarm_ratio": 0.8013,
+              "cells": 7896,
+              "observed_new_water_ha": 609.4,
+              "marked_ha": 2625.6
+            },
+            "terrain_only": {
+              "new_water_ap": 0.1871,
+              "hit_rate": 0.8816,
+              "precision": 0.1678,
+              "false_alarm_ratio": 0.8322,
+              "cells": 7896,
+              "observed_new_water_ha": 609.4,
+              "marked_ha": 3201.4
+            },
+            "past_wet_share": {
+              "new_water_ap": 0.1973,
+              "hit_rate": 0.2009,
+              "precision": 0.4789,
+              "false_alarm_ratio": 0.5211,
+              "cells": 7896,
+              "observed_new_water_ha": 609.4,
+              "marked_ha": 255.7
+            }
+          }
+        },
+        {
+          "pass_id": "20261017T175337_S1C",
+          "date": "2026-10-17",
+          "issue_pass": "20261011T175350_S1D",
+          "lead_days": 6.0,
+          "rain_prior_7d_mm": 18.5,
+          "rain_prior_30d_mm": 211.2,
+          "rain_between_mm": 1.0,
+          "rain_between_max1d_mm": 0.9,
+          "days_since_rain_peak": 3.0,
+          "observed_new_water_ha": 1271.4,
+          "n": 1040668,
+          "weighted_wet_share": 0.06881,
+          "n_new_candidates": 993132,
+          "weighted_new_water_share": 0.032,
+          "methods": {
+            "rain_and_state": {
+              "water_ap": 0.8222,
+              "new_water_ap": 0.4105,
+              "water_at_threshold": {
+                "precision": 0.7619,
+                "recall": 0.6594,
+                "f1": 0.707,
+                "iou": 0.5467,
+                "predicted_w": 61980.0,
+                "observed_w": 71613.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.3351,
+                "recall": 0.7942,
+                "f1": 0.4713,
+                "iou": 0.3083,
+                "predicted_w": 75332.0,
+                "observed_w": 31784.0
+              }
+            },
+            "blend": {
+              "water_ap": 0.8047,
+              "new_water_ap": 0.4135,
+              "water_at_threshold": {
+                "precision": 0.7022,
+                "recall": 0.7507,
+                "f1": 0.7256,
+                "iou": 0.5694,
+                "predicted_w": 76558.0,
+                "observed_w": 71613.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.3343,
+                "recall": 0.7884,
+                "f1": 0.4695,
+                "iou": 0.3068,
+                "predicted_w": 74965.0,
+                "observed_w": 31784.0
+              }
+            },
+            "terrain_only": {
+              "water_ap": 0.6846,
+              "new_water_ap": 0.4068,
+              "water_at_threshold": {
+                "precision": 0.5833,
+                "recall": 0.8002,
+                "f1": 0.6748,
+                "iou": 0.5092,
+                "predicted_w": 98245.0,
+                "observed_w": 71613.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.3167,
+                "recall": 0.7975,
+                "f1": 0.4534,
+                "iou": 0.2931,
+                "predicted_w": 80036.0,
+                "observed_w": 31784.0
+              }
+            },
+            "persistence": {
+              "water_ap": 0.4965,
+              "new_water_ap": 0.032
+            },
+            "past_wet_share": {
+              "water_ap": 0.6109,
+              "new_water_ap": 0.3618,
+              "water_at_threshold": {
+                "precision": 0.6447,
+                "recall": 0.2998,
+                "f1": 0.4092,
+                "iou": 0.2573,
+                "predicted_w": 33297.0,
+                "observed_w": 71613.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.2766,
+                "recall": 0.0556,
+                "f1": 0.0926,
+                "iou": 0.0486,
+                "predicted_w": 6392.0,
+                "observed_w": 31784.0
+              }
+            }
+          },
+          "cells_250m": {
+            "rain_and_state": {
+              "new_water_ap": 0.3701,
+              "hit_rate": 0.8698,
+              "precision": 0.367,
+              "false_alarm_ratio": 0.633,
+              "cells": 7896,
+              "observed_new_water_ha": 1271.4,
+              "marked_ha": 3013.3
+            },
+            "blend": {
+              "new_water_ap": 0.375,
+              "hit_rate": 0.8571,
+              "precision": 0.3634,
+              "false_alarm_ratio": 0.6366,
+              "cells": 7896,
+              "observed_new_water_ha": 1271.4,
+              "marked_ha": 2998.6
+            },
+            "terrain_only": {
+              "new_water_ap": 0.3772,
+              "hit_rate": 0.8665,
+              "precision": 0.3441,
+              "false_alarm_ratio": 0.6559,
+              "cells": 7896,
+              "observed_new_water_ha": 1271.4,
+              "marked_ha": 3201.4
+            },
+            "past_wet_share": {
+              "new_water_ap": 0.3425,
+              "hit_rate": 0.0916,
+              "precision": 0.4556,
+              "false_alarm_ratio": 0.5444,
+              "cells": 7896,
+              "observed_new_water_ha": 1271.4,
+              "marked_ha": 255.7
+            }
+          }
+        },
+        {
+          "pass_id": "20261022T060936_S1D",
+          "date": "2026-10-22",
+          "issue_pass": "20261017T175337_S1C",
+          "lead_days": 4.51,
+          "rain_prior_7d_mm": 1.0,
+          "rain_prior_30d_mm": 190.7,
+          "rain_between_mm": 258.0,
+          "rain_between_max1d_mm": 135.1,
+          "days_since_rain_peak": 4.0,
+          "observed_new_water_ha": 2760.0,
+          "n": 1040949,
+          "weighted_wet_share": 0.12504,
+          "n_new_candidates": 969336,
+          "weighted_new_water_share": 0.07118,
+          "methods": {
+            "rain_and_state": {
+              "water_ap": 0.7704,
+              "new_water_ap": 0.467,
+              "water_at_threshold": {
+                "precision": 0.6005,
+                "recall": 0.8618,
+                "f1": 0.7078,
+                "iou": 0.5478,
+                "predicted_w": 186805.0,
+                "observed_w": 130165.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.3837,
+                "recall": 0.954,
+                "f1": 0.5473,
+                "iou": 0.3767,
+                "predicted_w": 171578.0,
+                "observed_w": 69001.0
+              }
+            },
+            "blend": {
+              "water_ap": 0.8632,
+              "new_water_ap": 0.695,
+              "water_at_threshold": {
+                "precision": 0.8349,
+                "recall": 0.7109,
+                "f1": 0.7679,
+                "iou": 0.6233,
+                "predicted_w": 110833.0,
+                "observed_w": 130165.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.641,
+                "recall": 0.7233,
+                "f1": 0.6797,
+                "iou": 0.5148,
+                "predicted_w": 77865.0,
+                "observed_w": 69001.0
+              }
+            },
+            "terrain_only": {
+              "water_ap": 0.8299,
+              "new_water_ap": 0.677,
+              "water_at_threshold": {
+                "precision": 0.8602,
+                "recall": 0.6486,
+                "f1": 0.7396,
+                "iou": 0.5867,
+                "predicted_w": 98138.0,
+                "observed_w": 130165.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.6912,
+                "recall": 0.587,
+                "f1": 0.6349,
+                "iou": 0.465,
+                "predicted_w": 58597.0,
+                "observed_w": 69001.0
+              }
+            },
+            "persistence": {
+              "water_ap": 0.4676,
+              "new_water_ap": 0.0712
+            },
+            "past_wet_share": {
+              "water_ap": 0.7463,
+              "new_water_ap": 0.5739,
+              "water_at_threshold": {
+                "precision": 0.727,
+                "recall": 0.186,
+                "f1": 0.2962,
+                "iou": 0.1738,
+                "predicted_w": 33301.0,
+                "observed_w": 130165.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.3917,
+                "recall": 0.0336,
+                "f1": 0.0619,
+                "iou": 0.032,
+                "predicted_w": 5923.0,
+                "observed_w": 69001.0
+              }
+            }
+          },
+          "cells_250m": {
+            "rain_and_state": {
+              "new_water_ap": 0.4772,
+              "hit_rate": 0.9825,
+              "precision": 0.3951,
+              "false_alarm_ratio": 0.6049,
+              "cells": 7885,
+              "observed_new_water_ha": 2760.0,
+              "marked_ha": 6863.1
+            },
+            "blend": {
+              "new_water_ap": 0.6268,
+              "hit_rate": 0.7775,
+              "precision": 0.6889,
+              "false_alarm_ratio": 0.3111,
+              "cells": 7885,
+              "observed_new_water_ha": 2760.0,
+              "marked_ha": 3114.6
+            },
+            "terrain_only": {
+              "new_water_ap": 0.6161,
+              "hit_rate": 0.6304,
+              "precision": 0.7424,
+              "false_alarm_ratio": 0.2576,
+              "cells": 7885,
+              "observed_new_water_ha": 2760.0,
+              "marked_ha": 2343.9
+            },
+            "past_wet_share": {
+              "new_water_ap": 0.5222,
+              "hit_rate": 0.0512,
+              "precision": 0.5968,
+              "false_alarm_ratio": 0.4032,
+              "cells": 7885,
+              "observed_new_water_ha": 2760.0,
+              "marked_ha": 236.9
+            }
+          }
+        },
+        {
+          "pass_id": "20261023T060111_S1C",
+          "date": "2026-10-23",
+          "issue_pass": "20261017T175337_S1C",
+          "lead_days": 5.51,
+          "rain_prior_7d_mm": 1.0,
+          "rain_prior_30d_mm": 190.7,
+          "rain_between_mm": 258.1,
+          "rain_between_max1d_mm": 135.1,
+          "days_since_rain_peak": 5.0,
+          "observed_new_water_ha": 1750.2,
+          "n": 1041330,
+          "weighted_wet_share": 0.08874,
+          "n_new_candidates": 969717,
+          "weighted_new_water_share": 0.04512,
+          "methods": {
+            "rain_and_state": {
+              "water_ap": 0.6616,
+              "new_water_ap": 0.3771,
+              "water_at_threshold": {
+                "precision": 0.4615,
+                "recall": 0.8718,
+                "f1": 0.6035,
+                "iou": 0.4322,
+                "predicted_w": 174562.0,
+                "observed_w": 92408.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.2572,
+                "recall": 0.9364,
+                "f1": 0.4035,
+                "iou": 0.2527,
+                "predicted_w": 159335.0,
+                "observed_w": 43755.0
+              }
+            },
+            "blend": {
+              "water_ap": 0.7082,
+              "new_water_ap": 0.5747,
+              "water_at_threshold": {
+                "precision": 0.6555,
+                "recall": 0.7768,
+                "f1": 0.711,
+                "iou": 0.5516,
+                "predicted_w": 109513.0,
+                "observed_w": 92408.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.4614,
+                "recall": 0.7812,
+                "f1": 0.5802,
+                "iou": 0.4086,
+                "predicted_w": 74086.0,
+                "observed_w": 43755.0
+              }
+            },
+            "terrain_only": {
+              "water_ap": 0.6847,
+              "new_water_ap": 0.555,
+              "water_at_threshold": {
+                "precision": 0.6779,
+                "recall": 0.7199,
+                "f1": 0.6982,
+                "iou": 0.5364,
+                "predicted_w": 98138.0,
+                "observed_w": 92408.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.5098,
+                "recall": 0.6827,
+                "f1": 0.5837,
+                "iou": 0.4122,
+                "predicted_w": 58597.0,
+                "observed_w": 43755.0
+              }
+            },
+            "persistence": {
+              "water_ap": 0.3997,
+              "new_water_ap": 0.0451
+            },
+            "past_wet_share": {
+              "water_ap": 0.6302,
+              "new_water_ap": 0.4635,
+              "water_at_threshold": {
+                "precision": 0.656,
+                "recall": 0.2364,
+                "f1": 0.3476,
+                "iou": 0.2103,
+                "predicted_w": 33301.0,
+                "observed_w": 92408.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.3638,
+                "recall": 0.0493,
+                "f1": 0.0868,
+                "iou": 0.0453,
+                "predicted_w": 5923.0,
+                "observed_w": 43755.0
+              }
+            }
+          },
+          "cells_250m": {
+            "rain_and_state": {
+              "new_water_ap": 0.3998,
+              "hit_rate": 0.9719,
+              "precision": 0.2669,
+              "false_alarm_ratio": 0.7331,
+              "cells": 7885,
+              "observed_new_water_ha": 1750.2,
+              "marked_ha": 6373.4
+            },
+            "blend": {
+              "new_water_ap": 0.5065,
+              "hit_rate": 0.8395,
+              "precision": 0.4958,
+              "false_alarm_ratio": 0.5042,
+              "cells": 7885,
+              "observed_new_water_ha": 1750.2,
+              "marked_ha": 2963.4
+            },
+            "terrain_only": {
+              "new_water_ap": 0.5002,
+              "hit_rate": 0.7432,
+              "precision": 0.555,
+              "false_alarm_ratio": 0.445,
+              "cells": 7885,
+              "observed_new_water_ha": 1750.2,
+              "marked_ha": 2343.9
+            },
+            "past_wet_share": {
+              "new_water_ap": 0.4188,
+              "hit_rate": 0.0743,
+              "precision": 0.549,
+              "false_alarm_ratio": 0.451,
+              "cells": 7885,
+              "observed_new_water_ha": 1750.2,
+              "marked_ha": 236.9
+            }
+          }
+        },
+        {
+          "pass_id": "20261023T175350_S1D",
+          "date": "2026-10-23",
+          "issue_pass": "20261017T175337_S1C",
+          "lead_days": 6.0,
+          "rain_prior_7d_mm": 1.0,
+          "rain_prior_30d_mm": 190.7,
+          "rain_between_mm": 258.1,
+          "rain_between_max1d_mm": 135.1,
+          "days_since_rain_peak": 5.0,
+          "observed_new_water_ha": 3209.0,
+          "n": 1040641,
+          "weighted_wet_share": 0.13925,
+          "n_new_candidates": 969028,
+          "weighted_new_water_share": 0.08279,
+          "methods": {
+            "rain_and_state": {
+              "water_ap": 0.8551,
+              "new_water_ap": 0.6196,
+              "water_at_threshold": {
+                "precision": 0.6818,
+                "recall": 0.8587,
+                "f1": 0.7601,
+                "iou": 0.613,
+                "predicted_w": 182521.0,
+                "observed_w": 144909.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.4613,
+                "recall": 0.9284,
+                "f1": 0.6163,
+                "iou": 0.4454,
+                "predicted_w": 161460.0,
+                "observed_w": 80224.0
+              }
+            },
+            "blend": {
+              "water_ap": 0.8898,
+              "new_water_ap": 0.7478,
+              "water_at_threshold": {
+                "precision": 0.8793,
+                "recall": 0.6838,
+                "f1": 0.7693,
+                "iou": 0.6251,
+                "predicted_w": 112689.0,
+                "observed_w": 144909.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.7119,
+                "recall": 0.6749,
+                "f1": 0.6929,
+                "iou": 0.5301,
+                "predicted_w": 76058.0,
+                "observed_w": 80224.0
+              }
+            },
+            "terrain_only": {
+              "water_ap": 0.8574,
+              "new_water_ap": 0.7188,
+              "water_at_threshold": {
+                "precision": 0.8988,
+                "recall": 0.6087,
+                "f1": 0.7258,
+                "iou": 0.5697,
+                "predicted_w": 98138.0,
+                "observed_w": 144909.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.7568,
+                "recall": 0.5528,
+                "f1": 0.6389,
+                "iou": 0.4694,
+                "predicted_w": 58597.0,
+                "observed_w": 80224.0
+              }
+            },
+            "persistence": {
+              "water_ap": 0.4803,
+              "new_water_ap": 0.0828
+            },
+            "past_wet_share": {
+              "water_ap": 0.7696,
+              "new_water_ap": 0.5958,
+              "water_at_threshold": {
+                "precision": 0.752,
+                "recall": 0.1728,
+                "f1": 0.281,
+                "iou": 0.1635,
+                "predicted_w": 33297.0,
+                "observed_w": 144909.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.4133,
+                "recall": 0.0305,
+                "f1": 0.0568,
+                "iou": 0.0292,
+                "predicted_w": 5923.0,
+                "observed_w": 80224.0
+              }
+            }
+          },
+          "cells_250m": {
+            "rain_and_state": {
+              "new_water_ap": 0.6289,
+              "hit_rate": 0.9585,
+              "precision": 0.4763,
+              "false_alarm_ratio": 0.5237,
+              "cells": 7885,
+              "observed_new_water_ha": 3209.0,
+              "marked_ha": 6458.4
+            },
+            "blend": {
+              "new_water_ap": 0.7077,
+              "hit_rate": 0.7248,
+              "precision": 0.7645,
+              "false_alarm_ratio": 0.2355,
+              "cells": 7885,
+              "observed_new_water_ha": 3209.0,
+              "marked_ha": 3042.3
+            },
+            "terrain_only": {
+              "new_water_ap": 0.6908,
+              "hit_rate": 0.596,
+              "precision": 0.816,
+              "false_alarm_ratio": 0.184,
+              "cells": 7885,
+              "observed_new_water_ha": 3209.0,
+              "marked_ha": 2343.9
+            },
+            "past_wet_share": {
+              "new_water_ap": 0.5913,
+              "hit_rate": 0.0453,
+              "precision": 0.6139,
+              "false_alarm_ratio": 0.3861,
+              "cells": 7885,
+              "observed_new_water_ha": 3209.0,
+              "marked_ha": 236.9
+            }
+          }
+        },
+        {
+          "pass_id": "20261028T060923_S1C",
+          "date": "2026-10-28",
+          "issue_pass": "20261023T175350_S1D",
+          "lead_days": 4.51,
+          "rain_prior_7d_mm": 258.1,
+          "rain_prior_30d_mm": 427.7,
+          "rain_between_mm": 0.0,
+          "rain_between_max1d_mm": 0.0,
+          "days_since_rain_peak": 5.0,
+          "observed_new_water_ha": 911.5,
+          "n": 1040966,
+          "weighted_wet_share": 0.12617,
+          "n_new_candidates": 896057,
+          "weighted_new_water_share": 0.02543,
+          "methods": {
+            "rain_and_state": {
+              "water_ap": 0.7675,
+              "new_water_ap": 0.3699,
+              "water_at_threshold": {
+                "precision": 0.7759,
+                "recall": 0.7597,
+                "f1": 0.7677,
+                "iou": 0.623,
+                "predicted_w": 128595.0,
+                "observed_w": 131343.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.4081,
+                "recall": 0.4821,
+                "f1": 0.442,
+                "iou": 0.2837,
+                "predicted_w": 26917.0,
+                "observed_w": 22788.0
+              }
+            },
+            "blend": {
+              "water_ap": 0.7651,
+              "new_water_ap": 0.3885,
+              "water_at_threshold": {
+                "precision": 0.7762,
+                "recall": 0.7277,
+                "f1": 0.7512,
+                "iou": 0.6015,
+                "predicted_w": 123138.0,
+                "observed_w": 131343.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.4391,
+                "recall": 0.4467,
+                "f1": 0.4429,
+                "iou": 0.2844,
+                "predicted_w": 23179.0,
+                "observed_w": 22788.0
+              }
+            },
+            "terrain_only": {
+              "water_ap": 0.7527,
+              "new_water_ap": 0.3969,
+              "water_at_threshold": {
+                "precision": 0.767,
+                "recall": 0.7067,
+                "f1": 0.7356,
+                "iou": 0.5818,
+                "predicted_w": 121006.0,
+                "observed_w": 131343.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.4568,
+                "recall": 0.4449,
+                "f1": 0.4508,
+                "iou": 0.291,
+                "predicted_w": 22198.0,
+                "observed_w": 22788.0
+              }
+            },
+            "persistence": {
+              "water_ap": 0.641,
+              "new_water_ap": 0.0254
+            },
+            "past_wet_share": {
+              "water_ap": 0.6929,
+              "new_water_ap": 0.3277,
+              "water_at_threshold": {
+                "precision": 0.6704,
+                "recall": 0.17,
+                "f1": 0.2712,
+                "iou": 0.1569,
+                "predicted_w": 33301.0,
+                "observed_w": 131343.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.3551,
+                "recall": 0.0728,
+                "f1": 0.1208,
+                "iou": 0.0643,
+                "predicted_w": 4669.0,
+                "observed_w": 22788.0
+              }
+            }
+          },
+          "cells_250m": {
+            "rain_and_state": {
+              "new_water_ap": 0.2712,
+              "hit_rate": 0.5609,
+              "precision": 0.4749,
+              "false_alarm_ratio": 0.5251,
+              "cells": 7832,
+              "observed_new_water_ha": 911.5,
+              "marked_ha": 1076.7
+            },
+            "blend": {
+              "new_water_ap": 0.283,
+              "hit_rate": 0.5193,
+              "precision": 0.5105,
+              "false_alarm_ratio": 0.4895,
+              "cells": 7832,
+              "observed_new_water_ha": 911.5,
+              "marked_ha": 927.2
+            },
+            "terrain_only": {
+              "new_water_ap": 0.2966,
+              "hit_rate": 0.5092,
+              "precision": 0.5227,
+              "false_alarm_ratio": 0.4773,
+              "cells": 7832,
+              "observed_new_water_ha": 911.5,
+              "marked_ha": 887.9
+            },
+            "past_wet_share": {
+              "new_water_ap": 0.2278,
+              "hit_rate": 0.1106,
+              "precision": 0.5397,
+              "false_alarm_ratio": 0.4603,
+              "cells": 7832,
+              "observed_new_water_ha": 911.5,
+              "marked_ha": 186.8
+            }
+          }
+        },
+        {
+          "pass_id": "20261028T180201_S1D",
+          "date": "2026-10-28",
+          "issue_pass": "20261023T175350_S1D",
+          "lead_days": 5.01,
+          "rain_prior_7d_mm": 258.1,
+          "rain_prior_30d_mm": 427.7,
+          "rain_between_mm": 0.0,
+          "rain_between_max1d_mm": 0.0,
+          "days_since_rain_peak": 5.0,
+          "observed_new_water_ha": 285.4,
+          "n": 1041284,
+          "weighted_wet_share": 0.08429,
+          "n_new_candidates": 896375,
+          "weighted_new_water_share": 0.00796,
+          "methods": {
+            "rain_and_state": {
+              "water_ap": 0.7443,
+              "new_water_ap": 0.2605,
+              "water_at_threshold": {
+                "precision": 0.6273,
+                "recall": 0.9107,
+                "f1": 0.7429,
+                "iou": 0.5909,
+                "predicted_w": 127427.0,
+                "observed_w": 87770.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.225,
+                "recall": 0.6825,
+                "f1": 0.3385,
+                "iou": 0.2037,
+                "predicted_w": 21641.0,
+                "observed_w": 7136.0
+              }
+            },
+            "blend": {
+              "water_ap": 0.7343,
+              "new_water_ap": 0.2683,
+              "water_at_threshold": {
+                "precision": 0.646,
+                "recall": 0.8996,
+                "f1": 0.752,
+                "iou": 0.6026,
+                "predicted_w": 122231.0,
+                "observed_w": 87770.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.234,
+                "recall": 0.676,
+                "f1": 0.3477,
+                "iou": 0.2104,
+                "predicted_w": 20615.0,
+                "observed_w": 7136.0
+              }
+            },
+            "terrain_only": {
+              "water_ap": 0.6991,
+              "new_water_ap": 0.272,
+              "water_at_threshold": {
+                "precision": 0.639,
+                "recall": 0.881,
+                "f1": 0.7408,
+                "iou": 0.5883,
+                "predicted_w": 121006.0,
+                "observed_w": 87770.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.2246,
+                "recall": 0.6987,
+                "f1": 0.3399,
+                "iou": 0.2048,
+                "predicted_w": 22198.0,
+                "observed_w": 7136.0
+              }
+            },
+            "persistence": {
+              "water_ap": 0.5181,
+              "new_water_ap": 0.008
+            },
+            "past_wet_share": {
+              "water_ap": 0.627,
+              "new_water_ap": 0.2452,
+              "water_at_threshold": {
+                "precision": 0.5929,
+                "recall": 0.225,
+                "f1": 0.3262,
+                "iou": 0.1949,
+                "predicted_w": 33301.0,
+                "observed_w": 87770.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.3013,
+                "recall": 0.1972,
+                "f1": 0.2384,
+                "iou": 0.1353,
+                "predicted_w": 4669.0,
+                "observed_w": 7136.0
+              }
+            }
+          },
+          "cells_250m": {
+            "rain_and_state": {
+              "new_water_ap": 0.1456,
+              "hit_rate": 0.7636,
+              "precision": 0.2518,
+              "false_alarm_ratio": 0.7482,
+              "cells": 7832,
+              "observed_new_water_ha": 285.4,
+              "marked_ha": 865.6
+            },
+            "blend": {
+              "new_water_ap": 0.149,
+              "hit_rate": 0.7571,
+              "precision": 0.2621,
+              "false_alarm_ratio": 0.7379,
+              "cells": 7832,
+              "observed_new_water_ha": 285.4,
+              "marked_ha": 824.6
+            },
+            "terrain_only": {
+              "new_water_ap": 0.1508,
+              "hit_rate": 0.7829,
+              "precision": 0.2517,
+              "false_alarm_ratio": 0.7483,
+              "cells": 7832,
+              "observed_new_water_ha": 285.4,
+              "marked_ha": 887.9
+            },
+            "past_wet_share": {
+              "new_water_ap": 0.1396,
+              "hit_rate": 0.2787,
+              "precision": 0.426,
+              "false_alarm_ratio": 0.574,
+              "cells": 7832,
+              "observed_new_water_ha": 285.4,
+              "marked_ha": 186.8
+            }
+          }
+        },
+        {
+          "pass_id": "20261029T175337_S1C",
+          "date": "2026-10-29",
+          "issue_pass": "20261023T175350_S1D",
+          "lead_days": 6.0,
+          "rain_prior_7d_mm": 258.1,
+          "rain_prior_30d_mm": 427.7,
+          "rain_between_mm": 1.3,
+          "rain_between_max1d_mm": 1.3,
+          "days_since_rain_peak": 1.0,
+          "observed_new_water_ha": 702.5,
+          "n": 1040642,
+          "weighted_wet_share": 0.12883,
+          "n_new_candidates": 895733,
+          "weighted_new_water_share": 0.01961,
+          "methods": {
+            "rain_and_state": {
+              "water_ap": 0.8762,
+              "new_water_ap": 0.3637,
+              "water_at_threshold": {
+                "precision": 0.8,
+                "recall": 0.8911,
+                "f1": 0.8431,
+                "iou": 0.7288,
+                "predicted_w": 149319.0,
+                "observed_w": 134067.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.3279,
+                "recall": 0.6287,
+                "f1": 0.431,
+                "iou": 0.2747,
+                "predicted_w": 33676.0,
+                "observed_w": 17562.0
+              }
+            },
+            "blend": {
+              "water_ap": 0.8603,
+              "new_water_ap": 0.3639,
+              "water_at_threshold": {
+                "precision": 0.8177,
+                "recall": 0.8116,
+                "f1": 0.8146,
+                "iou": 0.6872,
+                "predicted_w": 133066.0,
+                "observed_w": 134067.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.3685,
+                "recall": 0.5412,
+                "f1": 0.4384,
+                "iou": 0.2808,
+                "predicted_w": 25797.0,
+                "observed_w": 17562.0
+              }
+            },
+            "terrain_only": {
+              "water_ap": 0.8202,
+              "new_water_ap": 0.3576,
+              "water_at_threshold": {
+                "precision": 0.8209,
+                "recall": 0.7409,
+                "f1": 0.7789,
+                "iou": 0.6378,
+                "predicted_w": 121006.0,
+                "observed_w": 134067.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.3963,
+                "recall": 0.5009,
+                "f1": 0.4425,
+                "iou": 0.2841,
+                "predicted_w": 22198.0,
+                "observed_w": 17562.0
+              }
+            },
+            "persistence": {
+              "water_ap": 0.7155,
+              "new_water_ap": 0.0196
+            },
+            "past_wet_share": {
+              "water_ap": 0.7076,
+              "new_water_ap": 0.2505,
+              "water_at_threshold": {
+                "precision": 0.621,
+                "recall": 0.1542,
+                "f1": 0.2471,
+                "iou": 0.141,
+                "predicted_w": 33297.0,
+                "observed_w": 134067.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.1923,
+                "recall": 0.0511,
+                "f1": 0.0808,
+                "iou": 0.0421,
+                "predicted_w": 4669.0,
+                "observed_w": 17562.0
+              }
+            }
+          },
+          "cells_250m": {
+            "rain_and_state": {
+              "new_water_ap": 0.321,
+              "hit_rate": 0.7197,
+              "precision": 0.3753,
+              "false_alarm_ratio": 0.6247,
+              "cells": 7832,
+              "observed_new_water_ha": 702.5,
+              "marked_ha": 1347.0
+            },
+            "blend": {
+              "new_water_ap": 0.3169,
+              "hit_rate": 0.6214,
+              "precision": 0.423,
+              "false_alarm_ratio": 0.577,
+              "cells": 7832,
+              "observed_new_water_ha": 702.5,
+              "marked_ha": 1031.9
+            },
+            "terrain_only": {
+              "new_water_ap": 0.3145,
+              "hit_rate": 0.577,
+              "precision": 0.4565,
+              "false_alarm_ratio": 0.5435,
+              "cells": 7832,
+              "observed_new_water_ha": 702.5,
+              "marked_ha": 887.9
+            },
+            "past_wet_share": {
+              "new_water_ap": 0.2186,
+              "hit_rate": 0.1011,
+              "precision": 0.3802,
+              "false_alarm_ratio": 0.6198,
+              "cells": 7832,
+              "observed_new_water_ha": 702.5,
+              "marked_ha": 186.8
+            }
+          }
+        },
+        {
+          "pass_id": "20261103T060936_S1D",
+          "date": "2026-11-03",
+          "issue_pass": "20261029T175337_S1C",
+          "lead_days": 4.51,
+          "rain_prior_7d_mm": 1.4,
+          "rain_prior_30d_mm": 425.3,
+          "rain_between_mm": 18.4,
+          "rain_between_max1d_mm": 14.1,
+          "days_since_rain_peak": 3.0,
+          "observed_new_water_ha": 1452.3,
+          "n": 1040967,
+          "weighted_wet_share": 0.15069,
+          "n_new_candidates": 906893,
+          "weighted_new_water_share": 0.04003,
+          "methods": {
+            "rain_and_state": {
+              "water_ap": 0.9121,
+              "new_water_ap": 0.4906,
+              "water_at_threshold": {
+                "precision": 0.9204,
+                "recall": 0.6873,
+                "f1": 0.787,
+                "iou": 0.6488,
+                "predicted_w": 117142.0,
+                "observed_w": 156864.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.5491,
+                "recall": 0.4335,
+                "f1": 0.4845,
+                "iou": 0.3197,
+                "predicted_w": 28665.0,
+                "observed_w": 36307.0
+              }
+            },
+            "blend": {
+              "water_ap": 0.9091,
+              "new_water_ap": 0.5417,
+              "water_at_threshold": {
+                "precision": 0.9057,
+                "recall": 0.724,
+                "f1": 0.8048,
+                "iou": 0.6733,
+                "predicted_w": 125401.0,
+                "observed_w": 156864.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.5638,
+                "recall": 0.4666,
+                "f1": 0.5106,
+                "iou": 0.3428,
+                "predicted_w": 30052.0,
+                "observed_w": 36307.0
+              }
+            },
+            "terrain_only": {
+              "water_ap": 0.8934,
+              "new_water_ap": 0.5598,
+              "water_at_threshold": {
+                "precision": 0.8733,
+                "recall": 0.7534,
+                "f1": 0.8089,
+                "iou": 0.6791,
+                "predicted_w": 135319.0,
+                "observed_w": 156864.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.5518,
+                "recall": 0.5258,
+                "f1": 0.5385,
+                "iou": 0.3684,
+                "predicted_w": 34593.0,
+                "observed_w": 36307.0
+              }
+            },
+            "persistence": {
+              "water_ap": 0.7259,
+              "new_water_ap": 0.04
+            },
+            "past_wet_share": {
+              "water_ap": 0.7734,
+              "new_water_ap": 0.4091,
+              "water_at_threshold": {
+                "precision": 0.734,
+                "recall": 0.1558,
+                "f1": 0.2571,
+                "iou": 0.1475,
+                "predicted_w": 33301.0,
+                "observed_w": 156864.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.4362,
+                "recall": 0.0821,
+                "f1": 0.1382,
+                "iou": 0.0742,
+                "predicted_w": 6831.0,
+                "observed_w": 36307.0
+              }
+            }
+          },
+          "cells_250m": {
+            "rain_and_state": {
+              "new_water_ap": 0.3849,
+              "hit_rate": 0.4985,
+              "precision": 0.6314,
+              "false_alarm_ratio": 0.3686,
+              "cells": 7853,
+              "observed_new_water_ha": 1452.3,
+              "marked_ha": 1146.6
+            },
+            "blend": {
+              "new_water_ap": 0.4221,
+              "hit_rate": 0.527,
+              "precision": 0.6366,
+              "false_alarm_ratio": 0.3634,
+              "cells": 7853,
+              "observed_new_water_ha": 1452.3,
+              "marked_ha": 1202.1
+            },
+            "terrain_only": {
+              "new_water_ap": 0.4465,
+              "hit_rate": 0.5876,
+              "precision": 0.6167,
+              "false_alarm_ratio": 0.3833,
+              "cells": 7853,
+              "observed_new_water_ha": 1452.3,
+              "marked_ha": 1383.7
+            },
+            "past_wet_share": {
+              "new_water_ap": 0.2983,
+              "hit_rate": 0.1159,
+              "precision": 0.6159,
+              "false_alarm_ratio": 0.3841,
+              "cells": 7853,
+              "observed_new_water_ha": 1452.3,
+              "marked_ha": 273.2
+            }
+          }
+        },
+        {
+          "pass_id": "20261103T180148_S1C",
+          "date": "2026-11-03",
+          "issue_pass": "20261029T175337_S1C",
+          "lead_days": 5.01,
+          "rain_prior_7d_mm": 1.4,
+          "rain_prior_30d_mm": 425.3,
+          "rain_between_mm": 18.4,
+          "rain_between_max1d_mm": 14.1,
+          "days_since_rain_peak": 3.0,
+          "observed_new_water_ha": 967.1,
+          "n": 1041293,
+          "weighted_wet_share": 0.13338,
+          "n_new_candidates": 907219,
+          "weighted_new_water_share": 0.02665,
+          "methods": {
+            "rain_and_state": {
+              "water_ap": 0.9039,
+              "new_water_ap": 0.4585,
+              "water_at_threshold": {
+                "precision": 0.8965,
+                "recall": 0.7449,
+                "f1": 0.8137,
+                "iou": 0.6859,
+                "predicted_w": 115400.0,
+                "observed_w": 138889.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.5069,
+                "recall": 0.4792,
+                "f1": 0.4926,
+                "iou": 0.3268,
+                "predicted_w": 22855.0,
+                "observed_w": 24178.0
+              }
+            },
+            "blend": {
+              "water_ap": 0.8986,
+              "new_water_ap": 0.5,
+              "water_at_threshold": {
+                "precision": 0.8785,
+                "recall": 0.7802,
+                "f1": 0.8264,
+                "iou": 0.7042,
+                "predicted_w": 123337.0,
+                "observed_w": 138889.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.4994,
+                "recall": 0.54,
+                "f1": 0.5189,
+                "iou": 0.3504,
+                "predicted_w": 26142.0,
+                "observed_w": 24178.0
+              }
+            },
+            "terrain_only": {
+              "water_ap": 0.872,
+              "new_water_ap": 0.5149,
+              "water_at_threshold": {
+                "precision": 0.835,
+                "recall": 0.8135,
+                "f1": 0.8241,
+                "iou": 0.7008,
+                "predicted_w": 135319.0,
+                "observed_w": 138889.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.4514,
+                "recall": 0.6458,
+                "f1": 0.5314,
+                "iou": 0.3618,
+                "predicted_w": 34593.0,
+                "observed_w": 24178.0
+              }
+            },
+            "persistence": {
+              "water_ap": 0.7299,
+              "new_water_ap": 0.0267
+            },
+            "past_wet_share": {
+              "water_ap": 0.7518,
+              "new_water_ap": 0.3764,
+              "water_at_threshold": {
+                "precision": 0.7062,
+                "recall": 0.1693,
+                "f1": 0.2731,
+                "iou": 0.1582,
+                "predicted_w": 33301.0,
+                "observed_w": 138889.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.4497,
+                "recall": 0.1271,
+                "f1": 0.1981,
+                "iou": 0.11,
+                "predicted_w": 6831.0,
+                "observed_w": 24178.0
+              }
+            }
+          },
+          "cells_250m": {
+            "rain_and_state": {
+              "new_water_ap": 0.3423,
+              "hit_rate": 0.5374,
+              "precision": 0.5685,
+              "false_alarm_ratio": 0.4315,
+              "cells": 7853,
+              "observed_new_water_ha": 967.1,
+              "marked_ha": 914.2
+            },
+            "blend": {
+              "new_water_ap": 0.3716,
+              "hit_rate": 0.6017,
+              "precision": 0.5565,
+              "false_alarm_ratio": 0.4435,
+              "cells": 7853,
+              "observed_new_water_ha": 967.1,
+              "marked_ha": 1045.7
+            },
+            "terrain_only": {
+              "new_water_ap": 0.3921,
+              "hit_rate": 0.7128,
+              "precision": 0.4982,
+              "false_alarm_ratio": 0.5018,
+              "cells": 7853,
+              "observed_new_water_ha": 967.1,
+              "marked_ha": 1383.7
+            },
+            "past_wet_share": {
+              "new_water_ap": 0.2868,
+              "hit_rate": 0.1671,
+              "precision": 0.5914,
+              "false_alarm_ratio": 0.4086,
+              "cells": 7853,
+              "observed_new_water_ha": 967.1,
+              "marked_ha": 273.2
+            }
+          }
+        },
+        {
+          "pass_id": "20261104T060112_S1C",
+          "date": "2026-11-04",
+          "issue_pass": "20261029T175337_S1C",
+          "lead_days": 5.51,
+          "rain_prior_7d_mm": 1.4,
+          "rain_prior_30d_mm": 425.3,
+          "rain_between_mm": 19.9,
+          "rain_between_max1d_mm": 14.1,
+          "days_since_rain_peak": 4.0,
+          "observed_new_water_ha": 957.7,
+          "n": 1041328,
+          "weighted_wet_share": 0.13303,
+          "n_new_candidates": 907254,
+          "weighted_new_water_share": 0.02639,
+          "methods": {
+            "rain_and_state": {
+              "water_ap": 0.9178,
+              "new_water_ap": 0.4413,
+              "water_at_threshold": {
+                "precision": 0.899,
+                "recall": 0.7726,
+                "f1": 0.831,
+                "iou": 0.7109,
+                "predicted_w": 119058.0,
+                "observed_w": 138530.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.4854,
+                "recall": 0.4861,
+                "f1": 0.4857,
+                "iou": 0.3208,
+                "predicted_w": 23976.0,
+                "observed_w": 23943.0
+              }
+            },
+            "blend": {
+              "water_ap": 0.9121,
+              "new_water_ap": 0.4855,
+              "water_at_threshold": {
+                "precision": 0.8831,
+                "recall": 0.7981,
+                "f1": 0.8385,
+                "iou": 0.7219,
+                "predicted_w": 125196.0,
+                "observed_w": 138530.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.4761,
+                "recall": 0.536,
+                "f1": 0.5043,
+                "iou": 0.3371,
+                "predicted_w": 26954.0,
+                "observed_w": 23943.0
+              }
+            },
+            "terrain_only": {
+              "water_ap": 0.8841,
+              "new_water_ap": 0.5002,
+              "water_at_threshold": {
+                "precision": 0.8393,
+                "recall": 0.8199,
+                "f1": 0.8295,
+                "iou": 0.7087,
+                "predicted_w": 135319.0,
+                "observed_w": 138530.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.431,
+                "recall": 0.6227,
+                "f1": 0.5094,
+                "iou": 0.3417,
+                "predicted_w": 34593.0,
+                "observed_w": 23943.0
+              }
+            },
+            "persistence": {
+              "water_ap": 0.7299,
+              "new_water_ap": 0.0264
+            },
+            "past_wet_share": {
+              "water_ap": 0.7599,
+              "new_water_ap": 0.3587,
+              "water_at_threshold": {
+                "precision": 0.7133,
+                "recall": 0.1715,
+                "f1": 0.2765,
+                "iou": 0.1604,
+                "predicted_w": 33301.0,
+                "observed_w": 138530.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.3635,
+                "recall": 0.1037,
+                "f1": 0.1614,
+                "iou": 0.0878,
+                "predicted_w": 6831.0,
+                "observed_w": 23943.0
+              }
+            }
+          },
+          "cells_250m": {
+            "rain_and_state": {
+              "new_water_ap": 0.3299,
+              "hit_rate": 0.5553,
+              "precision": 0.5545,
+              "false_alarm_ratio": 0.4455,
+              "cells": 7853,
+              "observed_new_water_ha": 957.7,
+              "marked_ha": 959.0
+            },
+            "blend": {
+              "new_water_ap": 0.3661,
+              "hit_rate": 0.6022,
+              "precision": 0.5349,
+              "false_alarm_ratio": 0.4651,
+              "cells": 7853,
+              "observed_new_water_ha": 957.7,
+              "marked_ha": 1078.2
+            },
+            "terrain_only": {
+              "new_water_ap": 0.3868,
+              "hit_rate": 0.6916,
+              "precision": 0.4787,
+              "false_alarm_ratio": 0.5213,
+              "cells": 7853,
+              "observed_new_water_ha": 957.7,
+              "marked_ha": 1383.7
+            },
+            "past_wet_share": {
+              "new_water_ap": 0.2666,
+              "hit_rate": 0.1557,
+              "precision": 0.5456,
+              "false_alarm_ratio": 0.4544,
+              "cells": 7853,
+              "observed_new_water_ha": 957.7,
+              "marked_ha": 273.2
+            }
+          }
+        },
+        {
+          "pass_id": "20261104T175350_S1D",
+          "date": "2026-11-04",
+          "issue_pass": "20261029T175337_S1C",
+          "lead_days": 6.0,
+          "rain_prior_7d_mm": 1.4,
+          "rain_prior_30d_mm": 425.3,
+          "rain_between_mm": 19.9,
+          "rain_between_max1d_mm": 14.1,
+          "days_since_rain_peak": 4.0,
+          "observed_new_water_ha": 1373.9,
+          "n": 1040628,
+          "weighted_wet_share": 0.1519,
+          "n_new_candidates": 906561,
+          "weighted_new_water_share": 0.03789,
+          "methods": {
+            "rain_and_state": {
+              "water_ap": 0.9191,
+              "new_water_ap": 0.4458,
+              "water_at_threshold": {
+                "precision": 0.9149,
+                "recall": 0.751,
+                "f1": 0.8249,
+                "iou": 0.702,
+                "predicted_w": 129757.0,
+                "observed_w": 158074.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.4832,
+                "recall": 0.4269,
+                "f1": 0.4533,
+                "iou": 0.2931,
+                "predicted_w": 30346.0,
+                "observed_w": 34348.0
+              }
+            },
+            "blend": {
+              "water_ap": 0.9124,
+              "new_water_ap": 0.489,
+              "water_at_threshold": {
+                "precision": 0.9005,
+                "recall": 0.7476,
+                "f1": 0.817,
+                "iou": 0.6906,
+                "predicted_w": 131239.0,
+                "observed_w": 158074.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.5063,
+                "recall": 0.4514,
+                "f1": 0.4773,
+                "iou": 0.3134,
+                "predicted_w": 30626.0,
+                "observed_w": 34348.0
+              }
+            },
+            "terrain_only": {
+              "water_ap": 0.8903,
+              "new_water_ap": 0.5134,
+              "water_at_threshold": {
+                "precision": 0.8737,
+                "recall": 0.748,
+                "f1": 0.806,
+                "iou": 0.675,
+                "predicted_w": 135319.0,
+                "observed_w": 158074.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.5043,
+                "recall": 0.5079,
+                "f1": 0.5061,
+                "iou": 0.3388,
+                "predicted_w": 34593.0,
+                "observed_w": 34348.0
+              }
+            },
+            "persistence": {
+              "water_ap": 0.7553,
+              "new_water_ap": 0.0379
+            },
+            "past_wet_share": {
+              "water_ap": 0.7585,
+              "new_water_ap": 0.3368,
+              "water_at_threshold": {
+                "precision": 0.7115,
+                "recall": 0.1499,
+                "f1": 0.2476,
+                "iou": 0.1413,
+                "predicted_w": 33297.0,
+                "observed_w": 158074.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.3099,
+                "recall": 0.0616,
+                "f1": 0.1028,
+                "iou": 0.0542,
+                "predicted_w": 6831.0,
+                "observed_w": 34348.0
+              }
+            }
+          },
+          "cells_250m": {
+            "rain_and_state": {
+              "new_water_ap": 0.3722,
+              "hit_rate": 0.4912,
+              "precision": 0.556,
+              "false_alarm_ratio": 0.444,
+              "cells": 7853,
+              "observed_new_water_ha": 1373.9,
+              "marked_ha": 1213.8
+            },
+            "blend": {
+              "new_water_ap": 0.4073,
+              "hit_rate": 0.5115,
+              "precision": 0.5737,
+              "false_alarm_ratio": 0.4263,
+              "cells": 7853,
+              "observed_new_water_ha": 1373.9,
+              "marked_ha": 1225.0
+            },
+            "terrain_only": {
+              "new_water_ap": 0.4335,
+              "hit_rate": 0.5718,
+              "precision": 0.5677,
+              "false_alarm_ratio": 0.4323,
+              "cells": 7853,
+              "observed_new_water_ha": 1373.9,
+              "marked_ha": 1383.7
+            },
+            "past_wet_share": {
+              "new_water_ap": 0.2752,
+              "hit_rate": 0.0991,
+              "precision": 0.4982,
+              "false_alarm_ratio": 0.5018,
+              "cells": 7853,
+              "observed_new_water_ha": 1373.9,
+              "marked_ha": 273.2
+            }
+          }
+        },
+        {
+          "pass_id": "20261109T060922_S1C",
+          "date": "2026-11-09",
+          "issue_pass": "20261104T175350_S1D",
+          "lead_days": 4.51,
+          "rain_prior_7d_mm": 21.2,
+          "rain_prior_30d_mm": 287.3,
+          "rain_between_mm": 22.4,
+          "rain_between_max1d_mm": 13.0,
+          "days_since_rain_peak": 4.0,
+          "observed_new_water_ha": 528.2,
+          "n": 1040933,
+          "weighted_wet_share": 0.11546,
+          "n_new_candidates": 882859,
+          "weighted_new_water_share": 0.01496,
+          "methods": {
+            "rain_and_state": {
+              "water_ap": 0.7703,
+              "new_water_ap": 0.3197,
+              "water_at_threshold": {
+                "precision": 0.7273,
+                "recall": 0.8038,
+                "f1": 0.7637,
+                "iou": 0.6177,
+                "predicted_w": 132829.0,
+                "observed_w": 120186.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.2898,
+                "recall": 0.526,
+                "f1": 0.3737,
+                "iou": 0.2298,
+                "predicted_w": 23970.0,
+                "observed_w": 13205.0
+              }
+            },
+            "blend": {
+              "water_ap": 0.7606,
+              "new_water_ap": 0.3325,
+              "water_at_threshold": {
+                "precision": 0.7204,
+                "recall": 0.793,
+                "f1": 0.7549,
+                "iou": 0.6064,
+                "predicted_w": 132306.0,
+                "observed_w": 120186.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.306,
+                "recall": 0.5122,
+                "f1": 0.3831,
+                "iou": 0.237,
+                "predicted_w": 22099.0,
+                "observed_w": 13205.0
+              }
+            },
+            "terrain_only": {
+              "water_ap": 0.7336,
+              "new_water_ap": 0.3278,
+              "water_at_threshold": {
+                "precision": 0.7079,
+                "recall": 0.791,
+                "f1": 0.7472,
+                "iou": 0.5964,
+                "predicted_w": 134297.0,
+                "observed_w": 120186.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.3084,
+                "recall": 0.5124,
+                "f1": 0.385,
+                "iou": 0.2384,
+                "predicted_w": 21940.0,
+                "observed_w": 13205.0
+              }
+            },
+            "persistence": {
+              "water_ap": 0.6151,
+              "new_water_ap": 0.015
+            },
+            "past_wet_share": {
+              "water_ap": 0.6404,
+              "new_water_ap": 0.2579,
+              "water_at_threshold": {
+                "precision": 0.5823,
+                "recall": 0.1613,
+                "f1": 0.2527,
+                "iou": 0.1446,
+                "predicted_w": 33301.0,
+                "observed_w": 120186.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.3004,
+                "recall": 0.1349,
+                "f1": 0.1862,
+                "iou": 0.1026,
+                "predicted_w": 5928.0,
+                "observed_w": 13205.0
+              }
+            }
+          },
+          "cells_250m": {
+            "rain_and_state": {
+              "new_water_ap": 0.1969,
+              "hit_rate": 0.6361,
+              "precision": 0.3504,
+              "false_alarm_ratio": 0.6496,
+              "cells": 7822,
+              "observed_new_water_ha": 528.2,
+              "marked_ha": 958.8
+            },
+            "blend": {
+              "new_water_ap": 0.2067,
+              "hit_rate": 0.6106,
+              "precision": 0.3649,
+              "false_alarm_ratio": 0.6351,
+              "cells": 7822,
+              "observed_new_water_ha": 528.2,
+              "marked_ha": 884.0
+            },
+            "terrain_only": {
+              "new_water_ap": 0.2119,
+              "hit_rate": 0.5995,
+              "precision": 0.3608,
+              "false_alarm_ratio": 0.6392,
+              "cells": 7822,
+              "observed_new_water_ha": 528.2,
+              "marked_ha": 877.6
+            },
+            "past_wet_share": {
+              "new_water_ap": 0.1286,
+              "hit_rate": 0.1987,
+              "precision": 0.4426,
+              "false_alarm_ratio": 0.5574,
+              "cells": 7822,
+              "observed_new_water_ha": 528.2,
+              "marked_ha": 237.1
+            }
+          }
+        },
+        {
+          "pass_id": "20261109T180201_S1D",
+          "date": "2026-11-09",
+          "issue_pass": "20261104T175350_S1D",
+          "lead_days": 5.01,
+          "rain_prior_7d_mm": 21.2,
+          "rain_prior_30d_mm": 287.3,
+          "rain_between_mm": 22.4,
+          "rain_between_max1d_mm": 13.0,
+          "days_since_rain_peak": 4.0,
+          "observed_new_water_ha": 291.9,
+          "n": 1041278,
+          "weighted_wet_share": 0.07773,
+          "n_new_candidates": 883204,
+          "weighted_new_water_share": 0.00826,
+          "methods": {
+            "rain_and_state": {
+              "water_ap": 0.6802,
+              "new_water_ap": 0.2993,
+              "water_at_threshold": {
+                "precision": 0.5612,
+                "recall": 0.9111,
+                "f1": 0.6946,
+                "iou": 0.5321,
+                "predicted_w": 131392.0,
+                "observed_w": 80934.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.2455,
+                "recall": 0.6372,
+                "f1": 0.3545,
+                "iou": 0.2154,
+                "predicted_w": 18940.0,
+                "observed_w": 7297.0
+              }
+            },
+            "blend": {
+              "water_ap": 0.6705,
+              "new_water_ap": 0.297,
+              "water_at_threshold": {
+                "precision": 0.5668,
+                "recall": 0.9167,
+                "f1": 0.7005,
+                "iou": 0.5391,
+                "predicted_w": 130886.0,
+                "observed_w": 80934.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.241,
+                "recall": 0.6408,
+                "f1": 0.3503,
+                "iou": 0.2123,
+                "predicted_w": 19402.0,
+                "observed_w": 7297.0
+              }
+            },
+            "terrain_only": {
+              "water_ap": 0.6306,
+              "new_water_ap": 0.2706,
+              "water_at_threshold": {
+                "precision": 0.5554,
+                "recall": 0.9216,
+                "f1": 0.6931,
+                "iou": 0.5303,
+                "predicted_w": 134297.0,
+                "observed_w": 80934.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.2193,
+                "recall": 0.6593,
+                "f1": 0.3291,
+                "iou": 0.197,
+                "predicted_w": 21940.0,
+                "observed_w": 7297.0
+              }
+            },
+            "persistence": {
+              "water_ap": 0.4308,
+              "new_water_ap": 0.0083
+            },
+            "past_wet_share": {
+              "water_ap": 0.5819,
+              "new_water_ap": 0.2832,
+              "water_at_threshold": {
+                "precision": 0.5627,
+                "recall": 0.2315,
+                "f1": 0.3281,
+                "iou": 0.1962,
+                "predicted_w": 33301.0,
+                "observed_w": 80934.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.3222,
+                "recall": 0.2618,
+                "f1": 0.2888,
+                "iou": 0.1688,
+                "predicted_w": 5928.0,
+                "observed_w": 7297.0
+              }
+            }
+          },
+          "cells_250m": {
+            "rain_and_state": {
+              "new_water_ap": 0.1562,
+              "hit_rate": 0.7267,
+              "precision": 0.28,
+              "false_alarm_ratio": 0.72,
+              "cells": 7822,
+              "observed_new_water_ha": 291.9,
+              "marked_ha": 757.6
+            },
+            "blend": {
+              "new_water_ap": 0.1588,
+              "hit_rate": 0.7203,
+              "precision": 0.2709,
+              "false_alarm_ratio": 0.7291,
+              "cells": 7822,
+              "observed_new_water_ha": 291.9,
+              "marked_ha": 776.1
+            },
+            "terrain_only": {
+              "new_water_ap": 0.1524,
+              "hit_rate": 0.7289,
+              "precision": 0.2424,
+              "false_alarm_ratio": 0.7576,
+              "cells": 7822,
+              "observed_new_water_ha": 291.9,
+              "marked_ha": 877.6
+            },
+            "past_wet_share": {
+              "new_water_ap": 0.1428,
+              "hit_rate": 0.3722,
+              "precision": 0.4582,
+              "false_alarm_ratio": 0.5418,
+              "cells": 7822,
+              "observed_new_water_ha": 291.9,
+              "marked_ha": 237.1
+            }
+          }
+        },
+        {
+          "pass_id": "20261110T060124_S1D",
+          "date": "2026-11-10",
+          "issue_pass": "20261104T175350_S1D",
+          "lead_days": 5.51,
+          "rain_prior_7d_mm": 21.2,
+          "rain_prior_30d_mm": 287.3,
+          "rain_between_mm": 23.9,
+          "rain_between_max1d_mm": 13.0,
+          "days_since_rain_peak": 5.0,
+          "observed_new_water_ha": 332.0,
+          "n": 1041330,
+          "weighted_wet_share": 0.10006,
+          "n_new_candidates": 883256,
+          "weighted_new_water_share": 0.0094,
+          "methods": {
+            "rain_and_state": {
+              "water_ap": 0.8485,
+              "new_water_ap": 0.2883,
+              "water_at_threshold": {
+                "precision": 0.696,
+                "recall": 0.9009,
+                "f1": 0.7853,
+                "iou": 0.6465,
+                "predicted_w": 134877.0,
+                "observed_w": 104199.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.2467,
+                "recall": 0.5758,
+                "f1": 0.3454,
+                "iou": 0.2087,
+                "predicted_w": 19374.0,
+                "observed_w": 8300.0
+              }
+            },
+            "blend": {
+              "water_ap": 0.8365,
+              "new_water_ap": 0.2968,
+              "water_at_threshold": {
+                "precision": 0.7021,
+                "recall": 0.8935,
+                "f1": 0.7863,
+                "iou": 0.6479,
+                "predicted_w": 132607.0,
+                "observed_w": 104199.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.2424,
+                "recall": 0.579,
+                "f1": 0.3417,
+                "iou": 0.2061,
+                "predicted_w": 19827.0,
+                "observed_w": 8300.0
+              }
+            },
+            "terrain_only": {
+              "water_ap": 0.7864,
+              "new_water_ap": 0.2776,
+              "water_at_threshold": {
+                "precision": 0.6904,
+                "recall": 0.8899,
+                "f1": 0.7776,
+                "iou": 0.6361,
+                "predicted_w": 134297.0,
+                "observed_w": 104199.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.2274,
+                "recall": 0.6011,
+                "f1": 0.33,
+                "iou": 0.1976,
+                "predicted_w": 21940.0,
+                "observed_w": 8300.0
+              }
+            },
+            "persistence": {
+              "water_ap": 0.5663,
+              "new_water_ap": 0.0094
+            },
+            "past_wet_share": {
+              "water_ap": 0.6941,
+              "new_water_ap": 0.2577,
+              "water_at_threshold": {
+                "precision": 0.6782,
+                "recall": 0.2168,
+                "f1": 0.3285,
+                "iou": 0.1965,
+                "predicted_w": 33301.0,
+                "observed_w": 104199.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.3075,
+                "recall": 0.2196,
+                "f1": 0.2563,
+                "iou": 0.147,
+                "predicted_w": 5928.0,
+                "observed_w": 8300.0
+              }
+            }
+          },
+          "cells_250m": {
+            "rain_and_state": {
+              "new_water_ap": 0.1621,
+              "hit_rate": 0.6937,
+              "precision": 0.2972,
+              "false_alarm_ratio": 0.7028,
+              "cells": 7822,
+              "observed_new_water_ha": 332.0,
+              "marked_ha": 775.0
+            },
+            "blend": {
+              "new_water_ap": 0.1719,
+              "hit_rate": 0.6893,
+              "precision": 0.2885,
+              "false_alarm_ratio": 0.7115,
+              "cells": 7822,
+              "observed_new_water_ha": 332.0,
+              "marked_ha": 793.1
+            },
+            "terrain_only": {
+              "new_water_ap": 0.1689,
+              "hit_rate": 0.6994,
+              "precision": 0.2646,
+              "false_alarm_ratio": 0.7354,
+              "cells": 7822,
+              "observed_new_water_ha": 332.0,
+              "marked_ha": 877.6
+            },
+            "past_wet_share": {
+              "new_water_ap": 0.1305,
+              "hit_rate": 0.3236,
+              "precision": 0.4531,
+              "false_alarm_ratio": 0.5469,
+              "cells": 7822,
+              "observed_new_water_ha": 332.0,
+              "marked_ha": 237.1
+            }
+          }
+        },
+        {
+          "pass_id": "20261110T175337_S1C",
+          "date": "2026-11-10",
+          "issue_pass": "20261104T175350_S1D",
+          "lead_days": 6.0,
+          "rain_prior_7d_mm": 21.2,
+          "rain_prior_30d_mm": 287.3,
+          "rain_between_mm": 23.9,
+          "rain_between_max1d_mm": 13.0,
+          "days_since_rain_peak": 5.0,
+          "observed_new_water_ha": 330.6,
+          "n": 1040679,
+          "weighted_wet_share": 0.11044,
+          "n_new_candidates": 882605,
+          "weighted_new_water_share": 0.00936,
+          "methods": {
+            "rain_and_state": {
+              "water_ap": 0.8877,
+              "new_water_ap": 0.2652,
+              "water_at_threshold": {
+                "precision": 0.7317,
+                "recall": 0.9235,
+                "f1": 0.8165,
+                "iou": 0.6899,
+                "predicted_w": 145064.0,
+                "observed_w": 114933.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.2018,
+                "recall": 0.6042,
+                "f1": 0.3026,
+                "iou": 0.1783,
+                "predicted_w": 24743.0,
+                "observed_w": 8265.0
+              }
+            },
+            "blend": {
+              "water_ap": 0.8715,
+              "new_water_ap": 0.2796,
+              "water_at_threshold": {
+                "precision": 0.7475,
+                "recall": 0.894,
+                "f1": 0.8142,
+                "iou": 0.6866,
+                "predicted_w": 137458.0,
+                "observed_w": 114933.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.2097,
+                "recall": 0.565,
+                "f1": 0.3058,
+                "iou": 0.1805,
+                "predicted_w": 22275.0,
+                "observed_w": 8265.0
+              }
+            },
+            "terrain_only": {
+              "water_ap": 0.8298,
+              "new_water_ap": 0.2775,
+              "water_at_threshold": {
+                "precision": 0.7472,
+                "recall": 0.8731,
+                "f1": 0.8052,
+                "iou": 0.674,
+                "predicted_w": 134297.0,
+                "observed_w": 114933.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.2106,
+                "recall": 0.5591,
+                "f1": 0.306,
+                "iou": 0.1806,
+                "predicted_w": 21940.0,
+                "observed_w": 8265.0
+              }
+            },
+            "persistence": {
+              "water_ap": 0.6342,
+              "new_water_ap": 0.0094
+            },
+            "past_wet_share": {
+              "water_ap": 0.7085,
+              "new_water_ap": 0.1958,
+              "water_at_threshold": {
+                "precision": 0.6538,
+                "recall": 0.1894,
+                "f1": 0.2937,
+                "iou": 0.1721,
+                "predicted_w": 33297.0,
+                "observed_w": 114933.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.1947,
+                "recall": 0.1396,
+                "f1": 0.1626,
+                "iou": 0.0885,
+                "predicted_w": 5928.0,
+                "observed_w": 8265.0
+              }
+            }
+          },
+          "cells_250m": {
+            "rain_and_state": {
+              "new_water_ap": 0.1832,
+              "hit_rate": 0.7351,
+              "precision": 0.2456,
+              "false_alarm_ratio": 0.7544,
+              "cells": 7822,
+              "observed_new_water_ha": 330.6,
+              "marked_ha": 989.7
+            },
+            "blend": {
+              "new_water_ap": 0.1916,
+              "hit_rate": 0.6739,
+              "precision": 0.2501,
+              "false_alarm_ratio": 0.7499,
+              "cells": 7822,
+              "observed_new_water_ha": 330.6,
+              "marked_ha": 891.0
+            },
+            "terrain_only": {
+              "new_water_ap": 0.1966,
+              "hit_rate": 0.657,
+              "precision": 0.2475,
+              "false_alarm_ratio": 0.7525,
+              "cells": 7822,
+              "observed_new_water_ha": 330.6,
+              "marked_ha": 877.6
+            },
+            "past_wet_share": {
+              "new_water_ap": 0.1059,
+              "hit_rate": 0.2374,
+              "precision": 0.331,
+              "false_alarm_ratio": 0.669,
+              "cells": 7822,
+              "observed_new_water_ha": 330.6,
+              "marked_ha": 237.1
+            }
+          }
+        }
+      ],
+      "forecast_replay": {
+        "target_pass": "20261022T060936_S1D",
+        "issue_pass": "20261017T175337_S1C",
+        "ifs_run": "2026-10-17T00:00Z",
+        "forecast_rain_between_mm": 120.9,
+        "n": 1040949,
+        "weighted_wet_share": 0.12504,
+        "n_new_candidates": 969336,
+        "weighted_new_water_share": 0.07118,
+        "methods": {
+          "rain_and_state": {
+            "water_ap": 0.7684,
+            "new_water_ap": 0.4,
+            "water_at_threshold": {
+              "precision": 0.6803,
+              "recall": 0.5863,
+              "f1": 0.6298,
+              "iou": 0.4597,
+              "predicted_w": 112183.0,
+              "observed_w": 130165.0
+            },
+            "new_water_at_threshold": {
+              "precision": 0.4173,
+              "recall": 0.8286,
+              "f1": 0.5551,
+              "iou": 0.3842,
+              "predicted_w": 136999.0,
+              "observed_w": 69001.0
+            }
+          },
+          "blend": {
+            "water_ap": 0.8554,
+            "new_water_ap": 0.6638,
+            "water_at_threshold": {
+              "precision": 0.8712,
+              "recall": 0.566,
+              "f1": 0.6862,
+              "iou": 0.5223,
+              "predicted_w": 84564.0,
+              "observed_w": 130165.0
+            },
+            "new_water_at_threshold": {
+              "precision": 0.6834,
+              "recall": 0.6316,
+              "f1": 0.6565,
+              "iou": 0.4887,
+              "predicted_w": 63771.0,
+              "observed_w": 69001.0
+            }
+          },
+          "terrain_only": {
+            "water_ap": 0.8299,
+            "new_water_ap": 0.677,
+            "water_at_threshold": {
+              "precision": 0.8602,
+              "recall": 0.6486,
+              "f1": 0.7396,
+              "iou": 0.5867,
+              "predicted_w": 98138.0,
+              "observed_w": 130165.0
+            },
+            "new_water_at_threshold": {
+              "precision": 0.6912,
+              "recall": 0.587,
+              "f1": 0.6349,
+              "iou": 0.465,
+              "predicted_w": 58597.0,
+              "observed_w": 69001.0
+            }
+          },
+          "persistence": {
+            "water_ap": 0.4676,
+            "new_water_ap": 0.0712
+          },
+          "past_wet_share": {
+            "water_ap": 0.7463,
+            "new_water_ap": 0.5739,
+            "water_at_threshold": {
+              "precision": 0.727,
+              "recall": 0.186,
+              "f1": 0.2962,
+              "iou": 0.1738,
+              "predicted_w": 33301.0,
+              "observed_w": 130165.0
+            },
+            "new_water_at_threshold": {
+              "precision": 0.3917,
+              "recall": 0.0336,
+              "f1": 0.0619,
+              "iou": 0.032,
+              "predicted_w": 5923.0,
+              "observed_w": 69001.0
+            }
+          }
+        },
+        "cells_250m": {
+          "rain_and_state": {
+            "new_water_ap": 0.41,
+            "hit_rate": 0.8913,
+            "precision": 0.4489,
+            "false_alarm_ratio": 0.5511,
+            "cells": 7885,
+            "observed_new_water_ha": 2760.0,
+            "marked_ha": 5480.0
+          },
+          "blend": {
+            "new_water_ap": 0.6023,
+            "hit_rate": 0.6809,
+            "precision": 0.7367,
+            "false_alarm_ratio": 0.2633,
+            "cells": 7885,
+            "observed_new_water_ha": 2760.0,
+            "marked_ha": 2550.8
+          },
+          "terrain_only": {
+            "new_water_ap": 0.6161,
+            "hit_rate": 0.6304,
+            "precision": 0.7424,
+            "false_alarm_ratio": 0.2576,
+            "cells": 7885,
+            "observed_new_water_ha": 2760.0,
+            "marked_ha": 2343.9
+          },
+          "past_wet_share": {
+            "new_water_ap": 0.5222,
+            "hit_rate": 0.0512,
+            "precision": 0.5968,
+            "false_alarm_ratio": 0.4032,
+            "cells": 7885,
+            "observed_new_water_ha": 2760.0,
+            "marked_ha": 236.9
+          }
+        }
+      },
+      "scenarios": {
+        "rain_and_state": {
+          "000mm": {
+            "likely_water": 4982.0,
+            "likely_new_water": 1755.5
+          },
+          "050mm": {
+            "likely_water": 5594.4,
+            "likely_new_water": 2616.6
+          },
+          "100mm": {
+            "likely_water": 5655.2,
+            "likely_new_water": 2692.3
+          },
+          "200mm": {
+            "likely_water": 9066.3,
+            "likely_new_water": 6103.7
+          },
+          "new_water_grows_with_rain": true
+        },
+        "blend": {
+          "000mm": {
+            "likely_water": 5161.0,
+            "likely_new_water": 1686.6
+          },
+          "050mm": {
+            "likely_water": 5434.3,
+            "likely_new_water": 1980.5
+          },
+          "100mm": {
+            "likely_water": 5454.8,
+            "likely_new_water": 2004.8
+          },
+          "200mm": {
+            "likely_water": 6145.1,
+            "likely_new_water": 2642.8
+          },
+          "new_water_grows_with_rain": true
+        }
+      }
+    },
+    "pego_oliva": {
+      "pooled_over_held_out_passes": {
+        "n": 3324359,
+        "weighted_wet_share": 0.01329,
+        "n_new_candidates": 3278886,
+        "weighted_new_water_share": 0.00506,
+        "methods": {
+          "rain_and_state": {
+            "water_ap": 0.6527,
+            "new_water_ap": 0.3768,
+            "water_at_threshold": {
+              "precision": 0.5741,
+              "recall": 0.6702,
+              "f1": 0.6185,
+              "iou": 0.4476,
+              "predicted_w": 51594.0,
+              "observed_w": 44197.0
+            },
+            "new_water_at_threshold": {
+              "precision": 0.2821,
+              "recall": 0.6109,
+              "f1": 0.386,
+              "iou": 0.2391,
+              "predicted_w": 35909.0,
+              "observed_w": 16581.0
+            }
+          },
+          "blend": {
+            "water_ap": 0.6137,
+            "new_water_ap": 0.3434,
+            "water_at_threshold": {
+              "precision": 0.5422,
+              "recall": 0.6614,
+              "f1": 0.5959,
+              "iou": 0.4244,
+              "predicted_w": 53921.0,
+              "observed_w": 44197.0
+            },
+            "new_water_at_threshold": {
+              "precision": 0.2818,
+              "recall": 0.5833,
+              "f1": 0.38,
+              "iou": 0.2346,
+              "predicted_w": 34318.0,
+              "observed_w": 16581.0
+            }
+          },
+          "terrain_only": {
+            "water_ap": 0.5579,
+            "new_water_ap": 0.3077,
+            "water_at_threshold": {
+              "precision": 0.4933,
+              "recall": 0.6415,
+              "f1": 0.5577,
+              "iou": 0.3867,
+              "predicted_w": 57481.0,
+              "observed_w": 44197.0
+            },
+            "new_water_at_threshold": {
+              "precision": 0.275,
+              "recall": 0.5671,
+              "f1": 0.3704,
+              "iou": 0.2273,
+              "predicted_w": 34193.0,
+              "observed_w": 16581.0
+            }
+          },
+          "persistence": {
+            "water_ap": 0.3844,
+            "new_water_ap": 0.0051
+          },
+          "past_wet_share": {
+            "water_ap": 0.5443,
+            "new_water_ap": 0.3154,
+            "water_at_threshold": {
+              "precision": 0.4723,
+              "recall": 0.6047,
+              "f1": 0.5304,
+              "iou": 0.3609,
+              "predicted_w": 56589.0,
+              "observed_w": 44197.0
+            },
+            "new_water_at_threshold": {
+              "precision": 0.3149,
+              "recall": 0.4129,
+              "f1": 0.3573,
+              "iou": 0.2175,
+              "predicted_w": 21737.0,
+              "observed_w": 16581.0
+            }
+          }
+        }
+      },
+      "pooled_note": "a fixed random sample of 200000 domain pixels per pass (the PR #33 sample)",
+      "pooled_250m_cells": {
+        "rain_and_state": {
+          "new_water_ap": 0.2785,
+          "hit_rate": 0.667,
+          "precision": 0.3149,
+          "false_alarm_ratio": 0.6851,
+          "cells": 140110,
+          "observed_new_water_ha": 3866.7,
+          "marked_ha": 8191.9
+        },
+        "blend": {
+          "new_water_ap": 0.2535,
+          "hit_rate": 0.6296,
+          "precision": 0.3115,
+          "false_alarm_ratio": 0.6885,
+          "cells": 140110,
+          "observed_new_water_ha": 3866.7,
+          "marked_ha": 7816.9
+        },
+        "terrain_only": {
+          "new_water_ap": 0.2283,
+          "hit_rate": 0.6126,
+          "precision": 0.303,
+          "false_alarm_ratio": 0.697,
+          "cells": 140110,
+          "observed_new_water_ha": 3866.7,
+          "marked_ha": 7818.7
+        },
+        "past_wet_share": {
+          "new_water_ap": 0.2319,
+          "hit_rate": 0.4735,
+          "precision": 0.3701,
+          "false_alarm_ratio": 0.6299,
+          "cells": 140110,
+          "observed_new_water_ha": 3866.7,
+          "marked_ha": 4946.4
+        }
+      },
+      "all_pixels_at_threshold_20m": {
+        "rain_and_state": {
+          "hit_rate": 0.5943,
+          "false_alarm_ratio": 0.7195,
+          "marked_ha": 8191.9,
+          "observed_new_water_ha": 3866.7
+        },
+        "blend": {
+          "hit_rate": 0.5668,
+          "false_alarm_ratio": 0.7196,
+          "marked_ha": 7816.9,
+          "observed_new_water_ha": 3866.7
+        },
+        "terrain_only": {
+          "hit_rate": 0.5527,
+          "false_alarm_ratio": 0.7267,
+          "marked_ha": 7818.7,
+          "observed_new_water_ha": 3866.7
+        },
+        "past_wet_share": {
+          "hit_rate": 0.3973,
+          "false_alarm_ratio": 0.6894,
+          "marked_ha": 4946.4,
+          "observed_new_water_ha": 3866.7
+        }
+      },
+      "storm_passes": [
+        "20261022T060936_S1D",
+        "20261023T060111_S1C",
+        "20261023T175337_S1D"
+      ],
+      "passes": [
+        {
+          "pass_id": "20261016T060923_S1C",
+          "date": "2026-10-16",
+          "issue_pass": "20261011T175336_S1D",
+          "lead_days": 4.51,
+          "rain_prior_7d_mm": 29.5,
+          "rain_prior_30d_mm": 161.8,
+          "rain_between_mm": 3.7,
+          "rain_between_max1d_mm": 1.9,
+          "days_since_rain_peak": 1.0,
+          "observed_new_water_ha": 85.6,
+          "n": 939990,
+          "weighted_wet_share": 0.00569,
+          "n_new_candidates": 930371,
+          "weighted_new_water_share": 0.0023,
+          "methods": {
+            "rain_and_state": {
+              "water_ap": 0.5056,
+              "new_water_ap": 0.1994,
+              "water_at_threshold": {
+                "precision": 0.344,
+                "recall": 0.679,
+                "f1": 0.4567,
+                "iou": 0.2959,
+                "predicted_w": 10557.0,
+                "observed_w": 5349.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.1039,
+                "recall": 0.4801,
+                "f1": 0.1708,
+                "iou": 0.0934,
+                "predicted_w": 9898.0,
+                "observed_w": 2141.0
+              }
+            },
+            "blend": {
+              "water_ap": 0.4733,
+              "new_water_ap": 0.1648,
+              "water_at_threshold": {
+                "precision": 0.3146,
+                "recall": 0.6973,
+                "f1": 0.4336,
+                "iou": 0.2768,
+                "predicted_w": 11856.0,
+                "observed_w": 5349.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.0935,
+                "recall": 0.4736,
+                "f1": 0.1562,
+                "iou": 0.0847,
+                "predicted_w": 10846.0,
+                "observed_w": 2141.0
+              }
+            },
+            "terrain_only": {
+              "water_ap": 0.427,
+              "new_water_ap": 0.1398,
+              "water_at_threshold": {
+                "precision": 0.2328,
+                "recall": 0.7276,
+                "f1": 0.3528,
+                "iou": 0.2142,
+                "predicted_w": 16717.0,
+                "observed_w": 5349.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.086,
+                "recall": 0.4759,
+                "f1": 0.1457,
+                "iou": 0.0786,
+                "predicted_w": 11845.0,
+                "observed_w": 2141.0
+              }
+            },
+            "persistence": {
+              "water_ap": 0.2023,
+              "new_water_ap": 0.0023
+            },
+            "past_wet_share": {
+              "water_ap": 0.4546,
+              "new_water_ap": 0.1582,
+              "water_at_threshold": {
+                "precision": 0.2296,
+                "recall": 0.7736,
+                "f1": 0.3541,
+                "iou": 0.2151,
+                "predicted_w": 18026.0,
+                "observed_w": 5349.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.1262,
+                "recall": 0.419,
+                "f1": 0.194,
+                "iou": 0.1074,
+                "predicted_w": 7105.0,
+                "observed_w": 2141.0
+              }
+            }
+          },
+          "cells_250m": {
+            "rain_and_state": {
+              "new_water_ap": 0.0535,
+              "hit_rate": 0.582,
+              "precision": 0.1259,
+              "false_alarm_ratio": 0.8741,
+              "cells": 6892,
+              "observed_new_water_ha": 85.6,
+              "marked_ha": 395.9
+            },
+            "blend": {
+              "new_water_ap": 0.0509,
+              "hit_rate": 0.5465,
+              "precision": 0.1079,
+              "false_alarm_ratio": 0.8921,
+              "cells": 6892,
+              "observed_new_water_ha": 85.6,
+              "marked_ha": 433.8
+            },
+            "terrain_only": {
+              "new_water_ap": 0.049,
+              "hit_rate": 0.5348,
+              "precision": 0.0967,
+              "false_alarm_ratio": 0.9033,
+              "cells": 6892,
+              "observed_new_water_ha": 85.6,
+              "marked_ha": 473.8
+            },
+            "past_wet_share": {
+              "new_water_ap": 0.0463,
+              "hit_rate": 0.4984,
+              "precision": 0.1502,
+              "false_alarm_ratio": 0.8498,
+              "cells": 6892,
+              "observed_new_water_ha": 85.6,
+              "marked_ha": 284.2
+            }
+          }
+        },
+        {
+          "pass_id": "20261016T180145_S1D",
+          "date": "2026-10-16",
+          "issue_pass": "20261011T175336_S1D",
+          "lead_days": 5.01,
+          "rain_prior_7d_mm": 29.5,
+          "rain_prior_30d_mm": 161.8,
+          "rain_between_mm": 3.7,
+          "rain_between_max1d_mm": 1.9,
+          "days_since_rain_peak": 1.0,
+          "observed_new_water_ha": 204.4,
+          "n": 1136290,
+          "weighted_wet_share": 0.01014,
+          "n_new_candidates": 1126412,
+          "weighted_new_water_share": 0.00454,
+          "methods": {
+            "rain_and_state": {
+              "water_ap": 0.8289,
+              "new_water_ap": 0.6068,
+              "water_at_threshold": {
+                "precision": 0.6693,
+                "recall": 0.8418,
+                "f1": 0.7457,
+                "iou": 0.5946,
+                "predicted_w": 14495.0,
+                "observed_w": 11525.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.3722,
+                "recall": 0.8718,
+                "f1": 0.5217,
+                "iou": 0.3529,
+                "predicted_w": 11966.0,
+                "observed_w": 5109.0
+              }
+            },
+            "blend": {
+              "water_ap": 0.8323,
+              "new_water_ap": 0.5958,
+              "water_at_threshold": {
+                "precision": 0.6547,
+                "recall": 0.8456,
+                "f1": 0.738,
+                "iou": 0.5848,
+                "predicted_w": 14887.0,
+                "observed_w": 11525.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.3757,
+                "recall": 0.8647,
+                "f1": 0.5239,
+                "iou": 0.3549,
+                "predicted_w": 11758.0,
+                "observed_w": 5109.0
+              }
+            },
+            "terrain_only": {
+              "water_ap": 0.8131,
+              "new_water_ap": 0.566,
+              "water_at_threshold": {
+                "precision": 0.5999,
+                "recall": 0.8781,
+                "f1": 0.7128,
+                "iou": 0.5538,
+                "predicted_w": 16870.0,
+                "observed_w": 11525.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.3683,
+                "recall": 0.8626,
+                "f1": 0.5162,
+                "iou": 0.3479,
+                "predicted_w": 11966.0,
+                "observed_w": 5109.0
+              }
+            },
+            "persistence": {
+              "water_ap": 0.3662,
+              "new_water_ap": 0.0045
+            },
+            "past_wet_share": {
+              "water_ap": 0.8193,
+              "new_water_ap": 0.5726,
+              "water_at_threshold": {
+                "precision": 0.5782,
+                "recall": 0.9132,
+                "f1": 0.7081,
+                "iou": 0.5481,
+                "predicted_w": 18203.0,
+                "observed_w": 11525.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.5029,
+                "recall": 0.7042,
+                "f1": 0.5868,
+                "iou": 0.4152,
+                "predicted_w": 7154.0,
+                "observed_w": 5109.0
+              }
+            }
+          },
+          "cells_250m": {
+            "rain_and_state": {
+              "new_water_ap": 0.4547,
+              "hit_rate": 0.9053,
+              "precision": 0.3865,
+              "false_alarm_ratio": 0.6135,
+              "cells": 8275,
+              "observed_new_water_ha": 204.4,
+              "marked_ha": 478.6
+            },
+            "blend": {
+              "new_water_ap": 0.4507,
+              "hit_rate": 0.9004,
+              "precision": 0.3912,
+              "false_alarm_ratio": 0.6088,
+              "cells": 8275,
+              "observed_new_water_ha": 204.4,
+              "marked_ha": 470.3
+            },
+            "terrain_only": {
+              "new_water_ap": 0.4432,
+              "hit_rate": 0.9017,
+              "precision": 0.385,
+              "false_alarm_ratio": 0.615,
+              "cells": 8275,
+              "observed_new_water_ha": 204.4,
+              "marked_ha": 478.6
+            },
+            "past_wet_share": {
+              "new_water_ap": 0.4394,
+              "hit_rate": 0.7882,
+              "precision": 0.5629,
+              "false_alarm_ratio": 0.4371,
+              "cells": 8275,
+              "observed_new_water_ha": 204.4,
+              "marked_ha": 286.2
+            }
+          }
+        },
+        {
+          "pass_id": "20261017T060124_S1D",
+          "date": "2026-10-17",
+          "issue_pass": "20261011T175336_S1D",
+          "lead_days": 5.51,
+          "rain_prior_7d_mm": 29.5,
+          "rain_prior_30d_mm": 161.8,
+          "rain_between_mm": 4.2,
+          "rain_between_max1d_mm": 1.9,
+          "days_since_rain_peak": 2.0,
+          "observed_new_water_ha": 198.2,
+          "n": 1134867,
+          "weighted_wet_share": 0.00977,
+          "n_new_candidates": 1124991,
+          "weighted_new_water_share": 0.00441,
+          "methods": {
+            "rain_and_state": {
+              "water_ap": 0.7271,
+              "new_water_ap": 0.4309,
+              "water_at_threshold": {
+                "precision": 0.6395,
+                "recall": 0.7258,
+                "f1": 0.6799,
+                "iou": 0.515,
+                "predicted_w": 12581.0,
+                "observed_w": 11084.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.2866,
+                "recall": 0.662,
+                "f1": 0.4,
+                "iou": 0.25,
+                "predicted_w": 11447.0,
+                "observed_w": 4956.0
+              }
+            },
+            "blend": {
+              "water_ap": 0.724,
+              "new_water_ap": 0.4304,
+              "water_at_threshold": {
+                "precision": 0.6122,
+                "recall": 0.7559,
+                "f1": 0.6765,
+                "iou": 0.5111,
+                "predicted_w": 13685.0,
+                "observed_w": 11084.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.2875,
+                "recall": 0.6562,
+                "f1": 0.3998,
+                "iou": 0.2499,
+                "predicted_w": 11311.0,
+                "observed_w": 4956.0
+              }
+            },
+            "terrain_only": {
+              "water_ap": 0.7007,
+              "new_water_ap": 0.4186,
+              "water_at_threshold": {
+                "precision": 0.5088,
+                "recall": 0.7744,
+                "f1": 0.6142,
+                "iou": 0.4432,
+                "predicted_w": 16870.0,
+                "observed_w": 11084.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.2742,
+                "recall": 0.662,
+                "f1": 0.3878,
+                "iou": 0.2405,
+                "predicted_w": 11966.0,
+                "observed_w": 4956.0
+              }
+            },
+            "persistence": {
+              "water_ap": 0.3474,
+              "new_water_ap": 0.0044
+            },
+            "past_wet_share": {
+              "water_ap": 0.714,
+              "new_water_ap": 0.4344,
+              "water_at_threshold": {
+                "precision": 0.502,
+                "recall": 0.8243,
+                "f1": 0.624,
+                "iou": 0.4535,
+                "predicted_w": 18201.0,
+                "observed_w": 11084.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.3936,
+                "recall": 0.568,
+                "f1": 0.465,
+                "iou": 0.3029,
+                "predicted_w": 7152.0,
+                "observed_w": 4956.0
+              }
+            }
+          },
+          "cells_250m": {
+            "rain_and_state": {
+              "new_water_ap": 0.2965,
+              "hit_rate": 0.727,
+              "precision": 0.3148,
+              "false_alarm_ratio": 0.6852,
+              "cells": 8274,
+              "observed_new_water_ha": 198.2,
+              "marked_ha": 457.9
+            },
+            "blend": {
+              "new_water_ap": 0.2942,
+              "hit_rate": 0.7244,
+              "precision": 0.3174,
+              "false_alarm_ratio": 0.6826,
+              "cells": 8274,
+              "observed_new_water_ha": 198.2,
+              "marked_ha": 452.4
+            },
+            "terrain_only": {
+              "new_water_ap": 0.2894,
+              "hit_rate": 0.732,
+              "precision": 0.3032,
+              "false_alarm_ratio": 0.6968,
+              "cells": 8274,
+              "observed_new_water_ha": 198.2,
+              "marked_ha": 478.6
+            },
+            "past_wet_share": {
+              "new_water_ap": 0.2992,
+              "hit_rate": 0.6739,
+              "precision": 0.467,
+              "false_alarm_ratio": 0.533,
+              "cells": 8274,
+              "observed_new_water_ha": 198.2,
+              "marked_ha": 286.1
+            }
+          }
+        },
+        {
+          "pass_id": "20261017T175323_S1C",
+          "date": "2026-10-17",
+          "issue_pass": "20261011T175336_S1D",
+          "lead_days": 6.0,
+          "rain_prior_7d_mm": 29.5,
+          "rain_prior_30d_mm": 161.8,
+          "rain_between_mm": 4.2,
+          "rain_between_max1d_mm": 1.9,
+          "days_since_rain_peak": 2.0,
+          "observed_new_water_ha": 155.5,
+          "n": 1128011,
+          "weighted_wet_share": 0.00931,
+          "n_new_candidates": 1118135,
+          "weighted_new_water_share": 0.00348,
+          "methods": {
+            "rain_and_state": {
+              "water_ap": 0.7442,
+              "new_water_ap": 0.3714,
+              "water_at_threshold": {
+                "precision": 0.5932,
+                "recall": 0.7715,
+                "f1": 0.6707,
+                "iou": 0.5045,
+                "predicted_w": 13658.0,
+                "observed_w": 10502.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.1902,
+                "recall": 0.6221,
+                "f1": 0.2913,
+                "iou": 0.1705,
+                "predicted_w": 12713.0,
+                "observed_w": 3887.0
+              }
+            },
+            "blend": {
+              "water_ap": 0.7345,
+              "new_water_ap": 0.3725,
+              "water_at_threshold": {
+                "precision": 0.5564,
+                "recall": 0.7708,
+                "f1": 0.6463,
+                "iou": 0.4774,
+                "predicted_w": 14549.0,
+                "observed_w": 10502.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.199,
+                "recall": 0.61,
+                "f1": 0.3001,
+                "iou": 0.1766,
+                "predicted_w": 11912.0,
+                "observed_w": 3887.0
+              }
+            },
+            "terrain_only": {
+              "water_ap": 0.7017,
+              "new_water_ap": 0.3637,
+              "water_at_threshold": {
+                "precision": 0.4782,
+                "recall": 0.7681,
+                "f1": 0.5894,
+                "iou": 0.4179,
+                "predicted_w": 16870.0,
+                "observed_w": 10502.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.1967,
+                "recall": 0.6056,
+                "f1": 0.297,
+                "iou": 0.1744,
+                "predicted_w": 11966.0,
+                "observed_w": 3887.0
+              }
+            },
+            "persistence": {
+              "water_ap": 0.4254,
+              "new_water_ap": 0.0035
+            },
+            "past_wet_share": {
+              "water_ap": 0.7167,
+              "new_water_ap": 0.3771,
+              "water_at_threshold": {
+                "precision": 0.4712,
+                "recall": 0.8167,
+                "f1": 0.5976,
+                "iou": 0.4262,
+                "predicted_w": 18201.0,
+                "observed_w": 10502.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.2901,
+                "recall": 0.5338,
+                "f1": 0.3759,
+                "iou": 0.2315,
+                "predicted_w": 7152.0,
+                "observed_w": 3887.0
+              }
+            }
+          },
+          "cells_250m": {
+            "rain_and_state": {
+              "new_water_ap": 0.2266,
+              "hit_rate": 0.6859,
+              "precision": 0.2097,
+              "false_alarm_ratio": 0.7903,
+              "cells": 8274,
+              "observed_new_water_ha": 155.5,
+              "marked_ha": 508.5
+            },
+            "blend": {
+              "new_water_ap": 0.2268,
+              "hit_rate": 0.6676,
+              "precision": 0.2178,
+              "false_alarm_ratio": 0.7822,
+              "cells": 8274,
+              "observed_new_water_ha": 155.5,
+              "marked_ha": 476.5
+            },
+            "terrain_only": {
+              "new_water_ap": 0.2239,
+              "hit_rate": 0.6653,
+              "precision": 0.2161,
+              "false_alarm_ratio": 0.7839,
+              "cells": 8274,
+              "observed_new_water_ha": 155.5,
+              "marked_ha": 478.6
+            },
+            "past_wet_share": {
+              "new_water_ap": 0.2292,
+              "hit_rate": 0.6285,
+              "precision": 0.3416,
+              "false_alarm_ratio": 0.6584,
+              "cells": 8274,
+              "observed_new_water_ha": 155.5,
+              "marked_ha": 286.1
+            }
+          }
+        },
+        {
+          "pass_id": "20261022T060936_S1D",
+          "date": "2026-10-22",
+          "issue_pass": "20261017T175323_S1C",
+          "lead_days": 4.51,
+          "rain_prior_7d_mm": 4.2,
+          "rain_prior_30d_mm": 153.5,
+          "rain_between_mm": 171.1,
+          "rain_between_max1d_mm": 94.4,
+          "days_since_rain_peak": 3.0,
+          "observed_new_water_ha": 498.6,
+          "n": 940002,
+          "weighted_wet_share": 0.0172,
+          "n_new_candidates": 929804,
+          "weighted_new_water_share": 0.01341,
+          "methods": {
+            "rain_and_state": {
+              "water_ap": 0.4354,
+              "new_water_ap": 0.4197,
+              "water_at_threshold": {
+                "precision": 0.4643,
+                "recall": 0.3709,
+                "f1": 0.4124,
+                "iou": 0.2597,
+                "predicted_w": 12913.0,
+                "observed_w": 16168.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.3913,
+                "recall": 0.4174,
+                "f1": 0.4039,
+                "iou": 0.2531,
+                "predicted_w": 13297.0,
+                "observed_w": 12465.0
+              }
+            },
+            "blend": {
+              "water_ap": 0.4106,
+              "new_water_ap": 0.3799,
+              "water_at_threshold": {
+                "precision": 0.4328,
+                "recall": 0.383,
+                "f1": 0.4064,
+                "iou": 0.255,
+                "predicted_w": 14306.0,
+                "observed_w": 16168.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.3852,
+                "recall": 0.3693,
+                "f1": 0.3771,
+                "iou": 0.2323,
+                "predicted_w": 11950.0,
+                "observed_w": 12465.0
+              }
+            },
+            "terrain_only": {
+              "water_ap": 0.3885,
+              "new_water_ap": 0.3515,
+              "water_at_threshold": {
+                "precision": 0.3924,
+                "recall": 0.4046,
+                "f1": 0.3984,
+                "iou": 0.2488,
+                "predicted_w": 16672.0,
+                "observed_w": 16168.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.3818,
+                "recall": 0.3483,
+                "f1": 0.3643,
+                "iou": 0.2227,
+                "predicted_w": 11373.0,
+                "observed_w": 12465.0
+              }
+            },
+            "persistence": {
+              "water_ap": 0.0964,
+              "new_water_ap": 0.0134
+            },
+            "past_wet_share": {
+              "water_ap": 0.3778,
+              "new_water_ap": 0.3257,
+              "water_at_threshold": {
+                "precision": 0.3667,
+                "recall": 0.4088,
+                "f1": 0.3866,
+                "iou": 0.2396,
+                "predicted_w": 18026.0,
+                "observed_w": 16168.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.2822,
+                "recall": 0.1515,
+                "f1": 0.1972,
+                "iou": 0.1094,
+                "predicted_w": 6693.0,
+                "observed_w": 12465.0
+              }
+            }
+          },
+          "cells_250m": {
+            "rain_and_state": {
+              "new_water_ap": 0.3828,
+              "hit_rate": 0.4835,
+              "precision": 0.4533,
+              "false_alarm_ratio": 0.5467,
+              "cells": 6891,
+              "observed_new_water_ha": 498.6,
+              "marked_ha": 531.9
+            },
+            "blend": {
+              "new_water_ap": 0.3354,
+              "hit_rate": 0.4206,
+              "precision": 0.4387,
+              "false_alarm_ratio": 0.5613,
+              "cells": 6891,
+              "observed_new_water_ha": 498.6,
+              "marked_ha": 478.0
+            },
+            "terrain_only": {
+              "new_water_ap": 0.3154,
+              "hit_rate": 0.3969,
+              "precision": 0.435,
+              "false_alarm_ratio": 0.565,
+              "cells": 6891,
+              "observed_new_water_ha": 498.6,
+              "marked_ha": 454.9
+            },
+            "past_wet_share": {
+              "new_water_ap": 0.3068,
+              "hit_rate": 0.1961,
+              "precision": 0.3653,
+              "false_alarm_ratio": 0.6347,
+              "cells": 6891,
+              "observed_new_water_ha": 498.6,
+              "marked_ha": 267.7
+            }
+          }
+        },
+        {
+          "pass_id": "20261023T060111_S1C",
+          "date": "2026-10-23",
+          "issue_pass": "20261017T175323_S1C",
+          "lead_days": 5.51,
+          "rain_prior_7d_mm": 4.2,
+          "rain_prior_30d_mm": 153.5,
+          "rain_between_mm": 171.6,
+          "rain_between_max1d_mm": 94.4,
+          "days_since_rain_peak": 4.0,
+          "observed_new_water_ha": 509.0,
+          "n": 1134856,
+          "weighted_wet_share": 0.0159,
+          "n_new_candidates": 1124347,
+          "weighted_new_water_share": 0.01132,
+          "methods": {
+            "rain_and_state": {
+              "water_ap": 0.5691,
+              "new_water_ap": 0.4914,
+              "water_at_threshold": {
+                "precision": 0.5674,
+                "recall": 0.4867,
+                "f1": 0.524,
+                "iou": 0.355,
+                "predicted_w": 15479.0,
+                "observed_w": 18045.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.4939,
+                "recall": 0.5117,
+                "f1": 0.5026,
+                "iou": 0.3357,
+                "predicted_w": 13183.0,
+                "observed_w": 12725.0
+              }
+            },
+            "blend": {
+              "water_ap": 0.56,
+              "new_water_ap": 0.4745,
+              "water_at_threshold": {
+                "precision": 0.5682,
+                "recall": 0.4944,
+                "f1": 0.5288,
+                "iou": 0.3594,
+                "predicted_w": 15702.0,
+                "observed_w": 18045.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.5007,
+                "recall": 0.4734,
+                "f1": 0.4867,
+                "iou": 0.3216,
+                "predicted_w": 12032.0,
+                "observed_w": 12725.0
+              }
+            },
+            "terrain_only": {
+              "water_ap": 0.5521,
+              "new_water_ap": 0.4612,
+              "water_at_threshold": {
+                "precision": 0.5593,
+                "recall": 0.5215,
+                "f1": 0.5397,
+                "iou": 0.3696,
+                "predicted_w": 16826.0,
+                "observed_w": 18045.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.5013,
+                "recall": 0.4543,
+                "f1": 0.4766,
+                "iou": 0.3129,
+                "predicted_w": 11532.0,
+                "observed_w": 12725.0
+              }
+            },
+            "persistence": {
+              "water_ap": 0.1605,
+              "new_water_ap": 0.0113
+            },
+            "past_wet_share": {
+              "water_ap": 0.5348,
+              "new_water_ap": 0.4242,
+              "water_at_threshold": {
+                "precision": 0.5179,
+                "recall": 0.5225,
+                "f1": 0.5202,
+                "iou": 0.3515,
+                "predicted_w": 18204.0,
+                "observed_w": 18045.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.4284,
+                "recall": 0.228,
+                "f1": 0.2976,
+                "iou": 0.1748,
+                "predicted_w": 6771.0,
+                "observed_w": 12725.0
+              }
+            }
+          },
+          "cells_250m": {
+            "rain_and_state": {
+              "new_water_ap": 0.4251,
+              "hit_rate": 0.58,
+              "precision": 0.5598,
+              "false_alarm_ratio": 0.4402,
+              "cells": 8273,
+              "observed_new_water_ha": 509.0,
+              "marked_ha": 527.3
+            },
+            "blend": {
+              "new_water_ap": 0.4097,
+              "hit_rate": 0.534,
+              "precision": 0.5647,
+              "false_alarm_ratio": 0.4353,
+              "cells": 8273,
+              "observed_new_water_ha": 509.0,
+              "marked_ha": 481.3
+            },
+            "terrain_only": {
+              "new_water_ap": 0.4016,
+              "hit_rate": 0.5142,
+              "precision": 0.5674,
+              "false_alarm_ratio": 0.4326,
+              "cells": 8273,
+              "observed_new_water_ha": 509.0,
+              "marked_ha": 461.3
+            },
+            "past_wet_share": {
+              "new_water_ap": 0.3798,
+              "hit_rate": 0.2944,
+              "precision": 0.5532,
+              "false_alarm_ratio": 0.4468,
+              "cells": 8273,
+              "observed_new_water_ha": 509.0,
+              "marked_ha": 270.8
+            }
+          }
+        },
+        {
+          "pass_id": "20261023T175337_S1D",
+          "date": "2026-10-23",
+          "issue_pass": "20261017T175323_S1C",
+          "lead_days": 6.0,
+          "rain_prior_7d_mm": 4.2,
+          "rain_prior_30d_mm": 153.5,
+          "rain_between_mm": 171.6,
+          "rain_between_max1d_mm": 94.4,
+          "days_since_rain_peak": 4.0,
+          "observed_new_water_ha": 564.6,
+          "n": 1127833,
+          "weighted_wet_share": 0.01736,
+          "n_new_candidates": 1117328,
+          "weighted_new_water_share": 0.01263,
+          "methods": {
+            "rain_and_state": {
+              "water_ap": 0.5653,
+              "new_water_ap": 0.4913,
+              "water_at_threshold": {
+                "precision": 0.5713,
+                "recall": 0.4863,
+                "f1": 0.5254,
+                "iou": 0.3563,
+                "predicted_w": 16667.0,
+                "observed_w": 19582.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.486,
+                "recall": 0.4933,
+                "f1": 0.4896,
+                "iou": 0.3242,
+                "predicted_w": 14329.0,
+                "observed_w": 14116.0
+              }
+            },
+            "blend": {
+              "water_ap": 0.5533,
+              "new_water_ap": 0.4685,
+              "water_at_threshold": {
+                "precision": 0.5716,
+                "recall": 0.4747,
+                "f1": 0.5187,
+                "iou": 0.3501,
+                "predicted_w": 16263.0,
+                "observed_w": 19582.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.4941,
+                "recall": 0.4458,
+                "f1": 0.4687,
+                "iou": 0.3061,
+                "predicted_w": 12735.0,
+                "observed_w": 14116.0
+              }
+            },
+            "terrain_only": {
+              "water_ap": 0.5434,
+              "new_water_ap": 0.4529,
+              "water_at_threshold": {
+                "precision": 0.5545,
+                "recall": 0.4764,
+                "f1": 0.5125,
+                "iou": 0.3445,
+                "predicted_w": 16823.0,
+                "observed_w": 19582.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.4938,
+                "recall": 0.4034,
+                "f1": 0.4441,
+                "iou": 0.2854,
+                "predicted_w": 11532.0,
+                "observed_w": 14116.0
+              }
+            },
+            "persistence": {
+              "water_ap": 0.1577,
+              "new_water_ap": 0.0126
+            },
+            "past_wet_share": {
+              "water_ap": 0.5298,
+              "new_water_ap": 0.4203,
+              "water_at_threshold": {
+                "precision": 0.5204,
+                "recall": 0.4837,
+                "f1": 0.5014,
+                "iou": 0.3346,
+                "predicted_w": 18201.0,
+                "observed_w": 19582.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.4214,
+                "recall": 0.2021,
+                "f1": 0.2732,
+                "iou": 0.1582,
+                "predicted_w": 6771.0,
+                "observed_w": 14116.0
+              }
+            }
+          },
+          "cells_250m": {
+            "rain_and_state": {
+              "new_water_ap": 0.4427,
+              "hit_rate": 0.5494,
+              "precision": 0.5413,
+              "false_alarm_ratio": 0.4587,
+              "cells": 8272,
+              "observed_new_water_ha": 564.6,
+              "marked_ha": 573.2
+            },
+            "blend": {
+              "new_water_ap": 0.4218,
+              "hit_rate": 0.495,
+              "precision": 0.5486,
+              "false_alarm_ratio": 0.4514,
+              "cells": 8272,
+              "observed_new_water_ha": 564.6,
+              "marked_ha": 509.4
+            },
+            "terrain_only": {
+              "new_water_ap": 0.4095,
+              "hit_rate": 0.4504,
+              "precision": 0.5513,
+              "false_alarm_ratio": 0.4487,
+              "cells": 8272,
+              "observed_new_water_ha": 564.6,
+              "marked_ha": 461.3
+            },
+            "past_wet_share": {
+              "new_water_ap": 0.3946,
+              "hit_rate": 0.2613,
+              "precision": 0.5448,
+              "false_alarm_ratio": 0.4552,
+              "cells": 8272,
+              "observed_new_water_ha": 564.6,
+              "marked_ha": 270.8
+            }
+          }
+        },
+        {
+          "pass_id": "20261028T060923_S1C",
+          "date": "2026-10-28",
+          "issue_pass": "20261023T175337_S1D",
+          "lead_days": 4.51,
+          "rain_prior_7d_mm": 172.1,
+          "rain_prior_30d_mm": 288.4,
+          "rain_between_mm": 0.1,
+          "rain_between_max1d_mm": 0.1,
+          "days_since_rain_peak": 4.0,
+          "observed_new_water_ha": 109.3,
+          "n": 936871,
+          "weighted_wet_share": 0.01661,
+          "n_new_candidates": 917649,
+          "weighted_new_water_share": 0.00298,
+          "methods": {
+            "rain_and_state": {
+              "water_ap": 0.6109,
+              "new_water_ap": 0.1788,
+              "water_at_threshold": {
+                "precision": 0.5775,
+                "recall": 0.5824,
+                "f1": 0.5799,
+                "iou": 0.4084,
+                "predicted_w": 15694.0,
+                "observed_w": 15564.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.1273,
+                "recall": 0.5146,
+                "f1": 0.2041,
+                "iou": 0.1137,
+                "predicted_w": 11043.0,
+                "observed_w": 2732.0
+              }
+            },
+            "blend": {
+              "water_ap": 0.5223,
+              "new_water_ap": 0.1695,
+              "water_at_threshold": {
+                "precision": 0.4961,
+                "recall": 0.5493,
+                "f1": 0.5213,
+                "iou": 0.3526,
+                "predicted_w": 17232.0,
+                "observed_w": 15564.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.1235,
+                "recall": 0.4513,
+                "f1": 0.194,
+                "iou": 0.1074,
+                "predicted_w": 9982.0,
+                "observed_w": 2732.0
+              }
+            },
+            "terrain_only": {
+              "water_ap": 0.4501,
+              "new_water_ap": 0.1628,
+              "water_at_threshold": {
+                "precision": 0.427,
+                "recall": 0.4969,
+                "f1": 0.4593,
+                "iou": 0.2981,
+                "predicted_w": 18114.0,
+                "observed_w": 15564.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.1155,
+                "recall": 0.4085,
+                "f1": 0.1801,
+                "iou": 0.0989,
+                "predicted_w": 9663.0,
+                "observed_w": 2732.0
+              }
+            },
+            "persistence": {
+              "water_ap": 0.5533,
+              "new_water_ap": 0.003
+            },
+            "past_wet_share": {
+              "water_ap": 0.4348,
+              "new_water_ap": 0.1669,
+              "water_at_threshold": {
+                "precision": 0.3932,
+                "recall": 0.4546,
+                "f1": 0.4217,
+                "iou": 0.2672,
+                "predicted_w": 17995.0,
+                "observed_w": 15564.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.1366,
+                "recall": 0.3481,
+                "f1": 0.1962,
+                "iou": 0.1088,
+                "predicted_w": 6963.0,
+                "observed_w": 2732.0
+              }
+            }
+          },
+          "cells_250m": {
+            "rain_and_state": {
+              "new_water_ap": 0.1183,
+              "hit_rate": 0.6369,
+              "precision": 0.1576,
+              "false_alarm_ratio": 0.8424,
+              "cells": 6863,
+              "observed_new_water_ha": 109.3,
+              "marked_ha": 441.7
+            },
+            "blend": {
+              "new_water_ap": 0.119,
+              "hit_rate": 0.556,
+              "precision": 0.1522,
+              "false_alarm_ratio": 0.8478,
+              "cells": 6863,
+              "observed_new_water_ha": 109.3,
+              "marked_ha": 399.3
+            },
+            "terrain_only": {
+              "new_water_ap": 0.1185,
+              "hit_rate": 0.4916,
+              "precision": 0.139,
+              "false_alarm_ratio": 0.861,
+              "cells": 6863,
+              "observed_new_water_ha": 109.3,
+              "marked_ha": 386.5
+            },
+            "past_wet_share": {
+              "new_water_ap": 0.1186,
+              "hit_rate": 0.4228,
+              "precision": 0.1659,
+              "false_alarm_ratio": 0.8341,
+              "cells": 6863,
+              "observed_new_water_ha": 109.3,
+              "marked_ha": 278.5
+            }
+          }
+        },
+        {
+          "pass_id": "20261028T180144_S1D",
+          "date": "2026-10-28",
+          "issue_pass": "20261023T175337_S1D",
+          "lead_days": 5.01,
+          "rain_prior_7d_mm": 172.1,
+          "rain_prior_30d_mm": 288.4,
+          "rain_between_mm": 0.1,
+          "rain_between_max1d_mm": 0.1,
+          "days_since_rain_peak": 4.0,
+          "observed_new_water_ha": 223.8,
+          "n": 1136323,
+          "weighted_wet_share": 0.01567,
+          "n_new_candidates": 1116734,
+          "weighted_new_water_share": 0.00501,
+          "methods": {
+            "rain_and_state": {
+              "water_ap": 0.789,
+              "new_water_ap": 0.6351,
+              "water_at_threshold": {
+                "precision": 0.6956,
+                "recall": 0.7695,
+                "f1": 0.7307,
+                "iou": 0.5757,
+                "predicted_w": 19697.0,
+                "observed_w": 17804.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.4498,
+                "recall": 0.8355,
+                "f1": 0.5848,
+                "iou": 0.4132,
+                "predicted_w": 10392.0,
+                "observed_w": 5594.0
+              }
+            },
+            "blend": {
+              "water_ap": 0.7684,
+              "new_water_ap": 0.6391,
+              "water_at_threshold": {
+                "precision": 0.6948,
+                "recall": 0.7521,
+                "f1": 0.7223,
+                "iou": 0.5653,
+                "predicted_w": 19271.0,
+                "observed_w": 17804.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.4655,
+                "recall": 0.8273,
+                "f1": 0.5958,
+                "iou": 0.4243,
+                "predicted_w": 9941.0,
+                "observed_w": 5594.0
+              }
+            },
+            "terrain_only": {
+              "water_ap": 0.7367,
+              "new_water_ap": 0.64,
+              "water_at_threshold": {
+                "precision": 0.6804,
+                "recall": 0.6999,
+                "f1": 0.69,
+                "iou": 0.5267,
+                "predicted_w": 18315.0,
+                "observed_w": 17804.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.4703,
+                "recall": 0.8223,
+                "f1": 0.5984,
+                "iou": 0.4269,
+                "predicted_w": 9781.0,
+                "observed_w": 5594.0
+              }
+            },
+            "persistence": {
+              "water_ap": 0.4326,
+              "new_water_ap": 0.005
+            },
+            "past_wet_share": {
+              "water_ap": 0.7097,
+              "new_water_ap": 0.6202,
+              "water_at_threshold": {
+                "precision": 0.6447,
+                "recall": 0.6592,
+                "f1": 0.6519,
+                "iou": 0.4835,
+                "predicted_w": 18206.0,
+                "observed_w": 17804.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.5373,
+                "recall": 0.6741,
+                "f1": 0.598,
+                "iou": 0.4265,
+                "predicted_w": 7018.0,
+                "observed_w": 5594.0
+              }
+            }
+          },
+          "cells_250m": {
+            "rain_and_state": {
+              "new_water_ap": 0.5064,
+              "hit_rate": 0.8754,
+              "precision": 0.4712,
+              "false_alarm_ratio": 0.5288,
+              "cells": 8266,
+              "observed_new_water_ha": 223.8,
+              "marked_ha": 415.7
+            },
+            "blend": {
+              "new_water_ap": 0.5078,
+              "hit_rate": 0.8604,
+              "precision": 0.4842,
+              "false_alarm_ratio": 0.5158,
+              "cells": 8266,
+              "observed_new_water_ha": 223.8,
+              "marked_ha": 397.6
+            },
+            "terrain_only": {
+              "new_water_ap": 0.5091,
+              "hit_rate": 0.8557,
+              "precision": 0.4894,
+              "false_alarm_ratio": 0.5106,
+              "cells": 8266,
+              "observed_new_water_ha": 223.8,
+              "marked_ha": 391.2
+            },
+            "past_wet_share": {
+              "new_water_ap": 0.4966,
+              "hit_rate": 0.7472,
+              "precision": 0.5956,
+              "false_alarm_ratio": 0.4044,
+              "cells": 8266,
+              "observed_new_water_ha": 223.8,
+              "marked_ha": 280.7
+            }
+          }
+        },
+        {
+          "pass_id": "20261029T175323_S1C",
+          "date": "2026-10-29",
+          "issue_pass": "20261023T175337_S1D",
+          "lead_days": 6.0,
+          "rain_prior_7d_mm": 172.1,
+          "rain_prior_30d_mm": 288.4,
+          "rain_between_mm": 2.1,
+          "rain_between_max1d_mm": 2.0,
+          "days_since_rain_peak": 1.0,
+          "observed_new_water_ha": 168.3,
+          "n": 1127829,
+          "weighted_wet_share": 0.01545,
+          "n_new_candidates": 1108247,
+          "weighted_new_water_share": 0.0038,
+          "methods": {
+            "rain_and_state": {
+              "water_ap": 0.7627,
+              "new_water_ap": 0.4574,
+              "water_at_threshold": {
+                "precision": 0.625,
+                "recall": 0.7714,
+                "f1": 0.6905,
+                "iou": 0.5273,
+                "predicted_w": 21513.0,
+                "observed_w": 17429.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.2446,
+                "recall": 0.6965,
+                "f1": 0.362,
+                "iou": 0.221,
+                "predicted_w": 11980.0,
+                "observed_w": 4207.0
+              }
+            },
+            "blend": {
+              "water_ap": 0.7115,
+              "new_water_ap": 0.4648,
+              "water_at_threshold": {
+                "precision": 0.606,
+                "recall": 0.6861,
+                "f1": 0.6436,
+                "iou": 0.4745,
+                "predicted_w": 19732.0,
+                "observed_w": 17429.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.2643,
+                "recall": 0.6651,
+                "f1": 0.3783,
+                "iou": 0.2333,
+                "predicted_w": 10586.0,
+                "observed_w": 4207.0
+              }
+            },
+            "terrain_only": {
+              "water_ap": 0.6475,
+              "new_water_ap": 0.4664,
+              "water_at_threshold": {
+                "precision": 0.5763,
+                "recall": 0.6055,
+                "f1": 0.5906,
+                "iou": 0.419,
+                "predicted_w": 18312.0,
+                "observed_w": 17429.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.276,
+                "recall": 0.6418,
+                "f1": 0.386,
+                "iou": 0.2392,
+                "predicted_w": 9781.0,
+                "observed_w": 4207.0
+              }
+            },
+            "persistence": {
+              "water_ap": 0.5161,
+              "new_water_ap": 0.0038
+            },
+            "past_wet_share": {
+              "water_ap": 0.6287,
+              "new_water_ap": 0.4686,
+              "water_at_threshold": {
+                "precision": 0.5447,
+                "recall": 0.5688,
+                "f1": 0.5565,
+                "iou": 0.3855,
+                "predicted_w": 18199.0,
+                "observed_w": 17429.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.3523,
+                "recall": 0.5876,
+                "f1": 0.4405,
+                "iou": 0.2825,
+                "predicted_w": 7016.0,
+                "observed_w": 4207.0
+              }
+            }
+          },
+          "cells_250m": {
+            "rain_and_state": {
+              "new_water_ap": 0.355,
+              "hit_rate": 0.7804,
+              "precision": 0.274,
+              "false_alarm_ratio": 0.726,
+              "cells": 8264,
+              "observed_new_water_ha": 168.3,
+              "marked_ha": 479.2
+            },
+            "blend": {
+              "new_water_ap": 0.3562,
+              "hit_rate": 0.7247,
+              "precision": 0.288,
+              "false_alarm_ratio": 0.712,
+              "cells": 8264,
+              "observed_new_water_ha": 168.3,
+              "marked_ha": 423.4
+            },
+            "terrain_only": {
+              "new_water_ap": 0.3568,
+              "hit_rate": 0.6948,
+              "precision": 0.2988,
+              "false_alarm_ratio": 0.7012,
+              "cells": 8264,
+              "observed_new_water_ha": 168.3,
+              "marked_ha": 391.2
+            },
+            "past_wet_share": {
+              "new_water_ap": 0.357,
+              "hit_rate": 0.6515,
+              "precision": 0.3907,
+              "false_alarm_ratio": 0.6093,
+              "cells": 8264,
+              "observed_new_water_ha": 168.3,
+              "marked_ha": 280.6
+            }
+          }
+        },
+        {
+          "pass_id": "20261103T060936_S1D",
+          "date": "2026-11-03",
+          "issue_pass": "20261029T175323_S1C",
+          "lead_days": 4.51,
+          "rain_prior_7d_mm": 2.6,
+          "rain_prior_30d_mm": 288.4,
+          "rain_between_mm": 25.4,
+          "rain_between_max1d_mm": 18.5,
+          "days_since_rain_peak": 3.0,
+          "observed_new_water_ha": 95.8,
+          "n": 705978,
+          "weighted_wet_share": 0.0179,
+          "n_new_candidates": 690942,
+          "weighted_new_water_share": 0.00347,
+          "methods": {
+            "rain_and_state": {
+              "water_ap": 0.6692,
+              "new_water_ap": 0.2421,
+              "water_at_threshold": {
+                "precision": 0.6465,
+                "recall": 0.6492,
+                "f1": 0.6479,
+                "iou": 0.4792,
+                "predicted_w": 12691.0,
+                "observed_w": 12638.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.1807,
+                "recall": 0.4912,
+                "f1": 0.2642,
+                "iou": 0.1522,
+                "predicted_w": 6514.0,
+                "observed_w": 2396.0
+              }
+            },
+            "blend": {
+              "water_ap": 0.618,
+              "new_water_ap": 0.2322,
+              "water_at_threshold": {
+                "precision": 0.5699,
+                "recall": 0.6378,
+                "f1": 0.6019,
+                "iou": 0.4305,
+                "predicted_w": 14143.0,
+                "observed_w": 12638.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.1727,
+                "recall": 0.4754,
+                "f1": 0.2534,
+                "iou": 0.1451,
+                "predicted_w": 6595.0,
+                "observed_w": 2396.0
+              }
+            },
+            "terrain_only": {
+              "water_ap": 0.5679,
+              "new_water_ap": 0.2239,
+              "water_at_threshold": {
+                "precision": 0.5086,
+                "recall": 0.6212,
+                "f1": 0.5593,
+                "iou": 0.3882,
+                "predicted_w": 15436.0,
+                "observed_w": 12638.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.1709,
+                "recall": 0.4791,
+                "f1": 0.2519,
+                "iou": 0.1441,
+                "predicted_w": 6719.0,
+                "observed_w": 2396.0
+              }
+            },
+            "persistence": {
+              "water_ap": 0.5555,
+              "new_water_ap": 0.0035
+            },
+            "past_wet_share": {
+              "water_ap": 0.5339,
+              "new_water_ap": 0.2165,
+              "water_at_threshold": {
+                "precision": 0.4711,
+                "recall": 0.5299,
+                "f1": 0.4988,
+                "iou": 0.3322,
+                "predicted_w": 14217.0,
+                "observed_w": 12638.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.1886,
+                "recall": 0.3635,
+                "f1": 0.2484,
+                "iou": 0.1418,
+                "predicted_w": 4618.0,
+                "observed_w": 2396.0
+              }
+            }
+          },
+          "cells_250m": {
+            "rain_and_state": {
+              "new_water_ap": 0.1353,
+              "hit_rate": 0.6381,
+              "precision": 0.2347,
+              "false_alarm_ratio": 0.7653,
+              "cells": 5042,
+              "observed_new_water_ha": 95.8,
+              "marked_ha": 260.6
+            },
+            "blend": {
+              "new_water_ap": 0.1326,
+              "hit_rate": 0.5972,
+              "precision": 0.217,
+              "false_alarm_ratio": 0.783,
+              "cells": 5042,
+              "observed_new_water_ha": 95.8,
+              "marked_ha": 263.8
+            },
+            "terrain_only": {
+              "new_water_ap": 0.1295,
+              "hit_rate": 0.5868,
+              "precision": 0.2093,
+              "false_alarm_ratio": 0.7907,
+              "cells": 5042,
+              "observed_new_water_ha": 95.8,
+              "marked_ha": 268.8
+            },
+            "past_wet_share": {
+              "new_water_ap": 0.1279,
+              "hit_rate": 0.4624,
+              "precision": 0.2399,
+              "false_alarm_ratio": 0.7601,
+              "cells": 5042,
+              "observed_new_water_ha": 95.8,
+              "marked_ha": 184.7
+            }
+          }
+        },
+        {
+          "pass_id": "20261103T180131_S1C",
+          "date": "2026-11-03",
+          "issue_pass": "20261029T175323_S1C",
+          "lead_days": 5.01,
+          "rain_prior_7d_mm": 2.6,
+          "rain_prior_30d_mm": 288.4,
+          "rain_between_mm": 25.4,
+          "rain_between_max1d_mm": 18.5,
+          "days_since_rain_peak": 3.0,
+          "observed_new_water_ha": 141.5,
+          "n": 1136248,
+          "weighted_wet_share": 0.01279,
+          "n_new_candidates": 1118806,
+          "weighted_new_water_share": 0.00316,
+          "methods": {
+            "rain_and_state": {
+              "water_ap": 0.7349,
+              "new_water_ap": 0.4139,
+              "water_at_threshold": {
+                "precision": 0.604,
+                "recall": 0.7548,
+                "f1": 0.671,
+                "iou": 0.5049,
+                "predicted_w": 18161.0,
+                "observed_w": 14532.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.283,
+                "recall": 0.7744,
+                "f1": 0.4145,
+                "iou": 0.2614,
+                "predicted_w": 9680.0,
+                "observed_w": 3537.0
+              }
+            },
+            "blend": {
+              "water_ap": 0.7167,
+              "new_water_ap": 0.4119,
+              "water_at_threshold": {
+                "precision": 0.578,
+                "recall": 0.7622,
+                "f1": 0.6574,
+                "iou": 0.4897,
+                "predicted_w": 19165.0,
+                "observed_w": 14532.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.2809,
+                "recall": 0.7758,
+                "f1": 0.4124,
+                "iou": 0.2598,
+                "predicted_w": 9769.0,
+                "observed_w": 3537.0
+              }
+            },
+            "terrain_only": {
+              "water_ap": 0.6808,
+              "new_water_ap": 0.4065,
+              "water_at_threshold": {
+                "precision": 0.5423,
+                "recall": 0.7398,
+                "f1": 0.6258,
+                "iou": 0.4554,
+                "predicted_w": 19825.0,
+                "observed_w": 14532.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.2642,
+                "recall": 0.784,
+                "f1": 0.3952,
+                "iou": 0.2463,
+                "predicted_w": 10495.0,
+                "observed_w": 3537.0
+              }
+            },
+            "persistence": {
+              "water_ap": 0.4803,
+              "new_water_ap": 0.0032
+            },
+            "past_wet_share": {
+              "water_ap": 0.6575,
+              "new_water_ap": 0.424,
+              "water_at_threshold": {
+                "precision": 0.533,
+                "recall": 0.6676,
+                "f1": 0.5927,
+                "iou": 0.4212,
+                "predicted_w": 18201.0,
+                "observed_w": 14532.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.3477,
+                "recall": 0.6234,
+                "f1": 0.4464,
+                "iou": 0.2874,
+                "predicted_w": 6341.0,
+                "observed_w": 3537.0
+              }
+            }
+          },
+          "cells_250m": {
+            "rain_and_state": {
+              "new_water_ap": 0.2822,
+              "hit_rate": 0.8157,
+              "precision": 0.298,
+              "false_alarm_ratio": 0.702,
+              "cells": 8273,
+              "observed_new_water_ha": 141.5,
+              "marked_ha": 387.2
+            },
+            "blend": {
+              "new_water_ap": 0.2795,
+              "hit_rate": 0.8128,
+              "precision": 0.2943,
+              "false_alarm_ratio": 0.7057,
+              "cells": 8273,
+              "observed_new_water_ha": 141.5,
+              "marked_ha": 390.8
+            },
+            "terrain_only": {
+              "new_water_ap": 0.2737,
+              "hit_rate": 0.8275,
+              "precision": 0.2789,
+              "false_alarm_ratio": 0.7211,
+              "cells": 8273,
+              "observed_new_water_ha": 141.5,
+              "marked_ha": 419.8
+            },
+            "past_wet_share": {
+              "new_water_ap": 0.2834,
+              "hit_rate": 0.7334,
+              "precision": 0.4091,
+              "false_alarm_ratio": 0.5909,
+              "cells": 8273,
+              "observed_new_water_ha": 141.5,
+              "marked_ha": 253.6
+            }
+          }
+        },
+        {
+          "pass_id": "20261104T060112_S1C",
+          "date": "2026-11-04",
+          "issue_pass": "20261029T175323_S1C",
+          "lead_days": 5.51,
+          "rain_prior_7d_mm": 2.6,
+          "rain_prior_30d_mm": 288.4,
+          "rain_between_mm": 31.6,
+          "rain_between_max1d_mm": 18.5,
+          "days_since_rain_peak": 4.0,
+          "observed_new_water_ha": 90.3,
+          "n": 1134947,
+          "weighted_wet_share": 0.01065,
+          "n_new_candidates": 1117509,
+          "weighted_new_water_share": 0.00202,
+          "methods": {
+            "rain_and_state": {
+              "water_ap": 0.4862,
+              "new_water_ap": 0.1131,
+              "water_at_threshold": {
+                "precision": 0.439,
+                "recall": 0.6307,
+                "f1": 0.5176,
+                "iou": 0.3492,
+                "predicted_w": 17359.0,
+                "observed_w": 12082.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.1004,
+                "recall": 0.4431,
+                "f1": 0.1637,
+                "iou": 0.0891,
+                "predicted_w": 9963.0,
+                "observed_w": 2257.0
+              }
+            },
+            "blend": {
+              "water_ap": 0.4321,
+              "new_water_ap": 0.1074,
+              "water_at_threshold": {
+                "precision": 0.4072,
+                "recall": 0.6246,
+                "f1": 0.493,
+                "iou": 0.3271,
+                "predicted_w": 18531.0,
+                "observed_w": 12082.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.0981,
+                "recall": 0.4329,
+                "f1": 0.1599,
+                "iou": 0.0869,
+                "predicted_w": 9962.0,
+                "observed_w": 2257.0
+              }
+            },
+            "terrain_only": {
+              "water_ap": 0.3764,
+              "new_water_ap": 0.1032,
+              "water_at_threshold": {
+                "precision": 0.3568,
+                "recall": 0.5855,
+                "f1": 0.4434,
+                "iou": 0.2849,
+                "predicted_w": 19825.0,
+                "observed_w": 12082.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.0971,
+                "recall": 0.4515,
+                "f1": 0.1598,
+                "iou": 0.0868,
+                "predicted_w": 10495.0,
+                "observed_w": 2257.0
+              }
+            },
+            "persistence": {
+              "water_ap": 0.4601,
+              "new_water_ap": 0.002
+            },
+            "past_wet_share": {
+              "water_ap": 0.3423,
+              "new_water_ap": 0.1042,
+              "water_at_threshold": {
+                "precision": 0.3123,
+                "recall": 0.4705,
+                "f1": 0.3755,
+                "iou": 0.2311,
+                "predicted_w": 18201.0,
+                "observed_w": 12082.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.1101,
+                "recall": 0.3093,
+                "f1": 0.1624,
+                "iou": 0.0884,
+                "predicted_w": 6341.0,
+                "observed_w": 2257.0
+              }
+            }
+          },
+          "cells_250m": {
+            "rain_and_state": {
+              "new_water_ap": 0.0591,
+              "hit_rate": 0.6043,
+              "precision": 0.1369,
+              "false_alarm_ratio": 0.8631,
+              "cells": 8273,
+              "observed_new_water_ha": 90.3,
+              "marked_ha": 398.5
+            },
+            "blend": {
+              "new_water_ap": 0.0588,
+              "hit_rate": 0.5884,
+              "precision": 0.1333,
+              "false_alarm_ratio": 0.8667,
+              "cells": 8273,
+              "observed_new_water_ha": 90.3,
+              "marked_ha": 398.5
+            },
+            "terrain_only": {
+              "new_water_ap": 0.0585,
+              "hit_rate": 0.6074,
+              "precision": 0.1306,
+              "false_alarm_ratio": 0.8694,
+              "cells": 8273,
+              "observed_new_water_ha": 90.3,
+              "marked_ha": 419.8
+            },
+            "past_wet_share": {
+              "new_water_ap": 0.0557,
+              "hit_rate": 0.4608,
+              "precision": 0.164,
+              "false_alarm_ratio": 0.836,
+              "cells": 8273,
+              "observed_new_water_ha": 90.3,
+              "marked_ha": 253.6
+            }
+          }
+        },
+        {
+          "pass_id": "20261104T175336_S1D",
+          "date": "2026-11-04",
+          "issue_pass": "20261029T175323_S1C",
+          "lead_days": 6.0,
+          "rain_prior_7d_mm": 2.6,
+          "rain_prior_30d_mm": 288.4,
+          "rain_between_mm": 31.6,
+          "rain_between_max1d_mm": 18.5,
+          "days_since_rain_peak": 4.0,
+          "observed_new_water_ha": 157.1,
+          "n": 1127873,
+          "weighted_wet_share": 0.01475,
+          "n_new_candidates": 1110434,
+          "weighted_new_water_share": 0.00354,
+          "methods": {
+            "rain_and_state": {
+              "water_ap": 0.6727,
+              "new_water_ap": 0.2386,
+              "water_at_threshold": {
+                "precision": 0.5958,
+                "recall": 0.6594,
+                "f1": 0.626,
+                "iou": 0.4556,
+                "predicted_w": 18411.0,
+                "observed_w": 16636.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.1863,
+                "recall": 0.5177,
+                "f1": 0.274,
+                "iou": 0.1588,
+                "predicted_w": 10912.0,
+                "observed_w": 3927.0
+              }
+            },
+            "blend": {
+              "water_ap": 0.6177,
+              "new_water_ap": 0.2327,
+              "water_at_threshold": {
+                "precision": 0.5609,
+                "recall": 0.6402,
+                "f1": 0.5979,
+                "iou": 0.4264,
+                "predicted_w": 18988.0,
+                "observed_w": 16636.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.1897,
+                "recall": 0.4953,
+                "f1": 0.2743,
+                "iou": 0.1589,
+                "predicted_w": 10255.0,
+                "observed_w": 3927.0
+              }
+            },
+            "terrain_only": {
+              "water_ap": 0.5554,
+              "new_water_ap": 0.2262,
+              "water_at_threshold": {
+                "precision": 0.5015,
+                "recall": 0.5976,
+                "f1": 0.5453,
+                "iou": 0.3749,
+                "predicted_w": 19825.0,
+                "observed_w": 16636.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.1879,
+                "recall": 0.5022,
+                "f1": 0.2735,
+                "iou": 0.1584,
+                "predicted_w": 10495.0,
+                "observed_w": 3927.0
+              }
+            },
+            "persistence": {
+              "water_ap": 0.5601,
+              "new_water_ap": 0.0035
+            },
+            "past_wet_share": {
+              "water_ap": 0.524,
+              "new_water_ap": 0.2259,
+              "water_at_threshold": {
+                "precision": 0.477,
+                "recall": 0.5218,
+                "f1": 0.4984,
+                "iou": 0.3319,
+                "predicted_w": 18201.0,
+                "observed_w": 16636.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.2332,
+                "recall": 0.3766,
+                "f1": 0.2881,
+                "iou": 0.1683,
+                "predicted_w": 6341.0,
+                "observed_w": 3927.0
+              }
+            }
+          },
+          "cells_250m": {
+            "rain_and_state": {
+              "new_water_ap": 0.1536,
+              "hit_rate": 0.6547,
+              "precision": 0.2356,
+              "false_alarm_ratio": 0.7644,
+              "cells": 8272,
+              "observed_new_water_ha": 157.1,
+              "marked_ha": 436.5
+            },
+            "blend": {
+              "new_water_ap": 0.1543,
+              "hit_rate": 0.6175,
+              "precision": 0.2365,
+              "false_alarm_ratio": 0.7635,
+              "cells": 8272,
+              "observed_new_water_ha": 157.1,
+              "marked_ha": 410.2
+            },
+            "terrain_only": {
+              "new_water_ap": 0.1516,
+              "hit_rate": 0.6303,
+              "precision": 0.2358,
+              "false_alarm_ratio": 0.7642,
+              "cells": 8272,
+              "observed_new_water_ha": 157.1,
+              "marked_ha": 419.8
+            },
+            "past_wet_share": {
+              "new_water_ap": 0.1492,
+              "hit_rate": 0.493,
+              "precision": 0.3053,
+              "false_alarm_ratio": 0.6947,
+              "cells": 8272,
+              "observed_new_water_ha": 157.1,
+              "marked_ha": 253.6
+            }
+          }
+        },
+        {
+          "pass_id": "20261109T060922_S1C",
+          "date": "2026-11-09",
+          "issue_pass": "20261104T175336_S1D",
+          "lead_days": 4.51,
+          "rain_prior_7d_mm": 33.6,
+          "rain_prior_30d_mm": 231.8,
+          "rain_between_mm": 17.1,
+          "rain_between_max1d_mm": 12.5,
+          "days_since_rain_peak": 5.0,
+          "observed_new_water_ha": 95.5,
+          "n": 939919,
+          "weighted_wet_share": 0.0136,
+          "n_new_candidates": 923474,
+          "weighted_new_water_share": 0.00258,
+          "methods": {
+            "rain_and_state": {
+              "water_ap": 0.5864,
+              "new_water_ap": 0.1126,
+              "water_at_threshold": {
+                "precision": 0.5098,
+                "recall": 0.6318,
+                "f1": 0.5643,
+                "iou": 0.393,
+                "predicted_w": 15839.0,
+                "observed_w": 12779.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.0948,
+                "recall": 0.4851,
+                "f1": 0.1586,
+                "iou": 0.0861,
+                "predicted_w": 12216.0,
+                "observed_w": 2387.0
+              }
+            },
+            "blend": {
+              "water_ap": 0.5004,
+              "new_water_ap": 0.0997,
+              "water_at_threshold": {
+                "precision": 0.4302,
+                "recall": 0.6233,
+                "f1": 0.5091,
+                "iou": 0.3414,
+                "predicted_w": 18513.0,
+                "observed_w": 12779.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.0904,
+                "recall": 0.4374,
+                "f1": 0.1498,
+                "iou": 0.081,
+                "predicted_w": 11552.0,
+                "observed_w": 2387.0
+              }
+            },
+            "terrain_only": {
+              "water_ap": 0.4222,
+              "new_water_ap": 0.0932,
+              "water_at_threshold": {
+                "precision": 0.3812,
+                "recall": 0.5896,
+                "f1": 0.463,
+                "iou": 0.3012,
+                "predicted_w": 19766.0,
+                "observed_w": 12779.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.0847,
+                "recall": 0.4022,
+                "f1": 0.1399,
+                "iou": 0.0752,
+                "predicted_w": 11340.0,
+                "observed_w": 2387.0
+              }
+            },
+            "persistence": {
+              "water_ap": 0.5167,
+              "new_water_ap": 0.0026
+            },
+            "past_wet_share": {
+              "water_ap": 0.3946,
+              "new_water_ap": 0.1025,
+              "water_at_threshold": {
+                "precision": 0.3448,
+                "recall": 0.4864,
+                "f1": 0.4036,
+                "iou": 0.2528,
+                "predicted_w": 18026.0,
+                "observed_w": 12779.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.0941,
+                "recall": 0.2958,
+                "f1": 0.1428,
+                "iou": 0.0769,
+                "predicted_w": 7503.0,
+                "observed_w": 2387.0
+              }
+            }
+          },
+          "cells_250m": {
+            "rain_and_state": {
+              "new_water_ap": 0.0497,
+              "hit_rate": 0.6355,
+              "precision": 0.1242,
+              "false_alarm_ratio": 0.8758,
+              "cells": 6889,
+              "observed_new_water_ha": 95.5,
+              "marked_ha": 488.6
+            },
+            "blend": {
+              "new_water_ap": 0.0502,
+              "hit_rate": 0.5727,
+              "precision": 0.1183,
+              "false_alarm_ratio": 0.8817,
+              "cells": 6889,
+              "observed_new_water_ha": 95.5,
+              "marked_ha": 462.1
+            },
+            "terrain_only": {
+              "new_water_ap": 0.05,
+              "hit_rate": 0.5094,
+              "precision": 0.1072,
+              "false_alarm_ratio": 0.8928,
+              "cells": 6889,
+              "observed_new_water_ha": 95.5,
+              "marked_ha": 453.6
+            },
+            "past_wet_share": {
+              "new_water_ap": 0.0512,
+              "hit_rate": 0.3909,
+              "precision": 0.1244,
+              "false_alarm_ratio": 0.8756,
+              "cells": 6889,
+              "observed_new_water_ha": 95.5,
+              "marked_ha": 300.1
+            }
+          }
+        },
+        {
+          "pass_id": "20261109T180144_S1D",
+          "date": "2026-11-09",
+          "issue_pass": "20261104T175336_S1D",
+          "lead_days": 5.01,
+          "rain_prior_7d_mm": 33.6,
+          "rain_prior_30d_mm": 231.8,
+          "rain_between_mm": 17.1,
+          "rain_between_max1d_mm": 12.5,
+          "days_since_rain_peak": 5.0,
+          "observed_new_water_ha": 260.5,
+          "n": 1136331,
+          "weighted_wet_share": 0.01526,
+          "n_new_candidates": 1119691,
+          "weighted_new_water_share": 0.00582,
+          "methods": {
+            "rain_and_state": {
+              "water_ap": 0.7974,
+              "new_water_ap": 0.6475,
+              "water_at_threshold": {
+                "precision": 0.6986,
+                "recall": 0.7894,
+                "f1": 0.7413,
+                "iou": 0.5889,
+                "predicted_w": 19591.0,
+                "observed_w": 17338.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.4825,
+                "recall": 0.8383,
+                "f1": 0.6125,
+                "iou": 0.4415,
+                "predicted_w": 11313.0,
+                "observed_w": 6512.0
+              }
+            },
+            "blend": {
+              "water_ap": 0.7844,
+              "new_water_ap": 0.6489,
+              "water_at_threshold": {
+                "precision": 0.6905,
+                "recall": 0.7907,
+                "f1": 0.7372,
+                "iou": 0.5838,
+                "predicted_w": 19853.0,
+                "observed_w": 17338.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.4833,
+                "recall": 0.8345,
+                "f1": 0.6121,
+                "iou": 0.441,
+                "predicted_w": 11243.0,
+                "observed_w": 6512.0
+              }
+            },
+            "terrain_only": {
+              "water_ap": 0.7595,
+              "new_water_ap": 0.6487,
+              "water_at_threshold": {
+                "precision": 0.6701,
+                "recall": 0.7713,
+                "f1": 0.7171,
+                "iou": 0.559,
+                "predicted_w": 19958.0,
+                "observed_w": 17338.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.4752,
+                "recall": 0.8397,
+                "f1": 0.6069,
+                "iou": 0.4357,
+                "predicted_w": 11506.0,
+                "observed_w": 6512.0
+              }
+            },
+            "persistence": {
+              "water_ap": 0.4117,
+              "new_water_ap": 0.0058
+            },
+            "past_wet_share": {
+              "water_ap": 0.7309,
+              "new_water_ap": 0.6258,
+              "water_at_threshold": {
+                "precision": 0.6632,
+                "recall": 0.6963,
+                "f1": 0.6793,
+                "iou": 0.5144,
+                "predicted_w": 18203.0,
+                "observed_w": 17338.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.5587,
+                "recall": 0.6499,
+                "f1": 0.6008,
+                "iou": 0.4294,
+                "predicted_w": 7575.0,
+                "observed_w": 6512.0
+              }
+            }
+          },
+          "cells_250m": {
+            "rain_and_state": {
+              "new_water_ap": 0.494,
+              "hit_rate": 0.873,
+              "precision": 0.5025,
+              "false_alarm_ratio": 0.4975,
+              "cells": 8273,
+              "observed_new_water_ha": 260.5,
+              "marked_ha": 452.5
+            },
+            "blend": {
+              "new_water_ap": 0.4962,
+              "hit_rate": 0.8664,
+              "precision": 0.5018,
+              "false_alarm_ratio": 0.4982,
+              "cells": 8273,
+              "observed_new_water_ha": 260.5,
+              "marked_ha": 449.7
+            },
+            "terrain_only": {
+              "new_water_ap": 0.4997,
+              "hit_rate": 0.8727,
+              "precision": 0.4939,
+              "false_alarm_ratio": 0.5061,
+              "cells": 8273,
+              "observed_new_water_ha": 260.5,
+              "marked_ha": 460.2
+            },
+            "past_wet_share": {
+              "new_water_ap": 0.4844,
+              "hit_rate": 0.7099,
+              "precision": 0.6103,
+              "false_alarm_ratio": 0.3897,
+              "cells": 8273,
+              "observed_new_water_ha": 260.5,
+              "marked_ha": 303.0
+            }
+          }
+        },
+        {
+          "pass_id": "20261110T060124_S1D",
+          "date": "2026-11-10",
+          "issue_pass": "20261104T175336_S1D",
+          "lead_days": 5.51,
+          "rain_prior_7d_mm": 33.6,
+          "rain_prior_30d_mm": 231.8,
+          "rain_between_mm": 18.0,
+          "rain_between_max1d_mm": 12.5,
+          "days_since_rain_peak": 6.0,
+          "observed_new_water_ha": 117.2,
+          "n": 1134883,
+          "weighted_wet_share": 0.00996,
+          "n_new_candidates": 1118238,
+          "weighted_new_water_share": 0.00262,
+          "methods": {
+            "rain_and_state": {
+              "water_ap": 0.5483,
+              "new_water_ap": 0.1452,
+              "water_at_threshold": {
+                "precision": 0.4166,
+                "recall": 0.6871,
+                "f1": 0.5187,
+                "iou": 0.3502,
+                "predicted_w": 18652.0,
+                "observed_w": 11308.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.1337,
+                "recall": 0.5242,
+                "f1": 0.213,
+                "iou": 0.1192,
+                "predicted_w": 11492.0,
+                "observed_w": 2930.0
+              }
+            },
+            "blend": {
+              "water_ap": 0.4915,
+              "new_water_ap": 0.1414,
+              "water_at_threshold": {
+                "precision": 0.3976,
+                "recall": 0.6859,
+                "f1": 0.5034,
+                "iou": 0.3364,
+                "predicted_w": 19506.0,
+                "observed_w": 11308.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.1333,
+                "recall": 0.5164,
+                "f1": 0.2119,
+                "iou": 0.1185,
+                "predicted_w": 11353.0,
+                "observed_w": 2930.0
+              }
+            },
+            "terrain_only": {
+              "water_ap": 0.4222,
+              "new_water_ap": 0.1379,
+              "water_at_threshold": {
+                "precision": 0.3672,
+                "recall": 0.6481,
+                "f1": 0.4688,
+                "iou": 0.3061,
+                "predicted_w": 19961.0,
+                "observed_w": 11308.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.1284,
+                "recall": 0.5041,
+                "f1": 0.2046,
+                "iou": 0.114,
+                "predicted_w": 11506.0,
+                "observed_w": 2930.0
+              }
+            },
+            "persistence": {
+              "water_ap": 0.3757,
+              "new_water_ap": 0.0026
+            },
+            "past_wet_share": {
+              "water_ap": 0.4067,
+              "new_water_ap": 0.1448,
+              "water_at_threshold": {
+                "precision": 0.3564,
+                "recall": 0.5738,
+                "f1": 0.4397,
+                "iou": 0.2818,
+                "predicted_w": 18204.0,
+                "observed_w": 11308.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.1456,
+                "recall": 0.3765,
+                "f1": 0.21,
+                "iou": 0.1173,
+                "predicted_w": 7573.0,
+                "observed_w": 2930.0
+              }
+            }
+          },
+          "cells_250m": {
+            "rain_and_state": {
+              "new_water_ap": 0.0804,
+              "hit_rate": 0.629,
+              "precision": 0.1604,
+              "false_alarm_ratio": 0.8396,
+              "cells": 8272,
+              "observed_new_water_ha": 117.2,
+              "marked_ha": 459.7
+            },
+            "blend": {
+              "new_water_ap": 0.0792,
+              "hit_rate": 0.6061,
+              "precision": 0.1564,
+              "false_alarm_ratio": 0.8436,
+              "cells": 8272,
+              "observed_new_water_ha": 117.2,
+              "marked_ha": 454.1
+            },
+            "terrain_only": {
+              "new_water_ap": 0.079,
+              "hit_rate": 0.5857,
+              "precision": 0.1491,
+              "false_alarm_ratio": 0.8509,
+              "cells": 8272,
+              "observed_new_water_ha": 117.2,
+              "marked_ha": 460.2
+            },
+            "past_wet_share": {
+              "new_water_ap": 0.078,
+              "hit_rate": 0.486,
+              "precision": 0.188,
+              "false_alarm_ratio": 0.812,
+              "cells": 8272,
+              "observed_new_water_ha": 117.2,
+              "marked_ha": 302.9
+            }
+          }
+        },
+        {
+          "pass_id": "20261110T175323_S1C",
+          "date": "2026-11-10",
+          "issue_pass": "20261104T175336_S1D",
+          "lead_days": 6.0,
+          "rain_prior_7d_mm": 33.6,
+          "rain_prior_30d_mm": 231.8,
+          "rain_between_mm": 18.0,
+          "rain_between_max1d_mm": 12.5,
+          "days_since_rain_peak": 6.0,
+          "observed_new_water_ha": 191.6,
+          "n": 1127763,
+          "weighted_wet_share": 0.01295,
+          "n_new_candidates": 1111124,
+          "weighted_new_water_share": 0.00431,
+          "methods": {
+            "rain_and_state": {
+              "water_ap": 0.6638,
+              "new_water_ap": 0.4494,
+              "water_at_threshold": {
+                "precision": 0.5575,
+                "recall": 0.7452,
+                "f1": 0.6378,
+                "iou": 0.4682,
+                "predicted_w": 19519.0,
+                "observed_w": 14602.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.2791,
+                "recall": 0.726,
+                "f1": 0.4032,
+                "iou": 0.2525,
+                "predicted_w": 12459.0,
+                "observed_w": 4789.0
+              }
+            },
+            "blend": {
+              "water_ap": 0.6432,
+              "new_water_ap": 0.448,
+              "water_at_threshold": {
+                "precision": 0.5273,
+                "recall": 0.7311,
+                "f1": 0.6127,
+                "iou": 0.4417,
+                "predicted_w": 20243.0,
+                "observed_w": 14602.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.2891,
+                "recall": 0.7027,
+                "f1": 0.4096,
+                "iou": 0.2576,
+                "predicted_w": 11640.0,
+                "observed_w": 4789.0
+              }
+            },
+            "terrain_only": {
+              "water_ap": 0.6024,
+              "new_water_ap": 0.4413,
+              "water_at_threshold": {
+                "precision": 0.5031,
+                "recall": 0.6876,
+                "f1": 0.581,
+                "iou": 0.4095,
+                "predicted_w": 19958.0,
+                "observed_w": 14602.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.2884,
+                "recall": 0.6928,
+                "f1": 0.4072,
+                "iou": 0.2557,
+                "predicted_w": 11506.0,
+                "observed_w": 4789.0
+              }
+            },
+            "persistence": {
+              "water_ap": 0.4008,
+              "new_water_ap": 0.0043
+            },
+            "past_wet_share": {
+              "water_ap": 0.5944,
+              "new_water_ap": 0.4514,
+              "water_at_threshold": {
+                "precision": 0.5051,
+                "recall": 0.6296,
+                "f1": 0.5606,
+                "iou": 0.3894,
+                "predicted_w": 18201.0,
+                "observed_w": 14602.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.3812,
+                "recall": 0.6028,
+                "f1": 0.4671,
+                "iou": 0.3047,
+                "predicted_w": 7573.0,
+                "observed_w": 4789.0
+              }
+            }
+          },
+          "cells_250m": {
+            "rain_and_state": {
+              "new_water_ap": 0.345,
+              "hit_rate": 0.8068,
+              "precision": 0.3101,
+              "false_alarm_ratio": 0.6899,
+              "cells": 8272,
+              "observed_new_water_ha": 191.6,
+              "marked_ha": 498.4
+            },
+            "blend": {
+              "new_water_ap": 0.345,
+              "hit_rate": 0.7643,
+              "precision": 0.3144,
+              "false_alarm_ratio": 0.6856,
+              "cells": 8272,
+              "observed_new_water_ha": 191.6,
+              "marked_ha": 465.6
+            },
+            "terrain_only": {
+              "new_water_ap": 0.3435,
+              "hit_rate": 0.7432,
+              "precision": 0.3093,
+              "false_alarm_ratio": 0.6907,
+              "cells": 8272,
+              "observed_new_water_ha": 191.6,
+              "marked_ha": 460.2
+            },
+            "past_wet_share": {
+              "new_water_ap": 0.3471,
+              "hit_rate": 0.6851,
+              "precision": 0.4332,
+              "false_alarm_ratio": 0.5668,
+              "cells": 8272,
+              "observed_new_water_ha": 191.6,
+              "marked_ha": 302.9
+            }
+          }
+        }
+      ],
+      "forecast_replay": {
+        "target_pass": "20261022T060936_S1D",
+        "issue_pass": "20261017T175323_S1C",
+        "ifs_run": "2026-10-17T00:00Z",
+        "forecast_rain_between_mm": 64.6,
+        "n": 940002,
+        "weighted_wet_share": 0.0172,
+        "n_new_candidates": 929804,
+        "weighted_new_water_share": 0.01341,
+        "methods": {
+          "rain_and_state": {
+            "water_ap": 0.4189,
+            "new_water_ap": 0.3788,
+            "water_at_threshold": {
+              "precision": 0.4107,
+              "recall": 0.2932,
+              "f1": 0.3421,
+              "iou": 0.2064,
+              "predicted_w": 11545.0,
+              "observed_w": 16168.0
+            },
+            "new_water_at_threshold": {
+              "precision": 0.388,
+              "recall": 0.3884,
+              "f1": 0.3882,
+              "iou": 0.2409,
+              "predicted_w": 12478.0,
+              "observed_w": 12465.0
+            }
+          },
+          "blend": {
+            "water_ap": 0.4028,
+            "new_water_ap": 0.3639,
+            "water_at_threshold": {
+              "precision": 0.4201,
+              "recall": 0.3592,
+              "f1": 0.3872,
+              "iou": 0.2401,
+              "predicted_w": 13824.0,
+              "observed_w": 16168.0
+            },
+            "new_water_at_threshold": {
+              "precision": 0.3791,
+              "recall": 0.3527,
+              "f1": 0.3654,
+              "iou": 0.2236,
+              "predicted_w": 11595.0,
+              "observed_w": 12465.0
+            }
+          },
+          "terrain_only": {
+            "water_ap": 0.3885,
+            "new_water_ap": 0.3515,
+            "water_at_threshold": {
+              "precision": 0.3924,
+              "recall": 0.4046,
+              "f1": 0.3984,
+              "iou": 0.2488,
+              "predicted_w": 16672.0,
+              "observed_w": 16168.0
+            },
+            "new_water_at_threshold": {
+              "precision": 0.3818,
+              "recall": 0.3483,
+              "f1": 0.3643,
+              "iou": 0.2227,
+              "predicted_w": 11373.0,
+              "observed_w": 12465.0
+            }
+          },
+          "persistence": {
+            "water_ap": 0.0964,
+            "new_water_ap": 0.0134
+          },
+          "past_wet_share": {
+            "water_ap": 0.3778,
+            "new_water_ap": 0.3257,
+            "water_at_threshold": {
+              "precision": 0.3667,
+              "recall": 0.4088,
+              "f1": 0.3866,
+              "iou": 0.2396,
+              "predicted_w": 18026.0,
+              "observed_w": 16168.0
+            },
+            "new_water_at_threshold": {
+              "precision": 0.2822,
+              "recall": 0.1515,
+              "f1": 0.1972,
+              "iou": 0.1094,
+              "predicted_w": 6693.0,
+              "observed_w": 12465.0
+            }
+          }
+        },
+        "cells_250m": {
+          "rain_and_state": {
+            "new_water_ap": 0.3399,
+            "hit_rate": 0.4497,
+            "precision": 0.4493,
+            "false_alarm_ratio": 0.5507,
+            "cells": 6891,
+            "observed_new_water_ha": 498.6,
+            "marked_ha": 499.1
+          },
+          "blend": {
+            "new_water_ap": 0.3244,
+            "hit_rate": 0.4035,
+            "precision": 0.4338,
+            "false_alarm_ratio": 0.5662,
+            "cells": 6891,
+            "observed_new_water_ha": 498.6,
+            "marked_ha": 463.8
+          },
+          "terrain_only": {
+            "new_water_ap": 0.3154,
+            "hit_rate": 0.3969,
+            "precision": 0.435,
+            "false_alarm_ratio": 0.565,
+            "cells": 6891,
+            "observed_new_water_ha": 498.6,
+            "marked_ha": 454.9
+          },
+          "past_wet_share": {
+            "new_water_ap": 0.3068,
+            "hit_rate": 0.1961,
+            "precision": 0.3653,
+            "false_alarm_ratio": 0.6347,
+            "cells": 6891,
+            "observed_new_water_ha": 498.6,
+            "marked_ha": 267.7
+          }
+        }
+      },
+      "scenarios": {
+        "rain_and_state": {
+          "000mm": {
+            "likely_water": 647.9,
+            "likely_new_water": 504.8
+          },
+          "050mm": {
+            "likely_water": 788.9,
+            "likely_new_water": 590.2
+          },
+          "100mm": {
+            "likely_water": 802.5,
+            "likely_new_water": 623.8
+          },
+          "200mm": {
+            "likely_water": 1048.8,
+            "likely_new_water": 980.3
+          },
+          "new_water_grows_with_rain": true
+        },
+        "blend": {
+          "000mm": {
+            "likely_water": 754.8,
+            "likely_new_water": 474.9
+          },
+          "050mm": {
+            "likely_water": 813.3,
+            "likely_new_water": 505.7
+          },
+          "100mm": {
+            "likely_water": 816.2,
+            "likely_new_water": 512.0
+          },
+          "200mm": {
+            "likely_water": 871.4,
+            "likely_new_water": 593.9
+          },
+          "new_water_grows_with_rain": true
+        }
+      }
+    }
+  }
+}

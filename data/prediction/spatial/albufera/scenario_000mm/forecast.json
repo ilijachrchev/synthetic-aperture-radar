@@ -1,0 +1,65 @@
+{
+  "site": "albufera",
+  "model": "spatial water likelihood (LightGBM)",
+  "variant": "mono_neigh+blend",
+  "exported_score": "blend",
+  "model_sha256_16": "2eea321ceebe7d37",
+  "rain_source": "Open-Meteo, ECMWF IFS 9 km, wettest lattice point of the site per day",
+  "holdout": {
+    "start": "2026-10-15",
+    "end": "2026-11-15"
+  },
+  "validation_status": "retrospective check on the held-out October 2026 window against Sentinel-1 maps (data/prediction/spatial/improve); not yet scored against Copernicus EMSR935",
+  "scenario_id": "scenario_000mm",
+  "mode": "scenario",
+  "mode_note": "hypothetical: 0 mm at the wettest point of the site over the 4 days after the latest water map, 60 % of it on one day, two days before the target",
+  "issued_from_pass": "20261110T175337_S1C",
+  "issue_time_utc": "2026-11-10T17:53:37.000Z",
+  "target_time_utc": "2026-11-14T17:53:37Z",
+  "lead_days": 4.0,
+  "rain": {
+    "rain_prior_7d_mm": 25.4,
+    "rain_prior_30d_mm": 304.19999999999993,
+    "rain_between_mm": 0.0,
+    "rain_between_max1d_mm": 0.0,
+    "days_since_rain_peak": 2.0
+  },
+  "rain_seen_in_training": {
+    "max": 212.8,
+    "p99": 184.0,
+    "p90": 53.6,
+    "targets_over_100mm": 18,
+    "inside_training_range": true
+  },
+  "score": "relative water likelihood 0-1 learned from Sentinel-1 water maps; not a calibrated flood probability",
+  "files": {
+    "water_likelihood_utm.tif": "float32 0-1, NaN outside land, EPSG:32630 20 m",
+    "new_water_likelihood_utm.tif": "the same, only where the previous water map says dry",
+    "evidence_utm.tif": "uint8 flags, see evidence",
+    "water_likelihood_web.tif": "uint8 0-100, 255 no data, Web Mercator COG",
+    "new_water_likelihood_web.tif": "uint8 0-100, 255 no data, Web Mercator COG"
+  },
+  "evidence": {
+    "0": "prediction from terrain, rain and the previous water map",
+    "1": "permanent water (JRC occurrence >= 90 %): context, not flooding",
+    "2": "built-up land: radar water maps are unreliable here, so nothing was learned from towns; the value is extrapolated from fields",
+    "3": "no water map before the issue time: new water cannot be told from old",
+    "4": "rarely or never mapped by Sentinel-1 (terrain mask, shadow): extrapolated",
+    "255": "sea or outside the land grid"
+  },
+  "thresholds": {
+    "water": 0.2946479241707799,
+    "new_water": 0.17653340825370928
+  },
+  "area_ha": {
+    "likely_water": 5157.1,
+    "likely_new_water": 1837.9,
+    "counted_on": "evidence 0 pixels only"
+  },
+  "native_resolution": {
+    "rain": "ECMWF IFS 9 km, one value per site and day",
+    "terrain": "30 m",
+    "water_maps": "30 m"
+  },
+  "attribution": "OPERA DSWx-S1 (NASA JPL), Open-Meteo / ECMWF IFS (CC BY 4.0), ASF GLO-30 HAND, Copernicus DEM GLO-30, ESA WorldCover 2021, JRC Global Surface Water"
+}
