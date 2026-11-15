@@ -318,6 +318,13 @@ MARK_RADIUS_M = 10.0    # key A: a surveyed water mark above 0 m within 10 m
 UPV_DEPTH_M = 0.1       # key B: UPV depth above 0.1 m
 SIM_EXTENT_M = 0.3      # the SIMULATED run's own extent: maximum depth above 0.3 m
 MAJORITY = 0.5          # a piece is in a layer when at least half of its sample points are
+# The two newer runs (docs/STREETS.md, "Two more simulations"), scored exactly like the PR #39 run: own extent
+# (maximum depth above 0.3 m) and the ranking by median maximum depth cut to the official zones' street length.
+EXTRA_SIM_RUNS = {
+    "ifs_20241028T12": "simulation_ifs_20241028T12",   # run A, forecast issued 28 Oct 2024 12 UTC
+    "ifs_20241029T00": "simulation_ifs_20241029T00",   # run A, forecast issued 29 Oct 2024 00 UTC
+    "buildings": "simulation_buildings",               # run B, gauged rain, buildings as obstacles
+}
 
 ROADS = ("motorway", "motorway_link", "trunk", "trunk_link", "primary", "primary_link", "secondary",
          "secondary_link", "tertiary", "tertiary_link", "unclassified", "residential", "living_street", "service",
@@ -617,6 +624,13 @@ def pixel_layers(zones_dir: Path, sample_cells: np.ndarray) -> dict:
     out["sim_depth"] = np.where(on_grid, sim_at(cells), np.nan).astype(np.float32)
     eq_sim = cut(-sim_at(idx).astype(np.float64))
     out["sim_equal_area"] = np.where(spos >= 0, eq_sim[np.maximum(spos, 0)], False)
+    rr, cc = np.divmod(cells, cols)
+    for run, folder in EXTRA_SIM_RUNS.items():
+        if (INTERIM_DIR / folder / "sim_hmax_25m.tif").exists():
+            hm_run = st.load_grid("sim_hmax_25m", folder=INTERIM_DIR / folder)
+            out[f"simdepth_{run}"] = np.where(on_grid, hm_run[rr // f, cc // f], np.nan).astype(np.float32)
+            del hm_run
+    del rr, cc
     # checks: the rebuilt cuts against the land flooded per town in results.json (PR #39)
     from pipeline.streets import pct
 
@@ -709,6 +723,12 @@ def evaluate(b: dict, lay: dict, marks_xy: np.ndarray, outline, surveyed=None) -
     flags["simulated_equal_area_union"] = frac("sim_equal_area") >= MAJORITY
     hand_med = group_median(lay["hand"][e_rows], e_piece, n)
     sim_med = group_median(lay["sim_depth"][e_rows], e_piece, n)
+    extra = [r for r in EXTRA_SIM_RUNS if f"simdepth_{r}" in lay]
+    extra_med = {}
+    for r in extra:
+        flags[f"simulated_{r}_depth_above_0p3m"] = frac(f"simdepth_{r}",
+                                                        lambda v: np.isfinite(v) & (v > SIM_EXTENT_M)) >= MAJORITY
+        extra_med[r] = group_median(lay[f"simdepth_{r}"][e_rows], e_piece, n)
 
     keys = {"A": (key_a, None), "B": (key_b, dom_b)}
     methods = {}
@@ -716,7 +736,8 @@ def evaluate(b: dict, lay: dict, marks_xy: np.ndarray, outline, surveyed=None) -
         methods[name] = {k: by_town(fl, kv, length, town, dom) for k, (kv, dom) in keys.items()}
     # equal street length: each ranking cut, town by town, to the official zones' street length
     official = flags["official_union"]
-    rankings = {"terrain_hand": hand_med, "simulated_depth": -sim_med}
+    rankings = {"terrain_hand": hand_med, "simulated_depth": -sim_med,
+                **{f"simulated_{r}_depth": -extra_med[r] for r in extra}}
     eq_sel = {r: np.zeros(n, dtype=bool) for r in rankings}
     budget = {}
     for i, t in enumerate(TOWNS):
@@ -746,6 +767,10 @@ def evaluate(b: dict, lay: dict, marks_xy: np.ndarray, outline, surveyed=None) -
             "A": street_metrics(outside, key_a, length, outside)["chance_precision_pct"],
             "B": street_metrics(outside, key_b, length, outside & dom_b)["chance_precision_pct"]},
     }
+    for r in extra:
+        ext = flags[f"simulated_{r}_depth_above_0p3m"]
+        descriptive[f"simulated_{r}_outside_zones"] = {"A": by_town(ext & outside, key_a, length, town),
+                                                       "B": by_town(ext & outside, key_b, length, town, dom_b)}
     post_hoc = None
     if surveyed is not None:
         shapely.prepare(surveyed)
@@ -788,7 +813,9 @@ def evaluate(b: dict, lay: dict, marks_xy: np.ndarray, outline, surveyed=None) -
     table = {"x": mxy[:, 0].astype(np.float32), "y": mxy[:, 1].astype(np.float32), "length": length.astype(np.float32),
              "town": town.astype(np.uint8), "highway": hw, "key_a": key_a, "in_observed": in_obs, "near_mark": near,
              "key_b": key_b, "inside_upv": dom_b, "hand_median": hand_med.astype(np.float32),
-             "sim_median": sim_med.astype(np.float32), **{f"flag_{k}": v for k, v in flags.items()},
+             "sim_median": sim_med.astype(np.float32),
+             **{f"sim_median_{r}": v.astype(np.float32) for r, v in extra_med.items()},
+             **{f"flag_{k}": v for k, v in flags.items()},
              **{f"equal_{k}": v for k, v in eq_sel.items()}}
     return {"summary": summary, "methods": methods, "equal_length": equal, "key_sensitivity": sens,
             "descriptive": descriptive, "key_b_surveyed_area_only_post_hoc": post_hoc, "_table": table}
@@ -805,6 +832,13 @@ METHOD_WHAT = {
     "simulated_depth_above_0p3m": "SIMULATED rain on terrain (PR #39): its own extent, maximum depth above 0.3 m",
     "simulated_equal_area_union": "SIMULATED rain on terrain (PR #39): equal-area cut (deepest pixels of each town, "
                                   "as many as its pixels in any official zone)",
+    "simulated_ifs_20241028T12_depth_above_0p3m": "SIMULATED run A: rain of the ECMWF IFS HRES forecast issued "
+                                                  "28 Oct 2024 12 UTC; its own extent, maximum depth above 0.3 m",
+    "simulated_ifs_20241029T00_depth_above_0p3m": "SIMULATED run A: rain of the ECMWF IFS HRES forecast issued "
+                                                  "29 Oct 2024 00 UTC; its own extent, maximum depth above 0.3 m",
+    "simulated_buildings_depth_above_0p3m": "SIMULATED run B: gauged rain, buildings as obstacles (25 m cells at "
+                                            "least half Catastro footprint raised by 10 m); its own extent, maximum "
+                                            "depth above 0.3 m",
 }
 
 
