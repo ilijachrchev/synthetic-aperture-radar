@@ -144,6 +144,30 @@
         "likely_new_water": 804.6,
         "counted_on": "evidence 0 pixels only"
       }
+    },
+    {
+      "site": "albufera",
+      "scenario_id": "replay_2026-10-28_prestorm",
+      "mode": "reconstruction",
+      "target_date": "2026-10-28",
+      "dir": "data/prediction/spatial/albufera/replay_2026-10-28_prestorm",
+      "area_ha": {
+        "likely_water": 5633.4,
+        "likely_new_water": 4909.2,
+        "counted_on": "evidence 0 pixels only"
+      }
+    },
+    {
+      "site": "pego_oliva",
+      "scenario_id": "replay_2026-10-28_prestorm",
+      "mode": "reconstruction",
+      "target_date": "2026-10-28",
+      "dir": "data/prediction/spatial/pego_oliva/replay_2026-10-28_prestorm",
+      "area_ha": {
+        "likely_water": 754.8,
+        "likely_new_water": 647.5,
+        "counted_on": "evidence 0 pixels only"
+      }
     }
   ]
 }

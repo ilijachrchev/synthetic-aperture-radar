@@ -3,6 +3,7 @@
     python -m pipeline.prediction.spatial prepare   terrain layers and the Sentinel-1 label stack per site
     python -m pipeline.prediction.spatial train     development check, then the final model
     python -m pipeline.prediction.spatial predict   held-out October scores, replays and rain scenarios
+    python -m pipeline.prediction.spatial nisar     the 28 Oct replays scored against the NISAR water maps (data/cv)
     python -m pipeline.prediction.spatial all
 """
 
@@ -16,11 +17,15 @@ from datetime import date, datetime, timezone
 import lightgbm as lgb
 import numpy as np
 
+import rasterio
+from rasterio.warp import Resampling, reproject
+
 from pipeline.config import DATA_DIR, get_site
 from pipeline.ml.split import split_blocks
 from pipeline.stack import site_grid
 
 from . import HOLDOUT_END, HOLDOUT_START, SITES, export, features as F, labels, model as M, terrain
+from .. import manifest as manifest_mod
 
 OUT = DATA_DIR / "prediction" / "spatial"
 POOL_SIZE = 40_000
@@ -28,6 +33,35 @@ SCORE_SAMPLE = 200_000
 REPLAY_DATES = ("2026-10-22", "2026-10-28")
 SCENARIO_MM = (0, 50, 100, 200)
 SCENARIO_LEAD_DAYS = 4
+MANIFEST = DATA_DIR / "manifest.json"
+CV_DIR = DATA_DIR / "cv"
+NISAR_BEFORE, NISAR_AFTER = "2026-10-16", "2026-10-28"   # the NISAR passes on either side of the DANA
+PRE_STORM = np.datetime64("2026-10-17T23:59:59")          # last moment before the rain of 18 and 19 Oct
+NISAR_EXPORT_STACK = "066_D_069"                          # the track both sites share
+
+
+def _boosters():
+    return {"rain_and_state": (lgb.Booster(model_file=str(OUT / "model.txt")), F.FEATURES),
+            "terrain_only": (lgb.Booster(model_file=str(OUT / "model_terrain_only.txt")), F.TERRAIN_ONLY)}
+
+
+def _write_index(entries, replace):
+    """Merge scenario entries into index.json (replace(e) says which old entries go) and refresh the manifest."""
+    path = OUT / "index.json"
+    old = json.loads(path.read_text(encoding="utf-8"))["scenarios"] if path.exists() else []
+    scenarios = [e for e in old if not replace(e)] + entries
+    sha = hashlib.sha256((OUT / "model.txt").read_bytes()).hexdigest()[:16]
+    _json({"model_sha256_16": sha, "scenarios": scenarios}, path)
+    today = datetime.now(timezone.utc)
+    manifest_mod.upsert(MANIFEST, [{
+        "model": "prediction", "site": name, "stack": "dswx-s1+open-meteo-ifs", "layer": "water_likelihood",
+        "date": today.date().isoformat(), "id": f"prediction-water-likelihood-{name}",
+        "file": "data/prediction/spatial/index.json", "metrics": "data/prediction/spatial/holdout_s1_metrics.json",
+        "schema": "data/prediction/spatial/feature_schema.json", "source_type": "dswx-s1 + open-meteo + terrain",
+        "units": "relative water likelihood 0-1 (web copies 0-100, 255 no data)", "model_sha256_16": sha,
+        "scenarios": [{k: e[k] for k in ("scenario_id", "mode", "dir")} for e in scenarios if e["site"] == name],
+        "issued_at_utc": today.isoformat(timespec="seconds"),
+    } for name in SITES])
 
 
 def _json(obj, path):
@@ -159,8 +193,7 @@ def predict(_args):
     thresholds = dev["thresholds"]
     manifest = json.loads((OUT / "training_manifest.json").read_text(encoding="utf-8"))
     model_sha = hashlib.sha256((OUT / "model.txt").read_bytes()).hexdigest()[:16]
-    boosters = {"rain_and_state": (lgb.Booster(model_file=str(OUT / "model.txt")), F.FEATURES),
-                "terrain_only": (lgb.Booster(model_file=str(OUT / "model_terrain_only.txt")), F.TERRAIN_ONLY)}
+    boosters = _boosters()
     rng = np.random.default_rng(M.SEED + 1)
     report, index = {}, []
     for name in SITES:
@@ -247,15 +280,101 @@ def predict(_args):
     _json({"reading": "Held-out October 2026 passes scored against the Sentinel-1 map of the same pass, on the training domain. "
                       "This is the model's own retrospective check. The independent test against EMSR935 is separate.",
            "thresholds_frozen_from": "development_metrics.json", "sites": report}, OUT / "holdout_s1_metrics.json")
-    _json({"model_sha256_16": model_sha, "scenarios": index}, OUT / "index.json")
+    for name in SITES:   # the terrain layer Luka's lowest-ground baseline needs, small enough to commit
+        hand = np.round(F.load_static(name)["hand_m"], 1)
+        export._float_tif(hand, site_grid(get_site(name)), OUT / name / "static" / "hand_m.tif", decimals=1)
+    _write_index(index, lambda e: not e["scenario_id"].endswith("_prestorm"))
+
+
+def _cv_on_grid(path, grid):
+    """A data/cv water map (Web Mercator, 0 / 1 / 255) on the site grid, nearest neighbour."""
+    out = np.full((grid.height, grid.width), 255, dtype="uint8")
+    with rasterio.open(path) as src:
+        reproject(source=rasterio.band(src, 1), destination=out, src_nodata=255, dst_transform=grid.transform,
+                  dst_crs=grid.crs, dst_nodata=255, resampling=Resampling.nearest)
+    return out
+
+
+def nisar(_args):
+    """Score replays of 28 Oct 2026 against the NISAR water map of that pass, issued before and after the storm."""
+    dev = json.loads((OUT / "development_metrics.json").read_text(encoding="utf-8"))
+    thresholds = dev["thresholds"]
+    boosters = _boosters()
+    cv_entries = {(e["site"], e["stack"], e["date"]): e for e in manifest_mod.read(MANIFEST)
+                  if e.get("model") == "cv" and e.get("layer") == "water"}
+    report, index = {}, []
+    for name in SITES:
+        s = _site(name)
+        st, grid = s["static"], s["grid"]
+        idx = np.flatnonzero((st["land"] & np.isfinite(st["hand_m"])).ravel())
+        static_cols = F.static_columns(st, idx)
+        freq = F.wet_frequency(s["wet"].ravel()[idx], s["obs"].ravel()[idx])
+        domain = F.train_domain(st).ravel()[idx]
+        for (site, stack, day), entry in sorted(cv_entries.items()):
+            before = cv_entries.get((name, stack, NISAR_BEFORE))
+            if site != name or day != NISAR_AFTER or before is None:
+                continue
+            stamp = entry["source"]["granule_ur"].split("_")[-7]           # start of the acquisition, e.g. 20261028T185318
+            target_time = np.datetime64(f"{stamp[:4]}-{stamp[4:6]}-{stamp[6:11]}:{stamp[11:13]}:{stamp[13:15]}")
+            target_day = date.fromisoformat(NISAR_AFTER).toordinal()
+            after_map = _cv_on_grid(DATA_DIR.parent / entry["file"], grid).ravel()[idx]
+            before_map = _cv_on_grid(DATA_DIR.parent / before["file"], grid).ravel()[idx]
+            ok = domain & (after_map != 255) & (before_map != 255)
+            y = after_map[ok]
+            nisar_dry_before = before_map[ok] == 0
+            w1 = np.ones(y.size, "float32")
+            runs = {}
+            for label, not_after in (("issued_before_storm", PRE_STORM), ("issued_after_storm", None)):
+                j = F.issue_before(s["times"], target_time, not_after=not_after)
+                if j is None:
+                    continue
+                rf = F.rain_features(s["rain"], date.fromisoformat(s["days"][j]).toordinal(), target_day)
+                lead = float((target_time - s["times"][j]) / np.timedelta64(1, "D"))
+                scores, state = _predict_pass(s, idx, static_cols, freq, boosters, j, target_time, target_day, lead, rf)
+                runs[label] = {"issue_pass": s["passes"][j]["pass_id"], "lead_days": round(lead, 2),
+                               **{k: round(v, 1) for k, v in rf.items()},
+                               **M.score_all(y, w1, {k: v[ok] for k, v in scores.items()}, nisar_dry_before, thresholds)}
+                if label == "issued_before_storm" and stack == NISAR_EXPORT_STACK:
+                    sid = f"replay_{NISAR_AFTER}_prestorm"
+                    doc = export.write(OUT / name / sid, grid, scores["rain_and_state"], state,
+                                       export.evidence(st, freq, state, idx, (grid.height, grid.width)), idx,
+                                       {"site": name, "model": "spatial water likelihood (LightGBM)", "scenario_id": sid,
+                                        "mode": "reconstruction",
+                                        "mode_note": "issued from the last Sentinel-1 map before the rain of 18 and 19 Oct, for the NISAR "
+                                                     "pass of 28 Oct; the rain in between is the rain that fell (IFS archive), not a forecast",
+                                        "issued_from_pass": s["passes"][j]["pass_id"], "issue_time_utc": s["passes"][j]["begin_utc"],
+                                        "target_time_utc": str(target_time) + "Z", "target_nisar_granule": entry["source"]["granule_ur"],
+                                        "lead_days": round(lead, 2), "rain": rf,
+                                        "rain_source": "Open-Meteo, ECMWF IFS 9 km, wettest lattice point of the site per day",
+                                        "holdout": {"start": HOLDOUT_START, "end": HOLDOUT_END},
+                                        "validation_status": "checked against the NISAR water map of the target pass, see nisar_check.json"},
+                                       thresholds["rain_and_state"])
+                    index.append({"site": name, "scenario_id": sid, "mode": "reconstruction", "target_date": NISAR_AFTER,
+                                  "dir": f"data/prediction/spatial/{name}/{sid}", "area_ha": doc["area_ha"]})
+            report.setdefault(name, {})[stack] = {
+                "nisar_after": entry["file"], "nisar_before": before["file"], "target_time_utc": str(target_time) + "Z",
+                "scored_ha": round(float(ok.sum()) * export.PIXEL_HA, 1),
+                "nisar_water_ha": round(float(y.sum()) * export.PIXEL_HA, 1),
+                "nisar_new_water_ha": round(float((y[nisar_dry_before] == 1).sum()) * export.PIXEL_HA, 1), **runs}
+            for label, r in runs.items():
+                print(name, stack, label, "lead", r["lead_days"], "rain", r["rain_between_mm"],
+                      {k: (v["water_ap"], v["new_water_ap"]) for k, v in r["methods"].items()}, flush=True)
+    _json({"reading": "The model never saw a NISAR map. Here its replays for the NISAR pass of 28 Oct 2026 are scored against the "
+                      "team's NISAR water map of that pass (data/cv). 'New water' = dry in the NISAR map of 16 Oct, water on 28 Oct. "
+                      "issued_before_storm starts from the last Sentinel-1 map before the rain; issued_after_storm from a map 3 to 5 "
+                      "days before the target, when the flood was already visible. (water_ap, new_water_ap) = average precision.",
+           "caution": "The NISAR map comes from a model trained with Sentinel-1 labels at Albufera, so Albufera is not an independent "
+                      "check. Pego-Oliva was a test site of that model.",
+           "thresholds_frozen_from": "development_metrics.json", "sites": report}, OUT / "nisar_check.json")
+    _write_index(index, lambda e: e["scenario_id"].endswith("_prestorm"))
 
 
 def main():
     parser = argparse.ArgumentParser(prog="python -m pipeline.prediction.spatial")
     sub = parser.add_subparsers(dest="cmd", required=True)
-    for name, fn in (("prepare", prepare), ("train", train), ("predict", predict)):
+    for name, fn in (("prepare", prepare), ("train", train), ("predict", predict), ("nisar", nisar)):
         sub.add_parser(name).set_defaults(fn=fn)
-    sub.add_parser("all").set_defaults(fn=lambda a: (prepare(a), train(a), predict(a)))
+    sub.add_parser("all").set_defaults(fn=lambda a: (prepare(a), train(a), predict(a), nisar(a)))
     args = parser.parse_args()
     args.fn(args)
 

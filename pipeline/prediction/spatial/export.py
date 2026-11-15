@@ -33,12 +33,12 @@ def evidence(static: dict, freq: np.ndarray, state: np.ndarray, idx: np.ndarray,
     return ev.reshape(shape)
 
 
-def _float_tif(array: np.ndarray, grid: Grid, path: Path) -> None:
+def _float_tif(array: np.ndarray, grid: Grid, path: Path, decimals: int = 3) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with rasterio.open(path, "w", driver="GTiff", height=grid.height, width=grid.width, count=1, dtype="float32",
                        crs=grid.crs, transform=grid.transform, nodata=np.nan, compress="deflate", predictor=3,
                        tiled=True, blockxsize=256, blockysize=256) as dst:
-        dst.write(np.round(array, 3).astype("float32"), 1)
+        dst.write(np.round(array, decimals).astype("float32"), 1)
 
 
 def write(out_dir: Path, grid: Grid, score: np.ndarray, state: np.ndarray, ev: np.ndarray, idx: np.ndarray,
