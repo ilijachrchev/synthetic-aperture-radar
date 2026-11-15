@@ -165,15 +165,30 @@ def main(argv: list[str] | None = None) -> int:
         rows, cols = np.nonzero(m)
         model = like_main[m] >= thr
         k = int(model.sum())
-        order = np.argsort(hand[m], kind="stable")
-        low_hand = np.zeros(m.sum(), bool); low_hand[order[:k]] = True
+        # Fix after the first run (commit 1559091): about 38 % of the grid has HAND exactly 0, far more than the
+        # model's area, so a plain sort filled the quota with tied pixels in raster order (top rows first).
+        # Ties are now broken at random (fixed seed); the spread over 50 draws is reported, and "HAND = 0" as a
+        # map of its own.
+        rng = np.random.default_rng(SEED)
+        hv = hand[m]
+
+        def _low(gen):
+            o = np.lexsort((gen.random(hv.size), hv))
+            z = np.zeros(hv.size, bool); z[o[:k]] = True
+            return z
+        low_hand = _low(rng)
+        draws = [scores(_low(np.random.default_rng(SEED + i)), ref_area[m])["f1"] for i in range(1, 51)]
         methods = {"model": model,
                    "model_forecast_rain": like_fc[m] >= thr,
                    "low_hand_same_area": low_hand,
+                   "hand_zero_all": hv == 0,
                    "jrc_past_water": (jrc[m] > 0) & (jrc[m] != 255),
                    "nisar_16oct_persistence": hh[m] < NISAR_DB,
                    "nisar_16oct_persistence_otsu": hh[m] < otsu}
-        res = {"pixels": int(m.sum()), "area_ha": round(float(m.sum()) * PIXEL_HA, 1), "references": {}}
+        res = {"pixels": int(m.sum()), "area_ha": round(float(m.sum()) * PIXEL_HA, 1),
+               "hand_zero_share": round(float(np.mean(hv == 0)), 3),
+               "low_hand_f1_over_50_tie_draws_flooded_area": [min(draws), round(float(np.mean(draws)), 3), max(draws)],
+               "references": {}}
         for rname, ref2d in (("flooded_area", ref_area), ("flooded_area_plus_trace", ref_area | ref_trace)):
             ref = ref2d[m]
             sc = {name: scores(v, ref) for name, v in methods.items()}
@@ -183,6 +198,16 @@ def main(argv: list[str] | None = None) -> int:
                 "scores": sc,
                 "f1_model_minus_baseline_ci95": boot,
                 "model_beats_all_three": all(sc["model"]["f1"] > sc[b]["f1"] for b in rule_bases)}
+        # Extra, not part of the rule (added after the first run): a score that does not depend on how much area a
+        # method maps. Average precision of each method's ranking against the main reference.
+        from sklearn.metrics import average_precision_score
+        ranks = {"model": like_main[m], "model_forecast_rain": like_fc[m],
+                 "low_hand": -hv + 1e-6 * np.random.default_rng(SEED).random(hv.size),
+                 "jrc_occurrence": np.where(jrc[m] == 255, 0, jrc[m]).astype(float),
+                 "nisar_16oct_darkness": -hh[m]}
+        ref = ref_area[m]
+        res["average_precision_flooded_area"] = {k2: round(float(average_precision_score(ref, v)), 3) for k2, v in ranks.items()}
+        res["average_precision_flooded_area"]["base_rate"] = round(float(ref.mean()), 4)
         out["sets"][sname] = res
         r0 = res["references"]["flooded_area"]
         print(sname, res["area_ha"], "ha;", {k2: v["f1"] for k2, v in r0["scores"].items()}, "beats all:", r0["model_beats_all_three"])
