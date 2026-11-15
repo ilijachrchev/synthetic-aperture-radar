@@ -354,6 +354,29 @@ def rows() -> list[tuple[str, str, str]]:
     except Exception as e:
         add("model.unavailable", f"PR #33 commit not fetched ({type(e).__name__})", "-")
 
+    # --- The same EMSR935 test on three later frozen versions (#47, PR #46) ---
+    fr = {}
+    for v in ("chosen", "nisar_labels", "fit_albufera_oct"):
+        src_v = f"data/validation/emsr935/result_{v}.json"
+        Tv = json.loads((ROOT / src_v).read_text(encoding="utf-8"))
+        Av = Tv["sets"]["all_pixels"]; Fv = Av["references"]["flooded_area"]; Sv = Fv["scores"]
+        fr[v] = (Sv["model"]["f1"], Av["average_precision_flooded_area"]["model"])
+        add(f"frozen.{v}.f1", f"{Sv['model']['f1']:.3f}", f"{src_v} flooded_area model f1")
+        add(f"frozen.{v}.p_r", f"{Sv['model']['precision']:.2f} / {Sv['model']['recall']:.2f}", f"{src_v} model precision / recall")
+        add(f"frozen.{v}.f1_fc", f"{Sv['model_forecast_rain']['f1']:.3f}", f"{src_v} model_forecast_rain f1")
+        add(f"frozen.{v}.ha", f"{Sv['model']['predicted_ha']:.0f}", f"{src_v} model predicted_ha")
+        add(f"frozen.{v}.ap", f"{Av['average_precision_flooded_area']['model']:.3f}", f"{src_v} average_precision_flooded_area.model")
+        add(f"frozen.{v}.rule", "passed" if Fv["model_beats_all_three"] else "not passed", f"{src_v} model_beats_all_three")
+        ci = Fv["f1_model_minus_baseline_ci95"]
+        add(f"frozen.{v}.ci_jrc_nisar", f"{ci['jrc_past_water'][0]:.2f} to {ci['jrc_past_water'][1]:.2f}; "
+            f"{ci['nisar_16oct_persistence'][0]:.2f} to {ci['nisar_16oct_persistence'][1]:.2f}", f"{src_v} f1_model_minus_baseline_ci95")
+        add(f"frozen.{v}.sha", Tv["model"]["model_sha256_16"], f"{src_v} model.model_sha256_16")
+    f1s = sorted(x[0] for x in fr.values()); aps = sorted(x[1] for x in fr.values())
+    add("frozen.f1_range", f"{f1s[0]:.3f} to {f1s[-1]:.3f}", "data/validation/emsr935/result_{chosen,nisar_labels,fit_albufera_oct}.json model f1")
+    add("frozen.ap_range", f"{aps[0]:.3f} to {aps[-1]:.3f}", "data/validation/emsr935/result_{...}.json average precision")
+    add("test.ap_model3", f"{T['sets']['all_pixels']['average_precision_flooded_area']['model']:.3f}", f"{src_t} average_precision_flooded_area.model")
+    add("test.model3", f"{S0['model']['f1']:.3f}", f"{src_t} flooded_area model f1")
+
     # --- Official flood zones against the 2026 flood (pipeline.zones, I. Chrchev) ---
     try:
         zf = ROOT / "data/zones/zones_vs_floods.json"

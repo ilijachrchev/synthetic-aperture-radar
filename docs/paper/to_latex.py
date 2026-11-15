@@ -76,7 +76,7 @@ FIG1 = r"""\begin{figure*}[t]
 \node[box] (O) at (11.4,-1.0) {Alert shown as a map\\of likely flooded places};
 \draw[arr] (N) -- (W); \draw[arr] (S) -- (W); \draw[arr] (W) -- (V);
 \draw[arr] (S.east) to node[above,sloped,pos=0.55]{labels} (M.west);
-\draw[dar] (N.south east) to[bend left=12] node[above,sloped,pos=0.62]{NISAR labels (variant)} (M.north);
+\draw[dar] (N.south east) to[bend left=12] node[above,sloped,pos=0.62]{NISAR labels (one version)} (M.north);
 \draw[arr] (R.east) -- (M.west); \draw[arr] (T.east) -- (M.west); \draw[arr] (L.east) -- (M.west);
 \draw[arr] (M) to node[above,sloped]{held-out DANA} (X);
 \draw[arr] (M.east) to node[below,sloped]{where} (O.west);
