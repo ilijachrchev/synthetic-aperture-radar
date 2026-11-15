@@ -1,0 +1,78 @@
+# Spatial flood model: what we try and how we choose
+
+Written and committed on 15 Nov 2026, before any variant below was scored on the held-out window. The start point
+is Zhivko's PR #33 at `b4c69d9` (`pipeline/prediction/spatial`). The results are added below in later commits; the
+git history shows that this plan and the selection rule came first.
+
+## Fixed in advance
+
+- **Held-out window:** target passes from 15 Oct to 15 Nov 2026 at Albufera and Pego-Oliva, as in PR #33 (18
+  Sentinel-1 passes per site, 16 Oct to 10 Nov). No pass in it enters a fit, the past wet share, the number of
+  trees, a threshold, the blend reference or the choice of variant.
+- **Development data:** everything before 15 Oct 2026. The development check is the one of PR #33: fit on targets
+  before 1 Sep 2025 on the training 1 km blocks, check on targets from 1 Sep 2025 to 14 Oct 2026 on the held-back
+  1 km blocks. The number of trees and the thresholds come from this check; the final model is then refitted on all
+  development passes with both kept.
+- **Labels and samples:** OPERA DSWx-S1 (classes 1 and 3 wet, 0 dry), the same 413 passes per site, domain, pixel
+  pool, seed and LightGBM settings as PR #33. Only the change named in a variant differs.
+- **Thresholds:** every candidate gets its own, from its own development check (the F1-best threshold, as in PR #33),
+  frozen before the held-out window is scored.
+- **Not used to choose or tune anything:** the Copernicus EMSR935 outline (Luka's independent test) and the NISAR map
+  of 28 Oct. The NISAR 28 Oct check is reported once at the end, for the chosen variant (and for `b4c69d9`, to compare).
+
+## Variants
+
+Each one is a full retrain on the PR #33 code path with only the stated change.
+
+| id | change |
+|---|---|
+| `base` | PR #33 as it is, re-run on this machine (it must reproduce PR #33's scores, 0.47 and 0.38) |
+| `mono` | LightGBM monotone constraint +1 on the four rain amounts (`rain_prior_7d_mm`, `rain_prior_30d_mm`, `rain_between_mm`, `rain_between_max1d_mm`), method `intermediate`: more rain never lowers a pixel's likelihood. `days_since_rain_peak` and `lead_days` stay free. |
+| `storm` | Each target pass counts 1 + `rain_between_mm` / 25 times in the fit, at most 10 times (a dry pass once, 100 mm five times, 200 mm nine times). Nine in ten training passes had at most 60 mm. The check that picks the number of trees uses the same weights; scores and thresholds use the usual ones. |
+| `neigh` | Two more inputs from the issue-time water map (the same map `prev_water` comes from): the share of water among the observed pixels in the 100 m square (5 x 5 pixels) and in the 500 m square (25 x 25 pixels) centred on each pixel. New water tends to spread from water that is already there. |
+| `mono_storm` | `mono` and `storm` together |
+| `mono_neigh` | `mono` and `neigh` together |
+| `mono_storm_neigh` | all three |
+| `nisar_flag` | Zhivko's variant: the team's NISAR water labels (`data/labels_nisar`) as extra passes plus the two sensor columns. Its development check and thresholds use the Sentinel-1 targets only, so it is checked on the same samples as the others. |
+
+**Blend with terrain (brief item 2), for every variant above:** `<id>+blend` is the average of the variant's rank and
+the terrain-only model's rank, weight 0.5, fixed, not tuned. A score's rank is the weighted share of reference samples
+with a lower score; the reference is the table the model was fitted on (development data only). The average is mapped
+back onto the variant's own likelihood scale through its reference quantiles, so the colours of a map keep their
+meaning; that mapping keeps the order, so it changes no average precision. The terrain-only model is PR #33's
+(Sentinel-1 labels, terrain, land cover, past water and season) for every blend.
+
+**Order of work:** `base`, `mono`, `storm`, `neigh`, `nisar_flag`, `mono_storm`, `mono_neigh`, `mono_storm_neigh`. If
+time runs out, the variants not trained are reported as not done and the rule applies to the ones trained.
+
+## Scores
+
+- **20 m pixels:** average precision of new water (pixels dry at the issue pass) over the held-out passes, pooled as in
+  PR #33 (the same 200,000 domain pixels in every pass), per site. At the frozen new-water threshold: hit rate (share
+  of the new water that the map marks) and false alarms (share of the marked pixels that stayed dry).
+- **250 m cells:** squares of 250 m on the site grid, each 20 m pixel in the square that holds its centre. Per cell
+  and pass, the candidates are the scored pixels that were dry at the issue pass, the observed value is the share of
+  them under water at the target and the score is their mean new-water likelihood. Average precision weights every
+  cell by its candidates (as if every pixel took its cell's mean score). Hit rate and false alarms compare the marked
+  share (candidates at or above the frozen threshold) with the observed share, counting min(marked, observed) per
+  cell as found.
+- **Baselines:** terrain only and past wet share, as in PR #33. Persistence cannot rank new water.
+- **Reported, not used to choose:** scores per pass, the DANA passes of 22 and 23 Oct, the forecast replay of 22 Oct
+  (rain of the ECMWF IFS run of the issue day), and the likely new water of the rain scenarios (0, 50, 100, 200 mm),
+  with whether it grows with the rain.
+
+## Selection rule (development data only)
+
+1. Development score = the mean over the two sites of the development-check new-water average precision at 20 m
+   (weighted to the domain, as in `development_metrics.json`).
+2. Candidates: every trained variant, alone and with the blend.
+3. Let best be the highest development score. If a candidate with the monotone constraint (an id with `mono`, alone or
+   blended) scores within 0.01 of best, the highest such candidate is chosen, because the app's rain slider must never
+   show less water for more rain. Otherwise best is chosen. A tie goes to the candidate with fewer changes.
+4. The development scores and the choice are written to `data/prediction/spatial/improve/selection.json` and committed
+   before any held-out score is computed. Then every candidate is scored once on the held-out window and all results
+   are reported as they are, wins and losses. Nothing is retuned after that.
+5. The chosen candidate's maps replace the exported maps in `data/prediction/spatial` (PR #33 folder format, so
+   `web/scripts/bake_prediction.py --ref <commit>` reads them).
+
+Written with SI assistance (Claude Code), reviewed by the team.
