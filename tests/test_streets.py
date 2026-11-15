@@ -182,3 +182,33 @@ def test_burn_uses_cell_centres_and_points_find_their_cell():
     cols = s.grid_shape()[1]
     idx = s.cells_of_points(np.array([w + 12.0, w - 1.0]), np.array([n - 17.0, n - 1.0]))
     assert idx[0] == 3 * cols + 2 and idx[1] == -1
+
+
+def test_fwdet_depth_recovers_a_flat_water_surface():
+    # a valley 2 m deep across its width: water up to 1.95 m fills the cells below it
+    cols = 41
+    x = np.arange(cols)
+    z = np.tile(np.abs(x - 20) * 0.1, (30, 1)).astype(np.float32)
+    flood = z < 1.95
+    ok = np.ones(z.shape, dtype=bool)
+    depth, dist, info = tf.fwdet_depth(z, flood, ok, cell=5.0)
+    # the edge cells stand at 1.9 m, so the surface is 1.9 m and the deepest cell holds 1.9 m
+    assert np.nanmax(depth) == pytest.approx(1.9, abs=1e-5)
+    assert depth[10, 20] == pytest.approx(1.9, abs=1e-5)
+    assert np.isnan(depth[~flood]).all()
+    assert (depth[flood] >= 0).all()
+    assert dist[10, 20] == pytest.approx(19 * 5.0)
+
+
+def test_fwdet_ignores_edges_along_a_lake():
+    z = np.tile(np.linspace(0.0, 4.0, 20), (10, 1)).astype(np.float32)  # rises from a lake on the west
+    lake = np.zeros(z.shape, dtype=bool)
+    lake[:, 0] = True
+    flood = (z < 2.0) & ~lake        # flooded from the lake shore up to 2 m
+    ok = ~lake
+    depth, _, info = tf.fwdet_depth(z, flood, ok, cell=5.0)
+    # only the landward edge counts: the surface is the ground there (just under 2 m), so cells by the
+    # lake are deep; with the lake shore as an edge they would get almost nothing
+    assert depth[5, 1] > 1.5
+    edges = tf.flood_edges(flood, ok)
+    assert not edges[:, 1].any() and edges.any()

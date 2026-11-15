@@ -224,3 +224,41 @@ def equal_area_pick(score: np.ndarray, tiebreak: np.ndarray, count: int) -> np.n
     s = np.where(np.isfinite(score), score, np.inf)
     order = np.lexsort((np.arange(s.size), -tiebreak, s))
     return order[:count]
+
+
+STRAIGHT = ((-1, 0), (1, 0), (0, -1), (0, 1))
+
+
+def flood_edges(flood: np.ndarray, dry_ok: np.ndarray) -> np.ndarray:
+    """Flood cells that share a side with a dry cell where a shore can be (dry_ok)."""
+    edges = np.zeros(flood.shape, dtype=bool)
+    good_dry = dry_ok & ~flood
+    for dr, dc in STRAIGHT:
+        edges |= _shift(good_dry, dr, dc, False)
+    return edges & flood
+
+
+def fwdet_depth(dem: np.ndarray, flood: np.ndarray, dry_ok: np.ndarray, cell: float = 1.0
+                ) -> tuple[np.ndarray, np.ndarray, dict]:
+    """Floodwater depth from a flood outline and terrain, the FwDET rule (Cohen et al. 2018).
+
+    The water surface of each flooded cell is the ground elevation of its nearest
+    flood-edge cell (Euclidean); depth = surface - ground, never below 0. Edges count
+    only where the dry neighbour is a real shore (dry_ok: mapped land with terrain,
+    not permanent water), as FwDET 2.0 drops edges along water bodies.
+    Returns (depth with NaN outside the flood, distance to the edge used in metres, counts).
+    """
+    from scipy import ndimage
+
+    edges = flood_edges(flood, dry_ok)
+    info = {"flood_cells": int(flood.sum()), "edge_cells": int(edges.sum())}
+    depth = np.full(dem.shape, np.nan, dtype=np.float32)
+    dist = np.full(dem.shape, np.nan, dtype=np.float32)
+    if not edges.any():
+        return depth, dist, info
+    d, idx = ndimage.distance_transform_edt(~edges, return_distances=True, return_indices=True)
+    level = dem[idx[0], idx[1]]
+    del idx
+    depth[flood] = np.maximum(level[flood] - dem[flood], 0.0)
+    dist[flood] = d[flood] * cell
+    return depth, dist, info

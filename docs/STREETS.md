@@ -170,6 +170,33 @@ Added after the test above, on request: how deep the water of the two floods may
 - **Classes**, as in the official viewers: below 0.2 m, 0.2 to 1 m, 1 to 2 m, above 2 m.
 - **Check against surveyed water marks** (the ICV water heights used above, heights above 0 m): for the marks inside the outline, the estimated depth of the mark's cell against the measured height: mean error (bias), mean absolute error, root mean square error, median absolute error, the share within 0.5 m, by survey. Marks outside the outline get no estimate (the method gives depth only inside it); how many there are is reported. For 2026, none of the 71 surveyed marks (`data/labels/pego_oliva_water_depth_points.geojson`) lies inside the EMSR935 outline, so there is no check there.
 
+### Result: an estimate that does not hold street by street
+
+All numbers are in `results.json` → `flood_depth`; the layers are `data/streets/estimated_depth_dana_2024.geojson` (the 10 towns) and `data/streets/estimated_depth_dana_adam_2026.geojson`, every feature labelled "ESTIMATED from the flood outline and terrain" and carrying the check below.
+
+**2024 DANA, the 10 towns.** Over the 5,246.5 ha of the outline, the estimate gives 47.4 % below 0.2 m, 27.3 % from 0.2 to 1 m, 11.9 % from 1 to 2 m and 13.3 % above 2 m (median 0.25 m, 90th percentile 2.58 m; the deepest values, up to 7 m, are ravine beds).
+
+| Town | Outline (ha) | Below 0.2 m | 0.2 to 1 m | 1 to 2 m | Above 2 m | Median |
+|---|---|---|---|---|---|---|
+| Paiporta | 398.0 | 72.3 % | 10.5 % | 9.8 % | 7.4 % | 0.00 m |
+| Massanassa | 499.0 | 34.6 % | 36.8 % | 12.6 % | 16.0 % | 0.48 m |
+| Sedaví | 152.0 | 48.3 % | 22.8 % | 17.6 % | 11.2 % | 0.25 m |
+| Catarroja | 910.7 | 51.9 % | 36.2 % | 6.4 % | 5.4 % | 0.17 m |
+| Alfafar | 944.5 | 36.2 % | 40.1 % | 15.8 % | 7.8 % | 0.54 m |
+| Benetússer | 17.1 | 68.3 % | 28.4 % | 2.9 % | 0.4 % | 0.04 m |
+| Picanya | 563.2 | 45.1 % | 17.4 % | 11.0 % | 26.6 % | 0.42 m |
+| Aldaia | 841.6 | 49.4 % | 22.7 % | 15.1 % | 12.8 % | 0.22 m |
+| Chiva | 281.1 | 47.0 % | 18.3 % | 10.9 % | 23.8 % | 0.29 m |
+| Torrent | 639.3 | 51.1 % | 18.4 % | 10.9 % | 19.6 % | 0.17 m |
+
+**The check fails.** Of the 4,064 surveyed water marks above 0 m on the grid, 2,005 lie inside the outline and **2,059 outside it** (measured median 1.2 m), where the method gives no depth at all. At the 2,005 inside, the estimate's median is **0.22 m where the walls say 1.30 m**: mean error −0.49 m, mean absolute error **1.22 m**, root mean square error 1.53 m, median absolute error 1.02 m, only 23.7 % within 0.5 m, and a correlation of **0.08**, close to none. In the 10 towns alone (1,230 marks) the mean absolute error is 1.42 m and the correlation 0.0. By survey: IVE 1,112 marks (mean absolute error 1.29 m, 18.3 % within 0.5 m), SGRT 477 (1.14 m, 29.1 %), UPV 407 (1.15 m, 31.9 %), town halls 9 (0.47 m, 44.4 %). In Paiporta, which flooded almost entirely, the estimate's median is 0.0 m.
+
+**Why.** Half the wet marks lie outside the satellite outline, so the outline's edges sit inside the real flood, below the real waterline, and the method puts the water surface too low. The edge each cell takes its level from is a median 312 m away (90th percentile 829 m) on a fan that slopes towards the Albufera, so one flat surface over that distance is off by metres either way. Edges along building walls are not the cause (6.5 % of the edge cells in the towns touch only buildings; checked after seeing the errors). The FwDET rule needs an outline whose edge is the waterline; EMSR773, drawn one to two days later, is not that in these streets.
+
+**2026 DANA Adam, Pego-Oliva.** The EMSR935 outline holds 1,118.0 ha (99.8 % on the terrain sheet); over the 1,098.5 ha with terrain and not on permanent water, the estimate gives 80.9 % below 0.2 m, 18.7 % from 0.2 to 1 m, 0.4 % from 1 to 2 m and 0.1 % above 2 m (median 0.0 m, 90th percentile 0.37 m; Pego 460.9 ha, Oliva 500.7 ha). **No check**: none of the 71 surveyed marks lies inside the outline (18 lie within 50 m of it); they were measured along the ravines and in the towns around the marsh. In a marsh the 2015 LiDAR saw the water surface of that day over flooded fields and channels, not their bottom, so depths there come out low by construction.
+
+**Use.** The surveyed marks are measurements; this estimate is not, and the check shows it does not tell one street from another. If the app shows depth for 2024, the marks themselves are the honest layer; this estimate can at most say "shallow on the plain's edges, deep in the ravine beds".
+
 ## Limits
 
 - **One event.** The 2024 DANA is one test. A method that ranks well here may rank worse in a flood of another shape; nothing here is a validation across events.
@@ -194,6 +221,7 @@ Added after the test above, on request: how deep the water of the two floods may
 | `data/streets/flow_paths.geojson` | terrain flow paths with an upstream area above 5 km² (WGS84) |
 | `data/streets/terrain_equal_area.geojson` | the terrain map at the official zones' area, per town (WGS84) |
 | `data/streets/simulated_max_depth.geojson` | SIMULATED maximum water depth classes (WGS84) |
+| `data/streets/estimated_depth_dana_2024.geojson`, `estimated_depth_dana_adam_2026.geojson` | depth ESTIMATED from the flood outline and terrain, classes below 0.2, 0.2 to 1, 1 to 2, above 2 m, with the check against water marks (WGS84) |
 | `tests/test_streets.py`, `tests/test_streets_inertial.py` | the terrain flow, the equal-area cut and the scheme on tiny synthetic grids |
 
 Needs the downloads of `pipeline.zones` (PR #36) in `data/interim/flood-zones/` (`python -m pipeline.zones fetch`), or `--zones-interim` pointing at them. Downloads go to `data/interim/streets/` (not in git). The terrain sheets are about 2 GB each and are deleted once averaged to 5 m; the terrain step needs about 4 GB of RAM.
@@ -229,6 +257,10 @@ python -m pipeline.streets layers
 ```
 
 ```bash
+python -m pipeline.streets depth
+```
+
+```bash
 python -m pipeline.streets report
 ```
 
@@ -246,6 +278,7 @@ python -m pipeline.streets report
 - **Permanent water**: ESA WorldCover 2021 v200, © ESA WorldCover project / Contains modified Copernicus Sentinel data (2021) processed by ESA WorldCover consortium, CC BY 4.0.
 - **Buildings**: Dirección General del Catastro, INSPIRE Buildings download service (ATOM), by municipality.
 - **Rain and gauge**: Pérez Cueva, A. J., Armengot Serrano, R., Fansa Saleh, G., Núñez Mora, J. Á., and Revert Ferrero, A. (2025), Estudio cronológico de los volúmenes de precipitación en las subcuencas de la rambla de Poyo en el episodio del 29 octubre de 2024, Investigaciones Geográficas 84, 9 to 29, [doi:10.14198/INGEO.30056](https://doi.org/10.14198/INGEO.30056) ([PDF at AEMET's repository](https://repositorio.aemet.es/bitstream/20.500.11765/17270/1/IG_Perez_2025.pdf)); Confederación Hidrográfica del Júcar, [Informe del episodio de lluvias y avenidas del 28 de octubre al 4 de noviembre de 2024](https://saih.chj.es/docs/20241029-1104Informe-Episodio-C-version2.pdf) (15 Jan 2025); AEMET, [informe del episodio DANA 29 oct 2024](https://repositorio.aemet.es/bitstream/20.500.11765/16360/1/informe_episodio_dana_29_oct_2024_.pdf). Read 15 Nov 2026.
+- **Depth estimate**: Cohen, S., Brakenridge, G. R., Kettner, A., Bates, B., Nelson, J., McDonald, R., Huang, Y.-F., Munasinghe, D., and Zhang, J. (2018), Estimating floodwater depths from flood inundation maps and topography, Journal of the American Water Resources Association 54(4), 847 to 858, doi:10.1111/1752-1688.12609. Cohen, S., et al. (2019), The Floodwater Depth Estimation Tool (FwDET v2.0) for improved remote sensing analysis of coastal flooding, Natural Hazards and Earth System Sciences 19, 2053 to 2065, doi:10.5194/nhess-19-2053-2019. Water marks of 2026: ICV service `2702_DANAAdam2026`, as in `pipeline.labels`.
 - **Further work**: Chini, M., Pelich, R., Pulvirenti, L., Pierdicca, N., Hostache, R., and Matgen, P. (2019), Sentinel-1 InSAR coherence to detect floodwater in urban areas: Houston and Hurricane Harvey as a test case, Remote Sensing 11(2), 107, doi:10.3390/rs11020107. Rossman, L. A. (2015), Storm Water Management Model User's Manual, Version 5.1, EPA/600/R-14/413b, U.S. Environmental Protection Agency.
 - **Methods**: Nobre, A. D., et al. (2011), Height Above the Nearest Drainage, a hydrologically relevant new terrain model, Journal of Hydrology 404, 13 to 29, doi:10.1016/j.jhydrol.2011.03.051. Yamazaki, D., et al. (2019), MERIT Hydro: a high-resolution global hydrography map based on latest topography datasets, Water Resources Research 55, 5053 to 5073, doi:10.1029/2019WR024873 (drainage above 0.5 km²: [MERIT Hydro page](https://global-hydrodynamics.github.io/MERIT_Hydro/), read 15 Nov 2026). Twele, A., Cao, W., Plank, S., and Martinis, S. (2016), Sentinel-1-based flood mapping: a fully automated processing chain, International Journal of Remote Sensing 37(13), 2990 to 3004, doi:10.1080/01431161.2016.1192304. Garbrecht, J., and Martz, L. W. (1997), The assignment of drainage direction over flat surfaces in raster digital elevation models, Journal of Hydrology 193, 204 to 213. Bates, P. D., Horritt, M. S., and Fewtrell, T. J. (2010), A simple inertial formulation of the shallow water equations for efficient two-dimensional flood inundation modelling, Journal of Hydrology 387, 33 to 45, doi:10.1016/j.jhydrol.2010.03.027.
 

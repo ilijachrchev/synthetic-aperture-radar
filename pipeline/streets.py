@@ -17,6 +17,7 @@ Steps (in this order):
     python -m pipeline.streets simulate   # rain on terrain at 25 m, SIMULATED (numba venv: about 20 minutes)
     python -m pipeline.streets score      # every method on the same pixels: data/streets/results.json
     python -m pipeline.streets layers     # small web layers in data/streets/
+    python -m pipeline.streets depth      # flood depth ESTIMATED from the outlines and terrain (2024, 2026)
     python -m pipeline.streets report     # the tables of docs/STREETS.md, printed from results.json
 
 The simulation runs fast with numba, which is not in the shared stack: make a
@@ -295,6 +296,8 @@ def fetch(manifest: dict) -> None:
     fetch_rain_sources(manifest)
     save_manifest(manifest)
     fetch_dtm(manifest)
+    fetch_pego_dtm(manifest)
+    save_manifest(manifest)
 
 
 # ---------------------------------------------------------------- grid
@@ -313,18 +316,19 @@ def grid_shape() -> tuple[int, int]:
     return int(round((n - s) / CELL_M)), int(round((e - w) / CELL_M))
 
 
-def grid_transform(cell: float = CELL_M) -> rasterio.Affine:
-    w, s, e, n = GRID_BOUNDS
+def grid_transform(cell: float = CELL_M, bounds: tuple[float, float, float, float] | None = None) -> rasterio.Affine:
+    w, s, e, n = GRID_BOUNDS if bounds is None else bounds
     return rasterio.Affine(cell, 0.0, w, 0.0, -cell, n)
 
 
-def save_grid(name: str, a: np.ndarray, nodata=None, cell: float = CELL_M, folder: Path | None = None) -> Path:
+def save_grid(name: str, a: np.ndarray, nodata=None, cell: float = CELL_M, folder: Path | None = None,
+              bounds: tuple[float, float, float, float] | None = None) -> Path:
     folder = TERRAIN_DIR if folder is None else folder
     folder.mkdir(parents=True, exist_ok=True)
     path = folder / f"{name}.tif"
     profile = {"driver": "GTiff", "dtype": a.dtype.name if a.dtype != bool else "uint8", "nodata": nodata,
                "crs": CRS, "width": a.shape[1], "height": a.shape[0], "count": 1,
-               "transform": grid_transform(cell), "tiled": True, "blockxsize": 512, "blockysize": 512,
+               "transform": grid_transform(cell, bounds), "tiled": True, "blockxsize": 512, "blockysize": 512,
                "compress": "deflate", "BIGTIFF": "IF_SAFER"}
     with rasterio.open(path, "w", **profile) as dst:
         dst.write(a.astype(np.uint8) if a.dtype == bool else a, 1)
@@ -356,12 +360,12 @@ def mosaic_dtm() -> np.ndarray:
     return out
 
 
-def burn(geoms, cell: float = CELL_M) -> np.ndarray:
+def burn(geoms, cell: float = CELL_M, bounds: tuple[float, float, float, float] | None = None) -> np.ndarray:
     """Cells whose centre lies inside any of the geometries (all_touched=False)."""
     import shapely
     from rasterio.features import rasterize
 
-    w, s, e, n = GRID_BOUNDS
+    w, s, e, n = GRID_BOUNDS if bounds is None else bounds
     rows, cols = int(round((n - s) / cell)), int(round((e - w) / cell))
     shapes = []
     for g in geoms:
@@ -372,15 +376,17 @@ def burn(geoms, cell: float = CELL_M) -> np.ndarray:
             shapes.append((g, 1))
     if not shapes:
         return np.zeros((rows, cols), dtype=bool)
-    return rasterize(shapes, out_shape=(rows, cols), transform=grid_transform(cell), fill=0,
+    return rasterize(shapes, out_shape=(rows, cols), transform=grid_transform(cell, bounds), fill=0,
                      dtype="uint8", all_touched=False).astype(bool)
 
 
-def cells_of_points(x: np.ndarray, y: np.ndarray) -> np.ndarray:
+def cells_of_points(x: np.ndarray, y: np.ndarray, bounds: tuple[float, float, float, float] | None = None
+                    ) -> np.ndarray:
     """Flat grid index of the cell holding each point; -1 outside the grid."""
-    rows, cols = grid_shape()
-    c = np.floor((x - GRID_BOUNDS[0]) / CELL_M).astype(np.int64)
-    r = np.floor((GRID_BOUNDS[3] - y) / CELL_M).astype(np.int64)
+    w, s, e, n = GRID_BOUNDS if bounds is None else bounds
+    rows, cols = int(round((n - s) / CELL_M)), int(round((e - w) / CELL_M))
+    c = np.floor((x - w) / CELL_M).astype(np.int64)
+    r = np.floor((n - y) / CELL_M).astype(np.int64)
     ok = (r >= 0) & (r < rows) & (c >= 0) & (c < cols)
     return np.where(ok, r * cols + c, -1)
 
@@ -930,6 +936,10 @@ def score(zones_dir: Path, zones_json: Path | None = None) -> dict:
     }
     STREETS_DIR.mkdir(parents=True, exist_ok=True)
     path = STREETS_DIR / "results.json"
+    if path.exists():  # keep the depth estimates of the depth step
+        old = json.loads(path.read_text(encoding="utf-8"))
+        if "flood_depth" in old:
+            out["flood_depth"] = old["flood_depth"]
     path.write_text(json.dumps(out, indent=1, ensure_ascii=False), encoding="utf-8")
     print(f"wrote {path}")
     return out
@@ -1147,7 +1157,8 @@ def flow_path_lines(min_km2: float = WEB_FLOW_MIN_KM2):
     return gpd.GeoDataFrame(rows_out, geometry="geometry", crs=CRS)
 
 
-def mask_polygons(mask: np.ndarray, value_grid: np.ndarray | None = None, simplify_m: float = 5.0, cell: float = CELL_M):
+def mask_polygons(mask: np.ndarray, value_grid: np.ndarray | None = None, simplify_m: float = 5.0, cell: float = CELL_M,
+                  bounds: tuple[float, float, float, float] | None = None):
     """Polygons of a cell mask (optionally split by an integer grid), simplified."""
     import geopandas as gpd
     import shapely
@@ -1155,7 +1166,7 @@ def mask_polygons(mask: np.ndarray, value_grid: np.ndarray | None = None, simpli
 
     vals = np.where(mask, value_grid if value_grid is not None else 1, 0).astype(np.int32)
     geoms, keys = [], []
-    for geom, v in shapes(vals, mask=vals > 0, transform=grid_transform(cell), connectivity=4):
+    for geom, v in shapes(vals, mask=vals > 0, transform=grid_transform(cell, bounds), connectivity=4):
         geoms.append(shapely.geometry.shape(geom))
         keys.append(int(v))
     gdf = gpd.GeoDataFrame({"value": keys}, geometry=geoms, crs=CRS).dissolve(by="value", as_index=False)
@@ -1262,7 +1273,247 @@ def report() -> str:
     return text
 
 
-STEPS = ("fetch", "fetch-dtm", "fetch-other", "terrain", "simulate", "score", "layers", "report")
+# ---------------------------------------------------------------- flood depth, ESTIMATED from outline and terrain
+
+DEPTH_LABEL = ("ESTIMATED from the flood outline and terrain (FwDET rule, Cohen et al. 2018), not measured; "
+               "says nothing about future storms")
+DEPTH_EDGES_M = (0.2, 1.0, 2.0)
+DEPTH_CLASSES = ("below 0.2 m", "0.2 to 1 m", "1 to 2 m", "above 2 m")
+DEPTH_DIR = INTERIM_DIR / "depth"
+LABELS_DIR = DATA_DIR / "labels"
+PEGO_SHEET = "0796"
+PEGO_BOUNDS = (743500.0, 4301990.0, 762000.0, 4320490.0)  # inside sheet 0796; holds 99.8 % of EMSR935's outline
+PEGO_TOWNS = {"Pego": "03102", "Oliva": "46181"}
+
+
+def aggregate_remote(url: str, bounds: tuple[float, float, float, float], dst: Path, factor: int = 5,
+                     rows_per_read: int = 2000) -> dict:
+    """Average a window of a remote 1 m sheet to 5 m, reading it over HTTP (nothing is stored but the result)."""
+    with rasterio.Env(GDAL_HTTP_USERAGENT=USER_AGENT, GDAL_DISABLE_READDIR_ON_OPEN="EMPTY_DIR",
+                      CPL_VSIL_CURL_CHUNK_SIZE="10485760"):
+        with rasterio.open(f"/vsicurl/{url}") as src:
+            t = src.transform
+            nodata = src.nodata if src.nodata is not None else DTM_NODATA
+            col0, row0 = int(round(bounds[0] - t.c)), int(round(t.f - bounds[3]))
+            width, height = int(round(bounds[2] - bounds[0])), int(round(bounds[3] - bounds[1]))
+            if col0 < 0 or row0 < 0 or col0 + width > src.width or row0 + height > src.height:
+                raise RuntimeError(f"{bounds} is not inside the sheet {src.bounds}")
+            out = np.full((height // factor, width // factor), DTM_NODATA, dtype=np.float32)
+            for r in range(0, height, rows_per_read):
+                n = min(rows_per_read, height - r)
+                a = src.read(1, window=Window(col0, row0 + r, width, n))
+                b = block_mean(a, factor, nodata)
+                b[b == nodata] = DTM_NODATA
+                out[r // factor:(r + n) // factor] = b
+    save_grid(dst.stem, out, nodata=DTM_NODATA, folder=dst.parent, bounds=bounds)
+    return {"window_bounds": list(bounds), "aggregation": f"mean of {factor} x {factor} cells, read remotely"}
+
+
+def fetch_pego_dtm(manifest: dict) -> None:
+    """The 1 m sheet 0796 (2015) around Pego-Oliva, averaged to 5 m while it is read (about 1.2 GB over HTTP)."""
+    url = DTM["url"].format(sheet=PEGO_SHEET)
+    head = requests.head(url, timeout=TIMEOUT_S, headers={"User-Agent": USER_AGENT})
+    head.raise_for_status()
+    dst = INTERIM_DIR / "dtm" / f"dtm5_2015_{PEGO_SHEET}_pego_oliva.tif"
+    info = aggregate_remote(url, PEGO_BOUNDS, dst)
+    raw = dst.read_bytes()
+    record(manifest, f"dtm_2015_{PEGO_SHEET}_pego_oliva", url, dst, len(raw), hashlib.sha256(raw).hexdigest(),
+           source_sha256_is_of="the 5 m result (the 1 m file was read remotely, not stored)",
+           source_last_modified=head.headers.get("Last-Modified"), source_etag=head.headers.get("ETag"),
+           source_bytes=int(head.headers.get("Content-Length", 0)), **info)
+    print(f"Pego-Oliva DTM: {dst.relative_to(DATA_DIR.parent)}")
+
+
+def water_marks_all() -> dict:
+    """Every surveyed water height of the ICV DANA 2024 service (0 m included), with its layer."""
+    import pandas as pd
+
+    frames = []
+    for key in WATER_MARK_LAYERS:
+        g = icv_layer(key)
+        frames.append(pd.DataFrame({"x": g.geometry.x, "y": g.geometry.y, "layer": key,
+                                    "height_m": pd.to_numeric(g["altura_agua_m"], errors="coerce")}))
+    return pd.concat(frames, ignore_index=True)
+
+
+def depth_stats(depth: np.ndarray, where: np.ndarray, dist: np.ndarray) -> dict:
+    """Area per class, depth percentiles and distance to the edge used, for the flooded cells in `where`."""
+    d = depth[where & np.isfinite(depth)]
+    if d.size == 0:
+        return {"flooded_ha": 0.0}
+    cls = np.digitize(d, DEPTH_EDGES_M)
+    q = np.percentile(d, [25, 50, 75, 90, 99])
+    e = dist[where & np.isfinite(depth)]
+    return {
+        "flooded_ha": round(d.size * CELL_M * CELL_M / 1e4, 1),
+        "ha_by_class": {name: round(int((cls == i).sum()) * CELL_M * CELL_M / 1e4, 1) for i, name in enumerate(DEPTH_CLASSES)},
+        "pct_by_class": {name: pct(int((cls == i).sum()), d.size) for i, name in enumerate(DEPTH_CLASSES)},
+        "depth_m": {"mean": round(float(d.mean()), 2), "p25": round(float(q[0]), 2), "median": round(float(q[1]), 2),
+                    "p75": round(float(q[2]), 2), "p90": round(float(q[3]), 2), "p99": round(float(q[4]), 2)},
+        "distance_to_the_edge_used_m": {"median": round(float(np.median(e)), 1), "p90": round(float(np.percentile(e, 90)), 1)},
+    }
+
+
+def mark_errors(est: np.ndarray, meas: np.ndarray) -> dict | None:
+    if est.size == 0:
+        return None
+    err = est - meas
+    r = float(np.corrcoef(est, meas)[0, 1]) if est.size > 2 and est.std() > 0 and meas.std() > 0 else None
+    return {"marks": int(est.size), "measured_median_m": round(float(np.median(meas)), 2),
+            "estimated_median_m": round(float(np.median(est)), 2), "bias_m": round(float(err.mean()), 2),
+            "mae_m": round(float(np.abs(err).mean()), 2), "rmse_m": round(float(np.sqrt((err ** 2).mean())), 2),
+            "median_abs_error_m": round(float(np.median(np.abs(err))), 2),
+            "within_0p5m_pct": pct(int((np.abs(err) <= 0.5).sum()), est.size),
+            "pearson_r": None if r is None else round(r, 2)}
+
+
+def depth_classes_layer(depth: np.ndarray, keep: np.ndarray, bounds=None):
+    cls = np.where(np.isfinite(depth) & keep, np.digitize(np.nan_to_num(depth), DEPTH_EDGES_M) + 1, 0).astype(np.int32)
+    # display only (the numbers come from the 5 m cells): simplified by 10 m, specks under 400 m2 dropped
+    g = mask_polygons(cls > 0, cls, simplify_m=2 * CELL_M, bounds=bounds)
+    parts = g.explode(index_parts=False)
+    parts = parts[parts.geometry.area >= 16 * CELL_M * CELL_M]
+    g = parts.dissolve(by="value", as_index=False)
+    g["depth"] = [DEPTH_CLASSES[v - 1] for v in g["value"]]
+    g["what"] = DEPTH_LABEL
+    return g.drop(columns="value")
+
+
+def depth(zones_dir: Path) -> dict:
+    """Estimated depth of the 2024 and 2026 floods; layers in data/streets/, numbers in results.json."""
+    import geopandas as gpd
+    from rasterio.warp import Resampling, reproject
+
+    from pipeline import terrain_flow as tf
+
+    out = {"label": DEPTH_LABEL, "classes": list(DEPTH_CLASSES),
+           "method": "water surface of each flooded cell = ground of its nearest flood-edge cell; depth = surface "
+                     "- ground, at least 0; edges only where the flood touches mapped dry land with terrain that "
+                     "is not permanent water; no smoothing (docs/STREETS.md)"}
+
+    # 2024 DANA: EMSR773 maximum observed extent on the whole analysis grid
+    dem = load_grid("dtm5")
+    valid = dem != DTM_NODATA
+    water = load_grid("water5").astype(bool)
+    products = ems_products(zones_dir)
+    analysed = np.logical_or.reduce([p["analysed"] for p in products])
+    fa = np.logical_or.reduce([p["flooded_area"] for p in products])
+    ft = np.logical_or.reduce([p["flood_trace"] for p in products])
+    del products
+    flood = (fa | ft) & valid & ~water
+    del fa, ft
+    est, dist, info = tf.fwdet_depth(dem, flood, valid & analysed & ~water, CELL_M)
+    save_grid("depth_estimated_dana_2024", est, nodata=np.nan, folder=DEPTH_DIR)
+    towns = load_towns(zones_dir)
+    tid = town_grid(towns)
+    in_towns = tid > 0
+    y24 = {"outline": "EMSR773 maximum observed extent (flooded area plus flood traces, three products), whole grid",
+           "terrain": "ICV MDT 1 m 2015 averaged to 5 m (not filled)", **info,
+           "ten_towns": depth_stats(est, in_towns, dist),
+           "towns": {t: depth_stats(est, tid == i + 1, dist) for i, t in enumerate(TOWNS)},
+           "whole_grid": depth_stats(est, np.ones(est.shape, dtype=bool), dist)}
+    marks = water_marks_all()
+    cell = cells_of_points(marks["x"].to_numpy(), marks["y"].to_numpy())
+    ok = cell >= 0
+    m = marks[ok].assign(cell=cell[ok])
+    flat_flood, flat_est, flat_tid = flood.ravel(), est.ravel(), tid.ravel()
+    m = m.assign(inside=flat_flood[m["cell"]], est=flat_est[m["cell"]], town=flat_tid[m["cell"]])
+    wet = m[m["height_m"] > 0]
+    inside = wet[wet["inside"]]
+    check = {"source": "ICV DANA2024.ZonasInundadas.AlturaAgua.* (UPV, IVE, SGRT, town halls): water heights "
+                       "surveyed after the flood",
+             "marks_on_the_grid": int(len(m)), "marks_above_0m": int(len(wet)),
+             "marks_above_0m_inside_the_outline": int(len(inside)),
+             "marks_above_0m_outside_the_outline": int((~wet["inside"]).sum()),
+             "measured_median_m_of_marks_outside_the_outline": round(float(wet.loc[~wet["inside"], "height_m"].median()), 2)
+             if (~wet["inside"]).any() else None,
+             "all_inside": mark_errors(inside["est"].to_numpy(), inside["height_m"].to_numpy()),
+             "by_survey": {k: mark_errors(g["est"].to_numpy(), g["height_m"].to_numpy())
+                           for k, g in inside.groupby("layer")},
+             "ten_towns_inside": mark_errors(inside.loc[inside["town"] > 0, "est"].to_numpy(),
+                                             inside.loc[inside["town"] > 0, "height_m"].to_numpy())}
+    zero = m[(m["height_m"] == 0) & m["inside"]]
+    check["marks_at_0m_inside_the_outline"] = int(len(zero))
+    check["marks_at_0m_inside_estimated_below_0p2m_pct"] = pct(int((zero["est"] < 0.2).sum()), len(zero))
+    y24["check_against_water_marks"] = check
+    # is the error from edges along building walls? (a check made after seeing the errors: it is not)
+    bld = load_grid("buildings5").astype(bool)
+    shore = valid & analysed & ~water
+    edges = tf.flood_edges(flood, shore)
+    edges_not_walls = tf.flood_edges(flood, shore & ~bld)
+    y24["edges_in_the_ten_towns"] = {
+        "edge_cells": int((edges & in_towns).sum()),
+        "touching_only_building_cells_pct": pct(int((edges & ~edges_not_walls & in_towns).sum()),
+                                                int((edges & in_towns).sum())),
+        "flooded_cells_on_building_footprints_pct": pct(int((flood & bld & in_towns).sum()), int((flood & in_towns).sum())),
+        "note": "checked after seeing the errors; building walls are not the main source of error"}
+    del bld, edges, edges_not_walls
+    out["dana_2024_horta_sud"] = y24
+    lay = depth_classes_layer(est, in_towns)
+    a_ = check["all_inside"]
+    lay["check"] = (f"against {a_['marks']} surveyed water marks inside the outline: median {a_['estimated_median_m']} m "
+                    f"estimated, {a_['measured_median_m']} m measured, mean absolute error {a_['mae_m']} m; "
+                    f"not reliable street by street")
+    _write_geojson(lay, "estimated_depth_dana_2024")
+    del dem, valid, water, analysed, flood, est, dist
+
+    # 2026 DANA Adam, Pego-Oliva: EMSR935 on sheet 0796
+    dem_path = INTERIM_DIR / "dtm" / f"dtm5_2015_{PEGO_SHEET}_pego_oliva.tif"
+    with rasterio.open(dem_path) as src:
+        dem_p = src.read(1)
+    valid_p = dem_p != DTM_NODATA
+    wc = np.zeros(dem_p.shape, dtype=np.uint8)
+    with rasterio.open(DATA_DIR / "context" / "pego_oliva_worldcover_2021_20m.tif") as src:
+        reproject(src.read(1), wc, src_transform=src.transform, src_crs=src.crs,
+                  dst_transform=grid_transform(CELL_M, PEGO_BOUNDS), dst_crs=CRS, resampling=Resampling.nearest)
+    water_p = wc == WORLDCOVER_WATER
+    fl = gpd.read_file(LABELS_DIR / "pego_oliva_emsr935_flood.geojson").to_crs(CRS)
+    aoi = gpd.read_file(LABELS_DIR / "pego_oliva_emsr935_aoi.geojson").to_crs(CRS)
+    flood_p = burn(fl.geometry, bounds=PEGO_BOUNDS) & valid_p & ~water_p
+    mapped = burn(aoi.geometry, bounds=PEGO_BOUNDS)
+    est_p, dist_p, info_p = tf.fwdet_depth(dem_p, flood_p, valid_p & mapped & ~water_p, CELL_M)
+    save_grid("depth_estimated_dana_adam_2026", est_p, nodata=np.nan, folder=DEPTH_DIR, bounds=PEGO_BOUNDS)
+    full = gpd.GeoSeries(fl.geometry, crs=CRS).union_all()
+    inside_box = gpd.GeoSeries([full], crs=CRS).clip(PEGO_BOUNDS).area.sum()
+    ign = json.loads((zones_dir / "ign_pego_oliva.geojson").read_text(encoding="utf-8"))
+    feats = {f["id"]: f for f in ign["features"]}
+    from shapely.geometry import shape as _shape
+
+    pego_munis = gpd.GeoDataFrame(
+        [{"name": n, "geometry": _shape(feats[f"AU_ADMINISTRATIVEUNIT_3410{c[:2]}{c}"]["geometry"])}
+         for n, c in PEGO_TOWNS.items()], crs="EPSG:4258").to_crs(CRS)
+    y26 = {"outline": "EMSR935 (data/labels/pego_oliva_emsr935_flood.geojson), flooded area plus flood traces",
+           "terrain": f"ICV MDT 1 m 2015 sheet {PEGO_SHEET} averaged to 5 m (not filled)",
+           "outline_ha": round(float(full.area) / 1e4, 1),
+           "outline_inside_the_terrain_box_pct": pct(float(inside_box), float(full.area)), **info_p,
+           "whole_box": depth_stats(est_p, np.ones(est_p.shape, dtype=bool), dist_p),
+           "towns": {r["name"]: depth_stats(est_p, burn([r.geometry], bounds=PEGO_BOUNDS), dist_p)
+                     for _, r in pego_munis.iterrows()}}
+    pts = gpd.read_file(LABELS_DIR / "pego_oliva_water_depth_points.geojson").to_crs(CRS)
+    h = gpd.pd.to_numeric(pts["AlturaAguam"], errors="coerce")
+    inside_pts = pts.within(full)
+    near = pts.distance(full) <= 50.0
+    y26["check_against_water_marks"] = {
+        "source": "ICV 2702_DANAAdam2026 surveyed water depths (data/labels/pego_oliva_water_depth_points.geojson, "
+                  "SGRT)", "marks": int(len(pts)), "marks_above_0m": int((h > 0).sum()),
+        "inside_the_outline": int(inside_pts.sum()), "within_50m_of_the_outline": int(near.sum()),
+        "result": "no check: no surveyed mark lies inside the EMSR935 outline" if not inside_pts.any() else None}
+    out["dana_adam_2026_pego_oliva"] = y26
+    lay26 = depth_classes_layer(est_p, np.ones(est_p.shape, dtype=bool), PEGO_BOUNDS)
+    lay26["check"] = "no check: no surveyed water mark lies inside the EMSR935 outline"
+    _write_geojson(lay26, "estimated_depth_dana_adam_2026")
+
+    path = STREETS_DIR / "results.json"
+    res = json.loads(path.read_text(encoding="utf-8"))
+    res["flood_depth"] = out
+    path.write_text(json.dumps(res, indent=1, ensure_ascii=False), encoding="utf-8")
+    print(json.dumps({k: v for k, v in y24.items() if k in ("ten_towns", "check_against_water_marks")}, indent=1))
+    print(json.dumps({k: v for k, v in y26.items() if k in ("whole_box", "check_against_water_marks")}, indent=1))
+    return out
+
+
+STEPS = ("fetch", "fetch-dtm", "fetch-other", "fetch-pego", "terrain", "simulate", "score", "layers", "depth",
+         "report")
 
 
 def main(argv: list[str] | None = None) -> None:
@@ -1295,6 +1546,11 @@ def main(argv: list[str] | None = None) -> None:
         simulate(args.numba_python)
     elif args.step == "layers":
         layers(args.zones_interim)
+    elif args.step == "fetch-pego":
+        fetch_pego_dtm(manifest)
+        save_manifest(manifest)
+    elif args.step == "depth":
+        depth(args.zones_interim)
     elif args.step == "report":
         report()
 
