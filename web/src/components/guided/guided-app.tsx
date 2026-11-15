@@ -402,7 +402,9 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 				setPick(null)
 				return
 			}
-			const props = best.f.properties as { z: number; t: number; n: number }
+			// zero values are left out of the file: no z means no flood zone
+			const props = best.f.properties as { z?: number; t: number; n: number }
+			const zoneCode = Number(props.z ?? 0)
 			let water: number | null = null
 			let dw = Infinity
 			for (const [lon, lat, depth] of streets.marks.points) {
@@ -413,7 +415,7 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 					water = depth
 				}
 			}
-			setPick({ name: streets.names[props.n] ?? 'Street', town: streets.towns[props.t] ?? '', zone: streets.zones[String(props.z)] ?? '', zoneCode: props.z, water, lngLat: best.q })
+			setPick({ name: streets.names[props.n] ?? 'Street', town: streets.towns[props.t] ?? '', zone: streets.zones[String(zoneCode)] ?? '', zoneCode, water, lngLat: best.q })
 			const src = map.getSource('g-pick') as GeoJSONSource | undefined
 			src?.setData({ type: 'FeatureCollection', features: [{ type: 'Feature', properties: {}, geometry: best.f.geometry }] })
 		},
