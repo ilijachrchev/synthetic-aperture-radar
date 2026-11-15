@@ -1,5 +1,5 @@
 {
-  "made_utc": "2026-11-14T23:09:15+00:00",
+  "made_utc": "2026-11-15T01:52:27+00:00",
   "holdout": {
     "start": "2026-10-15",
     "end": "2026-11-15",
@@ -8,7 +8,9 @@
       "pego_oliva"
     ]
   },
+  "variant": "base",
   "labels": "OPERA DSWx-S1 B01_WTR, newest reprocessing per tile, data/raw/dswx_history",
+  "soil_moisture": null,
   "sampling": {
     "pool_size_per_site": 40000,
     "pool": "half ever-wet, half never-wet pixels, weighted back to the domain",
@@ -31,8 +33,8 @@
     "num_threads": 8
   },
   "rounds": {
-    "terrain_only": 139,
-    "rain_and_state": 241
+    "terrain_only": 208,
+    "rain_and_state": 379
   },
   "sites": {
     "albufera": {
@@ -45,6 +47,8 @@
       "domain_ha": 41660.1,
       "samples": 2182850,
       "wet_samples": 743237,
+      "nisar_target_passes": 0,
+      "samples_with_soil_moisture": 0,
       "rain_between_mm": {
         "max": 212.8,
         "p99": 184.0,
@@ -63,6 +67,8 @@
       "domain_ha": 46203.8,
       "samples": 2891109,
       "wet_samples": 1579925,
+      "nisar_target_passes": 0,
+      "samples_with_soil_moisture": 0,
       "rain_between_mm": {
         "max": 193.8,
         "p99": 151.3,

@@ -1,0 +1,81 @@
+{
+  "made_utc": "2026-11-15T02:03:38+00:00",
+  "holdout": {
+    "start": "2026-10-15",
+    "end": "2026-11-15",
+    "sites": [
+      "albufera",
+      "pego_oliva"
+    ]
+  },
+  "variant": "soil",
+  "labels": "OPERA DSWx-S1 B01_WTR, newest reprocessing per tile, data/raw/dswx_history",
+  "soil_moisture": "NISAR SME2 (data/context/<site>_sme2_*), newest map before the issue day",
+  "sampling": {
+    "pool_size_per_site": 40000,
+    "pool": "half ever-wet, half never-wet pixels, weighted back to the domain",
+    "dry_keep": 0.1,
+    "seed": 0
+  },
+  "domain": "land, not JRC permanent water, not WorldCover built-up, with HAND, seen in at least half of the passes",
+  "params": {
+    "objective": "binary",
+    "learning_rate": 0.05,
+    "num_leaves": 15,
+    "min_data_in_leaf": 200,
+    "feature_fraction": 0.8,
+    "bagging_fraction": 0.8,
+    "bagging_freq": 1,
+    "lambda_l2": 1.0,
+    "max_cat_to_onehot": 16,
+    "verbose": -1,
+    "seed": 0,
+    "num_threads": 8
+  },
+  "rounds": {
+    "terrain_only": 208,
+    "rain_and_state": 379
+  },
+  "sites": {
+    "albufera": {
+      "passes_in_index": 413,
+      "target_passes_used": 387,
+      "first_target": "2024-08-26",
+      "last_target": "2026-10-11",
+      "held_out_passes": 18,
+      "pool_pixels": 40000,
+      "domain_ha": 41660.1,
+      "samples": 2182850,
+      "wet_samples": 743237,
+      "nisar_target_passes": 0,
+      "samples_with_soil_moisture": 160574,
+      "rain_between_mm": {
+        "max": 212.8,
+        "p99": 184.0,
+        "p90": 53.6,
+        "targets_over_100mm": 18
+      },
+      "label_granules_sha256": "8ef1bdee9b3d39e567813acfddebd56e9dfc00ae99d5bd8b4c424ea41aed7627"
+    },
+    "pego_oliva": {
+      "passes_in_index": 413,
+      "target_passes_used": 390,
+      "first_target": "2024-08-26",
+      "last_target": "2026-10-11",
+      "held_out_passes": 18,
+      "pool_pixels": 40000,
+      "domain_ha": 46203.8,
+      "samples": 2891109,
+      "wet_samples": 1579925,
+      "nisar_target_passes": 0,
+      "samples_with_soil_moisture": 233156,
+      "rain_between_mm": {
+        "max": 193.8,
+        "p99": 151.3,
+        "p90": 60.1,
+        "targets_over_100mm": 14
+      },
+      "label_granules_sha256": "b38bb7902140f985122f3e0bcd5671b17a6bc4054effd3de06a67a6166e9cc3c"
+    }
+  }
+}
