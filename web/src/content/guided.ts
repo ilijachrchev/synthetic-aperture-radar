@@ -25,7 +25,7 @@ const PEGO: [number, number, number, number] = [-0.099, 38.846, -0.005, 38.893]
 export const STEPS: Step[] = [
 	{ key: 'streets', when: '29 Oct 2024', where: "L'Horta Sud", title: 'The official map said safe', hint: 'Tap any street', view: HORTA },
 	{ key: 'nisar', when: '28 Oct 2026', where: 'Pego-Oliva', title: 'NISAR sees more water', hint: 'Drag the line', view: PEGO },
-	{ key: 'coming', when: '29 Oct 2024', where: "L'Horta Sud", title: 'Would we have seen it coming?', hint: 'Switch between the two rains', view: HORTA },
+	{ key: 'coming', when: '29 Oct 2024', where: "L'Horta Sud", title: 'Would we have seen it coming?', hint: 'Switch between the three rains', view: HORTA },
 ]
 
 /** the marsh model screens, out of the flow: "All layers" opens them (?screen=exam, ?screen=rain) */
@@ -61,5 +61,5 @@ export const REVEAL_FADE_MS = 700
 
 export const META = {
 	title: 'The flood map · Through the Clouds',
-	description: 'What the official flood map missed in the Valencia flood of 2024, what our street simulation and NISAR radar saw, and whether the forecast of the night before would have seen it coming.',
+	description: 'What the official flood map missed in the Valencia flood of 2024, what our street simulation and NISAR radar saw, and whether the weather forecasts would have seen it coming.',
 }
