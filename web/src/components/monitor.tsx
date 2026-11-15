@@ -3,9 +3,10 @@
 import { useGSAP } from '@gsap/react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { ArrowUpRight } from 'lucide-react'
+import { ArrowUpRight, Pause, Play } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
+import { DECK } from '@/content/landing'
 import { STORIES } from '@/content/stories'
 import { storyNav } from '@/lib/story-nav'
 import { warmMaplibre, warmStory, whenIdle } from '@/lib/warm'
@@ -28,6 +29,24 @@ export type Film = {
 	still: string
 	/** the words of the button that opens the page (by default "Open this story") */
 	cta?: string
+	/** what the film shows and from which second (the deck under the monitor marks them on its timeline) */
+	chapters?: Chapter[]
+	/** the film's length in seconds, shown until the film itself has loaded */
+	duration?: number
+}
+
+/** one chapter of a film: the second it starts, and what the film shows then */
+export type Chapter = { at: number; label: string; value: string }
+
+/** m:ss */
+const clock = (t: number) => `${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, '0')}`
+/** the chapter on screen at second t */
+const chapterAt = (chapters: Chapter[], t: number) => {
+	let k = 0
+	chapters.forEach((c, i) => {
+		if (t >= c.at) k = i
+	})
+	return k
 }
 
 /** the share of the track before the first story takes the navbar, and the hold after the last */
@@ -41,6 +60,10 @@ const clamp = (v: number) => Math.min(1, Math.max(0, v))
  * telling its story (the Earth, one move down onto the place, the radar passes), recorded from the running app, so
  * nothing on the screen is a stand-in. A film only loads when its story is near and only plays while the monitor is
  * on screen. People who ask for less motion get a still frame of each story. The button opens the story's page.
+ *
+ * Under it, a slim deck: play and pause, a timeline as wide as the monitor with a playhead to drag (mouse, touch, a
+ * click jumps, arrow keys move it), the chapters of the film marked on it, and the time. Dragging pauses the film and
+ * lets it play on when released, if it was playing. With less motion asked for, nothing plays until Play is pressed.
  */
 export function Monitor({ films, track }: { films: Film[]; track: HTMLElement | null }) {
 	const glass = useRef<HTMLDivElement>(null)
@@ -54,6 +77,21 @@ export function Monitor({ films, track }: { films: Film[]; track: HTMLElement | 
 	const [seen, setSeen] = useState(false)
 	const [near, setNear] = useState(false)
 	const [calm, setCalm] = useState(false)
+	// the deck: whether the reader pressed play or pause (null: not yet, so the film plays unless less motion is
+	// asked for), whether the deck asked for the film to load, the chapter on screen and the film's length
+	const [choice, setChoice] = useState<boolean | null>(null)
+	const [load, setLoad] = useState(false)
+	const [chap, setChap] = useState(0)
+	const [dur, setDur] = useState(films[0]?.duration ?? 0)
+	const want = choice ?? !calm
+	const line = useRef<HTMLDivElement>(null)
+	const elapsed = useRef<HTMLSpanElement>(null)
+	const chapRef = useRef(0)
+	const secRef = useRef(-1)
+	// a drag in progress (and whether the film played before it), and the seeking: the time the deck shows, the one
+	// waiting for the seek on its way to finish, whether a seek is on its way
+	const drag = useRef<{ resume: boolean } | null>(null)
+	const seek = useRef<{ shown: number; next: number | null; busy: boolean }>({ shown: 0, next: null, busy: false })
 	const N = films.length
 
 	useEffect(() => {
@@ -123,7 +161,7 @@ export function Monitor({ films, track }: { films: Film[]; track: HTMLElement | 
 		const timers: number[] = []
 		videos.current.forEach((v, i) => {
 			if (!v) return
-			if (i === cur && seen && !calm) v.play().catch(() => {})
+			if (i === cur && seen && want && !drag.current) v.play().catch(() => {})
 			else {
 				v.pause()
 				// once it has faded out it goes back to its first frame, so it starts from the top next time
@@ -131,14 +169,135 @@ export function Monitor({ films, track }: { films: Film[]; track: HTMLElement | 
 			}
 		})
 		return () => timers.forEach((t) => window.clearTimeout(t))
-	}, [cur, seen, calm, near])
+	}, [cur, seen, calm, near, want])
+
+	// the deck follows the film on screen, every frame while the monitor is in view: the playhead, the time, the
+	// chapter. While a drag or a seek is on its way it shows where the reader put it, not the frame still coming.
+	useEffect(() => {
+		if (!seen) return
+		let raf = 0
+		// the timeline's width, for the playhead's transform in px
+		let w = line.current?.clientWidth ?? 0
+		const ro = new ResizeObserver(([e]) => void (w = e.contentRect.width))
+		if (line.current) ro.observe(line.current)
+		const paint = () => {
+			raf = requestAnimationFrame(paint)
+			const v = videos.current[curRef.current]
+			const f = films[curRef.current]
+			const d = v && Number.isFinite(v.duration) && v.duration > 0 ? v.duration : (f?.duration ?? 0)
+			if (!d || !line.current) return
+			const s = seek.current
+			const t = drag.current || s.busy || s.next !== null || !v ? s.shown : v.currentTime
+			const p = Math.min(1, Math.max(0, t / d))
+			line.current.style.setProperty('--p', String(p))
+			line.current.style.setProperty('--x', `${(p * w).toFixed(1)}px`)
+			const sec = Math.floor(t)
+			if (sec !== secRef.current) {
+				secRef.current = sec
+				if (elapsed.current) elapsed.current.textContent = clock(t)
+				line.current.setAttribute('aria-valuenow', String(sec))
+				line.current.setAttribute('aria-valuetext', `${clock(t)} of ${clock(d)}`)
+			}
+			const k = f?.chapters ? chapterAt(f.chapters, t) : 0
+			if (k !== chapRef.current) {
+				chapRef.current = k
+				setChap(k)
+			}
+		}
+		raf = requestAnimationFrame(paint)
+		return () => {
+			cancelAnimationFrame(raf)
+			ro.disconnect()
+		}
+	}, [seen, films])
 
 	// one film at a time: the next one only starts to load once the one on screen is fully loaded, so the page and
 	// the first film do not share the line with a second film nobody is watching yet
-	if (near && !calm) reach.current = Math.max(reach.current, Math.min(N - 1, cur + (through[cur] ? 1 : 0)))
+	if (near && (want || load)) reach.current = Math.max(reach.current, Math.min(N - 1, cur + (through[cur] ? 1 : 0)))
 	const film = films[cur]
+
+	// the deck: send the film to second t, one seek at a time (the newest waits for the one on its way), so a drag
+	// stays smooth instead of queueing seeks the decoder cannot keep up with
+	const toSecond = (t: number) => {
+		const v = videos.current[curRef.current]
+		const d = v && Number.isFinite(v.duration) && v.duration > 0 ? v.duration : dur
+		const s = seek.current
+		s.shown = Math.min(Math.max(0, t), Math.max(0, d - 0.05))
+		setLoad(true)
+		if (!v || v.readyState < 1) {
+			// not loaded yet: it goes there once it is (onLoadedMetadata)
+			s.next = s.shown
+			return
+		}
+		if (s.busy) {
+			s.next = s.shown
+			return
+		}
+		s.busy = true
+		s.next = null
+		v.currentTime = s.shown
+	}
+	const seeked = (v: HTMLVideoElement) => {
+		const s = seek.current
+		s.busy = false
+		if (s.next !== null && Math.abs(s.next - v.currentTime) > 0.02) {
+			const t = s.next
+			s.next = null
+			s.busy = true
+			v.currentTime = t
+		} else s.next = null
+	}
+	const secondAt = (x: number) => {
+		const r = line.current?.getBoundingClientRect()
+		return r && r.width ? Math.min(1, Math.max(0, (x - r.left) / r.width)) * dur : 0
+	}
+	const grab = (e: React.PointerEvent<HTMLDivElement>) => {
+		if (e.pointerType === 'mouse' && e.button !== 0) return
+		const v = videos.current[curRef.current]
+		e.currentTarget.setPointerCapture(e.pointerId)
+		drag.current = { resume: v ? !v.paused : want }
+		v?.pause()
+		toSecond(secondAt(e.clientX))
+	}
+	const move = (e: React.PointerEvent<HTMLDivElement>) => {
+		if (drag.current) toSecond(secondAt(e.clientX))
+	}
+	const release = () => {
+		const d = drag.current
+		if (!d) return
+		drag.current = null
+		if (d.resume && seen) videos.current[curRef.current]?.play().catch(() => {})
+	}
+	const key = (e: React.KeyboardEvent<HTMLDivElement>) => {
+		const list = film.chapters ?? []
+		const s = seek.current
+		const now = s.busy || s.next !== null ? s.shown : (videos.current[curRef.current]?.currentTime ?? s.shown)
+		const step = e.shiftKey ? 5 : 1
+		let t: number | null = null
+		if (e.key === 'ArrowRight' || e.key === 'ArrowUp') t = now + step
+		else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') t = now - step
+		else if (e.key === 'Home') t = 0
+		else if (e.key === 'End') t = dur
+		else if (e.key === 'PageUp') t = list[Math.min(list.length - 1, chapterAt(list, now) + 1)]?.at ?? null
+		else if (e.key === 'PageDown') t = list[Math.max(0, chapterAt(list, now) - 1)]?.at ?? null
+		if (t === null) return
+		e.preventDefault()
+		toSecond(t)
+	}
+	const toggle = () => {
+		const v = videos.current[curRef.current]
+		if (want) {
+			setChoice(false)
+			v?.pause()
+		} else {
+			setChoice(true)
+			setLoad(true)
+		}
+	}
+	const chapters = film.chapters ?? []
+	const on = chapters[Math.min(chap, chapters.length - 1)]
 	return (
-		<div className="mon">
+		<div className="mon" data-deck={chapters.length > 0 || undefined}>
 			<div className="mon-body">
 				<div ref={glass} className="mon-glass">
 					{films.map((f, i) => (
@@ -153,6 +312,20 @@ export function Monitor({ films, track }: { films: Film[]; track: HTMLElement | 
 							loop
 							playsInline
 							preload="auto"
+							onLoadedMetadata={(e) => {
+								const v = e.currentTarget
+								if (i !== curRef.current) return
+								if (Number.isFinite(v.duration) && v.duration > 0) setDur(v.duration)
+								// a time the deck asked for before the film had loaded
+								const s = seek.current
+								if (s.next !== null) {
+									const t = s.next
+									s.next = null
+									s.busy = true
+									v.currentTime = t
+								}
+							}}
+							onSeeked={(e) => i === curRef.current && seeked(e.currentTarget)}
 							onProgress={(e) => {
 								// the whole film is in: the next one may start to load
 								const v = e.currentTarget
@@ -175,6 +348,62 @@ export function Monitor({ films, track }: { films: Film[]; track: HTMLElement | 
 			</div>
 			<div className="mon-neck" aria-hidden />
 			<div className="mon-foot" aria-hidden />
+			{chapters.length > 0 && dur > 0 && (
+				<div className="deck" role="group" aria-label={`${film.title}: the film's controls`}>
+					<div className="deck-line">
+						<div
+							ref={line}
+							className="deck-track"
+							role="slider"
+							tabIndex={0}
+							aria-label={DECK.timeline}
+							aria-valuemin={0}
+							aria-valuemax={Math.floor(dur)}
+							aria-valuenow={0}
+							aria-valuetext={`0:00 of ${clock(dur)}`}
+							onPointerDown={grab}
+							onPointerMove={move}
+							onPointerUp={release}
+							onPointerCancel={release}
+							onLostPointerCapture={release}
+							onKeyDown={key}
+						>
+							<span className="deck-rail" aria-hidden>
+								<span className="deck-fill" />
+							</span>
+							<span className="deck-head" aria-hidden />
+						</div>
+						{chapters.map((c, i) => (
+							<button
+								key={c.at}
+								type="button"
+								className="deck-mark"
+								style={{ left: `${(c.at / dur) * 100}%` }}
+								data-on={i === chap || undefined}
+								aria-label={`${DECK.jump} ${c.label}, ${c.value}`}
+								onClick={() => toSecond(c.at + 0.05)}
+							>
+								<span className="mono">{c.value}</span>
+							</button>
+						))}
+					</div>
+					<div className="deck-row">
+						<button type="button" className="deck-play" aria-label={want ? DECK.pause : DECK.play} onClick={toggle}>
+							{want ? <Pause size={15} strokeWidth={2.6} fill="currentColor" /> : <Play size={15} strokeWidth={2.6} fill="currentColor" />}
+						</button>
+						<span className="mono deck-time">
+							<span ref={elapsed}>0:00</span> / {clock(dur)}
+						</span>
+						{on && (
+							<span className="deck-chap">
+								<i aria-hidden />
+								<span className="mono">{on.value}</span>
+								<b>{on.label}</b>
+							</span>
+						)}
+					</div>
+				</div>
+			)}
 			{/* on a phone the screen is small: the story is named under the monitor, with a button a thumb can hit */}
 			<div className="mon-note">
 				<p className="mono">

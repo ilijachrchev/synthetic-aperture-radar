@@ -8,6 +8,9 @@ export const SITE = {
 	title: 'Through the Clouds · Where the water really went',
 	description: "Where the water really went in Valencia's 2024 flood, street by street, against the official flood map, with NASA-ISRO NISAR radar.",
 	repo: 'https://github.com/ilijachrchev/synthetic-aperture-radar',
+	/** the research paper, used by How it works and the footer: the current draft for now; before submitting, put the
+	 *  final PDF's link here and nowhere else */
+	paper: 'https://github.com/ilijachrchev/synthetic-aperture-radar/blob/claude/paper-0808b2/docs/paper/paper.md',
 	challenge: 'https://www.spaceappschallenge.org/2026/challenges/dancing-with-the-sars/',
 } as const
 

@@ -1,0 +1,10 @@
+{
+ "what": "The chapters of the landing monitor's film, public/films/tour.mp4: the second each chapter starts and what the film shows then. When the film is cut again, change only these times and the duration. The page reads this file at build time (src/content/landing.ts).",
+ "duration": 18.27,
+ "chapters": [
+  { "at": 0, "label": "Outside every zone", "value": "59%" },
+  { "at": 7.3, "label": "Official map", "value": "41%" },
+  { "at": 11.5, "label": "Our simulation", "value": "76%" }
+ ],
+ "source": "The numbers the film shows on its card, from public/layers/guided/streets.json: numbers.outside_pct (59.0, data/streets/results.json streets.main.descriptive.key_a_flooded_outside_every_zone_pct) and methods zones and sim hit_rate_pct (41.0 and 76.0, data/streets/results.json streets.main.methods.official_union and simulated_depth_above_0p3m, A.total)."
+}

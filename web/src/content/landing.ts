@@ -1,6 +1,8 @@
 // Landing copy. Facts come from the repository README and the real pass list (src/data/passes.json); nothing here
 // claims a result the models have not produced yet.
 import type { SiteKey } from '@/lib/radar'
+// the chapters of the monitor's film sit next to it, so cutting the film again only changes that file
+import TOUR_CHAPTERS from '../../public/films/tour.chapters.json'
 
 export const HERO = {
 	/** the name, its line, and the small line under them (SITE: Through the Clouds, NASA Space Apps 2026) */
@@ -26,21 +28,86 @@ export const TOUR_FILM = {
 	poster: '/films/tour.jpg',
 	still: '/films/tour-still.jpg',
 	cta: 'Open the flood map',
+	/** what the film shows and when (public/films/tour.chapters.json), for the deck under the monitor */
+	chapters: TOUR_CHAPTERS.chapters,
+	/** its length in seconds, shown before the film itself has loaded */
+	duration: TOUR_CHAPTERS.duration,
 }
+
+/** the deck under the monitor: the words of its controls */
+export const DECK = { play: 'Play the film', pause: 'Pause the film', timeline: 'Where the film is', jump: 'Jump to' }
 
 /** under the monitor: the 3D story pages, each a film of how the land changed over time */
 export const MORE = { title: 'More NISAR stories', line: 'How the land changes over time, seen by NISAR every 12 days.', open: 'Open the 3D story' }
 
-/** how it works, in four short lines (the methods: docs/STREETS.md, docs/CV_BENCHMARK.md, the repository README) */
+/** how it works: one strip in the order the signal travels, from the orbit to the test. Each stage has one number from
+ *  the repository with the file it comes from; the pictures are crops of the app's own layers (public/landing/how).
+ *  The methods: docs/STREETS.md, docs/CV_BENCHMARK.md, the repository README. The orbit's number is counted from the
+ *  passes themselves (src/data/passes.json) in components/landing.tsx. */
 export const HOW = {
 	title: 'How it works',
-	items: [
-		{ title: 'Radar that sees through cloud', text: 'NASA-ISRO NISAR passes every 12 days, day and night. Our model reads open water from its L-band radar, checked against same-day photos.' },
-		{ title: 'Street by street', text: 'The streets of 10 towns are cut into pieces of 25 m. Each one is checked against the Copernicus EMS flood map and the water heights measured after the flood.' },
-		{ title: 'A simulation of the water', text: 'The rain that fell runs over the terrain on a 25 m grid. Nothing soaks in, so it is an upper bound.' },
-		{ title: 'Written down first', text: 'Every test was written down before its answer was seen. The code and the data are open.' },
+	line: 'From orbit to one street, in the order the signal travels.',
+	stages: [
+		{
+			key: 'orbit',
+			title: 'NISAR above the clouds',
+			text: 'NASA-ISRO NISAR passes over Valencia day and night, and its L-band radar sees through cloud.',
+			value: '',
+			unit: 'days between passes',
+			source: 'src/data/passes.json, track 066 descending',
+			caption: 'NISAR passes · track 066 D · 2026',
+		},
+		{
+			key: 'radar',
+			title: 'Its radar image of the water',
+			text: 'Our model reads open water from the radar, checked against photos taken the same day.',
+			value: '57%',
+			unit: 'of the open water a same-day photo shows',
+			source: 'public/layers/guided/swipe.json, numbers.nisar_finds_open (0.572)',
+			img: '/landing/how/radar.webp',
+			alt: 'Open water NISAR found in the Pego-Oliva marsh on 28 Oct 2026, in blue over the map',
+			caption: 'NISAR · Pego-Oliva · 28 Oct 2026',
+		},
+		{
+			key: 'streets',
+			title: 'Streets in pieces of 25 m',
+			text: 'The streets of 10 towns, cut into pieces of 25 m, each checked against the Copernicus EMS flood map and the water heights measured after the flood.',
+			value: '64,174',
+			unit: 'pieces of street',
+			source: 'data/streets/results.json, streets.main.summary.pieces',
+			img: '/landing/how/streets.webp',
+			alt: 'The streets of Paiporta that flooded in 2024, in blue and green, with the official flood zones in orange',
+			caption: 'Paiporta · flooded streets · 2024',
+		},
+		{
+			key: 'sim',
+			title: 'The water on a 25 m grid',
+			text: 'The rain that fell runs over the terrain on a 25 m grid. Nothing soaks in, so it is an upper bound.',
+			value: '76%',
+			unit: 'of the flooded streets found',
+			source: 'data/streets/results.json, simulated_depth_above_0p3m, A.total.hit_rate_pct',
+			img: '/landing/how/simulation.webp',
+			alt: 'The simulated water over Paiporta, deepest in the ravine',
+			caption: 'Paiporta · simulated depth',
+		},
+		{
+			key: 'test',
+			title: 'Written before the answer',
+			text: 'Every test is written down before its answer is seen. The code and the data are open.',
+			value: '1 h 10 min',
+			unit: 'from the rules to the first score',
+			source: 'git log, commits 37c33ef and e4593db',
+			caption: 'git · 15 Nov 2026',
+		},
 	],
+	/** the test stage's picture: the two commits, as git has them (15 Nov 2026) */
+	log: [
+		{ time: '08:03 UTC', hash: '37c33ef', what: 'Rules for two more simulations, before any run or score' },
+		{ time: '09:13 UTC', hash: 'e4593db', what: 'First score, street by street' },
+	],
+	credit: 'Pictures: crops of the app. Orthophoto PNOA © Instituto Geográfico Nacional de España (scne.es, CC BY 4.0); flood zones SNCZI (MITECO); flood map Copernicus EMS EMSR773 (© European Union).',
 	repo: 'The code on GitHub',
+	paper: 'Research paper',
 }
 
 export type StoryKey = 'water' | 'fire' | 'sink' | 'quake'
