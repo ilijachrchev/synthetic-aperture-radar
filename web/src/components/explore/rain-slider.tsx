@@ -14,7 +14,8 @@ export function RainSlider({
 	onStop,
 	label = 'Rain',
 }: {
-	stops: { label: string; warn?: boolean }[]
+	/** `sub` is a second, smaller line over the stop (what that rain changes) */
+	stops: { label: string; sub?: string; warn?: boolean }[]
 	/** the stop chosen from outside (a key, a script): the handle glides there */
 	index: number
 	/** every move of the handle, as a position from 0 to stops - 1 */
@@ -128,6 +129,7 @@ export function RainSlider({
 						onClick={() => settle(i)}
 						tabIndex={-1}
 					>
+						{s.sub && <em>{s.sub}</em>}
 						<small>{s.label}</small>
 					</button>
 				))}

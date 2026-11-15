@@ -55,7 +55,9 @@ export function SpotPanel({
 
 function Spot({ spot, prediction, sources, setSources }: { spot: Extract<SpotResult, { kind: 'spot' }>['spot']; prediction: Prediction | null; sources: boolean; setSources: (v: boolean) => void }) {
 	const m = spot.model
-	const thr = m ? Math.round(m.map.thresholds.water * 100) : 31
+	// the dashed line on the map: likely new water, where the issue map was dry and the model predicts itself
+	const thr = m ? Math.round(m.map.thresholds.new_water * 100) : 20
+	const counted = !!m && m.evidence === 0 && m.dryBefore === true
 	const seen = spot.history?.filter((h) => h.state > 0) ?? []
 	const wet = seen.filter((h) => h.state >= 2)
 	const issued = m ? utcDay(Date.parse(m.map.issue_time_utc), false) : ''
@@ -81,10 +83,10 @@ function Spot({ spot, prediction, sources, setSources }: { spot: Extract<SpotRes
 						</p>
 						<div className="sp-bar" aria-hidden>
 							<i style={{ width: `${m.water}%` }} />
-							<s style={{ left: `${m.map.thresholds.water * 100}%` }} />
+							<s style={{ left: `${m.map.thresholds.new_water * 100}%` }} />
 						</div>
 						<p className="sp-text">
-							{m.water >= m.map.thresholds.water * 100 ? `Inside the dashed line: likely water (${thr} or more).` : `Outside the dashed line, which starts at ${thr}.`}{' '}
+							{counted ? (m.water >= m.map.thresholds.new_water * 100 ? `Inside the dashed line: likely new water (${thr} or more).` : `Outside the dashed line, which starts at ${thr}.`) : ''}{' '}
 							{m.evidence === 1
 								? 'Permanent water.'
 								: m.dryBefore
