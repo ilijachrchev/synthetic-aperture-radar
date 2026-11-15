@@ -1,6 +1,6 @@
 {
  "site": "albufera",
- "baked_utc": "2026-11-15T01:30:54Z",
+ "baked_utc": "2026-11-15T01:45:45Z",
  "made_by": "web/scripts/bake_prediction.py",
  "source": {
   "folder": "pr-33:data/prediction/spatial",
@@ -668,5 +668,6 @@
   "file": "prediction/inspect.bin",
   "bytes": 524633,
   "planes": 13
- }
+ },
+ "game": null
 }

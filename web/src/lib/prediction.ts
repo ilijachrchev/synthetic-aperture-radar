@@ -162,35 +162,6 @@ export async function readPixel(url: string, row: number, col: number, wanted?: 
 	return Promise.all(list.map(async (plane) => (await bandOf(url, f, plane, band))[inBand]))
 }
 
-/** a window of one plane, row by row; 255 where the window leaves the grid */
-export async function readBlock(url: string, plane: number, row0: number, col0: number, h: number, w: number): Promise<Uint8Array> {
-	const f = await loadPlanes(url)
-	const out = new Uint8Array(h * w).fill(255)
-	const r0 = Math.max(0, row0)
-	const r1 = Math.min(f.height, row0 + h)
-	const c0 = Math.max(0, col0)
-	const c1 = Math.min(f.width, col0 + w)
-	if (r0 >= r1 || c0 >= c1) return out
-	for (let band = Math.floor(r0 / f.rows); band <= Math.floor((r1 - 1) / f.rows); band++) {
-		const bytes = await bandOf(url, f, plane, band)
-		for (let r = Math.max(r0, band * f.rows); r < Math.min(r1, (band + 1) * f.rows); r++) {
-			const src = (r - band * f.rows) * f.width
-			out.set(bytes.subarray(src + c0, src + c1), (r - row0) * w + (c0 - col0))
-		}
-	}
-	return out
-}
-
-/** the pixels of the grid inside a box (west, south, east, north) whose edges lie on the grid's own lattice */
-export function windowOf(grid: Prediction['grid'], box: Bounds) {
-	const [west, south, east, north] = grid.bounds
-	const fx = (lon: number) => ((mercX(lon) - mercX(west)) / (mercX(east) - mercX(west))) * grid.width
-	const fy = (lat: number) => ((mercY(lat) - mercY(north)) / (mercY(south) - mercY(north))) * grid.height
-	const col0 = Math.round(fx(box[0]))
-	const row0 = Math.round(fy(box[3]))
-	return { row0, col0, w: Math.max(1, Math.round(fx(box[2])) - col0), h: Math.max(1, Math.round(fy(box[1])) - row0) }
-}
-
 // ---------------------------------------------------------------- one spot of ground
 
 export type Spot = {

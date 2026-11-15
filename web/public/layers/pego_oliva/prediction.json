@@ -1,6 +1,6 @@
 {
  "site": "pego_oliva",
- "baked_utc": "2026-11-15T01:29:35Z",
+ "baked_utc": "2026-11-15T01:44:08Z",
  "made_by": "web/scripts/bake_prediction.py",
  "source": {
   "folder": "pr-33:data/prediction/spatial",
@@ -667,5 +667,9 @@
   "file": "prediction/inspect.bin",
   "bytes": 459603,
   "planes": 13
+ },
+ "game": {
+  "file": "prediction/game.json",
+  "map": "replay_2026-10-28_prestorm"
  }
 }

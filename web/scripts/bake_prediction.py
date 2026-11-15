@@ -25,8 +25,13 @@ web/public/layers/<site>/ for every site the app has a grid for (meta.json of ba
 
 A click reads the numbers from these planes in the page's own code, not back from a canvas: browsers that guard
 against fingerprinting add noise to pixels read back from a canvas, and a number on the panel must be the file's.
+    prediction/game.json        the model's answer in the flood game (src/components/game), where game.json exists:
+                                every cell scored with the map GAME_MAP (one setting, or --game-map); the game takes
+                                the model's top cells and judges them with its own rule against the NISAR pass
     prediction.json             scenarios and replays with their dates, rain, captions and every number, each with
                                 the file it comes from
+
+Run it after bake_water.py (the frames give the NISAR history) and bake_game.py (the game's cells).
 
 The likelihood rasters of the export (water_likelihood_web.tif, new_water_likelihood_web.tif) already sit on the zoom
 13 Web Mercator lattice, so they are cut out, not resampled. The evidence flags are on the 20 m UTM grid of the
@@ -77,6 +82,10 @@ STORY_SERIES = {"pego_oliva": "nisar_066_D_069", "albufera": "nisar_066_D_069"}
 # the rain of DANA Adam began on 18 Oct 2026 (content/stories.ts): soil moisture "before the storm" is the newest
 # NISAR SME2 map before that day
 STORM_DAY = "2026-10-18"
+# The model map that plays the flood game against the player (src/components/game): the replay issued before the
+# storm for the NISAR pass of 28 Oct. It was given the rain that fell. Should a replay run on the forecast rain be
+# added, put its scenario id here (or pass --game-map): the game's caption follows that map's own forecast.json.
+GAME_MAP = "replay_2026-10-28_prestorm"
 
 
 # ---------------------------------------------------------------- where the results come from
@@ -365,6 +374,69 @@ def inspect_layers(site: str, grid: dict, meta: dict, out: Path) -> dict:
     return info
 
 
+# ---------------------------------------------------------------- the model's answer in the flood game
+
+def game_answer(src: Source, site: str, map_id: str, grid: dict, out: Path) -> dict | None:
+    """Score every cell of the flood game (game.json of bake_game.py) with the model map `map_id`: the mean new water
+    likelihood over the cell's land, ground already under water on the model's starting map counting as 0, so a cell
+    scores high only where the model expects much of it to turn to new water (the game's own question). The game
+    takes its top cells as the model's picks and judges them with its own rule against the NISAR pass."""
+    path_game = out / "game.json"
+    folder = src.root / site / map_id
+    if not path_game.exists():
+        return None
+    if not (folder / "forecast.json").exists():
+        print(f"  {site} game: no map {map_id} in the results; the game shows no model")
+        return None
+    game = json.loads(path_game.read_text(encoding="utf-8"))
+    doc = json.loads((folder / "forecast.json").read_text(encoding="utf-8"))
+    t, w, h = grid["transform"], grid["width"], grid["height"]
+    wl, _ = onto(folder / "water_likelihood_web.tif", t, w, h, 255)
+    nl, _ = onto(folder / "new_water_likelihood_web.tif", t, w, h, 255)
+    land = wl != 255
+    new = np.where(nl != 255, nl, 0).astype("float64")
+
+    def col(lon):
+        return (6378137.0 * np.radians(lon) - t.c) / RES
+
+    def row(lat):
+        return (t.f - 6378137.0 * np.log(np.tan(np.pi / 4 + np.radians(lat) / 2))) / RES
+
+    scores = []
+    for c in game["cells"]:
+        west, south, east, north = c["box"]
+        c0, c1, r0, r1 = round(col(west)), round(col(east)), round(row(north)), round(row(south))
+        L = land[max(0, r0):r1, max(0, c0):c1]
+        scores.append(round(float(new[max(0, r0):r1, max(0, c0):c1][L].mean()), 1) if L.any() else None)
+    note = doc.get("mode_note") or ""
+    fell = "rain that fell" in note
+    rain = round(doc["rain"]["rain_between_mm"])
+    out_doc = {
+        "site": site,
+        "made_by": "web/scripts/bake_prediction.py",
+        "baked_utc": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "game": f"web/public/layers/{site}/game.json",
+        "game_made_utc": game.get("made_utc"),
+        "map": map_id,
+        "issued_from_pass": doc.get("issued_from_pass"),
+        "issued_from_sensor": sensor(doc.get("issued_from_pass")),
+        "issue_time_utc": doc.get("issue_time_utc"),
+        "target_time_utc": doc.get("target_time_utc"),
+        "rain_mm": rain,
+        "rain": "fell" if fell else "forecast",
+        "mode_note": note,
+        "rule": "mean new water likelihood (0 to 100) over the cell's land; ground already under water on the model's starting map counts as 0",
+        "scores": scores,
+        "sources": {"forecast": src.name(folder / "forecast.json"), "new_water_likelihood": src.name(folder / "new_water_likelihood_web.tif"),
+                    "water_likelihood": src.name(folder / "water_likelihood_web.tif")},
+    }
+    path = out / "prediction" / "game.json"
+    path.write_text(json.dumps(out_doc, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
+    top = sorted((s, i) for i, s in enumerate(scores) if s is not None)[::-1][:10]
+    print(f"  {site} game: {map_id}, {len(scores)} cells, top ten {[i for _, i in top]} ({top[0][0]} to {top[-1][0]})", flush=True)
+    return {"file": "prediction/game.json", "map": map_id}
+
+
 # ---------------------------------------------------------------- one site
 
 def model_grid(src: Source, site: str, entries: list[dict]):
@@ -393,7 +465,7 @@ def bounds_of(transform, width: int, height: int) -> list[float]:
     return [round(west, 7), round(south, 7), round(east, 7), round(north, 7)]
 
 
-def bake_site(src: Source, site: str, entries: list[dict], index: dict) -> Path | None:
+def bake_site(src: Source, site: str, entries: list[dict], index: dict, game_map: str = GAME_MAP) -> Path | None:
     out = WEB / "public" / "layers" / site
     meta_path = out / "meta.json"
     if not meta_path.exists():
@@ -404,7 +476,7 @@ def bake_site(src: Source, site: str, entries: list[dict], index: dict) -> Path 
     grid = {"transform": transform, "width": width, "height": height, "row_ha": pixel_ha(transform, height)}
     print(f"{site}: {len(entries)} maps onto {width} x {height} px", flush=True)
     folder = out / "prediction"
-    for old in list(folder.glob("*.webp")) + list(folder.glob("*.bin")):
+    for old in list(folder.glob("*.webp")) + list(folder.glob("*.bin")) + list(folder.glob("game.json")):
         old.unlink()
 
     recs = [r for e in entries if (r := bake_one(src, site, e, grid, out))]
@@ -440,6 +512,7 @@ def bake_site(src: Source, site: str, entries: list[dict], index: dict) -> Path 
         "scenarios": scenarios,
         "replays": replays,
         "inspect": inspect_layers(site, grid, meta, out),
+        "game": game_answer(src, site, game_map, grid, out),
     }
     path = out / "prediction.json"
     path.write_text(json.dumps(doc, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
@@ -454,6 +527,7 @@ def main():
     ap.add_argument("--src", type=Path, help=f"a folder that holds index.json (default: {SPATIAL} of this checkout)")
     ap.add_argument("--ref", help="read the results from this git ref instead (a branch, tag or commit, e.g. pr-33)")
     ap.add_argument("--sites", nargs="*", default=["pego_oliva", "albufera"])
+    ap.add_argument("--game-map", default=GAME_MAP, help=f"the model map that plays the flood game (default {GAME_MAP})")
     args = ap.parse_args()
     src = Source(args.src, args.ref)
     try:
@@ -462,7 +536,7 @@ def main():
         for site in args.sites:
             entries = [e for e in index["scenarios"] if e["site"] == site]
             if entries:
-                bake_site(src, site, entries, index)
+                bake_site(src, site, entries, index, args.game_map)
             else:
                 print(f"{site}: not in index.json; skipped")
     finally:
