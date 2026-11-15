@@ -194,28 +194,43 @@ def s1_classes(p, transform, width, height):
 
 # ---------------------------------------------------------------- NISAR water layers from the CV model
 
+# data/labels_nisar class -> frame class: open water stays water; water under plants (a candidate rule, not
+# validated) is left out; built-up land, where the radar cannot assess water, is drawn as not seen
+LABEL_TO_FRAME = np.full(256, 255, "uint8")
+LABEL_TO_FRAME[[0, 1, 2]] = [0, 1, 0]
+
+
 def nisar_frames(data_root, site, transform, width, height, stacks=None, layer="water"):
     """The CV layers of one kind for a site from data/manifest.json, grouped by stack, each on the grid.
-    Class 1 is the thing mapped (water, or burned ground), 2 flooded vegetation, 255 no data."""
+    Class 1 is the thing mapped (water, or burned ground), 2 flooded vegetation, 255 no data.
+    layer "labels": the passes of the water layers, read from the NISAR labels (data/labels_nisar, made by
+    python -m pipeline.cv.labels from the same model), so the story shows what the explorer and the
+    spatial model use: open water only, built-up land not assessed."""
+    want = "water" if layer == "labels" else layer
     manifest = data_root / "manifest.json"
     if not manifest.exists():
         return {}
     by_stack = {}
     for e in json.loads(manifest.read_text(encoding="utf-8")):
-        if e.get("model") != "cv" or e.get("site") != site or e.get("layer") != layer:
+        if e.get("model") != "cv" or e.get("site") != site or e.get("layer") != want:
             continue
         if stacks and e.get("stack") not in stacks:
             continue
         path = data_root.parent / e["file"]
+        if layer == "labels":
+            path = data_root / "labels_nisar" / f"{site}_{e['stack']}" / f"{e['date']}_class.tif"
         if not path.exists():
             continue
         cls = onto_grid(path, transform, width, height)
+        if layer == "labels":
+            cls = LABEL_TO_FRAME[cls]
         src = e.get("source", {})
         stamp = re.search(r"_(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})_", src.get("granule_ur", ""))
         when = "{}-{}-{}T{}:{}:{}Z".format(*stamp.groups()) if stamp else f"{e['date']}T12:00:00Z"
         by_stack.setdefault(e["stack"], []).append({
             "time_utc": when, "date": e["date"], "cls": cls, "granules": [src.get("granule_ur", "")], "platform": "NISAR",
             "crid": src.get("crid"), "model_file": e.get("model_file"), "threshold": e.get("threshold"),
+            **({"labels": path.relative_to(data_root.parent).as_posix()} if layer == "labels" else {}),
         })
     return {k: sorted(v, key=lambda f: f["time_utc"]) for k, v in by_stack.items()}
 
@@ -330,7 +345,8 @@ def main():
     ap.add_argument("--out", type=Path, default=WEB / "public" / "layers")
     ap.add_argument("--no-s1", action="store_true")
     ap.add_argument("--stacks", nargs="*", help="NISAR stacks to bake, for example 066_D_069 (default: all in the manifest)")
-    ap.add_argument("--layer", default="water", choices=["water", "burn"], help="which CV layer of the manifest to bake")
+    ap.add_argument("--layer", default="water", choices=["water", "burn", "labels"],
+                    help="which CV layer of the manifest to bake (labels: the water passes from data/labels_nisar)")
     ap.add_argument("--days", nargs="*", help="keep only the Sentinel-1 passes of these days (YYYY-MM-DD)")
     ap.add_argument("--clock", help="with --days: on each day keep the one pass nearest this UTC time (HH:MM)")
     args = ap.parse_args()
@@ -370,13 +386,15 @@ def main():
         series.append({"id": "s1", "sensor": "Sentinel-1", "band": "C band", "classes": ["open water", "flooded vegetation"],
                        "product": "OPERA DSWx-S1 B01_WTR (JPL, via PO.DAAC)", "frames": records, "between": between, "always": always})
     for stack, frames in nisar_frames(args.data_root, args.site, transform, width, height, args.stacks, args.layer).items():
-        name = f"nisar_{stack}" if args.layer == "water" else f"{args.layer}_{stack}"
+        name = f"nisar_{stack}" if args.layer in ("water", "labels") else f"{args.layer}_{stack}"
         records, between, always = bake_series(name, frames, sea, row_ha, out_dir)
         two = any(r["veg_ha"] > 0 for r in records)
         if args.layer == "burn":
             classes, product = ["burned"], "NISAR GCOV burn: the HV echo at least 1.5 dB below the last pass before the fire, on two passes in a row"
         else:
             classes, product = (["open water", "flooded vegetation"] if two else ["water"]), "NISAR GCOV water, the team CV model"
+            if args.layer == "labels":
+                product += " (open water at p >= 0.3; built-up land not assessed; data/labels_nisar)"
         series.append({"id": name, "sensor": "NISAR", "band": "L band", "stack": stack, "classes": classes,
                        "product": product, "frames": records, "between": between, "always": always})
 
