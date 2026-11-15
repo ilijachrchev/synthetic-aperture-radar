@@ -71,7 +71,7 @@ from pipeline import soil_moisture as smx  # noqa: E402
 from pipeline.config import STACK_DIR  # noqa: E402
 from pipeline.cv.baseline import area_ha  # noqa: E402
 from pipeline.cv.benchmark_optical import (  # noqa: E402
-    DARK_DB, MIN_CLEAR_SHARE, TRAINING_SITES, V1_THRESHOLD, cache_path, load_cached,
+    COUNTS_PATH, DARK_DB, MIN_CLEAR_SHARE, TRAINING_SITES, V1_THRESHOLD, cache_path, load_cached, regions_of,
 )
 from pipeline.cv.coherence import coherence_for, coherence_path  # noqa: E402
 from pipeline.cv.data import dswx_on_grid, open_stack  # noqa: E402
@@ -94,6 +94,7 @@ SITES = {
     "donana": {"title": "Doñana marsh", "bbox": (-6.42, 36.88, -6.22, 37.15), "stack": "023_D_070"},
 }
 VIEWS = ("swipe", "coherence", "soil", "timeline")
+WINDOWED = ("donana",)  # sites whose pictures show a window of the site box, not all of it
 SITE_VIEWS = {"albufera": VIEWS, "pego_oliva": ("swipe", "soil", "timeline"), "donana": ("coherence",)}
 
 SWIPE_DAYS = ("2026-06-18", "2026-10-16", "2026-10-28")
@@ -548,6 +549,26 @@ def pick_coherence_day(site: str, stack: str, ds, perm: np.ndarray, region: np.n
     return max(good, key=lambda x: x["dark_ha"])["date"], tried
 
 
+def benchmark_check(site: str, stack: str, day: str, shares: dict[str, float]) -> dict | None:
+    """The false-water shares of this bake against the benchmark's own counts of the same date (the regenerable
+    data/interim/cv_optical_counts.json); a difference stops the bake, so the captions cannot drift from it."""
+    if not COUNTS_PATH.exists():
+        return None
+    rows = [r for r in json.loads(COUNTS_PATH.read_text(encoding="utf-8"))["rows"]
+            if r.get("site") == site and r.get("stack") == stack and r.get("date") == day and r.get("set") == "all_dates"]
+    out = {"file": rel(COUNTS_PATH), "set": "all_dates", "methods": {}}
+    for method, mine in shares.items():
+        row = next((r for r in rows if r["method"] == method), None)
+        if row is None:
+            return None
+        tn, fn, fp, tp = (sum(c[k] for c in row["counts"].values()) for k in range(4))
+        theirs = fp / (fp + tn)
+        if abs(theirs - mine) > 1e-6:
+            raise SystemExit(f"{site} {day} {method}: false water {mine:.5f} here, {theirs:.5f} in the benchmark counts")
+        out["methods"][method] = {"false_water_share_of_dry": round(theirs, 5), "equal": True}
+    return out
+
+
 def coherence_context(site: str) -> list[dict]:
     b = json.loads(BENCHMARK.read_text(encoding="utf-8"))
     out = []
@@ -558,9 +579,9 @@ def coherence_context(site: str) -> list[dict]:
         p = f"tables[{i}].methods"
         if kind == "false":
             out.append({
-                "text": (f"Across {table['dates']} dates at Doñana, coherence cuts the false water from "
-                         f"{pct_txt(th['false_water_share_of_dry'])} to {pct_txt(lc['false_water_share_of_dry'])} of "
-                         f"the dry ground."),
+                "text": (f"Across {table['dates']} dates at Doñana, scored the same way, coherence cuts the false "
+                         f"water from {pct_txt(th['false_water_share_of_dry'])} to "
+                         f"{pct_txt(lc['false_water_share_of_dry'])} of the dry ground."),
                 "numbers": {
                     "dark_false_water": cited(th["false_water_share_of_dry"], "share", "of the optical dry ground "
                                               "darkness alone calls water", BENCHMARK,
@@ -569,8 +590,9 @@ def coherence_context(site: str) -> list[dict]:
                                              f"{p}.nisar_dark_lowcoh.false_water_share_of_dry")}})
         else:
             out.append({
-                "text": (f"In the Pego-Oliva marsh, where water keeps some coherence, it does not help: IoU "
-                         f"{lc['iou']:.3f} with coherence against {th['iou']:.3f} for darkness alone."),
+                "text": (f"In the Pego-Oliva marsh, where water keeps some coherence, it does not help: across "
+                         f"{table['dates']} dates scored the same way, IoU {lc['iou']:.3f} with coherence against "
+                         f"{th['iou']:.3f} for darkness alone."),
                 "numbers": {
                     "dark_iou": cited(th["iou"], "IoU", "darkness alone, changing open water", BENCHMARK,
                                       f"{p}.nisar_threshold_15db.iou"),
@@ -619,44 +641,64 @@ def bake_coherence(site: str, ds, grid: Grid, out_dir: Path, sea: np.ndarray, pe
     if site in COH_DAY:
         numbers["window_holds"] = num(r3(share(view, removed & land)), "share",
                                       "of the dark coherent ground of the whole site box inside this window", *src)
-    caption = [f"{day_txt(day)}: {ha_txt(numbers['dark_ha']['value'])} outside permanent water look as dark as water "
-               f"to the radar.",
+    where_shown = ", in this window" if site in WINDOWED else ""
+    caption = [f"{day_txt(day)}{where_shown}: {ha_txt(numbers['dark_ha']['value'])} outside permanent water look as dark "
+               f"as water to the radar.",
                f"Coherence over the 12 days before ({day_txt(ref)} to {day_txt(sec)}) keeps "
-               f"{ha_txt(numbers['kept_ha']['value'])} as water and takes out the "
+               f"{ha_txt(numbers['kept_ha']['value'])} of them as water and takes out the "
                f"{ha_txt(numbers['removed_ha']['value'])} that kept their coherence, as dry ground."]
     optical = optical_classes(site, stack, day)
     if optical is not None:
+        # Scored exactly as the benchmark (docs/CV_BENCHMARK.md section 5, count_site in pipeline.cv.benchmark_optical):
+        # NISAR usable, neither sea nor permanent water, the optical map clear (0 or 1); the whole site box on a test
+        # site, only the held-out validation blocks on a training site. Not the window of the picture.
         src_o = OPTICAL_DIR / f"{site}_{stack}" / f"{day}.tif"
-        usable = ok & np.isfinite(ds["HH"].values[t]) & np.isfinite(ds["HV"].values[t]) & ds["valid"].values[t].astype(bool)
-        base = usable & ~perm & region
+        blocks = regions_of(site)
+        usable = ds["valid"].values[t].astype(bool) & np.isfinite(ds["HH"].values[t]) & np.isfinite(ds["HV"].values[t]) & ok
+        base = usable & ~perm & (blocks if blocks is not None else True)
         scoring = base & np.isin(optical, (0, 1))
         dry, wet = scoring & (optical == 0), scoring & (optical == 1)
+        name = SITES[site]["title"].split(" ")[0]
+        pixels = (f"the whole {name} box" + (", not only this window" if site in WINDOWED else "") if blocks is None
+                  else f"{name}'s held-out validation blocks")
 
         def iou(m):
             tp, fp, fn = np.count_nonzero(m & wet), np.count_nonzero(m & dry), np.count_nonzero(~m & wet)
             return tp / (tp + fp + fn) if tp + fp + fn else 0.0
 
+        what = f"on the benchmark's pixels: {pixels}, outside the sea and permanent water, optical map clear"
         numbers.update({
-            "answer_key_clear": num(r3(share(scoring, base)), "share", "of the changing land the optical map saw clear",
-                                    src_o),
+            "scored_ha": num(a(scoring), "ha", f"pixels scored, {what}", *src, src_o),
+            "scored_open_water_ha": num(a(wet), "ha", "open water the optical map sees there", *src, src_o),
+            "answer_key_clear": num(r3(share(scoring, base)), "share", "of the usable changing pixels the optical map "
+                                    "saw clear (the benchmark's clear share)", src_o),
             "dark_false_water": num(round(share(dark, dry), 4), "share",
-                                    "of the optical dry ground darkness alone calls water", *src, src_o),
-            "coh_false_water": num(round(share(kept, dry), 4), "share", "of it the coherence rule calls water",
-                                   *src, src_o),
-            "dark_finds": num(r3(share(dark, wet)), "share", "of the optical open water darkness alone finds", *src, src_o),
-            "coh_finds": num(r3(share(kept, wet)), "share", "of it the coherence rule finds", *src, src_o),
-            "dark_iou": num(r3(iou(dark)), "IoU", "darkness alone against the optical map, changing open water",
-                            *src, src_o),
-            "coh_iou": num(r3(iou(kept)), "IoU", "the coherence rule against it", *src, src_o),
+                                    f"of the optical dry ground darkness alone calls water, {what}", *src, src_o),
+            "coh_false_water": num(round(share(kept, dry), 4), "share",
+                                   f"of the optical dry ground the coherence rule calls water, {what}", *src, src_o),
+            "dark_finds": num(r3(share(dark, wet)), "share", f"of the optical open water darkness alone finds, {what}",
+                              *src, src_o),
+            "coh_finds": num(r3(share(kept, wet)), "share", f"of the optical open water the coherence rule finds, {what}",
+                             *src, src_o),
+            "dark_iou": num(r3(iou(dark)), "IoU", f"darkness alone against the optical map, {what}", *src, src_o),
+            "coh_iou": num(r3(iou(kept)), "IoU", f"the coherence rule against the optical map, {what}", *src, src_o),
         })
-        caption.append(
-            f"Judged by the optical map of the day: darkness alone calls {pct_txt(numbers['dark_false_water']['value'])} "
-            f"of the dry ground water, coherence {pct_txt(numbers['coh_false_water']['value'])}. The price: coherence "
-            f"finds {pct_txt(numbers['coh_finds']['value'])} of the open water, darkness alone "
-            f"{pct_txt(numbers['dark_finds']['value'])}.")
+        check = benchmark_check(site, stack, day, {"nisar_threshold_15db": share(dark, dry),
+                                                   f"nisar_dark_lowcoh@{COH_CUT}": share(kept, dry)})
+        caption.append(f"Scored as in the benchmark: {pixels}, outside the sea and permanent water, where the optical "
+                       f"map of the day is clear ({ha_txt(numbers['scored_ha']['value'])}).")
+        caption.append(f"There darkness alone calls {pct_txt(numbers['dark_false_water']['value'])} of the dry ground "
+                       f"water, coherence {pct_txt(numbers['coh_false_water']['value'])}.")
+        if numbers["scored_open_water_ha"]["value"] >= 50:
+            caption.append(f"The price: of the {ha_txt(numbers['scored_open_water_ha']['value'])} of open water there, "
+                           f"coherence finds {pct_txt(numbers['coh_finds']['value'])}, darkness alone "
+                           f"{pct_txt(numbers['dark_finds']['value'])}.")
+        else:
+            caption.append(f"Those pixels hold only {ha_txt(numbers['scored_open_water_ha']['value'])} of open water, "
+                           f"too little to say what coherence costs there.")
         record = optical_record(site, stack, day)
     else:
-        record = None
+        record, check = None, None
     print(f"  coherence {day}: dark {numbers['dark_ha']['value']} ha, kept {numbers['kept_ha']['value']} ha, "
           f"{files['dark']['bytes'] / 1e3:.0f} + {files['coh']['bytes'] / 1e3:.0f} kB", flush=True)
     return {
@@ -673,7 +715,7 @@ def bake_coherence(site: str, ds, grid: Grid, out_dir: Path, sea: np.ndarray, pe
             "nisar": {"granule": granule_at(ds, t), "time_utc": nisar_time(granule_at(ds, t), day)},
             "answer_key": {"optical_days": record.get("optical_dates_used"), "granules": record.get("granules_used")}
             if record else None,
-            "caption": caption, "numbers": numbers,
+            "caption": caption, "numbers": numbers, "benchmark_check": check,
         }],
         "context": training_note(site, "the coherence cut of 0.25 was chosen on") + coherence_context(site),
     }

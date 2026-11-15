@@ -64,9 +64,11 @@
       ]
      },
      "caption": [
-      "7 Sep: 21,214 ha outside permanent water look as dark as water to the radar.",
-      "Coherence over the 12 days before (26 Aug to 7 Sep) keeps 184 ha as water and takes out the 21,030 ha that kept their coherence, as dry ground.",
-      "Judged by the optical map of the day: darkness alone calls 44 % of the dry ground water, coherence 0.2 %. The price: coherence finds 33 % of the open water, darkness alone 74 %."
+      "7 Sep, in this window: 21,214 ha outside permanent water look as dark as water to the radar.",
+      "Coherence over the 12 days before (26 Aug to 7 Sep) keeps 184 ha of them as water and takes out the 21,030 ha that kept their coherence, as dry ground.",
+      "Scored as in the benchmark: the whole Doñana box, not only this window, outside the sea and permanent water, where the optical map of the day is clear (97,654 ha).",
+      "There darkness alone calls 27 % of the dry ground water, coherence 0.5 %.",
+      "The price: of the 338 ha of open water there, coherence finds 33 %, darkness alone 73 %."
      ],
      "numbers": {
       "dark_ha": {
@@ -117,19 +119,45 @@
         "web/scripts/bake_views.py"
        ]
       },
+      "scored_ha": {
+       "value": 97654.0,
+       "unit": "ha",
+       "what": "pixels scored, on the benchmark's pixels: the whole Doñana box, not only this window, outside the sea and permanent water, optical map clear",
+       "source": [
+        "data/stack/donana_023_D_070.nc",
+        "data/coherence/donana_023_D_070/2026-08-26_2026-09-07.tif",
+        "data/context/donana_worldcover_2021_20m.tif",
+        "data/context/donana_jrc_occurrence_20m.tif",
+        "data/optical/donana_023_D_070/2026-09-07.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "scored_open_water_ha": {
+       "value": 337.7,
+       "unit": "ha",
+       "what": "open water the optical map sees there",
+       "source": [
+        "data/stack/donana_023_D_070.nc",
+        "data/coherence/donana_023_D_070/2026-08-26_2026-09-07.tif",
+        "data/context/donana_worldcover_2021_20m.tif",
+        "data/context/donana_jrc_occurrence_20m.tif",
+        "data/optical/donana_023_D_070/2026-09-07.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
       "answer_key_clear": {
-       "value": 0.989,
+       "value": 0.988,
        "unit": "share",
-       "what": "of the changing land the optical map saw clear",
+       "what": "of the usable changing pixels the optical map saw clear (the benchmark's clear share)",
        "source": [
         "data/optical/donana_023_D_070/2026-09-07.tif",
         "web/scripts/bake_views.py"
        ]
       },
       "dark_false_water": {
-       "value": 0.4422,
+       "value": 0.2721,
        "unit": "share",
-       "what": "of the optical dry ground darkness alone calls water",
+       "what": "of the optical dry ground darkness alone calls water, on the benchmark's pixels: the whole Doñana box, not only this window, outside the sea and permanent water, optical map clear",
        "source": [
         "data/stack/donana_023_D_070.nc",
         "data/coherence/donana_023_D_070/2026-08-26_2026-09-07.tif",
@@ -140,9 +168,9 @@
        ]
       },
       "coh_false_water": {
-       "value": 0.002,
+       "value": 0.0046,
        "unit": "share",
-       "what": "of it the coherence rule calls water",
+       "what": "of the optical dry ground the coherence rule calls water, on the benchmark's pixels: the whole Doñana box, not only this window, outside the sea and permanent water, optical map clear",
        "source": [
         "data/stack/donana_023_D_070.nc",
         "data/coherence/donana_023_D_070/2026-08-26_2026-09-07.tif",
@@ -153,9 +181,9 @@
        ]
       },
       "dark_finds": {
-       "value": 0.736,
+       "value": 0.731,
        "unit": "share",
-       "what": "of the optical open water darkness alone finds",
+       "what": "of the optical open water darkness alone finds, on the benchmark's pixels: the whole Doñana box, not only this window, outside the sea and permanent water, optical map clear",
        "source": [
         "data/stack/donana_023_D_070.nc",
         "data/coherence/donana_023_D_070/2026-08-26_2026-09-07.tif",
@@ -166,9 +194,9 @@
        ]
       },
       "coh_finds": {
-       "value": 0.334,
+       "value": 0.332,
        "unit": "share",
-       "what": "of it the coherence rule finds",
+       "what": "of the optical open water the coherence rule finds, on the benchmark's pixels: the whole Doñana box, not only this window, outside the sea and permanent water, optical map clear",
        "source": [
         "data/stack/donana_023_D_070.nc",
         "data/coherence/donana_023_D_070/2026-08-26_2026-09-07.tif",
@@ -179,9 +207,9 @@
        ]
       },
       "dark_iou": {
-       "value": 0.008,
+       "value": 0.009,
        "unit": "IoU",
-       "what": "darkness alone against the optical map, changing open water",
+       "what": "darkness alone against the optical map, on the benchmark's pixels: the whole Doñana box, not only this window, outside the sea and permanent water, optical map clear",
        "source": [
         "data/stack/donana_023_D_070.nc",
         "data/coherence/donana_023_D_070/2026-08-26_2026-09-07.tif",
@@ -192,9 +220,9 @@
        ]
       },
       "coh_iou": {
-       "value": 0.233,
+       "value": 0.142,
        "unit": "IoU",
-       "what": "the coherence rule against it",
+       "what": "the coherence rule against the optical map, on the benchmark's pixels: the whole Doñana box, not only this window, outside the sea and permanent water, optical map clear",
        "source": [
         "data/stack/donana_023_D_070.nc",
         "data/coherence/donana_023_D_070/2026-08-26_2026-09-07.tif",
@@ -204,12 +232,26 @@
         "web/scripts/bake_views.py"
        ]
       }
+     },
+     "benchmark_check": {
+      "file": "data/interim/cv_optical_counts.json",
+      "set": "all_dates",
+      "methods": {
+       "nisar_threshold_15db": {
+        "false_water_share_of_dry": 0.27208,
+        "equal": true
+       },
+       "nisar_dark_lowcoh@0.25": {
+        "false_water_share_of_dry": 0.00461,
+        "equal": true
+       }
+      }
      }
     }
    ],
    "context": [
     {
-     "text": "Across 26 dates at Doñana, coherence cuts the false water from 32 % to 5 % of the dry ground.",
+     "text": "Across 26 dates at Doñana, scored the same way, coherence cuts the false water from 32 % to 5 % of the dry ground.",
      "numbers": {
       "dark_false_water": {
        "value": 0.31669,
@@ -236,7 +278,7 @@
      }
     },
     {
-     "text": "In the Pego-Oliva marsh, where water keeps some coherence, it does not help: IoU 0.306 with coherence against 0.340 for darkness alone.",
+     "text": "In the Pego-Oliva marsh, where water keeps some coherence, it does not help: across 19 dates scored the same way, IoU 0.306 with coherence against 0.340 for darkness alone.",
      "numbers": {
       "dark_iou": {
        "value": 0.3398,
@@ -277,9 +319,9 @@
   37.1500555
  ],
  "pixel_m": 15.26,
- "note": "Every image covers bounds (west, south, east, north). Ask for files with ?v=baked_utc. Numbers carry the files they come from; 'remote:' files are read from NASA Earthdata.",
+ "note": "Every image covers bounds (west, south, east, north). Ask for files with ?v=baked_utc. Numbers carry the files they come from.",
  "written_with": "Written with SI assistance (Claude Code), reviewed by the team.",
- "baked_utc": "2026-11-15T00:57:56Z",
+ "baked_utc": "2026-11-15T01:32:37Z",
  "bytes_total": 210040,
  "focus": null
 }

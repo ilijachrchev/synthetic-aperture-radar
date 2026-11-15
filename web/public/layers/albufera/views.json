@@ -677,8 +677,10 @@
      },
      "caption": [
       "30 Jun: 2,022 ha outside permanent water look as dark as water to the radar.",
-      "Coherence over the 12 days before (18 Jun to 30 Jun) keeps 206 ha as water and takes out the 1,816 ha that kept their coherence, as dry ground.",
-      "Judged by the optical map of the day: darkness alone calls 4 % of the dry ground water, coherence 0.3 %. The price: coherence finds 8 % of the open water, darkness alone 19 %."
+      "Coherence over the 12 days before (18 Jun to 30 Jun) keeps 206 ha of them as water and takes out the 1,816 ha that kept their coherence, as dry ground.",
+      "Scored as in the benchmark: Albufera's held-out validation blocks, outside the sea and permanent water, where the optical map of the day is clear (10,139 ha).",
+      "There darkness alone calls 5 % of the dry ground water, coherence 0.3 %.",
+      "Those pixels hold only 4 ha of open water, too little to say what coherence costs there."
      ],
      "numbers": {
       "dark_ha": {
@@ -717,19 +719,45 @@
         "web/scripts/bake_views.py"
        ]
       },
+      "scored_ha": {
+       "value": 10138.6,
+       "unit": "ha",
+       "what": "pixels scored, on the benchmark's pixels: Albufera's held-out validation blocks, outside the sea and permanent water, optical map clear",
+       "source": [
+        "data/stack/albufera_066_D_069.nc",
+        "data/coherence/albufera_066_D_069/2026-06-18_2026-06-30.tif",
+        "data/context/albufera_worldcover_2021_20m.tif",
+        "data/context/albufera_jrc_occurrence_20m.tif",
+        "data/optical/albufera_066_D_069/2026-06-30.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "scored_open_water_ha": {
+       "value": 3.7,
+       "unit": "ha",
+       "what": "open water the optical map sees there",
+       "source": [
+        "data/stack/albufera_066_D_069.nc",
+        "data/coherence/albufera_066_D_069/2026-06-18_2026-06-30.tif",
+        "data/context/albufera_worldcover_2021_20m.tif",
+        "data/context/albufera_jrc_occurrence_20m.tif",
+        "data/optical/albufera_066_D_069/2026-06-30.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
       "answer_key_clear": {
-       "value": 0.964,
+       "value": 0.99,
        "unit": "share",
-       "what": "of the changing land the optical map saw clear",
+       "what": "of the usable changing pixels the optical map saw clear (the benchmark's clear share)",
        "source": [
         "data/optical/albufera_066_D_069/2026-06-30.tif",
         "web/scripts/bake_views.py"
        ]
       },
       "dark_false_water": {
-       "value": 0.0396,
+       "value": 0.0464,
        "unit": "share",
-       "what": "of the optical dry ground darkness alone calls water",
+       "what": "of the optical dry ground darkness alone calls water, on the benchmark's pixels: Albufera's held-out validation blocks, outside the sea and permanent water, optical map clear",
        "source": [
         "data/stack/albufera_066_D_069.nc",
         "data/coherence/albufera_066_D_069/2026-06-18_2026-06-30.tif",
@@ -740,9 +768,9 @@
        ]
       },
       "coh_false_water": {
-       "value": 0.0031,
+       "value": 0.0033,
        "unit": "share",
-       "what": "of it the coherence rule calls water",
+       "what": "of the optical dry ground the coherence rule calls water, on the benchmark's pixels: Albufera's held-out validation blocks, outside the sea and permanent water, optical map clear",
        "source": [
         "data/stack/albufera_066_D_069.nc",
         "data/coherence/albufera_066_D_069/2026-06-18_2026-06-30.tif",
@@ -753,9 +781,9 @@
        ]
       },
       "dark_finds": {
-       "value": 0.193,
+       "value": 0.0,
        "unit": "share",
-       "what": "of the optical open water darkness alone finds",
+       "what": "of the optical open water darkness alone finds, on the benchmark's pixels: Albufera's held-out validation blocks, outside the sea and permanent water, optical map clear",
        "source": [
         "data/stack/albufera_066_D_069.nc",
         "data/coherence/albufera_066_D_069/2026-06-18_2026-06-30.tif",
@@ -766,9 +794,9 @@
        ]
       },
       "coh_finds": {
-       "value": 0.076,
+       "value": 0.0,
        "unit": "share",
-       "what": "of it the coherence rule finds",
+       "what": "of the optical open water the coherence rule finds, on the benchmark's pixels: Albufera's held-out validation blocks, outside the sea and permanent water, optical map clear",
        "source": [
         "data/stack/albufera_066_D_069.nc",
         "data/coherence/albufera_066_D_069/2026-06-18_2026-06-30.tif",
@@ -779,9 +807,9 @@
        ]
       },
       "dark_iou": {
-       "value": 0.012,
+       "value": 0.0,
        "unit": "IoU",
-       "what": "darkness alone against the optical map, changing open water",
+       "what": "darkness alone against the optical map, on the benchmark's pixels: Albufera's held-out validation blocks, outside the sea and permanent water, optical map clear",
        "source": [
         "data/stack/albufera_066_D_069.nc",
         "data/coherence/albufera_066_D_069/2026-06-18_2026-06-30.tif",
@@ -792,9 +820,9 @@
        ]
       },
       "coh_iou": {
-       "value": 0.034,
+       "value": 0.0,
        "unit": "IoU",
-       "what": "the coherence rule against it",
+       "what": "the coherence rule against the optical map, on the benchmark's pixels: Albufera's held-out validation blocks, outside the sea and permanent water, optical map clear",
        "source": [
         "data/stack/albufera_066_D_069.nc",
         "data/coherence/albufera_066_D_069/2026-06-18_2026-06-30.tif",
@@ -803,6 +831,20 @@
         "data/optical/albufera_066_D_069/2026-06-30.tif",
         "web/scripts/bake_views.py"
        ]
+      }
+     },
+     "benchmark_check": {
+      "file": "data/interim/cv_optical_counts.json",
+      "set": "all_dates",
+      "methods": {
+       "nisar_threshold_15db": {
+        "false_water_share_of_dry": 0.04644,
+        "equal": true
+       },
+       "nisar_dark_lowcoh@0.25": {
+        "false_water_share_of_dry": 0.00328,
+        "equal": true
+       }
       }
      }
     }
@@ -819,7 +861,7 @@
      ]
     },
     {
-     "text": "Across 26 dates at Doñana, coherence cuts the false water from 32 % to 5 % of the dry ground.",
+     "text": "Across 26 dates at Doñana, scored the same way, coherence cuts the false water from 32 % to 5 % of the dry ground.",
      "numbers": {
       "dark_false_water": {
        "value": 0.31669,
@@ -846,7 +888,7 @@
      }
     },
     {
-     "text": "In the Pego-Oliva marsh, where water keeps some coherence, it does not help: IoU 0.306 with coherence against 0.340 for darkness alone.",
+     "text": "In the Pego-Oliva marsh, where water keeps some coherence, it does not help: across 19 dates scored the same way, IoU 0.306 with coherence against 0.340 for darkness alone.",
      "numbers": {
       "dark_iou": {
        "value": 0.3398,
@@ -2017,7 +2059,7 @@
   "source": "EOX Sentinel-2 cloudless 2017 (web/public/tiles/base/12)",
   "credit": "EOxCloudless 2017, https://cloudless.eox.at, by EOX IT Services GmbH (contains modified Copernicus Sentinel data 2017), CC BY 4.0"
  },
- "baked_utc": "2026-11-15T01:09:38Z",
+ "baked_utc": "2026-11-15T01:33:17Z",
  "bytes_total": 518218,
  "focus": null
 }
