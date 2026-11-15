@@ -111,7 +111,7 @@ def boundary_outflow(qx, qy, inside, dx):
     return q * dx
 
 
-def run(inp: dict) -> dict:
+def run(inp: dict, progress: bool = False) -> dict:
     """The whole simulation: hourly rain per zone, CFL time steps, gauge record every `record_every_s`."""
     z = inp["z"].astype(np.float64)
     rows, cols = z.shape
@@ -141,6 +141,9 @@ def run(inp: dict) -> dict:
         k = int(np.searchsorted(edges, t, side="right")) - 1
         if k != hour:
             hour = k
+            if progress:
+                print(f"hour {k}: t {t / 3600:.2f} h, steps {steps}, max depth {h.max():.2f} m, "
+                      f"wall {time.time() - wall:.0f} s", flush=True)
             rain[:] = 0.0
             if 0 <= k < rates.shape[1]:
                 for zi in range(frac.shape[0]):
@@ -167,7 +170,7 @@ def run(inp: dict) -> dict:
 
 if __name__ == "__main__":
     data = dict(np.load(sys.argv[1]))
-    out = run(data)
+    out = run(data, progress=True)
     np.savez_compressed(sys.argv[2], **out)
     print(f"steps {out['steps']}, wall {out['wall_s']:.0f} s, rain {out['rain_volume_m3'] / 1e6:.2f} hm3, "
           f"to sinks {out['sink_volume_m3'] / 1e6:.2f} hm3, stored {out['stored_volume_m3'] / 1e6:.2f} hm3")

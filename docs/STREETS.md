@@ -62,7 +62,100 @@ For every method, per town and for the 10 towns together:
 
 ## Results
 
-Not computed yet.
+Every number below is in [`data/streets/results.json`](../data/streets/results.json) (`methods`, `diagnostics`, `checks`, `simulation`), written by `python -m pipeline.streets score`; the tables are printed from it by `python -m pipeline.streets report`. Scored pixels: 12,232,704 cells of 5 m (30,581.8 ha) in the 10 towns.
+
+**Short answer: no.** On the same amount of land, the terrain flow map (HAND, no training) pointed to where the 2024 water ran worse than the official zones, in total and in most towns. Given the land the official zones cover (3,394.9 ha, 11.1 % of the scored pixels, per town), the terrain map caught **35.0 %** of the 2,237 graded buildings against **42.1 %** for the zones, **32.8 %** of the flood traces against **39.1 %**, and **76.4 %** of its own land really flooded against **83.3 %** (a random map of that size: 17.2 %). The second reference and the water marks say the same (below). The terrain map is far better than chance, it does better than the zones on the low plain by the Albufera (Massanassa, Alfafar), and it would need only 14 % more land to match them, but it is not a better answer to "where will the water go" than the official map, and the official map itself caught under half of the affected buildings. The simulated rain on terrain lands in between (34.2 % of buildings, 34.4 % of traces) and catches far more of Torrent's affected buildings than either map (18.9 % against 7.0 and 1.3 %).
+
+### The same land, town by town (headline)
+
+The official union of T10, T100 and T500 against the terrain map cut to exactly the same number of cells in each town.
+
+| Town | Land in the zones | Buildings: zones | Buildings: terrain | Flood traces: zones | Flood traces: terrain | Own land flooded: zones | Own land flooded: terrain | Own land flooded: chance |
+|---|---|---|---|---|---|---|---|---|
+| Paiporta | 44.2 % | 45.3 % | 42.5 % | 44.3 % | 44.5 % | 100.0 % | 100.0 % | 99.2 % |
+| Massanassa | 94.6 % | 96.0 % | 99.5 % | 89.6 % | **98.1 %** | 91.2 % | 95.7 % | 91.4 % |
+| Sedaví | 7.2 % | 0.5 % | 1.0 % | 4.0 % | 7.4 % | 100.0 % | 95.5 % | 83.3 % |
+| Catarroja | 66.0 % | **99.2 %** | 64.2 % | **69.6 %** | 60.3 % | **88.5 %** | 82.9 % | 69.8 % |
+| Alfafar | 80.1 % | 58.4 % | **71.4 %** | 59.5 % | 57.7 % | 97.5 % | 99.8 % | 93.6 % |
+| Benetússer | 28.0 % | **35.7 %** | 0.0 % | **52.1 %** | 18.1 % | **41.1 %** | 14.0 % | 21.9 % |
+| Picanya | 2.7 % | 0.0 % | 2.5 % | 3.0 % | 2.6 % | **97.6 %** | 76.4 % | 78.0 % |
+| Aldaia | 23.7 % | 39.4 % | **45.5 %** | **36.6 %** | 31.2 % | **82.3 %** | 69.2 % | 52.2 % |
+| Chiva | 2.5 % | **66.7 %** | 0.0 % | **58.8 %** | 18.5 % | **37.2 %** | 13.0 % | 1.6 % |
+| Torrent | 2.1 % | **7.0 %** | 1.3 % | **16.9 %** | 7.6 % | **74.0 %** | 33.3 % | 9.2 % |
+| **Total** | 11.1 % | **42.1 %** | 35.0 % | **39.1 %** | 32.8 % | **83.3 %** | 76.4 % | 17.2 % |
+
+Buildings per town: Paiporta 327, Massanassa 200, Sedaví 196, Catarroja 391, Alfafar 231, Benetússer 28, Picanya 80, Aldaia 33, Chiva 3, Torrent 748 (by the town of the building's cell; one Torrent point falls on a cell outside every municipality). Bold: the better of the two where they differ by 5 points or more. With 3 buildings (Chiva), 28 (Benetússer) or 33 (Aldaia), one building moves the share by 33, 4 or 3 points.
+
+### Every method, the 10 towns together
+
+| Method | Land (% of scored) | Buildings | Flood traces | Observed flood | Own land flooded | Generalitat footprint covered | Own land in the footprint | Water marks |
+|---|---|---|---|---|---|---|---|---|
+| Official T10 | 3.4 % | 0.4 % | 4.2 % | 17.7 % | 90.1 % | 15.8 % | 99.4 % | 0.7 % |
+| Official T100 | 6.0 % | 1.7 % | 10.6 % | 30.0 % | 85.5 % | 28.2 % | 99.5 % | 2.6 % |
+| Official T500 | 11.1 % | 42.1 % | 39.1 % | 53.9 % | 83.4 % | 51.3 % | 98.1 % | 43.8 % |
+| **Official union** | 11.1 % | **42.1 %** | **39.1 %** | 53.9 % | **83.3 %** | 51.3 % | 98.1 % | 43.9 % |
+| Terrain, HAND below 15 m (method 2) | 47.9 % | 94.5 % | 99.1 % | 99.3 % | 35.5 % | 99.1 % | 43.9 % | 98.3 % |
+| Terrain at the T10 area | 3.4 % | 1.7 % | 4.0 % | 16.3 % | 83.1 % | 13.6 % | 85.9 % | 1.8 % |
+| Terrain at the T100 area | 6.0 % | 3.3 % | 9.1 % | 27.0 % | 76.7 % | 23.7 % | 83.4 % | 4.4 % |
+| Terrain at the T500 area | 11.1 % | 35.0 % | 32.8 % | 49.4 % | 76.4 % | 43.0 % | 82.4 % | 32.6 % |
+| **Terrain at the union area (headline)** | 11.1 % | **35.0 %** | **32.8 %** | 49.4 % | **76.4 %** | 43.0 % | 82.3 % | 32.6 % |
+| Terrain at the union area, pooled over the towns | 11.1 % | 24.7 % | 26.7 % | 45.2 % | 69.9 % | 39.8 % | 76.2 % | 21.6 % |
+| Terrain with buildings as obstacles, union area | 11.1 % | 32.9 % | 32.8 % | 49.5 % | 76.5 % | 43.1 % | 82.4 % | 32.1 % |
+| Terrain, drainage from 0.05 km², union area | 11.1 % | 29.6 % | 29.4 % | 46.8 % | 72.4 % | 40.7 % | 77.8 % | 31.2 % |
+| Terrain, drainage from 5 km², union area | 11.1 % | 35.0 % | 34.5 % | 51.0 % | 78.7 % | 46.0 % | 87.9 % | 30.4 % |
+| Terrain, lake-only sinks (post-hoc), union area | 11.1 % | 34.8 % | 32.4 % | 49.2 % | 76.0 % | 42.9 % | 82.0 % | 32.5 % |
+| Simulated rain on terrain, union area (SIMULATED) | 11.1 % | 34.2 % | 34.4 % | 51.2 % | 79.2 % | 46.6 % | 89.2 % | 42.5 % |
+
+Against the lower-bound observed flood (sharpest map first; 3,232.5 ha in the municipalities) the order is the same: the official union covers 68.2 % of it and 64.8 % of its land is inside it, the terrain map 61.3 % and 58.2 %, the simulation 65.3 % and 62.0 %.
+
+No version of the terrain map beats the official union on buildings, flood traces or own land flooded in total: not with buildings as obstacles, not with drainage starting at 0.05 or 5 km², not with the lake-only sinks, not pooled. At the T10 and T100 areas the terrain map catches slightly more buildings (1.7 against 0.4 %, 3.3 against 1.7 %), but both are close to nothing: the affected buildings were almost all outside the frequent and occasional zones (PR #36).
+
+**Its own threshold (method 2).** HAND below 15 m covers 47.9 % of the scored land and holds 94.5 % of the buildings and 99.1 % of the flood traces, with 35.5 % of its land flooded (twice chance). In the plain it says "everything can flood" (100 % of Paiporta, Massanassa, Sedaví, Catarroja, Alfafar and Benetússer); what it does say is where water cannot go: the hills of Chiva and Torrent.
+
+**How far behind.** Descriptive only, not a method: with every town's budget scaled by the same factor, the terrain ranking needs **1.14 times** the zones' land (12.5 % of the scored pixels instead of 11.1 %) to catch as many buildings (42.1 %) and as many flood traces (39.1 %) as the zones. Worse, but not by much land.
+
+### Where the terrain does better, where worse, and why
+
+- **Better: the low plain by the Albufera.** Massanassa (buildings 99.5 against 96.0 %, flood traces 98.1 against 89.6 %) and Alfafar (buildings 71.4 against 58.4 %). Here the flooded buildings stood low above the nearest drainage (median HAND 1.7 m in Massanassa, 0.7 m in Alfafar), and that is exactly what HAND ranks first.
+- **No difference: where everything or almost nothing is covered.** Paiporta flooded almost entirely (99.2 % of its land), so any map of 44 % of it catches about 44 %. In Sedaví and Picanya the official zones cover 7.2 % and 2.7 % of the town, so the terrain map gets the same small budget and both catch almost none of the affected buildings (0.5 against 1.0 % in Sedaví, 0.0 against 2.5 % in Picanya).
+- **Worse: Torrent, Catarroja, Benetússer, Chiva, Aldaia.** Torrent has a third of all graded buildings (748); the zones caught 7.0 % of them, the terrain map 1.3 %, and 16.9 against 7.6 % of the flood traces. In Benetússer the terrain map is below chance (14.0 % of its land flooded, chance 21.9 %).
+- **Why, first: HAND treats every drainage line alike.** A gully of 0.5 km² in the hills of Torrent or Chiva ranks the same as the Poyo, so in a town whose budget is small (2.1 % of Torrent, 2.5 % of Chiva) the budget goes to dry gully floors: the equal-area cut stops at HAND 0.12 m in Torrent and 0.45 m in Chiva. Starting drainage at 5 km² instead removes the gullies and helps exactly there (Torrent: 7.2 % of buildings, 14.5 % of traces), but loses elsewhere and stays behind the zones in total.
+- **Why, second: the water came from upstream.** The flood was a flash flood from the Poyo catchment: its gauge at the A-3 read 2,282.9 m³/s at 18:55 before it was destroyed (CHJ). The water left the ravine at the fan apex between Torrent and Picanya and ran across the fan; the flooded buildings of Torrent and Picanya stood a median **8.6 m** and **9.7 m** above the nearest drainage line, far above what any small budget of HAND reaches. How far the water spreads depends on how much comes down the ravine, and HAND carries no discharge. The official zones come from hydraulic studies of the Poyo with design floods, which is exactly what HAND lacks; where they cover the fan (Massanassa, Catarroja, the rare T500 zone of Paiporta) they catch the buildings.
+- **Why, third: low land floods, but not all low land is alike.** Over the 10 towns the flood traces had a median HAND of 2.3 m and the graded buildings 2.5 m. Of the 6,277 ha less than 3 m above the nearest drainage, 57.5 % flooded (chance 17.2 %): in Paiporta, Massanassa and Alfafar almost all of it (96 to 100 %), in Torrent 27.6 % and in Chiva 10.2 %, where that low land is mostly gully floors in the hills. HAND separates the plain from the hills well; it cannot tell a gully floor from the Poyo's path.
+
+### Simulated rain on terrain (SIMULATED)
+
+The measured hourly rain of 29 Oct (Pérez Cueva et al. 2025) on the three upstream zones, routed by the 25 m local inertial model with no infiltration (`results.json` → `simulation`). Rain: 157.4 hm³; by 30 Oct 06:00, 110.6 hm³ had left the grid (the Albufera, the sea, the grid edges) and 46.7 hm³ were still on the ground. 95,092 time steps, 31 minutes with numba.
+
+**Check at the CHJ gauge (not a calibration).** The model gives 3,052.5 m³/s at 18:55, where the gauge read 2,282.9 m³/s before the flood destroyed it. It rises from 1,098 m³/s at 17:30 to 2,696 m³/s at 18:30 (the gauge: 1,686.7 at 18:25, 1,756.9 at 18:35) and peaks at 3,291.7 m³/s at 20:40, when the gauge no longer worked. The morning pulse is far too big and too early (1,034 m³/s at 10:45; the gauge read 264 m³/s at 11:40): without infiltration, the morning rain on dry soil all runs off. So: the right order of magnitude and shape, about a third too high at 18:55 and a little early, as an upper bound should be. (Gauge readings: 18:55 from the CHJ report; 11:40, 18:25 and 18:35 as quoted by [Maldita.es](https://maldita.es/clima/20241108/cronologia-avisos-rio-magro-rambla-poyo/), see the timeline in `docs/ZONES.md`.)
+
+**At the official zones' area** (the deepest simulated cells of each town first), the simulation catches 34.2 % of the buildings, 34.4 % of the flood traces and 79.2 % of its land flooded: between the terrain map (35.0, 32.8, 76.4 %) and the zones (42.1, 39.1, 83.3 %). It covers 42.5 % of the water marks (zones 43.9 %, terrain 32.6 %) and 46.6 % of the Generalitat's footprint (zones 51.3 %, terrain 43.0 %).
+
+| Town | Buildings: zones / terrain / simulated | Flood traces: zones / terrain / simulated | Own land flooded: zones / terrain / simulated |
+|---|---|---|---|
+| Paiporta | 45.3 / 42.5 / 32.7 % | 44.3 / 44.5 / 44.1 % | 100.0 / 100.0 / 100.0 % |
+| Massanassa | 96.0 / 99.5 / 100.0 % | 89.6 / 98.1 / 91.9 % | 91.2 / 95.7 / 92.5 % |
+| Sedaví | 0.5 / 1.0 / 0.0 % | 4.0 / 7.4 / 0.1 % | 100.0 / 95.5 / 100.0 % |
+| Catarroja | 99.2 / 64.2 / 52.7 % | 69.6 / 60.3 / 62.6 % | 88.5 / 82.9 / 83.5 % |
+| Alfafar | 58.4 / 71.4 / 37.2 % | 59.5 / 57.7 / 52.7 % | 97.5 / 99.8 / 98.2 % |
+| Benetússer | 35.7 / 0.0 / 17.9 % | 52.1 / 18.1 / 43.3 % | 41.1 / 14.0 / 34.3 % |
+| Picanya | 0.0 / 2.5 / 5.0 % | 3.0 / 2.6 / 2.9 % | 97.6 / 76.4 / 94.3 % |
+| Aldaia | 39.4 / 45.5 / 51.5 % | 36.6 / 31.2 / 37.5 % | 82.3 / 69.2 / 84.7 % |
+| Chiva | 66.7 / 0.0 / 0.0 % | 58.8 / 18.5 / 21.0 % | 37.2 / 13.0 / 14.8 % |
+| Torrent | 7.0 / 1.3 / **18.9 %** | 16.9 / 7.6 / 12.2 % | 74.0 / 33.3 / 62.0 % |
+| **Total** | 42.1 / 35.0 / 34.2 % | 39.1 / 32.8 / 34.4 % | 83.3 / 76.4 / 79.2 % |
+
+Sending the measured rain down the ravines does what HAND cannot: in **Torrent**, the town with a third of the affected buildings, the simulation catches 18.9 % of the 748 graded buildings (zones 7.0 %, terrain 1.3 %) and 30.8 % of its water marks (zones 5.6 %), though fewer flood traces (12.2 against 16.9 %) and less of its land flooded (62.0 against 74.0 %). It is the best of the three in Aldaia and well ahead of the terrain map in Benetússer. At 25 m and with one roughness it misplaces water in the dense plain (Alfafar 37.2 % of buildings, Sedaví almost none of the traces). Where the water comes from matters as much as how low the land is; a real warning would need both, and a better model than this one.
+
+### The second reference and the water marks
+
+The Generalitat's flood footprint holds 6,493.2 ha of the scored pixels, more than EMSR773's 5,246.5 ha. Against it the order is the same: the official union covers 51.3 % of it and 98.1 % of the union's land is inside it; the terrain map at the same area covers 43.0 % and 82.3 %. We do not know whether the footprint was drawn independently of the official zones; that it contains 98 % of their land in these towns suggests it may have used them, so this reference may favour the zones. Of the 2,699 surveyed water marks above 0 m on the scored pixels (UPV 362, IVE 1,939, SGRT 385, town halls 13), the official union covers 43.9 %, the terrain map 32.6 %.
+
+### Checks
+
+- The 5 m rasters reproduce PR #36's exact geometry (`checks.rasters_on_every_cell_of_the_municipalities` against `checks.pr36_exact_geometry`): observed flood 5,254.0 ha in the 10 municipalities (PR #36: 5,253.9), flood traces 3,829.0 ha (3,829.0), flooded area 1,425.0 ha (1,424.9), lower bound 3,232.5 ha (3,232.6), every town within 0.2 ha, official zones over 11.2 % of the municipalities (11.2 % in `docs/ZONES.md`), 2,238 graded buildings (2,238). Leaving permanent water out of the scored pixels removes 7.5 ha of observed flood (5,246.5 ha on the scored pixels).
+- Every scored pixel has a HAND value in the headline map; no flat area was left undrained (4,121,463 flat cells drained in 459 rounds) and the accumulation found no loop.
+- Grid: 4,900 × 10,800 cells, 52,653,524 with terrain (the rest is sea). Drainage cells (upstream area above 0.5 km², plus permanent water): 1,896,665, of them 1,621,421 permanent water. Buildings as obstacles: 479,941 cells of Catastro footprints (data of 21 Aug 2026).
 
 ## Limits
 
@@ -129,6 +222,8 @@ python -m pipeline.streets report
 ## Changes to the rules
 
 1. **Permanent water also counts as drainage for HAND** (decided while writing the code, before any score). The rules make permanent water an outlet of the depression filling, so water that reaches the Albufera leaves the grid there; without this clarification a cell that drains straight into the lake would have no drainage cell on its path. HAND is then measured from the lake surface, as for a river. The lake itself is not a scored pixel.
+2. **In the simulation, only water bodies of at least 1 km² are sinks** (decided before any simulation result existed). "Permanent water" in the rules meant the Albufera and the sea, but ESA WorldCover's class 80 also marks 942 small patches inside the catchment (ponds, a quarry lake; 2.7 km² of its 40.5 km² in the grid). One of them lies on the Poyo near Cheste, and with every patch as a sink the D8 routing ended the Poyo there, with 157.6 km² upstream; in the simulation it would have swallowed the flood. The three bodies of 1 km² or more are the sea, the port and the Albufera (37.8 km²). The rain zones are delineated on this routing: the gauge cell drains 183.0 km² (Pérez Cueva et al.: 183.0), the apex 351.7 km² (351.5), the Saleta 74.6 km² (74.6).
+3. **A post-hoc check of HAND with the same lake-only sinks** (added after the first scores, because of item 2). The pre-registered HAND, with every WorldCover patch as a sink, stays the headline; the lake-only HAND is reported beside it, labelled post-hoc, so a reader can see whether the ponds change the answer.
 
 ## Sources
 

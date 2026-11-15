@@ -66,8 +66,9 @@ GRID_BOUNDS = (678000.0, 4357000.0, 732000.0, 4381500.0)  # west, south, east, n
 # ICV, Modelo Digital del Terreno (MDT) de LIDAR de 1 metro de resolucion de la
 # provincia de Valencia 2015: ground class of the PNOA-LiDAR 2015 flight
 # (1 Oct to 30 Nov 2015), reclassified and edited by hand, with breaklines;
-# float32 GeoTIFF by MTN50 sheet. The same LiDAR flight as IGN's MDT02 second
-# coverage. Averaged here to 5 m.
+# float32 GeoTIFF by MTN50 sheet ("Producto derivado de LIDAR-PNOA 2015", the
+# national LiDAR programme that IGN's MDT02 and MDT05 also come from). IGN's own
+# 5 m web service returns whole metres, too coarse here. Averaged here to 5 m.
 DTM = {
     "key": "icv_mdt_2015_1m",
     "title": "Modelo Digital del Terreno (MDT) de LIDAR de 1 metro de resolución de la provincia de Valencia 2015",
@@ -711,8 +712,22 @@ def score(zones_dir: Path, zones_json: Path | None = None) -> dict:
     del products, decided
     refs = {"flooded_area": fa[idx], "flood_trace": ft[idx], "observed": (fa | ft)[idx], "lb_observed": lb[idx],
             "icv": burn(icv_layer("footprint").geometry).ravel()[idx]}
+    zone_full = zone_grids(zones_dir)
+    inside = tid > 0
+    # the same sums on every cell of the municipalities (permanent water included), to compare with PR #36
+    in_munis = {
+        "municipalities_ha": round(int(inside.sum()) * 25 / 1e4, 1),
+        "observed_ha": round(int(((fa | ft) & inside).sum()) * 25 / 1e4, 1),
+        "flood_trace_ha": round(int((ft & inside).sum()) * 25 / 1e4, 1),
+        "flooded_area_ha": round(int((fa & inside).sum()) * 25 / 1e4, 1),
+        "lower_bound_observed_ha": round(int((lb & inside).sum()) * 25 / 1e4, 1),
+        "union_zone_pct_of_municipalities": pct(int((zone_full["union"].ravel() & inside).sum()), int(inside.sum())),
+        "observed_ha_by_town": {t: round(int(((fa | ft) & (tid == i + 1)).sum()) * 25 / 1e4, 1)
+                                for i, t in enumerate(TOWNS)},
+    }
     del fa, ft, lb
-    zones = {k: v.ravel()[idx] for k, v in zone_grids(zones_dir).items()}
+    zones = {k: v.ravel()[idx] for k, v in zone_full.items()}
+    del zone_full
 
     pos_of = np.full(tid.size, -1, dtype=np.int64)
     pos_of[idx] = np.arange(n)
@@ -868,6 +883,7 @@ def score(zones_dir: Path, zones_json: Path | None = None) -> dict:
                           "graded_buildings": int((b_town == t).sum())}
                       for t, p in town_pos.items()}
     checks = {
+        "rasters_on_every_cell_of_the_municipalities": in_munis,
         "graded_buildings_in_towns": int(bld["cell"].size),
         "graded_buildings_on_scored_pixels": int(b_pos.size),
         "water_marks_read": marks["points_read"], "water_marks_above_0m": marks["points_above_0"],
@@ -889,7 +905,12 @@ def score(zones_dir: Path, zones_json: Path | None = None) -> dict:
             "observed_ha": z["total"]["flooded_ha"],
             "flood_trace_ha": z["total"]["by_observed_class"]["flood_trace"]["flooded_ha"],
             "flooded_area_ha": z["total"]["by_observed_class"]["flooded_area"]["flooded_ha"],
+            "lower_bound_observed_ha": z.get("sensitivity", {}).get("sharpest_map_first", {}).get("total", {})
+            .get("flooded_ha"),
             "graded_buildings": z["graded_buildings"]["total"]["buildings"],
+            "observed_ha_by_town": {mu["name"]: mu["flooded_ha"] for mu in z["municipalities"]}
+            if isinstance(z.get("municipalities"), list) and z["municipalities"] and "name" in z["municipalities"][0]
+            else None,
         }
     out = {
         "title": "Terrain flow (HAND, no training) against the official flood zones, DANA of 29 Oct 2024, "
@@ -1190,7 +1211,11 @@ def layers(zones_dir: Path) -> None:
         c0, c1 = max(0, cols.min() // 5 - 40), cols.max() // 5 + 40
         box = np.zeros(hm.shape, dtype=bool)
         box[r0:r1, c0:c1] = True
-        g = mask_polygons((cls > 0) & box, cls, simplify_m=12.5, cell=SIM_CELL_M)
+        g = mask_polygons((cls > 0) & box, cls, simplify_m=SIM_CELL_M, cell=SIM_CELL_M)
+        # drop specks smaller than 4 cells of 25 m, so the web file stays small
+        parts = g.explode(index_parts=False)
+        parts = parts[parts.geometry.area >= 4 * SIM_CELL_M * SIM_CELL_M]
+        g = parts.dissolve(by="value", as_index=False)
         g["max_depth"] = [bounds_cls[v] for v in g["value"]]
         g["what"] = "SIMULATED maximum water depth, rain on terrain at 25 m (see docs/STREETS.md)"
         _write_geojson(g.drop(columns="value"), "simulated_max_depth")
