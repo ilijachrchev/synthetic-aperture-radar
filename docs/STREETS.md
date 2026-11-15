@@ -435,6 +435,7 @@ The forecasts put heavy rain on the right ravines, but a third to two fifths of 
 | Run A, forecast of 28 Oct 12 UTC | 170.0 mm | 194.7 | 26.8 % | 70.6 % | 31.9 % | 94.5 % | 40.6 / 74.5 % | 615.8 m³/s |
 | Run A3, forecast of 29 Oct 06 UTC | 152.5 mm | 154.1 | 21.0 % | 70.1 % | 24.8 % | 94.2 % | 40.2 / 73.8 % | 379.5 m³/s |
 | Run B, gauged rain, buildings as obstacles | 431.7 mm | 495.5 | 71.9 % | 74.5 % | 70.9 % | 85.9 % | 41.3 / 75.8 % | 3,053.2 m³/s |
+| Run N, gauged rain up to 16:00 only | 126.8 mm | 169.0 | 22.2 % | 67.5 % | 26.1 % | 94.7 % | 39.7 / 72.9 % | 247.9 m³/s |
 | Ceiling (two records of the same flood): the UPV map against key A, inside the UPV outlines | | 519.1 | 84.2 % | 78.9 % | | | | |
 | Ceiling (two records of the same flood): key A against the UPV map | | 486.1 | | | 78.9 % | 84.2 % | | |
 
@@ -444,21 +445,23 @@ Own extent except the cut column; key B inside the UPV outlines only (801.5 km o
 
 Own extent, key A, by town: found / really flooded (flagged km).
 
-| Town | Flooded (km) | Zones | Gauged rain | A, 29 Oct 00 UTC | A, 28 Oct 12 UTC | A3, 29 Oct 06 UTC | B, buildings |
-|---|---|---|---|---|---|---|---|
-| Paiporta | 75.3 | 36.5 / 100.0 % (27.5) | 77.5 / 99.5 % (58.6) | 9.5 / 100.0 % (7.2) | 9.3 / 100.0 % (7.0) | 5.5 / 100.0 % (4.1) | 74.9 / 99.4 % (56.8) |
-| Massanassa | 24.8 | 89.3 / 68.4 % (32.4) | 82.3 / 74.4 % (27.4) | 64.0 / 78.0 % (20.3) | 63.9 / 78.1 % (20.3) | 54.8 / 77.0 % (17.6) | 72.6 / 87.2 % (20.6) |
-| Sedaví | 23.5 | 3.0 / 100.0 % (0.7) | 82.8 / 80.8 % (24.1) | 3.3 / 100.0 % (0.8) | 3.3 / 100.0 % (0.8) | 2.3 / 100.0 % (0.6) | 78.4 / 96.0 % (19.2) |
-| Catarroja | 64.2 | 83.4 / 68.9 % (77.7) | 61.5 / 67.9 % (58.1) | 21.6 / 58.2 % (23.9) | 21.6 / 58.1 % (23.9) | 13.5 / 55.2 % (15.7) | 68.6 / 84.8 % (52.0) |
-| Alfafar | 67.9 | 77.0 / 87.1 % (60.0) | 92.6 / 85.1 % (73.9) | 72.2 / 88.6 % (55.3) | 72.3 / 88.7 % (55.3) | 58.3 / 90.4 % (43.8) | 89.6 / 87.1 % (69.9) |
-| Benetússer | 5.9 | 44.3 / 43.0 % (6.0) | 62.5 / 30.7 % (11.9) | 37.9 / 39.7 % (5.6) | 37.9 / 40.4 % (5.5) | 25.2 / 46.4 % (3.2) | 67.6 / 52.4 % (7.6) |
-| Picanya | 83.4 | 3.6 / 98.4 % (3.0) | 90.8 / 97.1 % (78.0) | 4.5 / 98.1 % (3.8) | 4.6 / 98.2 % (3.9) | 3.6 / 97.6 % (3.0) | 81.0 / 96.4 % (70.1) |
-| Aldaia | 92.0 | 42.8 / 69.8 % (56.4) | 66.8 / 74.3 % (82.8) | 29.2 / 71.7 % (37.5) | 32.8 / 71.8 % (42.0) | 27.0 / 71.0 % (35.0) | 55.7 / 71.7 % (71.5) |
-| Chiva | 11.0 | 15.8 / 26.5 % (6.5) | 55.1 / 14.5 % (41.8) | 18.5 / 14.4 % (14.2) | 19.9 / 14.6 % (15.0) | 15.8 / 13.1 % (13.3) | 56.3 / 12.7 % (48.8) |
-| Torrent | 65.7 | 11.8 / 80.7 % (9.6) | 65.2 / 57.1 % (75.0) | 18.7 / 60.4 % (20.3) | 19.1 / 59.4 % (21.1) | 16.1 / 59.2 % (17.8) | 64.8 / 53.9 % (79.1) |
-| **Total** | 513.7 | 41.0 / 75.2 % (280.0) | 76.0 / 73.4 % (531.6) | 26.1 / 70.9 % (188.9) | 26.8 / 70.6 % (194.7) | 21.0 / 70.1 % (154.1) | 71.9 / 74.5 % (495.5) |
+| Town | Flooded (km) | Zones | Gauged rain | A, 29 Oct 00 UTC | A, 28 Oct 12 UTC | A3, 29 Oct 06 UTC | B, buildings | N, rain to 16:00 |
+|---|---|---|---|---|---|---|---|---|
+| Paiporta | 75.3 | 36.5 / 100.0 % (27.5) | 77.5 / 99.5 % (58.6) | 9.5 / 100.0 % (7.2) | 9.3 / 100.0 % (7.0) | 5.5 / 100.0 % (4.1) | 74.9 / 99.4 % (56.8) | 10.6 / 100.0 % (8.0) |
+| Massanassa | 24.8 | 89.3 / 68.4 % (32.4) | 82.3 / 74.4 % (27.4) | 64.0 / 78.0 % (20.3) | 63.9 / 78.1 % (20.3) | 54.8 / 77.0 % (17.6) | 72.6 / 87.2 % (20.6) | 67.1 / 78.5 % (21.2) |
+| Sedaví | 23.5 | 3.0 / 100.0 % (0.7) | 82.8 / 80.8 % (24.1) | 3.3 / 100.0 % (0.8) | 3.3 / 100.0 % (0.8) | 2.3 / 100.0 % (0.6) | 78.4 / 96.0 % (19.2) | 3.4 / 100.0 % (0.8) |
+| Catarroja | 64.2 | 83.4 / 68.9 % (77.7) | 61.5 / 67.9 % (58.1) | 21.6 / 58.2 % (23.9) | 21.6 / 58.1 % (23.9) | 13.5 / 55.2 % (15.7) | 68.6 / 84.8 % (52.0) | 23.1 / 58.9 % (25.2) |
+| Alfafar | 67.9 | 77.0 / 87.1 % (60.0) | 92.6 / 85.1 % (73.9) | 72.2 / 88.6 % (55.3) | 72.3 / 88.7 % (55.3) | 58.3 / 90.4 % (43.8) | 89.6 / 87.1 % (69.9) | 73.0 / 88.0 % (56.3) |
+| Benetússer | 5.9 | 44.3 / 43.0 % (6.0) | 62.5 / 30.7 % (11.9) | 37.9 / 39.7 % (5.6) | 37.9 / 40.4 % (5.5) | 25.2 / 46.4 % (3.2) | 67.6 / 52.4 % (7.6) | 42.0 / 38.2 % (6.4) |
+| Picanya | 83.4 | 3.6 / 98.4 % (3.0) | 90.8 / 97.1 % (78.0) | 4.5 / 98.1 % (3.8) | 4.6 / 98.2 % (3.9) | 3.6 / 97.6 % (3.0) | 81.0 / 96.4 % (70.1) | 3.6 / 98.5 % (3.0) |
+| Aldaia | 92.0 | 42.8 / 69.8 % (56.4) | 66.8 / 74.3 % (82.8) | 29.2 / 71.7 % (37.5) | 32.8 / 71.8 % (42.0) | 27.0 / 71.0 % (35.0) | 55.7 / 71.7 % (71.5) | 5.2 / 77.0 % (6.3) |
+| Chiva | 11.0 | 15.8 / 26.5 % (6.5) | 55.1 / 14.5 % (41.8) | 18.5 / 14.4 % (14.2) | 19.9 / 14.6 % (15.0) | 15.8 / 13.1 % (13.3) | 56.3 / 12.7 % (48.8) | 17.9 / 9.6 % (20.6) |
+| Torrent | 65.7 | 11.8 / 80.7 % (9.6) | 65.2 / 57.1 % (75.0) | 18.7 / 60.4 % (20.3) | 19.1 / 59.4 % (21.1) | 16.1 / 59.2 % (17.8) | 64.8 / 53.9 % (79.1) | 18.2 / 56.6 % (21.2) |
+| **Total** | 513.7 | 41.0 / 75.2 % (280.0) | 76.0 / 73.4 % (531.6) | 26.1 / 70.9 % (188.9) | 26.8 / 70.6 % (194.7) | 21.0 / 70.1 % (154.1) | 71.9 / 74.5 % (495.5) | 22.2 / 67.5 % (169.0) |
 
 **Run B, buildings as obstacles (the gauged rain).** With the 15,442 cells of 25 m that are at least half Catastro footprint raised by 10 m (9.65 km², of 54,709 cells with any building), the hindcast flags 495.5 km of street and finds **71.9 %** of the flooded street length, with **74.5 %** really flooded; without buildings it flags 531.6 km and finds 76.0 % at 73.4 %. Cut to the zones' street length it is unchanged (41.3 % found, 75.8 % really flooded). Against key B it loses more (70.9 % at 85.9 %, without buildings 81.9 % at 88.7 %), and inside the UPV outlines, against key A, it finds 74.0 % at 84.0 % (without buildings 78.6 % at 79.7 %). Town by town the buildings sharpen it where they are dense: its flags are right more often in Catarroja (84.8 against 67.9 %), Massanassa (87.2 against 74.4 %), Sedaví (96.0 against 80.8 %) and Benetússer (52.4 against 30.7 %). It also finds a little less almost everywhere (Picanya 81.0 against 90.8 %, Paiporta 74.9 against 77.5 %), and more in Catarroja (68.6 against 61.5 %) and Benetússer (67.6 against 62.5 %). At the CHJ gauge the flow hardly moves (3,053.2 m³/s at 18:55; Chiva's buildings lie upstream of it). So, at 25 m, buildings trade a little reach for a little precision; they do not make the hindcast better overall. The 25 m cells block many narrow streets, as the rules warned, so this is a coarse test of the buildings, not the last word on them.
+
+**Run N, the gauged rain up to 16:00 only (amendment).** (a) The rain measured up to 16:00 local on 29 Oct (40.1 of the 157.3 hm³; on the Poyo up to the gauge 23.2 of 79.0 hm³, 127 mm of 432) floods, on its own, **22.2 %** of the flooded street length (key A), with **67.5 %** of the 169.0 km it flags really flooded. Every flooded street it finds is one the full run also finds: 114.1 km, which is 29.2 % of the 390.4 km the full run finds. The other 276.4 km needed the rain that fell after 16:00, and run N finds nothing the full run misses. Cut to the zones' street length it scores 39.7 % at 72.9 %; against key B 26.1 % at 94.7 %; inside the UPV outlines, against key A, 22.6 % at 76.9 %; outside every official zone it flags 42.9 km, of which 38.0 % flooded. The rain up to 16:00 floods mainly the low plain by the Albufera (Alfafar 73.0 %, Massanassa 67.1 %, against 92.6 and 82.3 % for the full run). It hardly reaches the towns on the fan: Paiporta 10.6 % (full run 77.5 %), Picanya 3.6 % (90.8 %), Sedaví 3.4 % (82.8 %), Aldaia 5.2 % (66.8 %), Torrent 18.2 % (65.2 %). Their water came from the rain of 16:00 to 20:00. The modelled flow at the CHJ gauge equals the full run's up to 16:00 (141 m³/s); at 18:00 it is 412 m³/s against 1,789. (b) is skipped, as the rule says: the runs keep only each cell's maximum depth, not the time it first passed 0.3 m. **Wall time**: the 25 simulated hours took 2,355 s (39 minutes) on 14 threads while another session built the app on the same machine (the full gauged run took 31 minutes on a free machine); preparing the inputs took 29 s, collecting 6 s, scoring 43 s. So a live system on measured rain could rerun this within the hour, but at 16:00 the rain measured so far pointed to about a quarter of the streets that flooded that evening.
 
 **What this means, and what it does not.**
 
