@@ -22214,12 +22214,754 @@
      "possalet_saleta": 118.2
     }
    }
+  },
+  "ifs_20241029T06": {
+   "label": "SIMULATED",
+   "run": "ifs_20241029T06",
+   "what": "run A3 (amendment): ECMWF IFS HRES forecast of 29 Oct 2024 06 UTC, bare terrain",
+   "engine": "numba (pipeline/inertial_kernel.py, same scheme as pipeline.inertial, checked in tests)",
+   "cell_m": 25.0,
+   "manning_n": 0.05,
+   "infiltration": "none (all rain runs off: an upper bound)",
+   "start_local": "2024-10-29T05:00",
+   "hours": 25,
+   "steps": 62030,
+   "wall_s": 1925.2,
+   "rain_zones": {
+    "gauge_cell": {
+     "x": 707602.5,
+     "y": 4372382.5,
+     "upstream_km2": 182.99
+    },
+    "apex_cell": {
+     "x": 718147.5,
+     "y": 4368947.5,
+     "upstream_km2": 351.68
+    },
+    "saleta_cell": {
+     "x": 722442.5,
+     "y": 4369952.5,
+     "upstream_km2": 74.64
+    },
+    "zone_km2": {
+     "poyo_upstream_of_gauge": 183.0,
+     "poyo_gauge_to_apex": 168.7,
+     "possalet_saleta": 74.6
+    }
+   },
+   "volumes_hm3": {
+    "rain": 61.0,
+    "left_at_sinks": 20.38,
+    "on_the_ground_at_end": 40.62
+   },
+   "gauge_check": {
+    "model_q_m3s_at_18_55": 379.5,
+    "model_peak_q_m3s": 504.7,
+    "model_peak_time_local": "17:35",
+    "observed": {
+     "q_m3s": 2282.9,
+     "time_local": "18:55",
+     "source": "CHJ, Informe del episodio de lluvias y avenidas del 28 de octubre al 4 de noviembre de 2024 (15 Jan 2025), table 2.1, Rambla del Poyo at the A-3, Riba-roja: last reading before the sensor was lost"
+    },
+    "note": "a check only: nothing in the model was adjusted to it",
+    "series_every_15_min": [
+     [
+      "05:15",
+      0.0
+     ],
+     [
+      "05:30",
+      -1.8
+     ],
+     [
+      "05:45",
+      -0.1
+     ],
+     [
+      "06:00",
+      -0.1
+     ],
+     [
+      "06:15",
+      -0.5
+     ],
+     [
+      "06:30",
+      -0.2
+     ],
+     [
+      "06:45",
+      -0.3
+     ],
+     [
+      "07:00",
+      -0.4
+     ],
+     [
+      "07:15",
+      -0.6
+     ],
+     [
+      "07:30",
+      -0.5
+     ],
+     [
+      "07:45",
+      -1.1
+     ],
+     [
+      "08:00",
+      -1.0
+     ],
+     [
+      "08:15",
+      -0.6
+     ],
+     [
+      "08:30",
+      -0.4
+     ],
+     [
+      "08:45",
+      -0.0
+     ],
+     [
+      "09:00",
+      0.3
+     ],
+     [
+      "09:15",
+      1.7
+     ],
+     [
+      "09:30",
+      2.6
+     ],
+     [
+      "09:45",
+      4.8
+     ],
+     [
+      "10:00",
+      12.2
+     ],
+     [
+      "10:15",
+      17.0
+     ],
+     [
+      "10:30",
+      58.8
+     ],
+     [
+      "10:45",
+      84.2
+     ],
+     [
+      "11:00",
+      93.3
+     ],
+     [
+      "11:15",
+      97.7
+     ],
+     [
+      "11:30",
+      102.4
+     ],
+     [
+      "11:45",
+      103.8
+     ],
+     [
+      "12:00",
+      127.0
+     ],
+     [
+      "12:15",
+      145.2
+     ],
+     [
+      "12:30",
+      145.0
+     ],
+     [
+      "12:45",
+      146.3
+     ],
+     [
+      "13:00",
+      145.0
+     ],
+     [
+      "13:15",
+      139.0
+     ],
+     [
+      "13:30",
+      131.9
+     ],
+     [
+      "13:45",
+      126.1
+     ],
+     [
+      "14:00",
+      139.2
+     ],
+     [
+      "14:15",
+      176.8
+     ],
+     [
+      "14:30",
+      193.8
+     ],
+     [
+      "14:45",
+      204.6
+     ],
+     [
+      "15:00",
+      216.0
+     ],
+     [
+      "15:15",
+      231.7
+     ],
+     [
+      "15:30",
+      249.2
+     ],
+     [
+      "15:45",
+      271.6
+     ],
+     [
+      "16:00",
+      312.4
+     ],
+     [
+      "16:15",
+      350.7
+     ],
+     [
+      "16:30",
+      384.8
+     ],
+     [
+      "16:45",
+      416.5
+     ],
+     [
+      "17:00",
+      450.4
+     ],
+     [
+      "17:15",
+      484.0
+     ],
+     [
+      "17:30",
+      502.6
+     ],
+     [
+      "17:45",
+      502.0
+     ],
+     [
+      "18:00",
+      483.8
+     ],
+     [
+      "18:15",
+      457.3
+     ],
+     [
+      "18:30",
+      429.4
+     ],
+     [
+      "18:45",
+      399.9
+     ],
+     [
+      "19:00",
+      369.0
+     ],
+     [
+      "19:15",
+      338.0
+     ],
+     [
+      "19:30",
+      309.3
+     ],
+     [
+      "19:45",
+      284.8
+     ],
+     [
+      "20:00",
+      266.3
+     ],
+     [
+      "20:15",
+      253.2
+     ],
+     [
+      "20:30",
+      245.9
+     ],
+     [
+      "20:45",
+      245.2
+     ],
+     [
+      "21:00",
+      249.9
+     ],
+     [
+      "21:15",
+      254.5
+     ],
+     [
+      "21:30",
+      258.1
+     ],
+     [
+      "21:45",
+      261.7
+     ],
+     [
+      "22:00",
+      270.6
+     ],
+     [
+      "22:15",
+      289.5
+     ],
+     [
+      "22:30",
+      317.4
+     ],
+     [
+      "22:45",
+      346.5
+     ],
+     [
+      "23:00",
+      359.7
+     ],
+     [
+      "23:15",
+      361.2
+     ],
+     [
+      "23:30",
+      355.1
+     ],
+     [
+      "23:45",
+      348.0
+     ],
+     [
+      "00:00",
+      341.4
+     ],
+     [
+      "00:15",
+      334.0
+     ],
+     [
+      "00:30",
+      327.1
+     ],
+     [
+      "00:45",
+      321.5
+     ],
+     [
+      "01:00",
+      318.1
+     ],
+     [
+      "01:15",
+      317.8
+     ],
+     [
+      "01:30",
+      320.3
+     ],
+     [
+      "01:45",
+      324.6
+     ],
+     [
+      "02:00",
+      328.4
+     ],
+     [
+      "02:15",
+      330.5
+     ],
+     [
+      "02:30",
+      331.1
+     ],
+     [
+      "02:45",
+      330.7
+     ],
+     [
+      "03:00",
+      329.1
+     ],
+     [
+      "03:15",
+      326.4
+     ],
+     [
+      "03:30",
+      322.1
+     ],
+     [
+      "03:45",
+      314.9
+     ],
+     [
+      "04:00",
+      304.3
+     ],
+     [
+      "04:15",
+      289.0
+     ],
+     [
+      "04:30",
+      270.7
+     ],
+     [
+      "04:45",
+      250.9
+     ],
+     [
+      "05:00",
+      231.4
+     ],
+     [
+      "05:15",
+      212.9
+     ],
+     [
+      "05:30",
+      194.9
+     ],
+     [
+      "05:45",
+      177.5
+     ],
+     [
+      "06:00",
+      161.0
+     ]
+    ]
+   },
+   "rain_forecast": {
+    "source": "forecast: ecmwf_ifs run of 2024-10-29T06:00 UTC, https://single-runs-api.open-meteo.com/v1/forecast",
+    "licence": "Open-Meteo (CC BY 4.0), ECMWF IFS HRES data (CC BY 4.0)",
+    "run_utc": "2024-10-29T06:00",
+    "retrieved_utc": "2026-11-15T10:00:50+00:00",
+    "hours_utc_end_of_hour": [
+     "2024-10-29T05:00",
+     "2024-10-29T06:00",
+     "2024-10-29T07:00",
+     "2024-10-29T08:00",
+     "2024-10-29T09:00",
+     "2024-10-29T10:00",
+     "2024-10-29T11:00",
+     "2024-10-29T12:00",
+     "2024-10-29T13:00",
+     "2024-10-29T14:00",
+     "2024-10-29T15:00",
+     "2024-10-29T16:00",
+     "2024-10-29T17:00",
+     "2024-10-29T18:00",
+     "2024-10-29T19:00",
+     "2024-10-29T20:00",
+     "2024-10-29T21:00",
+     "2024-10-29T22:00",
+     "2024-10-29T23:00",
+     "2024-10-30T00:00",
+     "2024-10-30T01:00",
+     "2024-10-30T02:00",
+     "2024-10-30T03:00",
+     "2024-10-30T04:00",
+     "2024-10-30T05:00"
+    ],
+    "grid_points_used": [
+     {
+      "lat": 39.40246,
+      "lon": -0.74585,
+      "elevation_m": 326.0,
+      "share_of_zone_pct": {
+       "poyo_upstream_of_gauge": 4.1,
+       "poyo_gauge_to_apex": 8.0,
+       "possalet_saleta": 0.0
+      },
+      "window_total_mm": 151.4
+     },
+     {
+      "lat": 39.40246,
+      "lon": -0.62155,
+      "elevation_m": 227.0,
+      "share_of_zone_pct": {
+       "poyo_upstream_of_gauge": 0.0,
+       "poyo_gauge_to_apex": 39.7,
+       "possalet_saleta": 0.0
+      },
+      "window_total_mm": 157.1
+     },
+     {
+      "lat": 39.40246,
+      "lon": -0.49725,
+      "elevation_m": 204.0,
+      "share_of_zone_pct": {
+       "poyo_upstream_of_gauge": 0.0,
+       "poyo_gauge_to_apex": 18.8,
+       "possalet_saleta": 0.0
+      },
+      "window_total_mm": 116.8
+     },
+     {
+      "lat": 39.47276,
+      "lon": -0.87137,
+      "elevation_m": 720.0,
+      "share_of_zone_pct": {
+       "poyo_upstream_of_gauge": 13.3,
+       "poyo_gauge_to_apex": 0.0,
+       "possalet_saleta": 0.0
+      },
+      "window_total_mm": 137.1
+     },
+     {
+      "lat": 39.47276,
+      "lon": -0.74689,
+      "elevation_m": 552.0,
+      "share_of_zone_pct": {
+       "poyo_upstream_of_gauge": 45.0,
+       "poyo_gauge_to_apex": 0.4,
+       "possalet_saleta": 0.0
+      },
+      "window_total_mm": 168.6
+     },
+     {
+      "lat": 39.47276,
+      "lon": -0.62241,
+      "elevation_m": 259.0,
+      "share_of_zone_pct": {
+       "poyo_upstream_of_gauge": 16.5,
+       "poyo_gauge_to_apex": 21.2,
+       "possalet_saleta": 23.8
+      },
+      "window_total_mm": 142.8
+     },
+     {
+      "lat": 39.47276,
+      "lon": -0.49792,
+      "elevation_m": 94.0,
+      "share_of_zone_pct": {
+       "poyo_upstream_of_gauge": 0.0,
+       "poyo_gauge_to_apex": 11.9,
+       "possalet_saleta": 47.4
+      },
+      "window_total_mm": 114.4
+     },
+     {
+      "lat": 39.47276,
+      "lon": -0.37344,
+      "elevation_m": 22.0,
+      "share_of_zone_pct": {
+       "poyo_upstream_of_gauge": 0.0,
+       "poyo_gauge_to_apex": 0.0,
+       "possalet_saleta": 6.5
+      },
+      "window_total_mm": 91.4
+     },
+     {
+      "lat": 39.54306,
+      "lon": -0.87256,
+      "elevation_m": 833.0,
+      "share_of_zone_pct": {
+       "poyo_upstream_of_gauge": 8.4,
+       "poyo_gauge_to_apex": 0.0,
+       "possalet_saleta": 0.0
+      },
+      "window_total_mm": 111.2
+     },
+     {
+      "lat": 39.54306,
+      "lon": -0.74792,
+      "elevation_m": 480.0,
+      "share_of_zone_pct": {
+       "poyo_upstream_of_gauge": 12.0,
+       "poyo_gauge_to_apex": 0.0,
+       "possalet_saleta": 2.0
+      },
+      "window_total_mm": 153.1
+     },
+     {
+      "lat": 39.54306,
+      "lon": -0.62326,
+      "elevation_m": 231.0,
+      "share_of_zone_pct": {
+       "poyo_upstream_of_gauge": 0.6,
+       "poyo_gauge_to_apex": 0.0,
+       "possalet_saleta": 20.1
+      },
+      "window_total_mm": 135.1
+     },
+     {
+      "lat": 39.54306,
+      "lon": -0.4986,
+      "elevation_m": 180.0,
+      "share_of_zone_pct": {
+       "poyo_upstream_of_gauge": 0.0,
+       "poyo_gauge_to_apex": 0.0,
+       "possalet_saleta": 0.3
+      },
+      "window_total_mm": 127.8
+     }
+    ],
+    "grid_points_found": 24,
+    "open_meteo_choice_is_the_nearest_pct": 100.0,
+    "zone_total_mm_in_window": {
+     "poyo_upstream_of_gauge": 152.5,
+     "poyo_gauge_to_apex": 141.0,
+     "possalet_saleta": 124.6
+    },
+    "zone_total_mm_from_initial_time_to_end_of_window": {
+     "poyo_upstream_of_gauge": 147.5,
+     "poyo_gauge_to_apex": 133.2,
+     "possalet_saleta": 115.7
+    },
+    "zone_hourly_mm": {
+     "poyo_upstream_of_gauge": [
+      1.74,
+      3.34,
+      6.78,
+      9.58,
+      7.8,
+      10.14,
+      4.76,
+      5.35,
+      7.22,
+      8.86,
+      13.73,
+      10.83,
+      3.46,
+      6.51,
+      3.94,
+      9.23,
+      7.09,
+      5.49,
+      6.94,
+      6.57,
+      7.13,
+      4.49,
+      1.06,
+      0.08,
+      0.4
+     ],
+     "poyo_gauge_to_apex": [
+      2.02,
+      5.78,
+      11.05,
+      9.68,
+      8.93,
+      8.42,
+      8.86,
+      9.58,
+      11.45,
+      8.04,
+      8.12,
+      4.57,
+      4.51,
+      2.47,
+      2.01,
+      3.63,
+      3.69,
+      7.65,
+      3.23,
+      6.81,
+      8.64,
+      1.71,
+      0.16,
+      0.0,
+      0.0
+     ],
+     "possalet_saleta": [
+      2.06,
+      6.87,
+      12.33,
+      9.48,
+      7.1,
+      5.74,
+      10.09,
+      9.05,
+      12.55,
+      12.15,
+      8.39,
+      2.98,
+      2.25,
+      1.92,
+      1.41,
+      2.76,
+      1.99,
+      1.85,
+      3.29,
+      2.37,
+      3.28,
+      4.01,
+      0.47,
+      0.09,
+      0.16
+     ]
+    },
+    "window_hours_from_an_earlier_run": {
+     "from_run_utc": "2024-10-29T00:00",
+     "hours_utc_end_of_hour": [
+      "2024-10-29T05:00",
+      "2024-10-29T06:00"
+     ]
+    },
+    "zone_volume_hm3_in_window": {
+     "poyo_upstream_of_gauge": 27.91,
+     "poyo_gauge_to_apex": 23.79,
+     "possalet_saleta": 9.3
+    },
+    "gauged_total_mm": {
+     "poyo_upstream_of_gauge": 431.7,
+     "poyo_gauge_to_apex": 405.9,
+     "possalet_saleta": 132.7
+    },
+    "gauged_total_hm3": {
+     "poyo_upstream_of_gauge": 79.0,
+     "poyo_gauge_to_apex": 68.4,
+     "possalet_saleta": 9.9
+    },
+    "forecast_share_of_gauged_pct": {
+     "poyo_upstream_of_gauge": 35.3,
+     "poyo_gauge_to_apex": 34.7,
+     "possalet_saleta": 93.9
+    }
+   }
   }
  },
  "streets_more_runs": {
   "title": "Street by street, two more SIMULATED runs (forecast rain, buildings) next to the official zones, DANA of 29 Oct 2024, 10 towns of L'Horta Sud and Chiva",
   "note": "Written with SI assistance (Claude Code), reviewed by the team.",
-  "created_utc": "2026-11-15T10:04:28+00:00",
+  "created_utc": "2026-11-15T10:37:21+00:00",
   "rules": "docs/STREETS.md, section 'Two more simulations' (committed before either run was simulated or scored: commit 37c33ef); scoring as in 'Street by street'",
   "what": {
    "methods": {
@@ -24134,6 +24876,258 @@
        }
       }
      }
+    },
+    "simulated_ifs_20241029T06_depth_above_0p3m": {
+     "A": {
+      "total": {
+       "street_km": 1591.24,
+       "flooded_km": 513.73,
+       "flagged_km": 154.14,
+       "flagged_pct_of_streets": 9.7,
+       "flagged_and_flooded_km": 108.08,
+       "hit_rate_pct": 21.0,
+       "precision_pct": 70.1,
+       "chance_precision_pct": 32.3,
+       "pieces_flagged": 6287
+      },
+      "towns": {
+       "Paiporta": {
+        "street_km": 75.95,
+        "flooded_km": 75.29,
+        "flagged_km": 4.11,
+        "flagged_pct_of_streets": 5.4,
+        "flagged_and_flooded_km": 4.11,
+        "hit_rate_pct": 5.5,
+        "precision_pct": 100.0,
+        "chance_precision_pct": 99.1,
+        "pieces_flagged": 170
+       },
+       "Massanassa": {
+        "street_km": 35.13,
+        "flooded_km": 24.79,
+        "flagged_km": 17.64,
+        "flagged_pct_of_streets": 50.2,
+        "flagged_and_flooded_km": 13.59,
+        "hit_rate_pct": 54.8,
+        "precision_pct": 77.0,
+        "chance_precision_pct": 70.6,
+        "pieces_flagged": 721
+       },
+       "Sedaví": {
+        "street_km": 30.87,
+        "flooded_km": 23.5,
+        "flagged_km": 0.55,
+        "flagged_pct_of_streets": 1.8,
+        "flagged_and_flooded_km": 0.55,
+        "hit_rate_pct": 2.3,
+        "precision_pct": 100.0,
+        "chance_precision_pct": 76.1,
+        "pieces_flagged": 21
+       },
+       "Catarroja": {
+        "street_km": 103.62,
+        "flooded_km": 64.24,
+        "flagged_km": 15.7,
+        "flagged_pct_of_streets": 15.1,
+        "flagged_and_flooded_km": 8.67,
+        "hit_rate_pct": 13.5,
+        "precision_pct": 55.2,
+        "chance_precision_pct": 62.0,
+        "pieces_flagged": 640
+       },
+       "Alfafar": {
+        "street_km": 86.78,
+        "flooded_km": 67.89,
+        "flagged_km": 43.8,
+        "flagged_pct_of_streets": 50.5,
+        "flagged_and_flooded_km": 39.58,
+        "hit_rate_pct": 58.3,
+        "precision_pct": 90.4,
+        "chance_precision_pct": 78.2,
+        "pieces_flagged": 1798
+       },
+       "Benetússer": {
+        "street_km": 21.26,
+        "flooded_km": 5.86,
+        "flagged_km": 3.19,
+        "flagged_pct_of_streets": 15.0,
+        "flagged_and_flooded_km": 1.48,
+        "hit_rate_pct": 25.2,
+        "precision_pct": 46.4,
+        "chance_precision_pct": 27.6,
+        "pieces_flagged": 133
+       },
+       "Picanya": {
+        "street_km": 94.16,
+        "flooded_km": 83.43,
+        "flagged_km": 3.04,
+        "flagged_pct_of_streets": 3.2,
+        "flagged_and_flooded_km": 2.97,
+        "hit_rate_pct": 3.6,
+        "precision_pct": 97.6,
+        "chance_precision_pct": 88.6,
+        "pieces_flagged": 126
+       },
+       "Aldaia": {
+        "street_km": 163.15,
+        "flooded_km": 92.01,
+        "flagged_km": 35.03,
+        "flagged_pct_of_streets": 21.5,
+        "flagged_and_flooded_km": 24.85,
+        "hit_rate_pct": 27.0,
+        "precision_pct": 71.0,
+        "chance_precision_pct": 56.4,
+        "pieces_flagged": 1426
+       },
+       "Chiva": {
+        "street_km": 429.31,
+        "flooded_km": 11.03,
+        "flagged_km": 13.29,
+        "flagged_pct_of_streets": 3.1,
+        "flagged_and_flooded_km": 1.74,
+        "hit_rate_pct": 15.8,
+        "precision_pct": 13.1,
+        "chance_precision_pct": 2.6,
+        "pieces_flagged": 535
+       },
+       "Torrent": {
+        "street_km": 551.01,
+        "flooded_km": 65.69,
+        "flagged_km": 17.8,
+        "flagged_pct_of_streets": 3.2,
+        "flagged_and_flooded_km": 10.54,
+        "hit_rate_pct": 16.1,
+        "precision_pct": 59.2,
+        "chance_precision_pct": 11.9,
+        "pieces_flagged": 717
+       }
+      }
+     },
+     "B": {
+      "total": {
+       "street_km": 801.46,
+       "flooded_km": 519.06,
+       "flagged_km": 136.94,
+       "flagged_pct_of_streets": 17.1,
+       "flagged_and_flooded_km": 128.93,
+       "hit_rate_pct": 24.8,
+       "precision_pct": 94.2,
+       "chance_precision_pct": 64.8,
+       "pieces_flagged": 5595
+      },
+      "towns": {
+       "Paiporta": {
+        "street_km": 75.93,
+        "flooded_km": 72.42,
+        "flagged_km": 4.11,
+        "flagged_pct_of_streets": 5.4,
+        "flagged_and_flooded_km": 4.0,
+        "hit_rate_pct": 5.5,
+        "precision_pct": 97.3,
+        "chance_precision_pct": 95.4,
+        "pieces_flagged": 170
+       },
+       "Massanassa": {
+        "street_km": 35.13,
+        "flooded_km": 33.19,
+        "flagged_km": 17.64,
+        "flagged_pct_of_streets": 50.2,
+        "flagged_and_flooded_km": 17.4,
+        "hit_rate_pct": 52.4,
+        "precision_pct": 98.7,
+        "chance_precision_pct": 94.5,
+        "pieces_flagged": 721
+       },
+       "Sedaví": {
+        "street_km": 30.87,
+        "flooded_km": 29.69,
+        "flagged_km": 0.55,
+        "flagged_pct_of_streets": 1.8,
+        "flagged_and_flooded_km": 0.55,
+        "hit_rate_pct": 1.8,
+        "precision_pct": 100.0,
+        "chance_precision_pct": 96.2,
+        "pieces_flagged": 21
+       },
+       "Catarroja": {
+        "street_km": 84.28,
+        "flooded_km": 77.25,
+        "flagged_km": 15.7,
+        "flagged_pct_of_streets": 18.6,
+        "flagged_and_flooded_km": 15.33,
+        "hit_rate_pct": 19.8,
+        "precision_pct": 97.7,
+        "chance_precision_pct": 91.7,
+        "pieces_flagged": 640
+       },
+       "Alfafar": {
+        "street_km": 86.78,
+        "flooded_km": 83.72,
+        "flagged_km": 43.8,
+        "flagged_pct_of_streets": 50.5,
+        "flagged_and_flooded_km": 43.01,
+        "hit_rate_pct": 51.4,
+        "precision_pct": 98.2,
+        "chance_precision_pct": 96.5,
+        "pieces_flagged": 1798
+       },
+       "Benetússer": {
+        "street_km": 21.26,
+        "flooded_km": 21.24,
+        "flagged_km": 3.19,
+        "flagged_pct_of_streets": 15.0,
+        "flagged_and_flooded_km": 3.19,
+        "hit_rate_pct": 15.0,
+        "precision_pct": 100.0,
+        "chance_precision_pct": 99.9,
+        "pieces_flagged": 133
+       },
+       "Picanya": {
+        "street_km": 82.86,
+        "flooded_km": 70.86,
+        "flagged_km": 3.02,
+        "flagged_pct_of_streets": 3.6,
+        "flagged_and_flooded_km": 2.94,
+        "hit_rate_pct": 4.1,
+        "precision_pct": 97.4,
+        "chance_precision_pct": 85.5,
+        "pieces_flagged": 125
+       },
+       "Aldaia": {
+        "street_km": 139.24,
+        "flooded_km": 91.74,
+        "flagged_km": 34.64,
+        "flagged_pct_of_streets": 24.9,
+        "flagged_and_flooded_km": 32.92,
+        "hit_rate_pct": 35.9,
+        "precision_pct": 95.0,
+        "chance_precision_pct": 65.9,
+        "pieces_flagged": 1410
+       },
+       "Chiva": {
+        "street_km": 121.04,
+        "flooded_km": 5.84,
+        "flagged_km": 2.36,
+        "flagged_pct_of_streets": 2.0,
+        "flagged_and_flooded_km": 1.16,
+        "hit_rate_pct": 19.9,
+        "precision_pct": 49.2,
+        "chance_precision_pct": 4.8,
+        "pieces_flagged": 94
+       },
+       "Torrent": {
+        "street_km": 124.07,
+        "flooded_km": 33.1,
+        "flagged_km": 11.94,
+        "flagged_pct_of_streets": 9.6,
+        "flagged_and_flooded_km": 8.42,
+        "hit_rate_pct": 25.4,
+        "precision_pct": 70.6,
+        "chance_precision_pct": 26.7,
+        "pieces_flagged": 483
+       }
+      }
+     }
     }
    },
    "equal_length": {
@@ -25144,6 +26138,258 @@
        }
       }
      }
+    },
+    "simulated_ifs_20241029T06_depth": {
+     "A": {
+      "total": {
+       "street_km": 1591.24,
+       "flooded_km": 513.73,
+       "flagged_km": 280.11,
+       "flagged_pct_of_streets": 17.6,
+       "flagged_and_flooded_km": 206.7,
+       "hit_rate_pct": 40.2,
+       "precision_pct": 73.8,
+       "chance_precision_pct": 32.3,
+       "pieces_flagged": 11362
+      },
+      "towns": {
+       "Paiporta": {
+        "street_km": 75.95,
+        "flooded_km": 75.29,
+        "flagged_km": 27.52,
+        "flagged_pct_of_streets": 36.2,
+        "flagged_and_flooded_km": 27.52,
+        "hit_rate_pct": 36.6,
+        "precision_pct": 100.0,
+        "chance_precision_pct": 99.1,
+        "pieces_flagged": 1105
+       },
+       "Massanassa": {
+        "street_km": 35.13,
+        "flooded_km": 24.79,
+        "flagged_km": 32.41,
+        "flagged_pct_of_streets": 92.2,
+        "flagged_and_flooded_km": 23.65,
+        "hit_rate_pct": 95.4,
+        "precision_pct": 73.0,
+        "chance_precision_pct": 70.6,
+        "pieces_flagged": 1312
+       },
+       "Sedaví": {
+        "street_km": 30.87,
+        "flooded_km": 23.5,
+        "flagged_km": 0.7,
+        "flagged_pct_of_streets": 2.3,
+        "flagged_and_flooded_km": 0.7,
+        "hit_rate_pct": 3.0,
+        "precision_pct": 100.0,
+        "chance_precision_pct": 76.1,
+        "pieces_flagged": 27
+       },
+       "Catarroja": {
+        "street_km": 103.62,
+        "flooded_km": 64.24,
+        "flagged_km": 77.74,
+        "flagged_pct_of_streets": 75.0,
+        "flagged_and_flooded_km": 48.28,
+        "hit_rate_pct": 75.2,
+        "precision_pct": 62.1,
+        "chance_precision_pct": 62.0,
+        "pieces_flagged": 3142
+       },
+       "Alfafar": {
+        "street_km": 86.78,
+        "flooded_km": 67.89,
+        "flagged_km": 60.04,
+        "flagged_pct_of_streets": 69.2,
+        "flagged_and_flooded_km": 53.26,
+        "hit_rate_pct": 78.4,
+        "precision_pct": 88.7,
+        "chance_precision_pct": 78.2,
+        "pieces_flagged": 2461
+       },
+       "Benetússer": {
+        "street_km": 21.26,
+        "flooded_km": 5.86,
+        "flagged_km": 6.05,
+        "flagged_pct_of_streets": 28.5,
+        "flagged_and_flooded_km": 2.45,
+        "hit_rate_pct": 41.7,
+        "precision_pct": 40.4,
+        "chance_precision_pct": 27.6,
+        "pieces_flagged": 250
+       },
+       "Picanya": {
+        "street_km": 94.16,
+        "flooded_km": 83.43,
+        "flagged_km": 3.04,
+        "flagged_pct_of_streets": 3.2,
+        "flagged_and_flooded_km": 2.97,
+        "hit_rate_pct": 3.6,
+        "precision_pct": 97.6,
+        "chance_precision_pct": 88.6,
+        "pieces_flagged": 126
+       },
+       "Aldaia": {
+        "street_km": 163.15,
+        "flooded_km": 92.01,
+        "flagged_km": 56.44,
+        "flagged_pct_of_streets": 34.6,
+        "flagged_and_flooded_km": 41.12,
+        "hit_rate_pct": 44.7,
+        "precision_pct": 72.9,
+        "chance_precision_pct": 56.4,
+        "pieces_flagged": 2286
+       },
+       "Chiva": {
+        "street_km": 429.31,
+        "flooded_km": 11.03,
+        "flagged_km": 6.57,
+        "flagged_pct_of_streets": 1.5,
+        "flagged_and_flooded_km": 0.7,
+        "hit_rate_pct": 6.3,
+        "precision_pct": 10.6,
+        "chance_precision_pct": 2.6,
+        "pieces_flagged": 266
+       },
+       "Torrent": {
+        "street_km": 551.01,
+        "flooded_km": 65.69,
+        "flagged_km": 9.6,
+        "flagged_pct_of_streets": 1.7,
+        "flagged_and_flooded_km": 6.05,
+        "hit_rate_pct": 9.2,
+        "precision_pct": 63.0,
+        "chance_precision_pct": 11.9,
+        "pieces_flagged": 387
+       }
+      }
+     },
+     "B": {
+      "total": {
+       "street_km": 801.46,
+       "flooded_km": 519.06,
+       "flagged_km": 261.94,
+       "flagged_pct_of_streets": 32.7,
+       "flagged_and_flooded_km": 247.87,
+       "hit_rate_pct": 47.8,
+       "precision_pct": 94.6,
+       "chance_precision_pct": 64.8,
+       "pieces_flagged": 10631
+      },
+      "towns": {
+       "Paiporta": {
+        "street_km": 75.93,
+        "flooded_km": 72.42,
+        "flagged_km": 27.52,
+        "flagged_pct_of_streets": 36.2,
+        "flagged_and_flooded_km": 25.84,
+        "hit_rate_pct": 35.7,
+        "precision_pct": 93.9,
+        "chance_precision_pct": 95.4,
+        "pieces_flagged": 1105
+       },
+       "Massanassa": {
+        "street_km": 35.13,
+        "flooded_km": 33.19,
+        "flagged_km": 32.41,
+        "flagged_pct_of_streets": 92.2,
+        "flagged_and_flooded_km": 31.04,
+        "hit_rate_pct": 93.5,
+        "precision_pct": 95.8,
+        "chance_precision_pct": 94.5,
+        "pieces_flagged": 1312
+       },
+       "Sedaví": {
+        "street_km": 30.87,
+        "flooded_km": 29.69,
+        "flagged_km": 0.7,
+        "flagged_pct_of_streets": 2.3,
+        "flagged_and_flooded_km": 0.7,
+        "hit_rate_pct": 2.4,
+        "precision_pct": 100.0,
+        "chance_precision_pct": 96.2,
+        "pieces_flagged": 27
+       },
+       "Catarroja": {
+        "street_km": 84.28,
+        "flooded_km": 77.25,
+        "flagged_km": 69.29,
+        "flagged_pct_of_streets": 82.2,
+        "flagged_and_flooded_km": 63.83,
+        "hit_rate_pct": 82.6,
+        "precision_pct": 92.1,
+        "chance_precision_pct": 91.7,
+        "pieces_flagged": 2804
+       },
+       "Alfafar": {
+        "street_km": 86.78,
+        "flooded_km": 83.72,
+        "flagged_km": 60.04,
+        "flagged_pct_of_streets": 69.2,
+        "flagged_and_flooded_km": 59.12,
+        "hit_rate_pct": 70.6,
+        "precision_pct": 98.5,
+        "chance_precision_pct": 96.5,
+        "pieces_flagged": 2461
+       },
+       "Benetússer": {
+        "street_km": 21.26,
+        "flooded_km": 21.24,
+        "flagged_km": 6.05,
+        "flagged_pct_of_streets": 28.5,
+        "flagged_and_flooded_km": 6.05,
+        "hit_rate_pct": 28.5,
+        "precision_pct": 100.0,
+        "chance_precision_pct": 99.9,
+        "pieces_flagged": 250
+       },
+       "Picanya": {
+        "street_km": 82.86,
+        "flooded_km": 70.86,
+        "flagged_km": 3.02,
+        "flagged_pct_of_streets": 3.6,
+        "flagged_and_flooded_km": 2.94,
+        "hit_rate_pct": 4.1,
+        "precision_pct": 97.4,
+        "chance_precision_pct": 85.5,
+        "pieces_flagged": 125
+       },
+       "Aldaia": {
+        "street_km": 139.24,
+        "flooded_km": 91.74,
+        "flagged_km": 55.42,
+        "flagged_pct_of_streets": 39.8,
+        "flagged_and_flooded_km": 52.43,
+        "hit_rate_pct": 57.1,
+        "precision_pct": 94.6,
+        "chance_precision_pct": 65.9,
+        "pieces_flagged": 2244
+       },
+       "Chiva": {
+        "street_km": 121.04,
+        "flooded_km": 5.84,
+        "flagged_km": 0.88,
+        "flagged_pct_of_streets": 0.7,
+        "flagged_and_flooded_km": 0.58,
+        "hit_rate_pct": 9.9,
+        "precision_pct": 65.9,
+        "chance_precision_pct": 4.8,
+        "pieces_flagged": 35
+       },
+       "Torrent": {
+        "street_km": 124.07,
+        "flooded_km": 33.1,
+        "flagged_km": 6.61,
+        "flagged_pct_of_streets": 5.3,
+        "flagged_and_flooded_km": 5.34,
+        "hit_rate_pct": 16.1,
+        "precision_pct": 80.8,
+        "chance_precision_pct": 26.7,
+        "pieces_flagged": 268
+       }
+      }
+     }
     }
    },
    "key_sensitivity": {
@@ -25647,6 +26893,131 @@
         "pieces_flagged": 387
        }
       }
+     },
+     "simulated_ifs_20241029T06_depth": {
+      "total": {
+       "street_km": 1591.24,
+       "flooded_km": 495.78,
+       "flagged_km": 280.11,
+       "flagged_pct_of_streets": 17.6,
+       "flagged_and_flooded_km": 200.46,
+       "hit_rate_pct": 40.4,
+       "precision_pct": 71.6,
+       "chance_precision_pct": 31.2,
+       "pieces_flagged": 11362
+      },
+      "towns": {
+       "Paiporta": {
+        "street_km": 75.95,
+        "flooded_km": 75.29,
+        "flagged_km": 27.52,
+        "flagged_pct_of_streets": 36.2,
+        "flagged_and_flooded_km": 27.52,
+        "hit_rate_pct": 36.6,
+        "precision_pct": 100.0,
+        "chance_precision_pct": 99.1,
+        "pieces_flagged": 1105
+       },
+       "Massanassa": {
+        "street_km": 35.13,
+        "flooded_km": 22.53,
+        "flagged_km": 32.41,
+        "flagged_pct_of_streets": 92.2,
+        "flagged_and_flooded_km": 21.9,
+        "hit_rate_pct": 97.2,
+        "precision_pct": 67.6,
+        "chance_precision_pct": 64.1,
+        "pieces_flagged": 1312
+       },
+       "Sedaví": {
+        "street_km": 30.87,
+        "flooded_km": 21.86,
+        "flagged_km": 0.7,
+        "flagged_pct_of_streets": 2.3,
+        "flagged_and_flooded_km": 0.7,
+        "hit_rate_pct": 3.2,
+        "precision_pct": 100.0,
+        "chance_precision_pct": 70.8,
+        "pieces_flagged": 27
+       },
+       "Catarroja": {
+        "street_km": 103.62,
+        "flooded_km": 61.53,
+        "flagged_km": 77.74,
+        "flagged_pct_of_streets": 75.0,
+        "flagged_and_flooded_km": 45.97,
+        "hit_rate_pct": 74.7,
+        "precision_pct": 59.1,
+        "chance_precision_pct": 59.4,
+        "pieces_flagged": 3142
+       },
+       "Alfafar": {
+        "street_km": 86.78,
+        "flooded_km": 65.51,
+        "flagged_km": 60.04,
+        "flagged_pct_of_streets": 69.2,
+        "flagged_and_flooded_km": 52.65,
+        "hit_rate_pct": 80.4,
+        "precision_pct": 87.7,
+        "chance_precision_pct": 75.5,
+        "pieces_flagged": 2461
+       },
+       "Benetússer": {
+        "street_km": 21.26,
+        "flooded_km": 4.21,
+        "flagged_km": 6.05,
+        "flagged_pct_of_streets": 28.5,
+        "flagged_and_flooded_km": 2.08,
+        "hit_rate_pct": 49.3,
+        "precision_pct": 34.4,
+        "chance_precision_pct": 19.8,
+        "pieces_flagged": 250
+       },
+       "Picanya": {
+        "street_km": 94.16,
+        "flooded_km": 83.43,
+        "flagged_km": 3.04,
+        "flagged_pct_of_streets": 3.2,
+        "flagged_and_flooded_km": 2.97,
+        "hit_rate_pct": 3.6,
+        "precision_pct": 97.6,
+        "chance_precision_pct": 88.6,
+        "pieces_flagged": 126
+       },
+       "Aldaia": {
+        "street_km": 163.15,
+        "flooded_km": 89.3,
+        "flagged_km": 56.44,
+        "flagged_pct_of_streets": 34.6,
+        "flagged_and_flooded_km": 40.26,
+        "hit_rate_pct": 45.1,
+        "precision_pct": 71.3,
+        "chance_precision_pct": 54.7,
+        "pieces_flagged": 2286
+       },
+       "Chiva": {
+        "street_km": 429.31,
+        "flooded_km": 7.75,
+        "flagged_km": 6.57,
+        "flagged_pct_of_streets": 1.5,
+        "flagged_and_flooded_km": 0.4,
+        "hit_rate_pct": 5.2,
+        "precision_pct": 6.1,
+        "chance_precision_pct": 1.8,
+        "pieces_flagged": 266
+       },
+       "Torrent": {
+        "street_km": 551.01,
+        "flooded_km": 64.39,
+        "flagged_km": 9.6,
+        "flagged_pct_of_streets": 1.7,
+        "flagged_and_flooded_km": 6.0,
+        "hit_rate_pct": 9.3,
+        "precision_pct": 62.5,
+        "chance_precision_pct": 11.7,
+        "pieces_flagged": 387
+       }
+      }
      }
     },
     "key_a_marks_only": {
@@ -26141,6 +27512,131 @@
         "street_km": 551.01,
         "flooded_km": 2.23,
         "flagged_km": 9.61,
+        "flagged_pct_of_streets": 1.7,
+        "flagged_and_flooded_km": 0.16,
+        "hit_rate_pct": 7.0,
+        "precision_pct": 1.6,
+        "chance_precision_pct": 0.4,
+        "pieces_flagged": 387
+       }
+      }
+     },
+     "simulated_ifs_20241029T06_depth": {
+      "total": {
+       "street_km": 1591.24,
+       "flooded_km": 36.38,
+       "flagged_km": 280.11,
+       "flagged_pct_of_streets": 17.6,
+       "flagged_and_flooded_km": 12.76,
+       "hit_rate_pct": 35.1,
+       "precision_pct": 4.6,
+       "chance_precision_pct": 2.3,
+       "pieces_flagged": 11362
+      },
+      "towns": {
+       "Paiporta": {
+        "street_km": 75.95,
+        "flooded_km": 3.83,
+        "flagged_km": 27.52,
+        "flagged_pct_of_streets": 36.2,
+        "flagged_and_flooded_km": 0.79,
+        "hit_rate_pct": 20.6,
+        "precision_pct": 2.9,
+        "chance_precision_pct": 5.0,
+        "pieces_flagged": 1105
+       },
+       "Massanassa": {
+        "street_km": 35.13,
+        "flooded_km": 2.96,
+        "flagged_km": 32.41,
+        "flagged_pct_of_streets": 92.2,
+        "flagged_and_flooded_km": 2.44,
+        "hit_rate_pct": 82.5,
+        "precision_pct": 7.5,
+        "chance_precision_pct": 8.4,
+        "pieces_flagged": 1312
+       },
+       "Sedaví": {
+        "street_km": 30.87,
+        "flooded_km": 2.33,
+        "flagged_km": 0.7,
+        "flagged_pct_of_streets": 2.3,
+        "flagged_and_flooded_km": 0.05,
+        "hit_rate_pct": 2.2,
+        "precision_pct": 7.5,
+        "chance_precision_pct": 7.6,
+        "pieces_flagged": 27
+       },
+       "Catarroja": {
+        "street_km": 103.62,
+        "flooded_km": 4.6,
+        "flagged_km": 77.74,
+        "flagged_pct_of_streets": 75.0,
+        "flagged_and_flooded_km": 3.77,
+        "hit_rate_pct": 81.9,
+        "precision_pct": 4.8,
+        "chance_precision_pct": 4.4,
+        "pieces_flagged": 3142
+       },
+       "Alfafar": {
+        "street_km": 86.78,
+        "flooded_km": 4.49,
+        "flagged_km": 60.04,
+        "flagged_pct_of_streets": 69.2,
+        "flagged_and_flooded_km": 1.99,
+        "hit_rate_pct": 44.3,
+        "precision_pct": 3.3,
+        "chance_precision_pct": 5.2,
+        "pieces_flagged": 2461
+       },
+       "Benetússer": {
+        "street_km": 21.26,
+        "flooded_km": 1.85,
+        "flagged_km": 6.05,
+        "flagged_pct_of_streets": 28.5,
+        "flagged_and_flooded_km": 0.39,
+        "hit_rate_pct": 21.3,
+        "precision_pct": 6.5,
+        "chance_precision_pct": 8.7,
+        "pieces_flagged": 250
+       },
+       "Picanya": {
+        "street_km": 94.16,
+        "flooded_km": 4.79,
+        "flagged_km": 3.04,
+        "flagged_pct_of_streets": 3.2,
+        "flagged_and_flooded_km": 0.1,
+        "hit_rate_pct": 2.1,
+        "precision_pct": 3.3,
+        "chance_precision_pct": 5.1,
+        "pieces_flagged": 126
+       },
+       "Aldaia": {
+        "street_km": 163.15,
+        "flooded_km": 5.96,
+        "flagged_km": 56.44,
+        "flagged_pct_of_streets": 34.6,
+        "flagged_and_flooded_km": 2.78,
+        "hit_rate_pct": 46.6,
+        "precision_pct": 4.9,
+        "chance_precision_pct": 3.7,
+        "pieces_flagged": 2286
+       },
+       "Chiva": {
+        "street_km": 429.31,
+        "flooded_km": 3.33,
+        "flagged_km": 6.57,
+        "flagged_pct_of_streets": 1.5,
+        "flagged_and_flooded_km": 0.29,
+        "hit_rate_pct": 8.8,
+        "precision_pct": 4.5,
+        "chance_precision_pct": 0.8,
+        "pieces_flagged": 266
+       },
+       "Torrent": {
+        "street_km": 551.01,
+        "flooded_km": 2.23,
+        "flagged_km": 9.6,
         "flagged_pct_of_streets": 1.7,
         "flagged_and_flooded_km": 0.16,
         "hit_rate_pct": 7.0,
@@ -26917,6 +28413,258 @@
        }
       }
      }
+    },
+    "simulated_ifs_20241029T06_outside_zones": {
+     "A": {
+      "total": {
+       "street_km": 1591.24,
+       "flooded_km": 513.73,
+       "flagged_km": 35.13,
+       "flagged_pct_of_streets": 2.2,
+       "flagged_and_flooded_km": 16.8,
+       "hit_rate_pct": 3.3,
+       "precision_pct": 47.8,
+       "chance_precision_pct": 32.3,
+       "pieces_flagged": 1411
+      },
+      "towns": {
+       "Paiporta": {
+        "street_km": 75.95,
+        "flooded_km": 75.29,
+        "flagged_km": 0.12,
+        "flagged_pct_of_streets": 0.2,
+        "flagged_and_flooded_km": 0.12,
+        "hit_rate_pct": 0.2,
+        "precision_pct": 100.0,
+        "chance_precision_pct": 99.1,
+        "pieces_flagged": 5
+       },
+       "Massanassa": {
+        "street_km": 35.13,
+        "flooded_km": 24.79,
+        "flagged_km": 0.45,
+        "flagged_pct_of_streets": 1.3,
+        "flagged_and_flooded_km": 0.45,
+        "hit_rate_pct": 1.8,
+        "precision_pct": 100.0,
+        "chance_precision_pct": 70.6,
+        "pieces_flagged": 18
+       },
+       "Sedaví": {
+        "street_km": 30.87,
+        "flooded_km": 23.5,
+        "flagged_km": 0.55,
+        "flagged_pct_of_streets": 1.8,
+        "flagged_and_flooded_km": 0.55,
+        "hit_rate_pct": 2.3,
+        "precision_pct": 100.0,
+        "chance_precision_pct": 76.1,
+        "pieces_flagged": 21
+       },
+       "Catarroja": {
+        "street_km": 103.62,
+        "flooded_km": 64.24,
+        "flagged_km": 0.1,
+        "flagged_pct_of_streets": 0.1,
+        "flagged_and_flooded_km": 0.1,
+        "hit_rate_pct": 0.2,
+        "precision_pct": 100.0,
+        "chance_precision_pct": 62.0,
+        "pieces_flagged": 4
+       },
+       "Alfafar": {
+        "street_km": 86.78,
+        "flooded_km": 67.89,
+        "flagged_km": 2.65,
+        "flagged_pct_of_streets": 3.0,
+        "flagged_and_flooded_km": 2.62,
+        "hit_rate_pct": 3.9,
+        "precision_pct": 99.1,
+        "chance_precision_pct": 78.2,
+        "pieces_flagged": 107
+       },
+       "Benetússer": {
+        "street_km": 21.26,
+        "flooded_km": 5.86,
+        "flagged_km": 0.05,
+        "flagged_pct_of_streets": 0.2,
+        "flagged_and_flooded_km": 0.05,
+        "hit_rate_pct": 0.8,
+        "precision_pct": 100.0,
+        "chance_precision_pct": 27.6,
+        "pieces_flagged": 2
+       },
+       "Picanya": {
+        "street_km": 94.16,
+        "flooded_km": 83.43,
+        "flagged_km": 1.72,
+        "flagged_pct_of_streets": 1.8,
+        "flagged_and_flooded_km": 1.69,
+        "hit_rate_pct": 2.0,
+        "precision_pct": 98.6,
+        "chance_precision_pct": 88.6,
+        "pieces_flagged": 71
+       },
+       "Aldaia": {
+        "street_km": 163.15,
+        "flooded_km": 92.01,
+        "flagged_km": 6.09,
+        "flagged_pct_of_streets": 3.7,
+        "flagged_and_flooded_km": 4.22,
+        "hit_rate_pct": 4.6,
+        "precision_pct": 69.3,
+        "chance_precision_pct": 56.4,
+        "pieces_flagged": 245
+       },
+       "Chiva": {
+        "street_km": 429.31,
+        "flooded_km": 11.03,
+        "flagged_km": 11.72,
+        "flagged_pct_of_streets": 2.7,
+        "flagged_and_flooded_km": 1.18,
+        "hit_rate_pct": 10.7,
+        "precision_pct": 10.1,
+        "chance_precision_pct": 2.6,
+        "pieces_flagged": 469
+       },
+       "Torrent": {
+        "street_km": 551.01,
+        "flooded_km": 65.69,
+        "flagged_km": 11.69,
+        "flagged_pct_of_streets": 2.1,
+        "flagged_and_flooded_km": 5.82,
+        "hit_rate_pct": 8.9,
+        "precision_pct": 49.8,
+        "chance_precision_pct": 11.9,
+        "pieces_flagged": 469
+       }
+      }
+     },
+     "B": {
+      "total": {
+       "street_km": 801.46,
+       "flooded_km": 519.06,
+       "flagged_km": 19.2,
+       "flagged_pct_of_streets": 2.4,
+       "flagged_and_flooded_km": 13.59,
+       "hit_rate_pct": 2.6,
+       "precision_pct": 70.8,
+       "chance_precision_pct": 64.8,
+       "pieces_flagged": 773
+      },
+      "towns": {
+       "Paiporta": {
+        "street_km": 75.93,
+        "flooded_km": 72.42,
+        "flagged_km": 0.12,
+        "flagged_pct_of_streets": 0.2,
+        "flagged_and_flooded_km": 0.12,
+        "hit_rate_pct": 0.2,
+        "precision_pct": 100.0,
+        "chance_precision_pct": 95.4,
+        "pieces_flagged": 5
+       },
+       "Massanassa": {
+        "street_km": 35.13,
+        "flooded_km": 33.19,
+        "flagged_km": 0.45,
+        "flagged_pct_of_streets": 1.3,
+        "flagged_and_flooded_km": 0.42,
+        "hit_rate_pct": 1.3,
+        "precision_pct": 94.5,
+        "chance_precision_pct": 94.5,
+        "pieces_flagged": 18
+       },
+       "Sedaví": {
+        "street_km": 30.87,
+        "flooded_km": 29.69,
+        "flagged_km": 0.55,
+        "flagged_pct_of_streets": 1.8,
+        "flagged_and_flooded_km": 0.55,
+        "hit_rate_pct": 1.8,
+        "precision_pct": 100.0,
+        "chance_precision_pct": 96.2,
+        "pieces_flagged": 21
+       },
+       "Catarroja": {
+        "street_km": 84.28,
+        "flooded_km": 77.25,
+        "flagged_km": 0.1,
+        "flagged_pct_of_streets": 0.1,
+        "flagged_and_flooded_km": 0.1,
+        "hit_rate_pct": 0.1,
+        "precision_pct": 100.0,
+        "chance_precision_pct": 91.7,
+        "pieces_flagged": 4
+       },
+       "Alfafar": {
+        "street_km": 86.78,
+        "flooded_km": 83.72,
+        "flagged_km": 2.65,
+        "flagged_pct_of_streets": 3.0,
+        "flagged_and_flooded_km": 2.57,
+        "hit_rate_pct": 3.1,
+        "precision_pct": 97.3,
+        "chance_precision_pct": 96.5,
+        "pieces_flagged": 107
+       },
+       "Benetússer": {
+        "street_km": 21.26,
+        "flooded_km": 21.24,
+        "flagged_km": 0.05,
+        "flagged_pct_of_streets": 0.2,
+        "flagged_and_flooded_km": 0.05,
+        "hit_rate_pct": 0.2,
+        "precision_pct": 100.0,
+        "chance_precision_pct": 99.9,
+        "pieces_flagged": 2
+       },
+       "Picanya": {
+        "street_km": 82.86,
+        "flooded_km": 70.86,
+        "flagged_km": 1.69,
+        "flagged_pct_of_streets": 2.0,
+        "flagged_and_flooded_km": 1.66,
+        "hit_rate_pct": 2.3,
+        "precision_pct": 98.2,
+        "chance_precision_pct": 85.5,
+        "pieces_flagged": 70
+       },
+       "Aldaia": {
+        "street_km": 139.24,
+        "flooded_km": 91.74,
+        "flagged_km": 5.7,
+        "flagged_pct_of_streets": 4.1,
+        "flagged_and_flooded_km": 4.28,
+        "hit_rate_pct": 4.7,
+        "precision_pct": 75.0,
+        "chance_precision_pct": 65.9,
+        "pieces_flagged": 229
+       },
+       "Chiva": {
+        "street_km": 121.04,
+        "flooded_km": 5.84,
+        "flagged_km": 2.06,
+        "flagged_pct_of_streets": 1.7,
+        "flagged_and_flooded_km": 0.86,
+        "hit_rate_pct": 14.7,
+        "precision_pct": 41.7,
+        "chance_precision_pct": 4.8,
+        "pieces_flagged": 82
+       },
+       "Torrent": {
+        "street_km": 124.07,
+        "flooded_km": 33.1,
+        "flagged_km": 5.84,
+        "flagged_pct_of_streets": 4.7,
+        "flagged_and_flooded_km": 2.98,
+        "hit_rate_pct": 9.0,
+        "precision_pct": 51.0,
+        "chance_precision_pct": 26.7,
+        "pieces_flagged": 235
+       }
+      }
+     }
     }
    },
    "key_b_surveyed_area_only_post_hoc": {
@@ -27433,6 +29181,131 @@
         "precision_pct": 78.7,
         "chance_precision_pct": 53.2,
         "pieces_flagged": 32
+       }
+      }
+     },
+     "simulated_ifs_20241029T06_depth": {
+      "total": {
+       "street_km": 508.75,
+       "flooded_km": 459.2,
+       "flagged_km": 235.42,
+       "flagged_pct_of_streets": 46.3,
+       "flagged_and_flooded_km": 225.36,
+       "hit_rate_pct": 49.1,
+       "precision_pct": 95.7,
+       "chance_precision_pct": 90.3,
+       "pieces_flagged": 9554
+      },
+      "towns": {
+       "Paiporta": {
+        "street_km": 75.93,
+        "flooded_km": 72.42,
+        "flagged_km": 27.52,
+        "flagged_pct_of_streets": 36.2,
+        "flagged_and_flooded_km": 25.84,
+        "hit_rate_pct": 35.7,
+        "precision_pct": 93.9,
+        "chance_precision_pct": 95.4,
+        "pieces_flagged": 1105
+       },
+       "Massanassa": {
+        "street_km": 35.13,
+        "flooded_km": 33.19,
+        "flagged_km": 32.41,
+        "flagged_pct_of_streets": 92.2,
+        "flagged_and_flooded_km": 31.04,
+        "hit_rate_pct": 93.5,
+        "precision_pct": 95.8,
+        "chance_precision_pct": 94.5,
+        "pieces_flagged": 1312
+       },
+       "Sedaví": {
+        "street_km": 30.87,
+        "flooded_km": 29.69,
+        "flagged_km": 0.7,
+        "flagged_pct_of_streets": 2.3,
+        "flagged_and_flooded_km": 0.7,
+        "hit_rate_pct": 2.4,
+        "precision_pct": 100.0,
+        "chance_precision_pct": 96.2,
+        "pieces_flagged": 27
+       },
+       "Catarroja": {
+        "street_km": 84.28,
+        "flooded_km": 77.25,
+        "flagged_km": 69.29,
+        "flagged_pct_of_streets": 82.2,
+        "flagged_and_flooded_km": 63.83,
+        "hit_rate_pct": 82.6,
+        "precision_pct": 92.1,
+        "chance_precision_pct": 91.7,
+        "pieces_flagged": 2804
+       },
+       "Alfafar": {
+        "street_km": 86.78,
+        "flooded_km": 83.72,
+        "flagged_km": 60.04,
+        "flagged_pct_of_streets": 69.2,
+        "flagged_and_flooded_km": 59.12,
+        "hit_rate_pct": 70.6,
+        "precision_pct": 98.5,
+        "chance_precision_pct": 96.5,
+        "pieces_flagged": 2461
+       },
+       "Benetússer": {
+        "street_km": 21.26,
+        "flooded_km": 21.24,
+        "flagged_km": 6.05,
+        "flagged_pct_of_streets": 28.5,
+        "flagged_and_flooded_km": 6.05,
+        "hit_rate_pct": 28.5,
+        "precision_pct": 100.0,
+        "chance_precision_pct": 99.9,
+        "pieces_flagged": 250
+       },
+       "Picanya": {
+        "street_km": 82.86,
+        "flooded_km": 70.86,
+        "flagged_km": 3.02,
+        "flagged_pct_of_streets": 3.6,
+        "flagged_and_flooded_km": 2.94,
+        "hit_rate_pct": 4.1,
+        "precision_pct": 97.4,
+        "chance_precision_pct": 85.5,
+        "pieces_flagged": 125
+       },
+       "Aldaia": {
+        "street_km": 65.73,
+        "flooded_km": 57.05,
+        "flagged_km": 35.77,
+        "flagged_pct_of_streets": 54.4,
+        "flagged_and_flooded_km": 35.38,
+        "hit_rate_pct": 62.0,
+        "precision_pct": 98.9,
+        "chance_precision_pct": 86.8,
+        "pieces_flagged": 1444
+       },
+       "Chiva": {
+        "street_km": 0.0,
+        "flooded_km": 0.0,
+        "flagged_km": 0.0,
+        "flagged_pct_of_streets": null,
+        "flagged_and_flooded_km": 0.0,
+        "hit_rate_pct": null,
+        "precision_pct": null,
+        "chance_precision_pct": null,
+        "pieces_flagged": 0
+       },
+       "Torrent": {
+        "street_km": 25.91,
+        "flooded_km": 13.77,
+        "flagged_km": 0.62,
+        "flagged_pct_of_streets": 2.4,
+        "flagged_and_flooded_km": 0.46,
+        "hit_rate_pct": 3.3,
+        "precision_pct": 73.5,
+        "chance_precision_pct": 53.2,
+        "pieces_flagged": 26
        }
       }
      }
@@ -28310,6 +30183,131 @@
         "precision_pct": 80.9,
         "chance_precision_pct": 53.2,
         "pieces_flagged": 46
+       }
+      }
+     },
+     "simulated_ifs_20241029T06_depth_above_0p3m": {
+      "total": {
+       "street_km": 508.75,
+       "flooded_km": 459.2,
+       "flagged_km": 112.35,
+       "flagged_pct_of_streets": 22.1,
+       "flagged_and_flooded_km": 110.53,
+       "hit_rate_pct": 24.1,
+       "precision_pct": 98.4,
+       "chance_precision_pct": 90.3,
+       "pieces_flagged": 4601
+      },
+      "towns": {
+       "Paiporta": {
+        "street_km": 75.93,
+        "flooded_km": 72.42,
+        "flagged_km": 4.11,
+        "flagged_pct_of_streets": 5.4,
+        "flagged_and_flooded_km": 4.0,
+        "hit_rate_pct": 5.5,
+        "precision_pct": 97.3,
+        "chance_precision_pct": 95.4,
+        "pieces_flagged": 170
+       },
+       "Massanassa": {
+        "street_km": 35.13,
+        "flooded_km": 33.19,
+        "flagged_km": 17.64,
+        "flagged_pct_of_streets": 50.2,
+        "flagged_and_flooded_km": 17.4,
+        "hit_rate_pct": 52.4,
+        "precision_pct": 98.7,
+        "chance_precision_pct": 94.5,
+        "pieces_flagged": 721
+       },
+       "Sedaví": {
+        "street_km": 30.87,
+        "flooded_km": 29.69,
+        "flagged_km": 0.55,
+        "flagged_pct_of_streets": 1.8,
+        "flagged_and_flooded_km": 0.55,
+        "hit_rate_pct": 1.8,
+        "precision_pct": 100.0,
+        "chance_precision_pct": 96.2,
+        "pieces_flagged": 21
+       },
+       "Catarroja": {
+        "street_km": 84.28,
+        "flooded_km": 77.25,
+        "flagged_km": 15.7,
+        "flagged_pct_of_streets": 18.6,
+        "flagged_and_flooded_km": 15.33,
+        "hit_rate_pct": 19.8,
+        "precision_pct": 97.7,
+        "chance_precision_pct": 91.7,
+        "pieces_flagged": 640
+       },
+       "Alfafar": {
+        "street_km": 86.78,
+        "flooded_km": 83.72,
+        "flagged_km": 43.8,
+        "flagged_pct_of_streets": 50.5,
+        "flagged_and_flooded_km": 43.01,
+        "hit_rate_pct": 51.4,
+        "precision_pct": 98.2,
+        "chance_precision_pct": 96.5,
+        "pieces_flagged": 1798
+       },
+       "Benetússer": {
+        "street_km": 21.26,
+        "flooded_km": 21.24,
+        "flagged_km": 3.19,
+        "flagged_pct_of_streets": 15.0,
+        "flagged_and_flooded_km": 3.19,
+        "hit_rate_pct": 15.0,
+        "precision_pct": 100.0,
+        "chance_precision_pct": 99.9,
+        "pieces_flagged": 133
+       },
+       "Picanya": {
+        "street_km": 82.86,
+        "flooded_km": 70.86,
+        "flagged_km": 3.02,
+        "flagged_pct_of_streets": 3.6,
+        "flagged_and_flooded_km": 2.94,
+        "hit_rate_pct": 4.1,
+        "precision_pct": 97.4,
+        "chance_precision_pct": 85.5,
+        "pieces_flagged": 125
+       },
+       "Aldaia": {
+        "street_km": 65.73,
+        "flooded_km": 57.05,
+        "flagged_km": 23.56,
+        "flagged_pct_of_streets": 35.8,
+        "flagged_and_flooded_km": 23.48,
+        "hit_rate_pct": 41.2,
+        "precision_pct": 99.7,
+        "chance_precision_pct": 86.8,
+        "pieces_flagged": 960
+       },
+       "Chiva": {
+        "street_km": 0.0,
+        "flooded_km": 0.0,
+        "flagged_km": 0.0,
+        "flagged_pct_of_streets": null,
+        "flagged_and_flooded_km": 0.0,
+        "hit_rate_pct": null,
+        "precision_pct": null,
+        "chance_precision_pct": null,
+        "pieces_flagged": 0
+       },
+       "Torrent": {
+        "street_km": 25.91,
+        "flooded_km": 13.77,
+        "flagged_km": 0.8,
+        "flagged_pct_of_streets": 3.1,
+        "flagged_and_flooded_km": 0.63,
+        "hit_rate_pct": 4.6,
+        "precision_pct": 79.3,
+        "chance_precision_pct": 53.2,
+        "pieces_flagged": 33
        }
       }
      }
@@ -29445,6 +31443,131 @@
         "pieces_flagged": 552
        }
       }
+     },
+     "simulated_ifs_20241029T06_depth_above_0p3m": {
+      "total": {
+       "street_km": 801.46,
+       "flooded_km": 486.07,
+       "flagged_km": 136.94,
+       "flagged_pct_of_streets": 17.1,
+       "flagged_and_flooded_km": 104.51,
+       "hit_rate_pct": 21.5,
+       "precision_pct": 76.3,
+       "chance_precision_pct": 60.6,
+       "pieces_flagged": 5595
+      },
+      "towns": {
+       "Paiporta": {
+        "street_km": 75.93,
+        "flooded_km": 75.26,
+        "flagged_km": 4.11,
+        "flagged_pct_of_streets": 5.4,
+        "flagged_and_flooded_km": 4.11,
+        "hit_rate_pct": 5.5,
+        "precision_pct": 100.0,
+        "chance_precision_pct": 99.1,
+        "pieces_flagged": 170
+       },
+       "Massanassa": {
+        "street_km": 35.13,
+        "flooded_km": 24.79,
+        "flagged_km": 17.64,
+        "flagged_pct_of_streets": 50.2,
+        "flagged_and_flooded_km": 13.59,
+        "hit_rate_pct": 54.8,
+        "precision_pct": 77.0,
+        "chance_precision_pct": 70.6,
+        "pieces_flagged": 721
+       },
+       "Sedaví": {
+        "street_km": 30.87,
+        "flooded_km": 23.5,
+        "flagged_km": 0.55,
+        "flagged_pct_of_streets": 1.8,
+        "flagged_and_flooded_km": 0.55,
+        "hit_rate_pct": 2.3,
+        "precision_pct": 100.0,
+        "chance_precision_pct": 76.1,
+        "pieces_flagged": 21
+       },
+       "Catarroja": {
+        "street_km": 84.28,
+        "flooded_km": 59.21,
+        "flagged_km": 15.7,
+        "flagged_pct_of_streets": 18.6,
+        "flagged_and_flooded_km": 8.67,
+        "hit_rate_pct": 14.6,
+        "precision_pct": 55.2,
+        "chance_precision_pct": 70.2,
+        "pieces_flagged": 640
+       },
+       "Alfafar": {
+        "street_km": 86.78,
+        "flooded_km": 67.89,
+        "flagged_km": 43.8,
+        "flagged_pct_of_streets": 50.5,
+        "flagged_and_flooded_km": 39.58,
+        "hit_rate_pct": 58.3,
+        "precision_pct": 90.4,
+        "chance_precision_pct": 78.2,
+        "pieces_flagged": 1798
+       },
+       "Benetússer": {
+        "street_km": 21.26,
+        "flooded_km": 5.86,
+        "flagged_km": 3.19,
+        "flagged_pct_of_streets": 15.0,
+        "flagged_and_flooded_km": 1.48,
+        "hit_rate_pct": 25.2,
+        "precision_pct": 46.4,
+        "chance_precision_pct": 27.6,
+        "pieces_flagged": 133
+       },
+       "Picanya": {
+        "street_km": 82.86,
+        "flooded_km": 81.58,
+        "flagged_km": 3.02,
+        "flagged_pct_of_streets": 3.6,
+        "flagged_and_flooded_km": 2.97,
+        "hit_rate_pct": 3.6,
+        "precision_pct": 98.4,
+        "chance_precision_pct": 98.5,
+        "pieces_flagged": 125
+       },
+       "Aldaia": {
+        "street_km": 139.24,
+        "flooded_km": 88.34,
+        "flagged_km": 34.64,
+        "flagged_pct_of_streets": 24.9,
+        "flagged_and_flooded_km": 24.8,
+        "hit_rate_pct": 28.1,
+        "precision_pct": 71.6,
+        "chance_precision_pct": 63.4,
+        "pieces_flagged": 1410
+       },
+       "Chiva": {
+        "street_km": 121.04,
+        "flooded_km": 7.85,
+        "flagged_km": 2.36,
+        "flagged_pct_of_streets": 2.0,
+        "flagged_and_flooded_km": 1.21,
+        "hit_rate_pct": 15.4,
+        "precision_pct": 51.0,
+        "chance_precision_pct": 6.5,
+        "pieces_flagged": 94
+       },
+       "Torrent": {
+        "street_km": 124.07,
+        "flooded_km": 51.78,
+        "flagged_km": 11.94,
+        "flagged_pct_of_streets": 9.6,
+        "flagged_and_flooded_km": 7.56,
+        "hit_rate_pct": 14.6,
+        "precision_pct": 63.3,
+        "chance_precision_pct": 41.7,
+        "pieces_flagged": 483
+       }
+      }
      }
     },
     "equal_length": {
@@ -29945,6 +32068,131 @@
         "precision_pct": 63.6,
         "chance_precision_pct": 41.7,
         "pieces_flagged": 273
+       }
+      }
+     },
+     "simulated_ifs_20241029T06_depth": {
+      "total": {
+       "street_km": 801.46,
+       "flooded_km": 486.07,
+       "flagged_km": 261.94,
+       "flagged_pct_of_streets": 32.7,
+       "flagged_and_flooded_km": 203.22,
+       "hit_rate_pct": 41.8,
+       "precision_pct": 77.6,
+       "chance_precision_pct": 60.6,
+       "pieces_flagged": 10631
+      },
+      "towns": {
+       "Paiporta": {
+        "street_km": 75.93,
+        "flooded_km": 75.26,
+        "flagged_km": 27.52,
+        "flagged_pct_of_streets": 36.2,
+        "flagged_and_flooded_km": 27.52,
+        "hit_rate_pct": 36.6,
+        "precision_pct": 100.0,
+        "chance_precision_pct": 99.1,
+        "pieces_flagged": 1105
+       },
+       "Massanassa": {
+        "street_km": 35.13,
+        "flooded_km": 24.79,
+        "flagged_km": 32.41,
+        "flagged_pct_of_streets": 92.2,
+        "flagged_and_flooded_km": 23.65,
+        "hit_rate_pct": 95.4,
+        "precision_pct": 73.0,
+        "chance_precision_pct": 70.6,
+        "pieces_flagged": 1312
+       },
+       "Sedaví": {
+        "street_km": 30.87,
+        "flooded_km": 23.5,
+        "flagged_km": 0.7,
+        "flagged_pct_of_streets": 2.3,
+        "flagged_and_flooded_km": 0.7,
+        "hit_rate_pct": 3.0,
+        "precision_pct": 100.0,
+        "chance_precision_pct": 76.1,
+        "pieces_flagged": 27
+       },
+       "Catarroja": {
+        "street_km": 84.28,
+        "flooded_km": 59.21,
+        "flagged_km": 69.29,
+        "flagged_pct_of_streets": 82.2,
+        "flagged_and_flooded_km": 47.25,
+        "hit_rate_pct": 79.8,
+        "precision_pct": 68.2,
+        "chance_precision_pct": 70.2,
+        "pieces_flagged": 2804
+       },
+       "Alfafar": {
+        "street_km": 86.78,
+        "flooded_km": 67.89,
+        "flagged_km": 60.04,
+        "flagged_pct_of_streets": 69.2,
+        "flagged_and_flooded_km": 53.26,
+        "hit_rate_pct": 78.4,
+        "precision_pct": 88.7,
+        "chance_precision_pct": 78.2,
+        "pieces_flagged": 2461
+       },
+       "Benetússer": {
+        "street_km": 21.26,
+        "flooded_km": 5.86,
+        "flagged_km": 6.05,
+        "flagged_pct_of_streets": 28.5,
+        "flagged_and_flooded_km": 2.45,
+        "hit_rate_pct": 41.7,
+        "precision_pct": 40.4,
+        "chance_precision_pct": 27.6,
+        "pieces_flagged": 250
+       },
+       "Picanya": {
+        "street_km": 82.86,
+        "flooded_km": 81.58,
+        "flagged_km": 3.02,
+        "flagged_pct_of_streets": 3.6,
+        "flagged_and_flooded_km": 2.97,
+        "hit_rate_pct": 3.6,
+        "precision_pct": 98.4,
+        "chance_precision_pct": 98.5,
+        "pieces_flagged": 125
+       },
+       "Aldaia": {
+        "street_km": 139.24,
+        "flooded_km": 88.34,
+        "flagged_km": 55.42,
+        "flagged_pct_of_streets": 39.8,
+        "flagged_and_flooded_km": 40.93,
+        "hit_rate_pct": 46.3,
+        "precision_pct": 73.9,
+        "chance_precision_pct": 63.4,
+        "pieces_flagged": 2244
+       },
+       "Chiva": {
+        "street_km": 121.04,
+        "flooded_km": 7.85,
+        "flagged_km": 0.88,
+        "flagged_pct_of_streets": 0.7,
+        "flagged_and_flooded_km": 0.4,
+        "hit_rate_pct": 5.1,
+        "precision_pct": 45.9,
+        "chance_precision_pct": 6.5,
+        "pieces_flagged": 35
+       },
+       "Torrent": {
+        "street_km": 124.07,
+        "flooded_km": 51.78,
+        "flagged_km": 6.61,
+        "flagged_pct_of_streets": 5.3,
+        "flagged_and_flooded_km": 4.08,
+        "hit_rate_pct": 7.9,
+        "precision_pct": 61.8,
+        "chance_precision_pct": 41.7,
+        "pieces_flagged": 268
        }
       }
      }
@@ -31842,6 +34090,258 @@
        }
       }
      }
+    },
+    "simulated_ifs_20241029T06_depth_above_0p3m": {
+     "A": {
+      "total": {
+       "street_km": 2253.96,
+       "flooded_km": 664.84,
+       "flagged_km": 228.4,
+       "flagged_pct_of_streets": 10.1,
+       "flagged_and_flooded_km": 166.63,
+       "hit_rate_pct": 25.1,
+       "precision_pct": 73.0,
+       "chance_precision_pct": 29.5,
+       "pieces_flagged": 9284
+      },
+      "towns": {
+       "Paiporta": {
+        "street_km": 83.9,
+        "flooded_km": 83.04,
+        "flagged_km": 7.37,
+        "flagged_pct_of_streets": 8.8,
+        "flagged_and_flooded_km": 7.37,
+        "hit_rate_pct": 8.9,
+        "precision_pct": 100.0,
+        "chance_precision_pct": 99.0,
+        "pieces_flagged": 301
+       },
+       "Massanassa": {
+        "street_km": 52.15,
+        "flooded_km": 41.81,
+        "flagged_km": 30.14,
+        "flagged_pct_of_streets": 57.8,
+        "flagged_and_flooded_km": 26.09,
+        "hit_rate_pct": 62.4,
+        "precision_pct": 86.6,
+        "chance_precision_pct": 80.2,
+        "pieces_flagged": 1225
+       },
+       "Sedaví": {
+        "street_km": 34.1,
+        "flooded_km": 26.73,
+        "flagged_km": 1.32,
+        "flagged_pct_of_streets": 3.9,
+        "flagged_and_flooded_km": 1.32,
+        "hit_rate_pct": 4.9,
+        "precision_pct": 100.0,
+        "chance_precision_pct": 78.4,
+        "pieces_flagged": 52
+       },
+       "Catarroja": {
+        "street_km": 142.54,
+        "flooded_km": 89.92,
+        "flagged_km": 22.01,
+        "flagged_pct_of_streets": 15.4,
+        "flagged_and_flooded_km": 14.98,
+        "hit_rate_pct": 16.7,
+        "precision_pct": 68.1,
+        "chance_precision_pct": 63.1,
+        "pieces_flagged": 894
+       },
+       "Alfafar": {
+        "street_km": 115.54,
+        "flooded_km": 96.62,
+        "flagged_km": 68.77,
+        "flagged_pct_of_streets": 59.5,
+        "flagged_and_flooded_km": 64.53,
+        "hit_rate_pct": 66.8,
+        "precision_pct": 93.8,
+        "chance_precision_pct": 83.6,
+        "pieces_flagged": 2816
+       },
+       "Benetússer": {
+        "street_km": 21.53,
+        "flooded_km": 6.13,
+        "flagged_km": 3.28,
+        "flagged_pct_of_streets": 15.3,
+        "flagged_and_flooded_km": 1.57,
+        "hit_rate_pct": 25.7,
+        "precision_pct": 47.9,
+        "chance_precision_pct": 28.5,
+        "pieces_flagged": 137
+       },
+       "Picanya": {
+        "street_km": 131.65,
+        "flooded_km": 108.22,
+        "flagged_km": 4.62,
+        "flagged_pct_of_streets": 3.5,
+        "flagged_and_flooded_km": 4.31,
+        "hit_rate_pct": 4.0,
+        "precision_pct": 93.1,
+        "chance_precision_pct": 82.2,
+        "pieces_flagged": 191
+       },
+       "Aldaia": {
+        "street_km": 190.81,
+        "flooded_km": 105.48,
+        "flagged_km": 38.8,
+        "flagged_pct_of_streets": 20.3,
+        "flagged_and_flooded_km": 28.05,
+        "hit_rate_pct": 26.6,
+        "precision_pct": 72.3,
+        "chance_precision_pct": 55.3,
+        "pieces_flagged": 1577
+       },
+       "Chiva": {
+        "street_km": 774.2,
+        "flooded_km": 22.92,
+        "flagged_km": 29.07,
+        "flagged_pct_of_streets": 3.8,
+        "flagged_and_flooded_km": 4.46,
+        "hit_rate_pct": 19.5,
+        "precision_pct": 15.4,
+        "chance_precision_pct": 3.0,
+        "pieces_flagged": 1166
+       },
+       "Torrent": {
+        "street_km": 707.55,
+        "flooded_km": 83.98,
+        "flagged_km": 23.02,
+        "flagged_pct_of_streets": 3.3,
+        "flagged_and_flooded_km": 13.97,
+        "hit_rate_pct": 16.6,
+        "precision_pct": 60.7,
+        "chance_precision_pct": 11.9,
+        "pieces_flagged": 925
+       }
+      }
+     },
+     "B": {
+      "total": {
+       "street_km": 998.96,
+       "flooded_km": 638.55,
+       "flagged_km": 195.98,
+       "flagged_pct_of_streets": 19.6,
+       "flagged_and_flooded_km": 185.31,
+       "hit_rate_pct": 29.0,
+       "precision_pct": 94.6,
+       "chance_precision_pct": 63.9,
+       "pieces_flagged": 7983
+      },
+      "towns": {
+       "Paiporta": {
+        "street_km": 83.88,
+        "flooded_km": 79.75,
+        "flagged_km": 7.37,
+        "flagged_pct_of_streets": 8.8,
+        "flagged_and_flooded_km": 7.23,
+        "hit_rate_pct": 9.1,
+        "precision_pct": 98.1,
+        "chance_precision_pct": 95.1,
+        "pieces_flagged": 301
+       },
+       "Massanassa": {
+        "street_km": 51.77,
+        "flooded_km": 46.59,
+        "flagged_km": 30.11,
+        "flagged_pct_of_streets": 58.2,
+        "flagged_and_flooded_km": 29.83,
+        "hit_rate_pct": 64.0,
+        "precision_pct": 99.1,
+        "chance_precision_pct": 90.0,
+        "pieces_flagged": 1224
+       },
+       "Sedaví": {
+        "street_km": 34.1,
+        "flooded_km": 32.87,
+        "flagged_km": 1.32,
+        "flagged_pct_of_streets": 3.9,
+        "flagged_and_flooded_km": 1.32,
+        "hit_rate_pct": 4.0,
+        "precision_pct": 100.0,
+        "chance_precision_pct": 96.4,
+        "pieces_flagged": 52
+       },
+       "Catarroja": {
+        "street_km": 106.57,
+        "flooded_km": 97.28,
+        "flagged_km": 21.99,
+        "flagged_pct_of_streets": 20.6,
+        "flagged_and_flooded_km": 21.62,
+        "hit_rate_pct": 22.2,
+        "precision_pct": 98.3,
+        "chance_precision_pct": 91.3,
+        "pieces_flagged": 893
+       },
+       "Alfafar": {
+        "street_km": 115.54,
+        "flooded_km": 112.38,
+        "flagged_km": 68.77,
+        "flagged_pct_of_streets": 59.5,
+        "flagged_and_flooded_km": 67.99,
+        "hit_rate_pct": 60.5,
+        "precision_pct": 98.9,
+        "chance_precision_pct": 97.3,
+        "pieces_flagged": 2816
+       },
+       "Benetússer": {
+        "street_km": 21.53,
+        "flooded_km": 21.51,
+        "flagged_km": 3.28,
+        "flagged_pct_of_streets": 15.3,
+        "flagged_and_flooded_km": 3.28,
+        "hit_rate_pct": 15.3,
+        "precision_pct": 100.0,
+        "chance_precision_pct": 99.9,
+        "pieces_flagged": 137
+       },
+       "Picanya": {
+        "street_km": 101.24,
+        "flooded_km": 85.4,
+        "flagged_km": 4.21,
+        "flagged_pct_of_streets": 4.2,
+        "flagged_and_flooded_km": 4.13,
+        "hit_rate_pct": 4.8,
+        "precision_pct": 98.2,
+        "chance_precision_pct": 84.4,
+        "pieces_flagged": 174
+       },
+       "Aldaia": {
+        "street_km": 164.45,
+        "flooded_km": 100.35,
+        "flagged_km": 38.38,
+        "flagged_pct_of_streets": 23.3,
+        "flagged_and_flooded_km": 35.86,
+        "hit_rate_pct": 35.7,
+        "precision_pct": 93.4,
+        "chance_precision_pct": 61.0,
+        "pieces_flagged": 1560
+       },
+       "Chiva": {
+        "street_km": 172.23,
+        "flooded_km": 24.88,
+        "flagged_km": 6.29,
+        "flagged_pct_of_streets": 3.7,
+        "flagged_and_flooded_km": 4.2,
+        "hit_rate_pct": 16.9,
+        "precision_pct": 66.8,
+        "chance_precision_pct": 14.4,
+        "pieces_flagged": 251
+       },
+       "Torrent": {
+        "street_km": 147.65,
+        "flooded_km": 37.56,
+        "flagged_km": 14.25,
+        "flagged_pct_of_streets": 9.7,
+        "flagged_and_flooded_km": 9.85,
+        "hit_rate_pct": 26.2,
+        "precision_pct": 69.1,
+        "chance_precision_pct": 25.4,
+        "pieces_flagged": 575
+       }
+      }
+     }
     }
    },
    "equal_length": {
@@ -32852,6 +35352,258 @@
        }
       }
      }
+    },
+    "simulated_ifs_20241029T06_depth": {
+     "A": {
+      "total": {
+       "street_km": 2253.96,
+       "flooded_km": 664.84,
+       "flagged_km": 363.48,
+       "flagged_pct_of_streets": 16.1,
+       "flagged_and_flooded_km": 274.77,
+       "hit_rate_pct": 41.3,
+       "precision_pct": 75.6,
+       "chance_precision_pct": 29.5,
+       "pieces_flagged": 14729
+      },
+      "towns": {
+       "Paiporta": {
+        "street_km": 83.9,
+        "flooded_km": 83.04,
+        "flagged_km": 32.32,
+        "flagged_pct_of_streets": 38.5,
+        "flagged_and_flooded_km": 32.32,
+        "hit_rate_pct": 38.9,
+        "precision_pct": 100.0,
+        "chance_precision_pct": 99.0,
+        "pieces_flagged": 1298
+       },
+       "Massanassa": {
+        "street_km": 52.15,
+        "flooded_km": 41.81,
+        "flagged_km": 47.01,
+        "flagged_pct_of_streets": 90.1,
+        "flagged_and_flooded_km": 37.39,
+        "hit_rate_pct": 89.4,
+        "precision_pct": 79.5,
+        "chance_precision_pct": 80.2,
+        "pieces_flagged": 1900
+       },
+       "Sedaví": {
+        "street_km": 34.1,
+        "flooded_km": 26.73,
+        "flagged_km": 0.93,
+        "flagged_pct_of_streets": 2.7,
+        "flagged_and_flooded_km": 0.93,
+        "hit_rate_pct": 3.5,
+        "precision_pct": 100.0,
+        "chance_precision_pct": 78.4,
+        "pieces_flagged": 37
+       },
+       "Catarroja": {
+        "street_km": 142.54,
+        "flooded_km": 89.92,
+        "flagged_km": 99.11,
+        "flagged_pct_of_streets": 69.5,
+        "flagged_and_flooded_km": 65.9,
+        "hit_rate_pct": 73.3,
+        "precision_pct": 66.5,
+        "chance_precision_pct": 63.1,
+        "pieces_flagged": 3999
+       },
+       "Alfafar": {
+        "street_km": 115.54,
+        "flooded_km": 96.62,
+        "flagged_km": 84.03,
+        "flagged_pct_of_streets": 72.7,
+        "flagged_and_flooded_km": 77.5,
+        "hit_rate_pct": 80.2,
+        "precision_pct": 92.2,
+        "chance_precision_pct": 83.6,
+        "pieces_flagged": 3445
+       },
+       "Benetússer": {
+        "street_km": 21.53,
+        "flooded_km": 6.13,
+        "flagged_km": 6.15,
+        "flagged_pct_of_streets": 28.6,
+        "flagged_and_flooded_km": 2.54,
+        "hit_rate_pct": 41.5,
+        "precision_pct": 41.4,
+        "chance_precision_pct": 28.5,
+        "pieces_flagged": 254
+       },
+       "Picanya": {
+        "street_km": 131.65,
+        "flooded_km": 108.22,
+        "flagged_km": 3.09,
+        "flagged_pct_of_streets": 2.3,
+        "flagged_and_flooded_km": 2.9,
+        "hit_rate_pct": 2.7,
+        "precision_pct": 93.6,
+        "chance_precision_pct": 82.2,
+        "pieces_flagged": 128
+       },
+       "Aldaia": {
+        "street_km": 190.81,
+        "flooded_km": 105.48,
+        "flagged_km": 61.78,
+        "flagged_pct_of_streets": 32.4,
+        "flagged_and_flooded_km": 45.12,
+        "hit_rate_pct": 42.8,
+        "precision_pct": 73.0,
+        "chance_precision_pct": 55.3,
+        "pieces_flagged": 2500
+       },
+       "Chiva": {
+        "street_km": 774.2,
+        "flooded_km": 22.92,
+        "flagged_km": 17.35,
+        "flagged_pct_of_streets": 2.2,
+        "flagged_and_flooded_km": 2.57,
+        "hit_rate_pct": 11.2,
+        "precision_pct": 14.8,
+        "chance_precision_pct": 3.0,
+        "pieces_flagged": 697
+       },
+       "Torrent": {
+        "street_km": 707.55,
+        "flooded_km": 83.98,
+        "flagged_km": 11.71,
+        "flagged_pct_of_streets": 1.7,
+        "flagged_and_flooded_km": 7.6,
+        "hit_rate_pct": 9.1,
+        "precision_pct": 64.9,
+        "chance_precision_pct": 11.9,
+        "pieces_flagged": 471
+       }
+      }
+     },
+     "B": {
+      "total": {
+       "street_km": 998.96,
+       "flooded_km": 638.55,
+       "flagged_km": 331.53,
+       "flagged_pct_of_streets": 33.2,
+       "flagged_and_flooded_km": 314.42,
+       "hit_rate_pct": 49.2,
+       "precision_pct": 94.8,
+       "chance_precision_pct": 63.9,
+       "pieces_flagged": 13446
+      },
+      "towns": {
+       "Paiporta": {
+        "street_km": 83.88,
+        "flooded_km": 79.75,
+        "flagged_km": 32.32,
+        "flagged_pct_of_streets": 38.5,
+        "flagged_and_flooded_km": 30.62,
+        "hit_rate_pct": 38.4,
+        "precision_pct": 94.7,
+        "chance_precision_pct": 95.1,
+        "pieces_flagged": 1298
+       },
+       "Massanassa": {
+        "street_km": 51.77,
+        "flooded_km": 46.59,
+        "flagged_km": 46.96,
+        "flagged_pct_of_streets": 90.7,
+        "flagged_and_flooded_km": 45.11,
+        "hit_rate_pct": 96.8,
+        "precision_pct": 96.1,
+        "chance_precision_pct": 90.0,
+        "pieces_flagged": 1898
+       },
+       "Sedaví": {
+        "street_km": 34.1,
+        "flooded_km": 32.87,
+        "flagged_km": 0.93,
+        "flagged_pct_of_streets": 2.7,
+        "flagged_and_flooded_km": 0.93,
+        "hit_rate_pct": 2.8,
+        "precision_pct": 100.0,
+        "chance_precision_pct": 96.4,
+        "pieces_flagged": 37
+       },
+       "Catarroja": {
+        "street_km": 106.57,
+        "flooded_km": 97.28,
+        "flagged_km": 87.04,
+        "flagged_pct_of_streets": 81.7,
+        "flagged_and_flooded_km": 81.63,
+        "hit_rate_pct": 83.9,
+        "precision_pct": 93.8,
+        "chance_precision_pct": 91.3,
+        "pieces_flagged": 3515
+       },
+       "Alfafar": {
+        "street_km": 115.54,
+        "flooded_km": 112.38,
+        "flagged_km": 84.03,
+        "flagged_pct_of_streets": 72.7,
+        "flagged_and_flooded_km": 83.11,
+        "hit_rate_pct": 74.0,
+        "precision_pct": 98.9,
+        "chance_precision_pct": 97.3,
+        "pieces_flagged": 3445
+       },
+       "Benetússer": {
+        "street_km": 21.53,
+        "flooded_km": 21.51,
+        "flagged_km": 6.15,
+        "flagged_pct_of_streets": 28.6,
+        "flagged_and_flooded_km": 6.15,
+        "hit_rate_pct": 28.6,
+        "precision_pct": 100.0,
+        "chance_precision_pct": 99.9,
+        "pieces_flagged": 254
+       },
+       "Picanya": {
+        "street_km": 101.24,
+        "flooded_km": 85.4,
+        "flagged_km": 2.94,
+        "flagged_pct_of_streets": 2.9,
+        "flagged_and_flooded_km": 2.9,
+        "hit_rate_pct": 3.4,
+        "precision_pct": 98.4,
+        "chance_precision_pct": 84.4,
+        "pieces_flagged": 122
+       },
+       "Aldaia": {
+        "street_km": 164.45,
+        "flooded_km": 100.35,
+        "flagged_km": 60.69,
+        "flagged_pct_of_streets": 36.9,
+        "flagged_and_flooded_km": 56.02,
+        "hit_rate_pct": 55.8,
+        "precision_pct": 92.3,
+        "chance_precision_pct": 61.0,
+        "pieces_flagged": 2455
+       },
+       "Chiva": {
+        "street_km": 172.23,
+        "flooded_km": 24.88,
+        "flagged_km": 3.16,
+        "flagged_pct_of_streets": 1.8,
+        "flagged_and_flooded_km": 2.15,
+        "hit_rate_pct": 8.6,
+        "precision_pct": 68.0,
+        "chance_precision_pct": 14.4,
+        "pieces_flagged": 126
+       },
+       "Torrent": {
+        "street_km": 147.65,
+        "flooded_km": 37.56,
+        "flagged_km": 7.31,
+        "flagged_pct_of_streets": 4.9,
+        "flagged_and_flooded_km": 5.81,
+        "hit_rate_pct": 15.5,
+        "precision_pct": 79.5,
+        "chance_precision_pct": 25.4,
+        "pieces_flagged": 296
+       }
+      }
+     }
     }
    },
    "key_sensitivity": {
@@ -33355,6 +36107,131 @@
         "pieces_flagged": 471
        }
       }
+     },
+     "simulated_ifs_20241029T06_depth": {
+      "total": {
+       "street_km": 2253.96,
+       "flooded_km": 646.25,
+       "flagged_km": 363.48,
+       "flagged_pct_of_streets": 16.1,
+       "flagged_and_flooded_km": 268.42,
+       "hit_rate_pct": 41.5,
+       "precision_pct": 73.8,
+       "chance_precision_pct": 28.7,
+       "pieces_flagged": 14729
+      },
+      "towns": {
+       "Paiporta": {
+        "street_km": 83.9,
+        "flooded_km": 83.04,
+        "flagged_km": 32.32,
+        "flagged_pct_of_streets": 38.5,
+        "flagged_and_flooded_km": 32.32,
+        "hit_rate_pct": 38.9,
+        "precision_pct": 100.0,
+        "chance_precision_pct": 99.0,
+        "pieces_flagged": 1298
+       },
+       "Massanassa": {
+        "street_km": 52.15,
+        "flooded_km": 39.54,
+        "flagged_km": 47.01,
+        "flagged_pct_of_streets": 90.1,
+        "flagged_and_flooded_km": 35.52,
+        "hit_rate_pct": 89.8,
+        "precision_pct": 75.6,
+        "chance_precision_pct": 75.8,
+        "pieces_flagged": 1900
+       },
+       "Sedaví": {
+        "street_km": 34.1,
+        "flooded_km": 25.08,
+        "flagged_km": 0.93,
+        "flagged_pct_of_streets": 2.7,
+        "flagged_and_flooded_km": 0.93,
+        "hit_rate_pct": 3.7,
+        "precision_pct": 100.0,
+        "chance_precision_pct": 73.6,
+        "pieces_flagged": 37
+       },
+       "Catarroja": {
+        "street_km": 142.54,
+        "flooded_km": 87.21,
+        "flagged_km": 99.11,
+        "flagged_pct_of_streets": 69.5,
+        "flagged_and_flooded_km": 63.59,
+        "hit_rate_pct": 72.9,
+        "precision_pct": 64.2,
+        "chance_precision_pct": 61.2,
+        "pieces_flagged": 3999
+       },
+       "Alfafar": {
+        "street_km": 115.54,
+        "flooded_km": 94.23,
+        "flagged_km": 84.03,
+        "flagged_pct_of_streets": 72.7,
+        "flagged_and_flooded_km": 76.97,
+        "hit_rate_pct": 81.7,
+        "precision_pct": 91.6,
+        "chance_precision_pct": 81.6,
+        "pieces_flagged": 3445
+       },
+       "Benetússer": {
+        "street_km": 21.53,
+        "flooded_km": 4.48,
+        "flagged_km": 6.15,
+        "flagged_pct_of_streets": 28.6,
+        "flagged_and_flooded_km": 2.17,
+        "hit_rate_pct": 48.5,
+        "precision_pct": 35.4,
+        "chance_precision_pct": 20.8,
+        "pieces_flagged": 254
+       },
+       "Picanya": {
+        "street_km": 131.65,
+        "flooded_km": 108.2,
+        "flagged_km": 3.09,
+        "flagged_pct_of_streets": 2.3,
+        "flagged_and_flooded_km": 2.9,
+        "hit_rate_pct": 2.7,
+        "precision_pct": 93.6,
+        "chance_precision_pct": 82.2,
+        "pieces_flagged": 128
+       },
+       "Aldaia": {
+        "street_km": 190.81,
+        "flooded_km": 102.74,
+        "flagged_km": 61.78,
+        "flagged_pct_of_streets": 32.4,
+        "flagged_and_flooded_km": 44.28,
+        "hit_rate_pct": 43.1,
+        "precision_pct": 71.7,
+        "chance_precision_pct": 53.8,
+        "pieces_flagged": 2500
+       },
+       "Chiva": {
+        "street_km": 774.2,
+        "flooded_km": 19.07,
+        "flagged_km": 17.35,
+        "flagged_pct_of_streets": 2.2,
+        "flagged_and_flooded_km": 2.18,
+        "hit_rate_pct": 11.4,
+        "precision_pct": 12.6,
+        "chance_precision_pct": 2.5,
+        "pieces_flagged": 697
+       },
+       "Torrent": {
+        "street_km": 707.55,
+        "flooded_km": 82.66,
+        "flagged_km": 11.71,
+        "flagged_pct_of_streets": 1.7,
+        "flagged_and_flooded_km": 7.55,
+        "hit_rate_pct": 9.1,
+        "precision_pct": 64.5,
+        "chance_precision_pct": 11.7,
+        "pieces_flagged": 471
+       }
+      }
      }
     },
     "key_a_marks_only": {
@@ -33831,6 +36708,131 @@
         "flagged_and_flooded_km": 2.85,
         "hit_rate_pct": 44.8,
         "precision_pct": 4.6,
+        "chance_precision_pct": 3.3,
+        "pieces_flagged": 2500
+       },
+       "Chiva": {
+        "street_km": 774.2,
+        "flooded_km": 4.13,
+        "flagged_km": 17.35,
+        "flagged_pct_of_streets": 2.2,
+        "flagged_and_flooded_km": 0.38,
+        "hit_rate_pct": 9.3,
+        "precision_pct": 2.2,
+        "chance_precision_pct": 0.5,
+        "pieces_flagged": 697
+       },
+       "Torrent": {
+        "street_km": 707.55,
+        "flooded_km": 2.36,
+        "flagged_km": 11.71,
+        "flagged_pct_of_streets": 1.7,
+        "flagged_and_flooded_km": 0.18,
+        "hit_rate_pct": 7.7,
+        "precision_pct": 1.6,
+        "chance_precision_pct": 0.3,
+        "pieces_flagged": 471
+       }
+      }
+     },
+     "simulated_ifs_20241029T06_depth": {
+      "total": {
+       "street_km": 2253.96,
+       "flooded_km": 39.09,
+       "flagged_km": 363.48,
+       "flagged_pct_of_streets": 16.1,
+       "flagged_and_flooded_km": 13.43,
+       "hit_rate_pct": 34.4,
+       "precision_pct": 3.7,
+       "chance_precision_pct": 1.7,
+       "pieces_flagged": 14729
+      },
+      "towns": {
+       "Paiporta": {
+        "street_km": 83.9,
+        "flooded_km": 4.03,
+        "flagged_km": 32.32,
+        "flagged_pct_of_streets": 38.5,
+        "flagged_and_flooded_km": 0.94,
+        "hit_rate_pct": 23.3,
+        "precision_pct": 2.9,
+        "chance_precision_pct": 4.8,
+        "pieces_flagged": 1298
+       },
+       "Massanassa": {
+        "street_km": 52.15,
+        "flooded_km": 2.96,
+        "flagged_km": 47.01,
+        "flagged_pct_of_streets": 90.1,
+        "flagged_and_flooded_km": 2.57,
+        "hit_rate_pct": 86.7,
+        "precision_pct": 5.5,
+        "chance_precision_pct": 5.7,
+        "pieces_flagged": 1900
+       },
+       "Sedaví": {
+        "street_km": 34.1,
+        "flooded_km": 2.38,
+        "flagged_km": 0.93,
+        "flagged_pct_of_streets": 2.7,
+        "flagged_and_flooded_km": 0.0,
+        "hit_rate_pct": 0.0,
+        "precision_pct": 0.0,
+        "chance_precision_pct": 7.0,
+        "pieces_flagged": 37
+       },
+       "Catarroja": {
+        "street_km": 142.54,
+        "flooded_km": 4.92,
+        "flagged_km": 99.11,
+        "flagged_pct_of_streets": 69.5,
+        "flagged_and_flooded_km": 3.94,
+        "hit_rate_pct": 80.1,
+        "precision_pct": 4.0,
+        "chance_precision_pct": 3.5,
+        "pieces_flagged": 3999
+       },
+       "Alfafar": {
+        "street_km": 115.54,
+        "flooded_km": 4.79,
+        "flagged_km": 84.03,
+        "flagged_pct_of_streets": 72.7,
+        "flagged_and_flooded_km": 1.97,
+        "hit_rate_pct": 41.1,
+        "precision_pct": 2.3,
+        "chance_precision_pct": 4.1,
+        "pieces_flagged": 3445
+       },
+       "Benetússer": {
+        "street_km": 21.53,
+        "flooded_km": 1.88,
+        "flagged_km": 6.15,
+        "flagged_pct_of_streets": 28.6,
+        "flagged_and_flooded_km": 0.39,
+        "hit_rate_pct": 21.0,
+        "precision_pct": 6.4,
+        "chance_precision_pct": 8.7,
+        "pieces_flagged": 254
+       },
+       "Picanya": {
+        "street_km": 131.65,
+        "flooded_km": 5.29,
+        "flagged_km": 3.09,
+        "flagged_pct_of_streets": 2.3,
+        "flagged_and_flooded_km": 0.15,
+        "hit_rate_pct": 2.8,
+        "precision_pct": 4.9,
+        "chance_precision_pct": 4.0,
+        "pieces_flagged": 128
+       },
+       "Aldaia": {
+        "street_km": 190.81,
+        "flooded_km": 6.36,
+        "flagged_km": 61.78,
+        "flagged_pct_of_streets": 32.4,
+        "flagged_and_flooded_km": 2.9,
+        "hit_rate_pct": 45.7,
+        "precision_pct": 4.7,
         "chance_precision_pct": 3.3,
         "pieces_flagged": 2500
        },
@@ -34625,6 +37627,258 @@
        }
       }
      }
+    },
+    "simulated_ifs_20241029T06_outside_zones": {
+     "A": {
+      "total": {
+       "street_km": 2253.96,
+       "flooded_km": 664.84,
+       "flagged_km": 55.28,
+       "flagged_pct_of_streets": 2.5,
+       "flagged_and_flooded_km": 23.56,
+       "hit_rate_pct": 3.5,
+       "precision_pct": 42.6,
+       "chance_precision_pct": 29.5,
+       "pieces_flagged": 2219
+      },
+      "towns": {
+       "Paiporta": {
+        "street_km": 83.9,
+        "flooded_km": 83.04,
+        "flagged_km": 0.12,
+        "flagged_pct_of_streets": 0.1,
+        "flagged_and_flooded_km": 0.12,
+        "hit_rate_pct": 0.1,
+        "precision_pct": 100.0,
+        "chance_precision_pct": 99.0,
+        "pieces_flagged": 5
+       },
+       "Massanassa": {
+        "street_km": 52.15,
+        "flooded_km": 41.81,
+        "flagged_km": 0.55,
+        "flagged_pct_of_streets": 1.0,
+        "flagged_and_flooded_km": 0.55,
+        "hit_rate_pct": 1.3,
+        "precision_pct": 100.0,
+        "chance_precision_pct": 80.2,
+        "pieces_flagged": 22
+       },
+       "Sedaví": {
+        "street_km": 34.1,
+        "flooded_km": 26.73,
+        "flagged_km": 1.17,
+        "flagged_pct_of_streets": 3.4,
+        "flagged_and_flooded_km": 1.17,
+        "hit_rate_pct": 4.4,
+        "precision_pct": 100.0,
+        "chance_precision_pct": 78.4,
+        "pieces_flagged": 46
+       },
+       "Catarroja": {
+        "street_km": 142.54,
+        "flooded_km": 89.92,
+        "flagged_km": 0.1,
+        "flagged_pct_of_streets": 0.1,
+        "flagged_and_flooded_km": 0.1,
+        "hit_rate_pct": 0.1,
+        "precision_pct": 100.0,
+        "chance_precision_pct": 63.1,
+        "pieces_flagged": 4
+       },
+       "Alfafar": {
+        "street_km": 115.54,
+        "flooded_km": 96.62,
+        "flagged_km": 3.89,
+        "flagged_pct_of_streets": 3.4,
+        "flagged_and_flooded_km": 3.87,
+        "hit_rate_pct": 4.0,
+        "precision_pct": 99.4,
+        "chance_precision_pct": 83.6,
+        "pieces_flagged": 159
+       },
+       "Benetússer": {
+        "street_km": 21.53,
+        "flooded_km": 6.13,
+        "flagged_km": 0.05,
+        "flagged_pct_of_streets": 0.2,
+        "flagged_and_flooded_km": 0.05,
+        "hit_rate_pct": 0.8,
+        "precision_pct": 100.0,
+        "chance_precision_pct": 28.5,
+        "pieces_flagged": 2
+       },
+       "Picanya": {
+        "street_km": 131.65,
+        "flooded_km": 108.22,
+        "flagged_km": 3.25,
+        "flagged_pct_of_streets": 2.5,
+        "flagged_and_flooded_km": 2.98,
+        "hit_rate_pct": 2.8,
+        "precision_pct": 91.7,
+        "chance_precision_pct": 82.2,
+        "pieces_flagged": 134
+       },
+       "Aldaia": {
+        "street_km": 190.81,
+        "flooded_km": 105.48,
+        "flagged_km": 7.42,
+        "flagged_pct_of_streets": 3.9,
+        "flagged_and_flooded_km": 5.07,
+        "hit_rate_pct": 4.8,
+        "precision_pct": 68.3,
+        "chance_precision_pct": 55.3,
+        "pieces_flagged": 298
+       },
+       "Chiva": {
+        "street_km": 774.2,
+        "flooded_km": 22.92,
+        "flagged_km": 23.3,
+        "flagged_pct_of_streets": 3.0,
+        "flagged_and_flooded_km": 1.64,
+        "hit_rate_pct": 7.2,
+        "precision_pct": 7.0,
+        "chance_precision_pct": 3.0,
+        "pieces_flagged": 932
+       },
+       "Torrent": {
+        "street_km": 707.55,
+        "flooded_km": 83.98,
+        "flagged_km": 15.42,
+        "flagged_pct_of_streets": 2.2,
+        "flagged_and_flooded_km": 8.02,
+        "hit_rate_pct": 9.5,
+        "precision_pct": 52.0,
+        "chance_precision_pct": 11.9,
+        "pieces_flagged": 617
+       }
+      }
+     },
+     "B": {
+      "total": {
+       "street_km": 998.96,
+       "flooded_km": 638.55,
+       "flagged_km": 25.34,
+       "flagged_pct_of_streets": 2.5,
+       "flagged_and_flooded_km": 18.05,
+       "hit_rate_pct": 2.8,
+       "precision_pct": 71.2,
+       "chance_precision_pct": 63.9,
+       "pieces_flagged": 1021
+      },
+      "towns": {
+       "Paiporta": {
+        "street_km": 83.88,
+        "flooded_km": 79.75,
+        "flagged_km": 0.12,
+        "flagged_pct_of_streets": 0.1,
+        "flagged_and_flooded_km": 0.12,
+        "hit_rate_pct": 0.2,
+        "precision_pct": 100.0,
+        "chance_precision_pct": 95.1,
+        "pieces_flagged": 5
+       },
+       "Massanassa": {
+        "street_km": 51.77,
+        "flooded_km": 46.59,
+        "flagged_km": 0.55,
+        "flagged_pct_of_streets": 1.1,
+        "flagged_and_flooded_km": 0.52,
+        "hit_rate_pct": 1.1,
+        "precision_pct": 95.5,
+        "chance_precision_pct": 90.0,
+        "pieces_flagged": 22
+       },
+       "Sedaví": {
+        "street_km": 34.1,
+        "flooded_km": 32.87,
+        "flagged_km": 1.17,
+        "flagged_pct_of_streets": 3.4,
+        "flagged_and_flooded_km": 1.17,
+        "hit_rate_pct": 3.6,
+        "precision_pct": 100.0,
+        "chance_precision_pct": 96.4,
+        "pieces_flagged": 46
+       },
+       "Catarroja": {
+        "street_km": 106.57,
+        "flooded_km": 97.28,
+        "flagged_km": 0.1,
+        "flagged_pct_of_streets": 0.1,
+        "flagged_and_flooded_km": 0.1,
+        "hit_rate_pct": 0.1,
+        "precision_pct": 100.0,
+        "chance_precision_pct": 91.3,
+        "pieces_flagged": 4
+       },
+       "Alfafar": {
+        "street_km": 115.54,
+        "flooded_km": 112.38,
+        "flagged_km": 3.89,
+        "flagged_pct_of_streets": 3.4,
+        "flagged_and_flooded_km": 3.82,
+        "hit_rate_pct": 3.4,
+        "precision_pct": 98.2,
+        "chance_precision_pct": 97.3,
+        "pieces_flagged": 159
+       },
+       "Benetússer": {
+        "street_km": 21.53,
+        "flooded_km": 21.51,
+        "flagged_km": 0.05,
+        "flagged_pct_of_streets": 0.2,
+        "flagged_and_flooded_km": 0.05,
+        "hit_rate_pct": 0.2,
+        "precision_pct": 100.0,
+        "chance_precision_pct": 99.9,
+        "pieces_flagged": 2
+       },
+       "Picanya": {
+        "street_km": 101.24,
+        "flooded_km": 85.4,
+        "flagged_km": 2.84,
+        "flagged_pct_of_streets": 2.8,
+        "flagged_and_flooded_km": 2.81,
+        "hit_rate_pct": 3.3,
+        "precision_pct": 98.9,
+        "chance_precision_pct": 84.4,
+        "pieces_flagged": 117
+       },
+       "Aldaia": {
+        "street_km": 164.45,
+        "flooded_km": 100.35,
+        "flagged_km": 7.0,
+        "flagged_pct_of_streets": 4.3,
+        "flagged_and_flooded_km": 5.05,
+        "hit_rate_pct": 5.0,
+        "precision_pct": 72.1,
+        "chance_precision_pct": 61.0,
+        "pieces_flagged": 281
+       },
+       "Chiva": {
+        "street_km": 172.23,
+        "flooded_km": 24.88,
+        "flagged_km": 2.97,
+        "flagged_pct_of_streets": 1.7,
+        "flagged_and_flooded_km": 1.31,
+        "hit_rate_pct": 5.3,
+        "precision_pct": 44.1,
+        "chance_precision_pct": 14.4,
+        "pieces_flagged": 118
+       },
+       "Torrent": {
+        "street_km": 147.65,
+        "flooded_km": 37.56,
+        "flagged_km": 6.65,
+        "flagged_pct_of_streets": 4.5,
+        "flagged_and_flooded_km": 3.1,
+        "hit_rate_pct": 8.3,
+        "precision_pct": 46.7,
+        "chance_precision_pct": 25.4,
+        "pieces_flagged": 267
+       }
+      }
+     }
     }
    },
    "key_b_surveyed_area_only_post_hoc": {
@@ -35141,6 +38395,131 @@
         "precision_pct": 78.7,
         "chance_precision_pct": 51.0,
         "pieces_flagged": 32
+       }
+      }
+     },
+     "simulated_ifs_20241029T06_depth": {
+      "total": {
+       "street_km": 610.67,
+       "flooded_km": 548.36,
+       "flagged_km": 296.59,
+       "flagged_pct_of_streets": 48.6,
+       "flagged_and_flooded_km": 286.13,
+       "hit_rate_pct": 52.2,
+       "precision_pct": 96.5,
+       "chance_precision_pct": 89.8,
+       "pieces_flagged": 12032
+      },
+      "towns": {
+       "Paiporta": {
+        "street_km": 83.88,
+        "flooded_km": 79.75,
+        "flagged_km": 32.32,
+        "flagged_pct_of_streets": 38.5,
+        "flagged_and_flooded_km": 30.62,
+        "hit_rate_pct": 38.4,
+        "precision_pct": 94.7,
+        "chance_precision_pct": 95.1,
+        "pieces_flagged": 1298
+       },
+       "Massanassa": {
+        "street_km": 51.77,
+        "flooded_km": 46.59,
+        "flagged_km": 46.96,
+        "flagged_pct_of_streets": 90.7,
+        "flagged_and_flooded_km": 45.11,
+        "hit_rate_pct": 96.8,
+        "precision_pct": 96.1,
+        "chance_precision_pct": 90.0,
+        "pieces_flagged": 1898
+       },
+       "Sedaví": {
+        "street_km": 34.1,
+        "flooded_km": 32.87,
+        "flagged_km": 0.93,
+        "flagged_pct_of_streets": 2.7,
+        "flagged_and_flooded_km": 0.93,
+        "hit_rate_pct": 2.8,
+        "precision_pct": 100.0,
+        "chance_precision_pct": 96.4,
+        "pieces_flagged": 37
+       },
+       "Catarroja": {
+        "street_km": 106.57,
+        "flooded_km": 97.28,
+        "flagged_km": 87.04,
+        "flagged_pct_of_streets": 81.7,
+        "flagged_and_flooded_km": 81.63,
+        "hit_rate_pct": 83.9,
+        "precision_pct": 93.8,
+        "chance_precision_pct": 91.3,
+        "pieces_flagged": 3515
+       },
+       "Alfafar": {
+        "street_km": 115.54,
+        "flooded_km": 112.38,
+        "flagged_km": 84.03,
+        "flagged_pct_of_streets": 72.7,
+        "flagged_and_flooded_km": 83.11,
+        "hit_rate_pct": 74.0,
+        "precision_pct": 98.9,
+        "chance_precision_pct": 97.3,
+        "pieces_flagged": 3445
+       },
+       "Benetússer": {
+        "street_km": 21.53,
+        "flooded_km": 21.51,
+        "flagged_km": 6.15,
+        "flagged_pct_of_streets": 28.6,
+        "flagged_and_flooded_km": 6.15,
+        "hit_rate_pct": 28.6,
+        "precision_pct": 100.0,
+        "chance_precision_pct": 99.9,
+        "pieces_flagged": 254
+       },
+       "Picanya": {
+        "street_km": 101.24,
+        "flooded_km": 85.4,
+        "flagged_km": 2.94,
+        "flagged_pct_of_streets": 2.9,
+        "flagged_and_flooded_km": 2.9,
+        "hit_rate_pct": 3.4,
+        "precision_pct": 98.4,
+        "chance_precision_pct": 84.4,
+        "pieces_flagged": 122
+       },
+       "Aldaia": {
+        "street_km": 66.18,
+        "flooded_km": 57.35,
+        "flagged_km": 35.57,
+        "flagged_pct_of_streets": 53.7,
+        "flagged_and_flooded_km": 35.21,
+        "hit_rate_pct": 61.4,
+        "precision_pct": 99.0,
+        "chance_precision_pct": 86.7,
+        "pieces_flagged": 1436
+       },
+       "Chiva": {
+        "street_km": 0.0,
+        "flooded_km": 0.0,
+        "flagged_km": 0.0,
+        "flagged_pct_of_streets": null,
+        "flagged_and_flooded_km": 0.0,
+        "hit_rate_pct": null,
+        "precision_pct": null,
+        "chance_precision_pct": null,
+        "pieces_flagged": 0
+       },
+       "Torrent": {
+        "street_km": 29.86,
+        "flooded_km": 15.24,
+        "flagged_km": 0.65,
+        "flagged_pct_of_streets": 2.2,
+        "flagged_and_flooded_km": 0.48,
+        "hit_rate_pct": 3.2,
+        "precision_pct": 74.6,
+        "chance_precision_pct": 51.0,
+        "pieces_flagged": 27
        }
       }
      }
@@ -36018,6 +39397,131 @@
         "precision_pct": 80.9,
         "chance_precision_pct": 51.0,
         "pieces_flagged": 46
+       }
+      }
+     },
+     "simulated_ifs_20241029T06_depth_above_0p3m": {
+      "total": {
+       "street_km": 610.67,
+       "flooded_km": 548.36,
+       "flagged_km": 161.41,
+       "flagged_pct_of_streets": 26.4,
+       "flagged_and_flooded_km": 159.52,
+       "hit_rate_pct": 29.1,
+       "precision_pct": 98.8,
+       "chance_precision_pct": 89.8,
+       "pieces_flagged": 6590
+      },
+      "towns": {
+       "Paiporta": {
+        "street_km": 83.88,
+        "flooded_km": 79.75,
+        "flagged_km": 7.37,
+        "flagged_pct_of_streets": 8.8,
+        "flagged_and_flooded_km": 7.23,
+        "hit_rate_pct": 9.1,
+        "precision_pct": 98.1,
+        "chance_precision_pct": 95.1,
+        "pieces_flagged": 301
+       },
+       "Massanassa": {
+        "street_km": 51.77,
+        "flooded_km": 46.59,
+        "flagged_km": 30.11,
+        "flagged_pct_of_streets": 58.2,
+        "flagged_and_flooded_km": 29.83,
+        "hit_rate_pct": 64.0,
+        "precision_pct": 99.1,
+        "chance_precision_pct": 90.0,
+        "pieces_flagged": 1224
+       },
+       "Sedaví": {
+        "street_km": 34.1,
+        "flooded_km": 32.87,
+        "flagged_km": 1.32,
+        "flagged_pct_of_streets": 3.9,
+        "flagged_and_flooded_km": 1.32,
+        "hit_rate_pct": 4.0,
+        "precision_pct": 100.0,
+        "chance_precision_pct": 96.4,
+        "pieces_flagged": 52
+       },
+       "Catarroja": {
+        "street_km": 106.57,
+        "flooded_km": 97.28,
+        "flagged_km": 21.99,
+        "flagged_pct_of_streets": 20.6,
+        "flagged_and_flooded_km": 21.62,
+        "hit_rate_pct": 22.2,
+        "precision_pct": 98.3,
+        "chance_precision_pct": 91.3,
+        "pieces_flagged": 893
+       },
+       "Alfafar": {
+        "street_km": 115.54,
+        "flooded_km": 112.38,
+        "flagged_km": 68.77,
+        "flagged_pct_of_streets": 59.5,
+        "flagged_and_flooded_km": 67.99,
+        "hit_rate_pct": 60.5,
+        "precision_pct": 98.9,
+        "chance_precision_pct": 97.3,
+        "pieces_flagged": 2816
+       },
+       "Benetússer": {
+        "street_km": 21.53,
+        "flooded_km": 21.51,
+        "flagged_km": 3.28,
+        "flagged_pct_of_streets": 15.3,
+        "flagged_and_flooded_km": 3.28,
+        "hit_rate_pct": 15.3,
+        "precision_pct": 100.0,
+        "chance_precision_pct": 99.9,
+        "pieces_flagged": 137
+       },
+       "Picanya": {
+        "street_km": 101.24,
+        "flooded_km": 85.4,
+        "flagged_km": 4.21,
+        "flagged_pct_of_streets": 4.2,
+        "flagged_and_flooded_km": 4.13,
+        "hit_rate_pct": 4.8,
+        "precision_pct": 98.2,
+        "chance_precision_pct": 84.4,
+        "pieces_flagged": 174
+       },
+       "Aldaia": {
+        "street_km": 66.18,
+        "flooded_km": 57.35,
+        "flagged_km": 23.56,
+        "flagged_pct_of_streets": 35.6,
+        "flagged_and_flooded_km": 23.48,
+        "hit_rate_pct": 40.9,
+        "precision_pct": 99.7,
+        "chance_precision_pct": 86.7,
+        "pieces_flagged": 960
+       },
+       "Chiva": {
+        "street_km": 0.0,
+        "flooded_km": 0.0,
+        "flagged_km": 0.0,
+        "flagged_pct_of_streets": null,
+        "flagged_and_flooded_km": 0.0,
+        "hit_rate_pct": null,
+        "precision_pct": null,
+        "chance_precision_pct": null,
+        "pieces_flagged": 0
+       },
+       "Torrent": {
+        "street_km": 29.86,
+        "flooded_km": 15.24,
+        "flagged_km": 0.8,
+        "flagged_pct_of_streets": 2.7,
+        "flagged_and_flooded_km": 0.63,
+        "hit_rate_pct": 4.1,
+        "precision_pct": 79.3,
+        "chance_precision_pct": 51.0,
+        "pieces_flagged": 33
        }
       }
      }
@@ -37153,6 +40657,131 @@
         "pieces_flagged": 658
        }
       }
+     },
+     "simulated_ifs_20241029T06_depth_above_0p3m": {
+      "total": {
+       "street_km": 998.96,
+       "flooded_km": 612.65,
+       "flagged_km": 195.98,
+       "flagged_pct_of_streets": 19.6,
+       "flagged_and_flooded_km": 160.94,
+       "hit_rate_pct": 26.3,
+       "precision_pct": 82.1,
+       "chance_precision_pct": 61.3,
+       "pieces_flagged": 7983
+      },
+      "towns": {
+       "Paiporta": {
+        "street_km": 83.88,
+        "flooded_km": 83.02,
+        "flagged_km": 7.37,
+        "flagged_pct_of_streets": 8.8,
+        "flagged_and_flooded_km": 7.37,
+        "hit_rate_pct": 8.9,
+        "precision_pct": 100.0,
+        "chance_precision_pct": 99.0,
+        "pieces_flagged": 301
+       },
+       "Massanassa": {
+        "street_km": 51.77,
+        "flooded_km": 41.43,
+        "flagged_km": 30.11,
+        "flagged_pct_of_streets": 58.2,
+        "flagged_and_flooded_km": 26.06,
+        "hit_rate_pct": 62.9,
+        "precision_pct": 86.5,
+        "chance_precision_pct": 80.0,
+        "pieces_flagged": 1224
+       },
+       "Sedaví": {
+        "street_km": 34.1,
+        "flooded_km": 26.73,
+        "flagged_km": 1.32,
+        "flagged_pct_of_streets": 3.9,
+        "flagged_and_flooded_km": 1.32,
+        "hit_rate_pct": 4.9,
+        "precision_pct": 100.0,
+        "chance_precision_pct": 78.4,
+        "pieces_flagged": 52
+       },
+       "Catarroja": {
+        "street_km": 106.57,
+        "flooded_km": 80.72,
+        "flagged_km": 21.99,
+        "flagged_pct_of_streets": 20.6,
+        "flagged_and_flooded_km": 14.96,
+        "hit_rate_pct": 18.5,
+        "precision_pct": 68.0,
+        "chance_precision_pct": 75.7,
+        "pieces_flagged": 893
+       },
+       "Alfafar": {
+        "street_km": 115.54,
+        "flooded_km": 96.62,
+        "flagged_km": 68.77,
+        "flagged_pct_of_streets": 59.5,
+        "flagged_and_flooded_km": 64.53,
+        "hit_rate_pct": 66.8,
+        "precision_pct": 93.8,
+        "chance_precision_pct": 83.6,
+        "pieces_flagged": 2816
+       },
+       "Benetússer": {
+        "street_km": 21.53,
+        "flooded_km": 6.13,
+        "flagged_km": 3.28,
+        "flagged_pct_of_streets": 15.3,
+        "flagged_and_flooded_km": 1.57,
+        "hit_rate_pct": 25.7,
+        "precision_pct": 47.9,
+        "chance_precision_pct": 28.5,
+        "pieces_flagged": 137
+       },
+       "Picanya": {
+        "street_km": 101.24,
+        "flooded_km": 99.42,
+        "flagged_km": 4.21,
+        "flagged_pct_of_streets": 4.2,
+        "flagged_and_flooded_km": 4.16,
+        "hit_rate_pct": 4.2,
+        "precision_pct": 98.9,
+        "chance_precision_pct": 98.2,
+        "pieces_flagged": 174
+       },
+       "Aldaia": {
+        "street_km": 164.45,
+        "flooded_km": 100.43,
+        "flagged_km": 38.38,
+        "flagged_pct_of_streets": 23.3,
+        "flagged_and_flooded_km": 28.0,
+        "hit_rate_pct": 27.9,
+        "precision_pct": 72.9,
+        "chance_precision_pct": 61.1,
+        "pieces_flagged": 1560
+       },
+       "Chiva": {
+        "street_km": 172.23,
+        "flooded_km": 19.57,
+        "flagged_km": 6.29,
+        "flagged_pct_of_streets": 3.7,
+        "flagged_and_flooded_km": 3.88,
+        "hit_rate_pct": 19.8,
+        "precision_pct": 61.7,
+        "chance_precision_pct": 11.4,
+        "pieces_flagged": 251
+       },
+       "Torrent": {
+        "street_km": 147.65,
+        "flooded_km": 58.57,
+        "flagged_km": 14.25,
+        "flagged_pct_of_streets": 9.7,
+        "flagged_and_flooded_km": 9.09,
+        "hit_rate_pct": 15.5,
+        "precision_pct": 63.8,
+        "chance_precision_pct": 39.7,
+        "pieces_flagged": 575
+       }
+      }
      }
     },
     "equal_length": {
@@ -37655,6 +41284,131 @@
         "pieces_flagged": 303
        }
       }
+     },
+     "simulated_ifs_20241029T06_depth": {
+      "total": {
+       "street_km": 998.96,
+       "flooded_km": 612.65,
+       "flagged_km": 331.53,
+       "flagged_pct_of_streets": 33.2,
+       "flagged_and_flooded_km": 269.86,
+       "hit_rate_pct": 44.0,
+       "precision_pct": 81.4,
+       "chance_precision_pct": 61.3,
+       "pieces_flagged": 13446
+      },
+      "towns": {
+       "Paiporta": {
+        "street_km": 83.88,
+        "flooded_km": 83.02,
+        "flagged_km": 32.32,
+        "flagged_pct_of_streets": 38.5,
+        "flagged_and_flooded_km": 32.32,
+        "hit_rate_pct": 38.9,
+        "precision_pct": 100.0,
+        "chance_precision_pct": 99.0,
+        "pieces_flagged": 1298
+       },
+       "Massanassa": {
+        "street_km": 51.77,
+        "flooded_km": 41.43,
+        "flagged_km": 46.96,
+        "flagged_pct_of_streets": 90.7,
+        "flagged_and_flooded_km": 37.34,
+        "hit_rate_pct": 90.1,
+        "precision_pct": 79.5,
+        "chance_precision_pct": 80.0,
+        "pieces_flagged": 1898
+       },
+       "Sedaví": {
+        "street_km": 34.1,
+        "flooded_km": 26.73,
+        "flagged_km": 0.93,
+        "flagged_pct_of_streets": 2.7,
+        "flagged_and_flooded_km": 0.93,
+        "hit_rate_pct": 3.5,
+        "precision_pct": 100.0,
+        "chance_precision_pct": 78.4,
+        "pieces_flagged": 37
+       },
+       "Catarroja": {
+        "street_km": 106.57,
+        "flooded_km": 80.72,
+        "flagged_km": 87.04,
+        "flagged_pct_of_streets": 81.7,
+        "flagged_and_flooded_km": 64.83,
+        "hit_rate_pct": 80.3,
+        "precision_pct": 74.5,
+        "chance_precision_pct": 75.7,
+        "pieces_flagged": 3515
+       },
+       "Alfafar": {
+        "street_km": 115.54,
+        "flooded_km": 96.62,
+        "flagged_km": 84.03,
+        "flagged_pct_of_streets": 72.7,
+        "flagged_and_flooded_km": 77.5,
+        "hit_rate_pct": 80.2,
+        "precision_pct": 92.2,
+        "chance_precision_pct": 83.6,
+        "pieces_flagged": 3445
+       },
+       "Benetússer": {
+        "street_km": 21.53,
+        "flooded_km": 6.13,
+        "flagged_km": 6.15,
+        "flagged_pct_of_streets": 28.6,
+        "flagged_and_flooded_km": 2.54,
+        "hit_rate_pct": 41.5,
+        "precision_pct": 41.4,
+        "chance_precision_pct": 28.5,
+        "pieces_flagged": 254
+       },
+       "Picanya": {
+        "street_km": 101.24,
+        "flooded_km": 99.42,
+        "flagged_km": 2.94,
+        "flagged_pct_of_streets": 2.9,
+        "flagged_and_flooded_km": 2.9,
+        "hit_rate_pct": 2.9,
+        "precision_pct": 98.4,
+        "chance_precision_pct": 98.2,
+        "pieces_flagged": 122
+       },
+       "Aldaia": {
+        "street_km": 164.45,
+        "flooded_km": 100.43,
+        "flagged_km": 60.69,
+        "flagged_pct_of_streets": 36.9,
+        "flagged_and_flooded_km": 44.87,
+        "hit_rate_pct": 44.7,
+        "precision_pct": 73.9,
+        "chance_precision_pct": 61.1,
+        "pieces_flagged": 2455
+       },
+       "Chiva": {
+        "street_km": 172.23,
+        "flooded_km": 19.57,
+        "flagged_km": 3.16,
+        "flagged_pct_of_streets": 1.8,
+        "flagged_and_flooded_km": 2.18,
+        "hit_rate_pct": 11.2,
+        "precision_pct": 69.0,
+        "chance_precision_pct": 11.4,
+        "pieces_flagged": 126
+       },
+       "Torrent": {
+        "street_km": 147.65,
+        "flooded_km": 58.57,
+        "flagged_km": 7.31,
+        "flagged_pct_of_streets": 4.9,
+        "flagged_and_flooded_km": 4.43,
+        "hit_rate_pct": 7.6,
+        "precision_pct": 60.7,
+        "chance_precision_pct": 39.7,
+        "pieces_flagged": 296
+       }
+      }
      }
     }
    }
@@ -37855,7 +41609,7 @@
    },
    "pixel_layers": "rebuilt 15 Nov 2026 from the PR #39 sources: data/interim/streets/terrain, the simulation folders of pipeline.streets.SIM_RUNS, pipeline.zones downloads"
   },
-  "seconds": 53.0,
+  "seconds": 54.8,
   "rebuilt_layers": {
    "terrain": false,
    "simulated_pr39": true
