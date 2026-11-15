@@ -4,11 +4,14 @@
  "help": "a score from 0 to 1 that rewards finding the flood without false alarms",
  "model_rain_fell": 0.417,
  "model_forecast": 0.396,
- "simple_rules": [0.244, 0.288],
+ "simple_rules": [
+  0.244,
+  0.288
+ ],
  "simple_rules_are": "low terrain (HAND, same area as the model) 0.244, past water (JRC above 0) 0.288, NISAR water of 16 Oct kept as it was 0.273",
  "passed": true,
  "rule": "model F1 above each of the three simple rules (fixed before any score was looked at)",
  "next_exam": "Next exam: every NISAR pass, every 12 days.",
  "by": "Independent test by L. Georgieski, not the model's author, against Copernicus EMSR935 (Pego-Oliva marsh, imagery 20 to 21 Oct 2026)",
- "source": "data/validation/emsr935/result.json on branch claude/paper-0808b2 (commit e0bf136), sets.all_pixels.references.flooded_area.scores: model, model_forecast_rain, low_hand_same_area, jrc_past_water, nisar_16oct_persistence"
+ "source": "data/validation/emsr935/result.json on branch claude/paper-0808b2 (commit e0bf136), sets.all_pixels.references.flooded_area.scores"
 }
