@@ -939,7 +939,7 @@ def score(zones_dir: Path, zones_json: Path | None = None) -> dict:
     path = STREETS_DIR / "results.json"
     if path.exists():  # keep what the depth and marks steps wrote
         old = json.loads(path.read_text(encoding="utf-8"))
-        for key in ("flood_depth", "water_marks_layer"):
+        for key in ("flood_depth", "water_marks_layer", "streets"):
             if key in old:
                 out[key] = old[key]
     path.write_text(json.dumps(out, indent=1, ensure_ascii=False), encoding="utf-8")

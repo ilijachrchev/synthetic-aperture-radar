@@ -203,8 +203,9 @@ def upv_tiles(towns_union, outline, extent) -> list[tuple[float, float, float, f
     return tiles
 
 
-def pick_cell_centres(tile_bytes: bytes, out: np.ndarray, tile: tuple[float, float, float, float]) -> int:
-    """Write into `out` (the 5 m analysis grid) the native 0.5 m pixel holding each cell centre of the tile.
+def pick_cell_centres(tile_bytes: bytes, out: np.ndarray, tile: tuple[float, float, float, float],
+                      bounds: tuple[float, float, float, float] = GRID_BOUNDS) -> int:
+    """Write into `out` (a 5 m grid with these bounds) the native pixel holding each cell centre of the tile.
 
     No value (NaN or the coverage's nodata) is written as NaN. Returns the number of cells written.
     """
@@ -217,7 +218,7 @@ def pick_cell_centres(tile_bytes: bytes, out: np.ndarray, tile: tuple[float, flo
     if nod is not None:
         a[a == np.float32(nod)] = np.nan
     a[~np.isfinite(a) | (a < -1e30)] = np.nan
-    gw, gs, ge, gn = GRID_BOUNDS
+    gw, gs, ge, gn = bounds
     x0, y0, x1, y1 = tile
     cols = np.arange(int(round((x0 - gw) / CELL_M)), int(round((x1 - gw) / CELL_M)))
     rows = np.arange(int(round((gn - y1) / CELL_M)), int(round((gn - y0) / CELL_M)))
@@ -309,6 +310,599 @@ def fetch(manifest: dict, zones_dir: Path, what: str = "all") -> None:
         fetch_osm(manifest, zones_dir)
 
 
+# ---------------------------------------------------------------- streets into pieces
+
+PIECE_M = 25.0          # pieces of about 25 m
+SAMPLE_M = 2.5          # sample points at most 2.5 m apart
+MARK_RADIUS_M = 10.0    # key A: a surveyed water mark above 0 m within 10 m
+UPV_DEPTH_M = 0.1       # key B: UPV depth above 0.1 m
+SIM_EXTENT_M = 0.3      # the SIMULATED run's own extent: maximum depth above 0.3 m
+MAJORITY = 0.5          # a piece is in a layer when at least half of its sample points are
+
+ROADS = ("motorway", "motorway_link", "trunk", "trunk_link", "primary", "primary_link", "secondary",
+         "secondary_link", "tertiary", "tertiary_link", "unclassified", "residential", "living_street", "service",
+         "road", "busway")
+PEDESTRIAN = ("pedestrian", "footway", "path", "steps", "cycleway")
+TRACKS = ("track",)
+DUPLICATE_WAYS = ("footway", "path", "cycleway")   # drawn as their own way beside or across a street ...
+DUPLICATE_VALUES = ("sidewalk", "crossing")        # ... when tagged as a sidewalk or a crossing
+
+
+def way_reason(tags: dict, tracks: bool = False) -> str:
+    """'kept', or why an OSM way is left out of the streets (the rules of docs/STREETS.md)."""
+    hw = tags.get("highway")
+    if hw not in ROADS + PEDESTRIAN + (TRACKS if tracks else ()):
+        return "track" if hw in TRACKS else "other highway value"
+    if tags.get("area") == "yes":
+        return "area"
+    if tags.get("tunnel", "no") != "no":
+        return "tunnel"
+    if hw in DUPLICATE_WAYS and any(tags.get(k) in DUPLICATE_VALUES for k in DUPLICATE_WAYS):
+        return "sidewalk or crossing"
+    return "kept"
+
+
+def load_ways(tracks: bool = False) -> dict:
+    """The kept OSM ways of the 10 town boxes, each once, as one array of vertices (EPSG:25830).
+
+    Returns ids, highway values, vertex coordinates (consecutive duplicates removed), the index of
+    each way's first vertex and vertex count, and the counts of ways left out by reason.
+    """
+    from collections import Counter
+
+    from pyproj import Transformer
+
+    seen: dict[int, tuple[str, list]] = {}
+    reasons: Counter = Counter()
+    read = set()
+    for path in sorted(OSM_DIR.glob("highways_*.json")):
+        doc = json.loads(path.read_text(encoding="utf-8"))
+        for el in doc.get("elements", []):
+            if el.get("type") != "way" or el["id"] in read:
+                continue
+            read.add(el["id"])
+            tags = el.get("tags", {})
+            why = way_reason(tags, tracks)
+            pts = [(p["lon"], p["lat"]) for p in (el.get("geometry") or []) if p]
+            if why == "kept" and len(pts) < 2:
+                why = "no geometry"
+            reasons[why] += 1
+            if why == "kept":
+                seen[el["id"]] = (tags["highway"], pts)
+    ids = np.array(sorted(seen), dtype=np.int64)
+    lonlat = np.array([p for i in ids for p in seen[i][1]], dtype=np.float64)
+    nv = np.array([len(seen[i][1]) for i in ids], dtype=np.int64)
+    x, y = Transformer.from_crs("EPSG:4326", CRS, always_xy=True).transform(lonlat[:, 0], lonlat[:, 1])
+    xy = np.column_stack([x, y])
+    way_of_vertex = np.repeat(np.arange(ids.size), nv)
+    # drop a vertex equal to the one before it in the same way (zero-length segments)
+    dup = np.zeros(len(xy), dtype=bool)
+    dup[1:] = (way_of_vertex[1:] == way_of_vertex[:-1]) & np.all(xy[1:] == xy[:-1], axis=1)
+    xy, way_of_vertex = xy[~dup], way_of_vertex[~dup]
+    nv = np.bincount(way_of_vertex, minlength=ids.size)
+    keep = nv >= 2
+    if not keep.all():
+        reasons["no geometry"] += int((~keep).sum())
+        reasons["kept"] -= int((~keep).sum())
+        good = keep[way_of_vertex]
+        xy, way_of_vertex = xy[good], way_of_vertex[good]
+        remap = np.cumsum(keep) - 1
+        way_of_vertex = remap[way_of_vertex]
+        ids, nv = ids[keep], nv[keep]
+    return {"ids": ids, "highway": np.array([seen[i][0] for i in ids]), "xy": xy, "nv": nv,
+            "first": np.cumsum(nv) - nv, "reasons": dict(reasons), "ways_read": len(read)}
+
+
+def way_measures(xy: np.ndarray, nv: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    """Distance of every vertex from its way's start, and each way's length."""
+    way_of_vertex = np.repeat(np.arange(nv.size), nv)
+    seg = np.zeros(len(xy))
+    seg[1:] = np.hypot(*(xy[1:] - xy[:-1]).T)
+    first = np.cumsum(nv) - nv
+    seg[first] = 0.0
+    cum = np.cumsum(seg)
+    cum -= np.repeat(cum[first], nv)
+    length = cum[first + nv - 1]
+    return cum, length
+
+
+def pieces_of(length: np.ndarray, piece_m: float = PIECE_M) -> dict:
+    """Each way cut into n equal pieces, n = length / piece_m rounded (halves up), at least 1."""
+    n = np.maximum(1, np.floor(length / piece_m + 0.5)).astype(np.int64)
+    way = np.repeat(np.arange(length.size), n)
+    k = np.arange(n.sum()) - np.repeat(np.cumsum(n) - n, n)
+    plen = length[way] / n[way]
+    return {"way": way, "k": k, "start": k * plen, "length": plen}
+
+
+def samples_of(piece_len: np.ndarray, sample_m: float = SAMPLE_M) -> tuple[np.ndarray, np.ndarray]:
+    """Sample points of each piece: m = ceil(length / sample_m), at the centres of m equal parts.
+
+    Returns the piece of each sample and its distance from the piece's start.
+    """
+    m = np.maximum(1, np.ceil(np.round(piece_len / sample_m, 9))).astype(np.int64)
+    piece = np.repeat(np.arange(piece_len.size), m)
+    i = np.arange(m.sum()) - np.repeat(np.cumsum(m) - m, m)
+    return piece, (i + 0.5) * piece_len[piece] / m[piece]
+
+
+def interpolate(xy: np.ndarray, nv: np.ndarray, cum: np.ndarray, length: np.ndarray, way: np.ndarray,
+                dist: np.ndarray) -> np.ndarray:
+    """Points at distance `dist` along way `way` (vectorised; distances clipped to the way)."""
+    first = np.cumsum(nv) - nv
+    span = float(length.max()) + 1.0
+    key = cum + np.repeat(np.arange(nv.size), nv) * span
+    d = np.clip(dist, 0.0, length[way])
+    j = np.searchsorted(key, way * span + d, side="right") - 1
+    j = np.clip(j, first[way], first[way] + nv[way] - 2)
+    seg = cum[j + 1] - cum[j]
+    t = np.where(seg > 0, (d - cum[j]) / np.where(seg > 0, seg, 1.0), 0.0)
+    return xy[j] + t[:, None] * (xy[j + 1] - xy[j])
+
+
+def piece_lines(xy: np.ndarray, nv: np.ndarray, cum: np.ndarray, length: np.ndarray, pieces: dict):
+    """Exact piece geometries: start point, the way's vertices strictly inside, end point."""
+    import shapely
+
+    way, start, plen = pieces["way"], pieces["start"], pieces["length"]
+    end = start + plen
+    first = np.cumsum(nv) - nv
+    span = float(length.max()) + 1.0
+    key = cum + np.repeat(np.arange(nv.size), nv) * span
+    lo = np.searchsorted(key, way * span + start, side="right")
+    hi = np.searchsorted(key, way * span + end, side="left")
+    lo = np.maximum(lo, first[way])
+    hi = np.minimum(np.maximum(hi, lo), first[way] + nv[way])
+    inner = hi - lo
+    count = inner + 2
+    owner = np.repeat(np.arange(way.size), count)
+    pos = np.arange(count.sum()) - np.repeat(np.cumsum(count) - count, count)
+    coords = np.empty((count.sum(), 2))
+    is_start = pos == 0
+    is_end = pos == count[owner] - 1
+    mid = ~(is_start | is_end)
+    coords[is_start] = interpolate(xy, nv, cum, length, way, start)
+    coords[is_end] = interpolate(xy, nv, cum, length, way, end)
+    coords[mid] = xy[(lo[owner] + pos - 1)[mid]]
+    return shapely.linestrings(coords, indices=owner)
+
+
+def near_points(lines, x: np.ndarray, y: np.ndarray, radius: float = MARK_RADIUS_M) -> np.ndarray:
+    """Pieces whose line lies within `radius` of any of the points (planar distance)."""
+    import shapely
+
+    out = np.zeros(len(lines), dtype=bool)
+    if x.size == 0:
+        return out
+    tree = shapely.STRtree(lines)
+    pairs = tree.query(shapely.points(x, y), predicate="dwithin", distance=radius)
+    out[np.unique(pairs[1])] = True
+    return out
+
+
+def share_in(layer_at_sample: np.ndarray, piece: np.ndarray, n: int) -> np.ndarray:
+    """Per piece, the share of its (effective) sample points that lie in the layer."""
+    total = np.bincount(piece, minlength=n)
+    hit = np.bincount(piece, weights=layer_at_sample.astype(np.float64), minlength=n)
+    return np.divide(hit, total, out=np.zeros(n), where=total > 0)
+
+
+def group_median(values: np.ndarray, piece: np.ndarray, n: int) -> np.ndarray:
+    """Per piece, the median of its sample values, NaN ignored (NaN when it has none)."""
+    import pandas as pd
+
+    med = pd.Series(values.astype(np.float64)).groupby(piece).median()
+    out = np.full(n, np.nan)
+    out[med.index.to_numpy()] = med.to_numpy()
+    return out
+
+
+def cut_to_length(score: np.ndarray, length: np.ndarray, budget: float) -> np.ndarray:
+    """Pieces taken lowest score first (NaN last; ties by index) until their length first reaches budget."""
+    sel = np.zeros(score.size, dtype=bool)
+    if budget <= 0 or score.size == 0:
+        return sel
+    s = np.where(np.isfinite(score), score, np.inf)
+    order = np.lexsort((np.arange(s.size), s))
+    csum = np.cumsum(length[order])
+    k = int(np.searchsorted(csum, budget * (1 - 1e-12), side="left")) + 1
+    sel[order[:min(k, order.size)]] = True
+    return sel
+
+
+# ---------------------------------------------------------------- scoring
+
+
+def _km(m: float) -> float:
+    return round(float(m) / 1000.0, 2)
+
+
+def street_metrics(flag: np.ndarray, flood: np.ndarray, length: np.ndarray, domain: np.ndarray | None = None) -> dict:
+    """Street length flagged, hit rate and precision of one selection against one key."""
+    from pipeline.streets import pct
+
+    d = np.ones(flag.size, dtype=bool) if domain is None else domain
+    total = float(length[d].sum())
+    fl = float(length[d & flood].sum())
+    fg = float(length[d & flag].sum())
+    hit = float(length[d & flag & flood].sum())
+    return {"street_km": _km(total), "flooded_km": _km(fl), "flagged_km": _km(fg),
+            "flagged_pct_of_streets": pct(fg, total), "flagged_and_flooded_km": _km(hit),
+            "hit_rate_pct": pct(hit, fl), "precision_pct": pct(hit, fg), "chance_precision_pct": pct(fl, total),
+            "pieces_flagged": int((d & flag).sum())}
+
+
+def by_town(flag, flood, length, town, domain=None) -> dict:
+    d = np.ones(flag.size, dtype=bool) if domain is None else domain
+    out = {"total": street_metrics(flag, flood, length, d), "towns": {}}
+    for i, t in enumerate(TOWNS):
+        out["towns"][t] = street_metrics(flag, flood, length, d & (town == i + 1))
+    return out
+
+
+def pixel_layers(zones_dir: Path, sample_cells: np.ndarray) -> dict:
+    """The layers of PR #39 read at the given 5 m cells, built one at a time to keep memory low.
+
+    Returns, per cell: scored, town, observed flood, the four official zone layers, bare HAND,
+    the PR #39 equal-area cuts (terrain, SIMULATED), the SIMULATED maximum depth and the UPV depth;
+    plus checks of the equal-area cuts against results.json.
+    """
+    import gc
+
+    from pipeline import streets as st
+
+    cells = np.where(sample_cells >= 0, sample_cells, 0)
+    on_grid = sample_cells >= 0
+    out: dict = {}
+    towns = st.load_towns(zones_dir)
+    tid = st.town_grid(towns).ravel()
+    valid = (st.load_grid("dtm5") != st.DTM_NODATA).ravel()
+    water = st.load_grid("water5").astype(bool).ravel()
+    products = st.ems_products(zones_dir)
+    analysed = np.logical_or.reduce([p["analysed"] for p in products]).ravel()
+    fa = np.logical_or.reduce([p["flooded_area"] for p in products]).ravel()
+    ft = np.logical_or.reduce([p["flood_trace"] for p in products]).ravel()
+    del products
+    gc.collect()
+    scored = (tid > 0) & analysed & ~water & valid
+    del analysed, water, valid
+    observed = fa | ft
+    del fa, ft
+    gc.collect()
+    out["scored"] = scored[cells] & on_grid
+    out["town"] = np.where(on_grid, tid[cells], 0)
+    out["observed"] = observed[cells] & on_grid
+    idx = np.flatnonzero(scored)
+    town_s = tid[idx]
+    obs_s = observed[idx]
+    del scored, observed
+    gc.collect()
+    # position of each sample cell among the scored pixels (-1 if not scored)
+    spos = np.searchsorted(idx, cells)
+    spos = np.where((spos < idx.size) & (idx[np.minimum(spos, idx.size - 1)] == cells) & on_grid, spos, -1)
+    zones = st.zone_grids(zones_dir)
+    for z in st.ZONE_NAMES:
+        out[f"zone_{z}"] = zones[z].ravel()[cells] & on_grid
+    union_s = zones["union"].ravel()[idx]
+    del zones
+    gc.collect()
+    town_pos = {t: np.flatnonzero(town_s == i + 1) for i, t in enumerate(TOWNS)}
+    k_town = {t: int(union_s[p].sum()) for t, p in town_pos.items()}
+
+    hand = st.load_grid("hand_bare_d0p5km2").ravel()
+    out["hand"] = np.where(on_grid, hand[cells], np.nan).astype(np.float32)
+    hand_s = hand[idx]
+    del hand
+    gc.collect()
+    upa_s = st.load_grid("upa_bare").ravel()[idx]
+    gc.collect()
+
+    def cut(score_s: np.ndarray) -> np.ndarray:
+        sel = np.zeros(idx.size, dtype=bool)
+        for t, p in town_pos.items():
+            sel[st.ranked(score_s, upa_s, p)[:k_town[t]]] = True
+        return sel
+
+    eq_terrain = cut(hand_s)
+    out["terrain_equal_area"] = np.where(spos >= 0, eq_terrain[np.maximum(spos, 0)], False)
+    del hand_s
+    hm = st.load_grid("sim_hmax_25m", folder=INTERIM_DIR / "simulation")
+    f = int(st.SIM_CELL_M // CELL_M)
+    cols = grid_shape()[1]
+
+    def sim_at(flat: np.ndarray) -> np.ndarray:
+        r, c = np.divmod(flat, cols)
+        return hm[r // f, c // f]
+
+    out["sim_depth"] = np.where(on_grid, sim_at(cells), np.nan).astype(np.float32)
+    eq_sim = cut(-sim_at(idx).astype(np.float64))
+    out["sim_equal_area"] = np.where(spos >= 0, eq_sim[np.maximum(spos, 0)], False)
+    # checks: the rebuilt cuts against the land flooded per town in results.json (PR #39)
+    from pipeline.streets import pct
+
+    res = json.loads((STREETS_DIR / "results.json").read_text(encoding="utf-8"))["methods"]
+    check = {}
+    for name, sel in (("terrain_bare_equal_area_union", eq_terrain), ("simulated_rain_equal_area_union", eq_sim)):
+        rows = {}
+        for t, p in town_pos.items():
+            mine = pct(int((sel[p] & obs_s[p]).sum()), int(sel[p].sum()))
+            theirs = res[name]["towns"][t]["own_area_flooded_pct"]
+            rows[t] = {"cells": int(sel[p].sum()), "own_land_flooded_pct": mine, "results_json": theirs,
+                       "same": mine == theirs and round(int(sel[p].sum()) * 25 / 1e4, 1) == res[name]["towns"][t]["area_ha"]}
+        check[name] = {"all_same": all(r["same"] for r in rows.values()), "towns": rows}
+    out["checks_equal_area"] = check
+    del eq_terrain, eq_sim, upa_s, hm
+    gc.collect()
+    upv = load_grid_upv()
+    out["upv_depth"] = np.where(on_grid, upv[cells], np.nan).astype(np.float32)
+    del upv
+    gc.collect()
+    return out
+
+
+def load_grid_upv() -> np.ndarray:
+    from pipeline.streets import load_grid
+
+    return load_grid("upv_depth5", folder=UPV_DIR).ravel()
+
+
+def build_pieces(tracks: bool = False) -> dict:
+    """Ways, pieces, effective sample points (cells) and piece lines."""
+    ways = load_ways(tracks)
+    cum, length = way_measures(ways["xy"], ways["nv"])
+    pcs = pieces_of(length)
+    s_piece, s_off = samples_of(pcs["length"])
+    s_xy = interpolate(ways["xy"], ways["nv"], cum, length, pcs["way"][s_piece], pcs["start"][s_piece] + s_off)
+    m_xy = interpolate(ways["xy"], ways["nv"], cum, length, pcs["way"], pcs["start"] + pcs["length"] / 2)
+    lines = piece_lines(ways["xy"], ways["nv"], cum, length, pcs)
+    return {"ways": ways, "way_length": length, "pieces": pcs, "s_piece": s_piece, "s_xy": s_xy, "m_xy": m_xy,
+            "lines": lines}
+
+
+def evaluate(b: dict, lay: dict, marks_xy: np.ndarray, outline) -> dict:
+    """Keys, method flags, rankings and metrics for one set of pieces (b) with its layers (lay).
+
+    lay holds the layer values at the pieces' sample cells followed by their midpoint cells.
+    """
+    import shapely
+
+    from pipeline.streets import HAND_NATIVE_M
+
+    pcs = b["pieces"]
+    n_all = pcs["length"].size
+    ns = b["s_piece"].size
+    s_scored = lay["scored"][:ns]
+    m_scored = lay["scored"][ns:]
+    m_town = lay["town"][ns:]
+    keep = m_scored & (m_town > 0)                     # scored pieces: midpoint on a scored pixel
+    # effective samples: those on scored pixels; a scored piece without any takes its midpoint
+    has = np.bincount(b["s_piece"][s_scored], minlength=n_all) > 0
+    fallback = np.flatnonzero(keep & ~has)
+    e_rows = np.concatenate([np.flatnonzero(s_scored & keep[b["s_piece"]]), ns + fallback])
+    e_piece = np.concatenate([b["s_piece"][s_scored & keep[b["s_piece"]]], fallback])
+    remap = np.full(n_all, -1, dtype=np.int64)
+    remap[keep] = np.arange(int(keep.sum()))
+    e_piece = remap[e_piece]
+    n = int(keep.sum())
+    length = pcs["length"][keep]
+    town = m_town[keep]
+    hw = b["ways"]["highway"][pcs["way"][keep]]
+
+    def frac(name: str, test=None) -> np.ndarray:
+        v = lay[name][e_rows]
+        return share_in(v if test is None else test(v), e_piece, n)
+
+    in_obs = frac("observed") >= MAJORITY
+    near = near_points(b["lines"][keep], marks_xy[:, 0], marks_xy[:, 1])
+    key_a = in_obs | near
+    mxy = b["m_xy"][keep]
+    shapely.prepare(outline)
+    dom_b = shapely.contains_xy(outline, mxy[:, 0], mxy[:, 1])
+    upv_v = lay["upv_depth"][e_rows]
+    key_b = (share_in(np.where(np.isfinite(upv_v), upv_v, 0.0) > UPV_DEPTH_M, e_piece, n) >= MAJORITY) & dom_b
+
+    flags = {f"official_{z}": frac(f"zone_{z}") >= MAJORITY for z in ("T10", "T100", "T500", "union")}
+    flags["terrain_hand_below_15m"] = frac("hand", lambda v: np.isfinite(v) & (v < HAND_NATIVE_M)) >= MAJORITY
+    flags["terrain_equal_area_union"] = frac("terrain_equal_area") >= MAJORITY
+    flags["simulated_depth_above_0p3m"] = frac("sim_depth", lambda v: np.isfinite(v) & (v > SIM_EXTENT_M)) >= MAJORITY
+    flags["simulated_equal_area_union"] = frac("sim_equal_area") >= MAJORITY
+    hand_med = group_median(lay["hand"][e_rows], e_piece, n)
+    sim_med = group_median(lay["sim_depth"][e_rows], e_piece, n)
+
+    keys = {"A": (key_a, None), "B": (key_b, dom_b)}
+    methods = {}
+    for name, fl in flags.items():
+        methods[name] = {k: by_town(fl, kv, length, town, dom) for k, (kv, dom) in keys.items()}
+    # equal street length: each ranking cut, town by town, to the official zones' street length
+    official = flags["official_union"]
+    rankings = {"terrain_hand": hand_med, "simulated_depth": -sim_med}
+    eq_sel = {r: np.zeros(n, dtype=bool) for r in rankings}
+    budget = {}
+    for i, t in enumerate(TOWNS):
+        p = np.flatnonzero(town == i + 1)
+        budget[t] = float(length[p][official[p]].sum())
+        for r, score in rankings.items():
+            eq_sel[r][p[cut_to_length(score[p], length[p], budget[t])]] = True
+    equal = {"official_union": {k: by_town(official, kv, length, town, dom) for k, (kv, dom) in keys.items()}}
+    for r, sel in eq_sel.items():
+        equal[r] = {k: by_town(sel, kv, length, town, dom) for k, (kv, dom) in keys.items()}
+    town_km = {t: _km(length[town == i + 1].sum()) for i, t in enumerate(TOWNS)}
+    summary = {
+        "pieces": n, "street_km": _km(length.sum()), "street_km_by_town": town_km,
+        "street_km_by_highway": {h: _km(length[hw == h].sum()) for h in sorted(set(hw))},
+        "pieces_by_town": {t: int((town == i + 1).sum()) for i, t in enumerate(TOWNS)},
+        "piece_length_m": {"median": round(float(np.median(length)), 1), "p05": round(float(np.percentile(length, 5)), 1),
+                           "p95": round(float(np.percentile(length, 95)), 1)},
+        "pieces_on_the_midpoint_only": int(fallback.size),
+        "key_a": {"flooded_km": _km(length[key_a].sum()), "in_observed_flood_km": _km(length[in_obs].sum()),
+                  "near_a_mark_km": _km(length[near].sum()), "both_km": _km(length[in_obs & near].sum()),
+                  "flooded_km_by_town": {t: _km(length[key_a & (town == i + 1)].sum()) for i, t in enumerate(TOWNS)}},
+        "key_b": {"inside_outlines_km": _km(length[dom_b].sum()), "flooded_km": _km(length[key_b].sum()),
+                  "inside_outlines_km_by_town": {t: _km(length[dom_b & (town == i + 1)].sum()) for i, t in enumerate(TOWNS)},
+                  "flooded_km_by_town": {t: _km(length[key_b & (town == i + 1)].sum()) for i, t in enumerate(TOWNS)},
+                  "key_a_flooded_km_inside_outlines": _km(length[key_a & dom_b].sum()),
+                  "agreement_inside_outlines_pct": round(100.0 * float(length[dom_b & (key_a == key_b)].sum())
+                                                         / max(float(length[dom_b].sum()), 1e-9), 1)},
+        "equal_length_budget_km": {t: _km(v) for t, v in budget.items()},
+    }
+    sens = {
+        "key_a_emsr773_only": {r: by_town(sel, in_obs, length, town) for r, sel in
+                               {"official_union": official, **eq_sel}.items()},
+        "key_a_marks_only": {r: by_town(sel, near, length, town) for r, sel in
+                             {"official_union": official, **eq_sel}.items()},
+    }
+    return {"summary": summary, "methods": methods, "equal_length": equal, "key_sensitivity": sens}
+
+
+METHOD_WHAT = {
+    "official_T10": "Official zones (SNCZI), T10 as mapped",
+    "official_T100": "Official zones (SNCZI), T100 as mapped",
+    "official_T500": "Official zones (SNCZI), T500 as mapped",
+    "official_union": "Official zones (SNCZI), any zone (union of T10, T100 and T500)",
+    "terrain_hand_below_15m": "Terrain: HAND below 15 m (PR #39 method 2, bare terrain, drainage above 0.5 km2)",
+    "terrain_equal_area_union": "Terrain: PR #39 equal-area cut (lowest HAND pixels of each town, as many as its "
+                                "pixels in any official zone)",
+    "simulated_depth_above_0p3m": "SIMULATED rain on terrain (PR #39): its own extent, maximum depth above 0.3 m",
+    "simulated_equal_area_union": "SIMULATED rain on terrain (PR #39): equal-area cut (deepest pixels of each town, "
+                                  "as many as its pixels in any official zone)",
+}
+
+
+def score(zones_dir: Path) -> dict:
+    """Pieces, keys, methods and metrics (with and without tracks); written into results.json → streets."""
+    import gc
+
+    from pipeline import streets as st
+    from pipeline.streets import cells_of_points
+
+    t0 = time.time()
+    main_b = build_pieces(tracks=False)
+    track_b = build_pieces(tracks=True)
+    print(f"pieces: {main_b['pieces']['length'].size} (with tracks {track_b['pieces']['length'].size}), "
+          f"{time.time() - t0:.0f} s", flush=True)
+    # one lookup for both piece sets: sample cells then midpoint cells, main first
+    parts = []
+    for b in (main_b, track_b):
+        parts += [cells_of_points(b["s_xy"][:, 0], b["s_xy"][:, 1]), cells_of_points(b["m_xy"][:, 0], b["m_xy"][:, 1])]
+    sizes = [p.size for p in parts]
+    lay_all = pixel_layers(zones_dir, np.concatenate(parts))
+    print(f"layers read, {time.time() - t0:.0f} s", flush=True)
+    bounds = np.cumsum([0, *sizes])
+    marks = st.water_marks_all()
+    marks = marks[marks["height_m"] > 0]
+    marks_xy = marks[["x", "y"]].to_numpy()
+    outline = load_upv_outline()
+    results = {}
+    for j, (label, b) in enumerate((("main", main_b), ("with_tracks", track_b))):
+        lo, hi = bounds[2 * j], bounds[2 * j + 2]
+        lay = {k: v[lo:hi] for k, v in lay_all.items() if isinstance(v, np.ndarray)}
+        results[label] = evaluate(b, lay, marks_xy, outline)
+        results[label]["summary"]["ways"] = {"read": b["ways"]["ways_read"], "by_reason": b["ways"]["reasons"]}
+        print(f"{label}: {results[label]['summary']['pieces']} scored pieces, "
+              f"{results[label]['summary']['street_km']} km, {time.time() - t0:.0f} s", flush=True)
+        gc.collect()
+    # check for key B: what the UPV map holds at the surveyed marks (0 m: dry spots; above 0 m)
+    allm = st.water_marks_all()
+    mc = cells_of_points(allm["x"].to_numpy(), allm["y"].to_numpy())
+    upv = load_grid_upv()
+    import shapely
+
+    shapely.prepare(outline)
+    inside = shapely.contains_xy(outline, allm["x"].to_numpy(), allm["y"].to_numpy()) & (mc >= 0)
+    v = np.where(mc >= 0, upv[np.maximum(mc, 0)], np.nan)
+    del upv
+    h = allm["height_m"].to_numpy()
+    upv_check = {}
+    for label, sel in (("marks_0m", inside & (h == 0)), ("marks_above_0m", inside & (h > 0)),
+                       ("marks_above_0p1m", inside & (h > UPV_DEPTH_M))):
+        vv = v[sel]
+        upv_check[label] = {"marks_inside_outlines": int(sel.sum()),
+                            "with_a_value_pct": st.pct(int(np.isfinite(vv).sum()), vv.size),
+                            "depth_above_0p1m_pct": st.pct(int((np.nan_to_num(vv) > UPV_DEPTH_M).sum()), vv.size)}
+    both = inside & (h > 0) & np.isfinite(v)
+    if both.any():
+        err = v[both] - h[both]
+        upv_check["marks_above_0m_with_a_value"] = {
+            "n": int(both.sum()), "median_mark_m": round(float(np.median(h[both])), 2),
+            "median_map_m": round(float(np.median(v[both])), 2), "mean_abs_diff_m": round(float(np.mean(np.abs(err))), 2),
+            "median_abs_diff_m": round(float(np.median(np.abs(err))), 2),
+            "corr": round(float(np.corrcoef(v[both], h[both])[0, 1]), 2)}
+    manifest = load_manifest()
+    out = {
+        "title": "Street by street: which method pointed to the streets that flooded, DANA of 29 Oct 2024, "
+                 "10 towns of L'Horta Sud and Chiva",
+        "note": SI_LINE, "created_utc": _now(),
+        "rules": "docs/STREETS.md, section 'Street by street' (committed before any street score: commit 6e9bd5c)",
+        "what": {"methods": METHOD_WHAT,
+                 "key_A": "flooded: in the EMSR773 observed flood (majority of sample points) or within 10 m of a "
+                          "surveyed water mark above 0 m (ICV)",
+                 "key_B": "flooded: UPV maximum depth above 0.1 m (majority of sample points); only on pieces "
+                          "whose midpoint lies inside the UPV outlines",
+                 "equal_length": "each ranking cut, town by town, to the street length the official zones (any "
+                                 "zone) flag; terrain: median HAND lowest first; SIMULATED: median maximum depth "
+                                 "deepest first",
+                 "hit_rate_pct": "share of the flooded street length flagged",
+                 "precision_pct": "share of the flagged street length that flooded",
+                 "chance": "a random choice of the same length: hit rate = flagged_pct_of_streets, precision = "
+                           "chance_precision_pct"},
+        "main": results["main"],
+        "with_tracks": results["with_tracks"],
+        "checks": {"equal_area_cuts_rebuilt": lay_all["checks_equal_area"], "upv_at_marks": upv_check},
+        "inputs": {
+            "osm": {k: v for k, v in manifest.items() if k.startswith("osm_highways_")},
+            "upv": {k: v for k, v in manifest.items() if k.startswith("upv_")},
+            "pixel_layers": "PR #39 rasters in data/interim/streets/terrain and simulation, pipeline.zones downloads",
+        },
+        "seconds": round(time.time() - t0, 1),
+    }
+    path = STREETS_DIR / "results.json"
+    res = json.loads(path.read_text(encoding="utf-8"))
+    res["streets"] = out
+    path.write_text(json.dumps(res, indent=1, ensure_ascii=False), encoding="utf-8")
+    print(f"wrote {path} ({time.time() - t0:.0f} s)")
+    return out
+
+
+# ---------------------------------------------------------------- report
+
+
+def _p(v) -> str:
+    return "n/a" if v is None else f"{v:.1f} %"
+
+
+def report() -> str:
+    s = json.loads((STREETS_DIR / "results.json").read_text(encoding="utf-8"))["streets"]
+    m = s["main"]
+    lines = []
+    for key, title in (("A", "Key A (EMSR773 observed flood or a water mark within 10 m)"),
+                       ("B", "Key B (UPV depth above 0.1 m, inside the UPV outlines)")):
+        lines += [f"Equal street length, {title}:", "",
+                  "| Town | Streets (km) | Flooded (km) | Official length (km) | Hit rate: zones | Hit rate: terrain | "
+                  "Hit rate: simulated | Precision: zones | Precision: terrain | Precision: simulated | Chance precision |",
+                  "|---|---|---|---|---|---|---|---|---|---|---|"]
+        for t in [*TOWNS, "total"]:
+            row = [m["equal_length"][r][key]["total" if t == "total" else "towns"] for r in
+                   ("official_union", "terrain_hand", "simulated_depth")]
+            row = [r if t == "total" else r[t] for r in row]
+            o, te, si = row
+            lines.append(f"| {'**Total**' if t == 'total' else t} | {o['street_km']:.1f} | {o['flooded_km']:.1f} | "
+                         f"{o['flagged_km']:.1f} | {_p(o['hit_rate_pct'])} | {_p(te['hit_rate_pct'])} | "
+                         f"{_p(si['hit_rate_pct'])} | {_p(o['precision_pct'])} | {_p(te['precision_pct'])} | "
+                         f"{_p(si['precision_pct'])} | {_p(o['chance_precision_pct'])} |")
+        lines.append("")
+    lines += ["Every method at its own length, the 10 towns together:", "",
+              "| Method | Flagged (km) | Share of streets | Key A hit rate | Key A precision | Key B flagged (km) | "
+              "Key B hit rate | Key B precision |", "|---|---|---|---|---|---|---|---|"]
+    for name, blk in m["methods"].items():
+        a, b = blk["A"]["total"], blk["B"]["total"]
+        lines.append(f"| `{name}` | {a['flagged_km']:.1f} | {_p(a['flagged_pct_of_streets'])} | {_p(a['hit_rate_pct'])} | "
+                     f"{_p(a['precision_pct'])} | {b['flagged_km']:.1f} | {_p(b['hit_rate_pct'])} | "
+                     f"{_p(b['precision_pct'])} |")
+    text = "\n".join(lines)
+    print(text)
+    return text
+
+
 STEPS = ("fetch", "fetch-osm", "fetch-upv", "score", "report")
 
 
@@ -325,6 +919,10 @@ def main(argv: list[str] | None = None) -> None:
         fetch(manifest, args.zones_interim, "osm")
     elif args.step == "fetch-upv":
         fetch(manifest, args.zones_interim, "upv")
+    elif args.step == "score":
+        score(args.zones_interim)
+    elif args.step == "report":
+        report()
 
 
 if __name__ == "__main__":
