@@ -64,11 +64,40 @@ def test_confidence_is_the_share_of_agreeing_checks_in_steps_of_5():
     assert no_optical[0, 1] == 15 and no_optical[0, 3] == 60  # (0.75 + 0 + 1) / 3 = 58.3
 
 
-def test_sentinel1_codes_follow_the_class_layer():
-    dswx = np.array([[0, 1, 3, 250, 251, 255, 1, 0]], "uint8")
-    cover = np.array([[40, 40, 90, 40, 40, 40, 50, 40]])
-    sea = np.array([[False, False, False, False, False, False, False, True]])
-    assert L.s1_classes(dswx, cover, sea).tolist() == [[0, 1, 2, 255, 255, 255, 3, 255]]
+def test_water_codes_match_the_prediction_model_labels():
+    cls = np.array([[0, 1, 2, 3, 255]], "uint8")
+    assert L.to_water(cls).tolist() == [[0, 1, 255, 255, 255]]
+    assert L.to_water(cls, under_plants_as_wet=True).tolist() == [[0, 1, 1, 255, 255]]
+    # PR #33's to_water (DSWx classes 1 and 3 wet, 0 dry, the rest unknown) leaves these codes unchanged
+    codes = L.to_water(cls, under_plants_as_wet=True)
+    theirs = np.where(codes == 0, 0, np.where(np.isin(codes, (1, 3)), 1, 255))
+    assert theirs.tolist() == codes.tolist()
+
+
+def test_dana_layer_codes_agree_with_the_hectares():
+    before = np.array([[0, 1, 1, 0, 2, 1, 3, 255, 0, 2]], "uint8")
+    after = np.array([[1, 1, 0, 0, 2, 1, 1, 1, 2, 1]], "uint8")
+    permanent = np.array([[False] * 5 + [True] + [False] * 4])
+    layer = L.dana_change(before, after, permanent)
+    # new, both, gone, dry, dry (plants are not open water), permanent, built-up, no data, dry, new
+    assert layer.tolist() == [[2, 1, 3, 0, 0, 4, 255, 255, 0, 2]]
+    open_ = L.change(before, after, permanent)["open_water"]
+    assert open_["new_ha"] == pytest.approx(np.count_nonzero(layer == 2) * 0.04)
+    assert open_["on_both_ha"] == pytest.approx(np.count_nonzero(layer == 1) * 0.04)
+    assert open_["gone_ha"] == pytest.approx(np.count_nonzero(layer == 3) * 0.04)
+
+
+def test_merge_puts_passes_of_several_sources_in_time_order():
+    s1 = (np.array([[[0]], [[1]], [[3]]], "uint8"),
+          [{"pass_id": "s1a", "begin_utc": "2026-10-15T17:58:56.5Z"}, {"pass_id": "s1b", "begin_utc": "2026-10-20T17:58:56Z"},
+           {"pass_id": "s1c", "begin_utc": "2026-10-29T06:00:00Z"}])
+    nisar = (np.array([[[1]], [[255]]], "uint8"),
+             [{"pass_id": "n16", "begin_utc": "2026-10-16T18:53:21Z"}, {"pass_id": "n28", "begin_utc": "2026-10-28T18:53:21Z"}])
+    stack, passes = L.merge(s1, nisar)
+    assert [p["pass_id"] for p in passes] == ["s1a", "n16", "s1b", "n28", "s1c"]
+    assert stack[:, 0, 0].tolist() == [0, 1, 1, 255, 3]
+    with pytest.raises(ValueError):
+        L.merge(s1, (np.zeros((1, 2, 2), "uint8"), [{"begin_utc": "2026-10-16T00:00:00Z"}]))
 
 
 def test_change_counts_new_both_and_gone_outside_permanent_water():
@@ -121,7 +150,7 @@ def test_pass_summary_hectares_and_check_shares():
     optical = np.array([[1, 0, 1, 253, 0, 0, 0, 0]], "uint8")
     permanent = np.zeros((1, 8), bool)
     sea = np.array([[False] * 7 + [True]])
-    s = L.pass_summary(cls, conf, p_any, coh, optical, permanent, sea, None)
+    s = L.pass_summary(cls, conf, p_any, coh, optical, permanent, sea)
     ha = s["hectares"]
     assert (ha["open_water"], ha["not_water"], ha["water_under_plants"], ha["not_assessed_built"]) == \
         pytest.approx((0.08, 0.08, 0.04, 0.04))
@@ -132,39 +161,31 @@ def test_pass_summary_hectares_and_check_shares():
     assert c["share_with_optical_or_coherence"] == pytest.approx(4 / 5)
     assert c["changing_open_water_confirmed_by_optical"] == 0.5 and c["not_water_where_optical_sees_open_water"] == 1.0
     assert c["changing_open_water_with_low_coherence"] == 0.5
-    assert "sentinel1" not in s
 
 
-def test_layers_round_trip_and_the_parquet_table(tmp_path, monkeypatch):
-    pq = pytest.importorskip("pyarrow.parquet")
-    grid = Grid("EPSG:32630", from_origin(719400.0, 4370420.0, 20.0, 20.0), 3, 2)
-    monkeypatch.setattr(L, "OUT_DIR", tmp_path / "labels_nisar")
-    monkeypatch.setattr(L, "site_grid", lambda site: grid)
-    monkeypatch.setattr(L, "site_permanent_water", lambda site: np.array([[True, False, False], [False] * 3]))
-    cls_a = np.array([[1, 0, 255], [2, 3, 0]], "uint8")
-    conf_a = np.array([[90, 100, 255], [0, 255, 75]], "uint8")
-    paths = L.layer_paths("albufera", "066_D_069", "2026-10-28")
-    L.write_layer(paths["class"], cls_a, grid, "NISAR water class", {"classes": L.CLASS_LEGEND, "note": L.SI_NOTE})
-    L.write_layer(paths["confidence"], conf_a, grid, "confidence", {})
-    L.write_layer(paths["s1"], np.array([[1, 0, 0], [255, 3, 0]], "uint8"), grid, "s1", {})
-    early = L.layer_paths("albufera", "066_D_069", "2026-06-18")
-    L.write_layer(early["class"], np.zeros((2, 3), "uint8"), grid, "class", {})
-    L.write_layer(early["confidence"], np.full((2, 3), 100, "uint8"), grid, "confidence", {})
+def test_layers_round_trip_and_load_in_the_shape_of_the_prediction_labels(tmp_path, monkeypatch):
+    import json
 
     import rasterio
-    with rasterio.open(paths["class"]) as src:
-        assert src.read(1).tolist() == cls_a.tolist() and src.nodata == 255 and src.dtypes == ("uint8",)
+
+    grid = Grid("EPSG:32630", from_origin(719400.0, 4370420.0, 20.0, 20.0), 3, 2)
+    monkeypatch.setattr(L, "OUT_DIR", tmp_path / "data" / "labels_nisar")
+    monkeypatch.setattr(L, "DATA_DIR", tmp_path / "data")
+    monkeypatch.setattr(L, "site_grid", lambda site: grid)
+    late = np.array([[1, 0, 255], [2, 3, 0]], "uint8")
+    paths = {day: L.layer_paths("albufera", "066_D_069", day) for day in ("2026-06-18", "2026-10-28")}
+    L.write_layer(paths["2026-10-28"]["class"], late, grid, "NISAR water class",
+                  {"classes": L.CLASS_LEGEND, "note": L.SI_NOTE})
+    L.write_layer(paths["2026-06-18"]["class"], np.zeros((2, 3), "uint8"), grid, "class", {})
+    with rasterio.open(paths["2026-10-28"]["class"]) as src:
+        assert src.read(1).tolist() == late.tolist() and src.nodata == 255 and src.dtypes == ("uint8",)
         assert src.tags()["note"] == L.SI_NOTE and src.compression.name.lower() == "deflate"
 
-    out = L.export_site("albufera", tmp_path / "export")
-    table = pq.read_table(out).to_pydict()
-    assert len(table["x"]) == 5 + 6  # the no-data pixel of 28 Oct is left out
-    rows = {(d, r, c): i for i, (d, r, c) in enumerate(zip(table["date"], table["row"], table["col"]))}
-    i = rows[("2026-10-28", 0, 0)]
-    assert (table["x"][i], table["y"][i]) == (719410.0, 4370410.0)
-    assert (table["label"][i], table["confidence"][i], table["s1_label"][i], table["split"][i],
-            table["permanent_water"][i], table["track"][i]) == (1, 90, 1, "test", True, "066_D_069")
-    j = rows[("2026-10-28", 1, 1)]
-    assert (table["label"][j], table["confidence"][j], table["s1_label"][j]) == (3, 255, 3)
-    k = rows[("2026-06-18", 1, 2)]
-    assert (table["x"][k], table["y"][k], table["split"][k], table["s1_label"][k]) == (719450.0, 4370390.0, "train", 255)
+    passes = [{"pass_id": f"NISAR_066_D_069_{day}", "date": day, "begin_utc": f"{day}T18:53:21Z", "stack": "066_D_069",
+               "class_file": L.repo_path(paths[day]["class"])} for day in ("2026-06-18", "2026-10-28")]
+    L.passes_path("albufera").write_text(json.dumps(passes), encoding="utf-8")
+    stack, got = L.load("albufera")
+    assert stack.shape == (2, 2, 3) and stack.dtype == np.uint8 and [p["date"] for p in got] == ["2026-06-18", "2026-10-28"]
+    assert stack[0].tolist() == [[0, 0, 0], [0, 0, 0]]
+    assert stack[1].tolist() == [[1, 0, 255], [255, 255, 0]]
+    assert L.load("albufera", under_plants_as_wet=True)[0][1].tolist() == [[1, 0, 255], [1, 255, 0]]

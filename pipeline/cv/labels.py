@@ -1,15 +1,15 @@
-"""NISAR water labels per pass at Albufera and Pego-Oliva: the input labels for the "where will the
-water go" model (discussion #29) and map layers for the app.
+"""NISAR water labels per pass at Albufera and Pego-Oliva: labels for the "where will the water go"
+model (discussion #29, PR #33) and map layers for the app.
 
-    python -m pipeline.cv.labels                        # both sites: the GeoTIFFs and the summary
+    python -m pipeline.cv.labels                        # both sites: the GeoTIFFs, pass lists and summary
     python -m pipeline.cv.labels --site pego_oliva
-    python -m pipeline.cv.labels --export               # also the per-pixel table, one parquet per site
-    python -m pipeline.cv.labels --export --no-build    # only the table, from the GeoTIFFs on disk
     python -m pipeline.cv.labels --fetch-municipalities # refresh data/labels/<site>_municipalities_osm.geojson
+
+Run from the repository root (pipeline.cv.coherence reads data/coherence relative to it).
 
 Every NISAR pass with HV of the site's stacks (Albufera 066_D_069 and 058_A_021; Pego-Oliva the same
 two plus the partial frame 167_D_069), on the 20 m stack grid (pipeline.stack.site_grid, EPSG:32630).
-Three uint8 GeoTIFFs per pass in data/labels_nisar/<site>_<stack>/:
+Two uint8 GeoTIFFs per pass in data/labels_nisar/<site>_<stack>/:
 
 <date>_class.tif
     0 not water, 1 open water, 2 water under plants (possible, not validated), 3 not assessed
@@ -45,24 +45,24 @@ Three uint8 GeoTIFFs per pass in data/labels_nisar/<site>_<stack>/:
     p(open water or inundated vegetation) checks it, against 0.3 as above, and the value is
     capped at 50.
 
-<date>_s1.tif
-    Only for passes with an OPERA DSWx-S1 map at most 2 h from the NISAR pass
-    (pipeline.cv.evaluate.labelled_dates), a second label source in the same codes: 0 not water,
-    1 open water, 2 inundated vegetation (DSWx class 3), 3 not assessed (built-up, as above),
-    255 masked, fill, outside the map or sea.
+dana_<before>_<after>.tif, one per stack: what was still flooded after the DANA "Adam" rain of 18 to
+19 Oct 2026 (16 to 28 Oct on 066 D and 058 A, 11 to 23 Oct on 167 D), open water on the stack's own
+track: 0 dry on both dates, 1 open water on both, 2 new open water (dry before, water after), 3 open
+water gone, 4 permanent water (WorldCover water or JRC occurrence of 90 % or more), 255 not compared
+(no data or sea on either date, or built-up). Water under plants counts as not open water here.
+
+data/labels_nisar/<site>_passes.json: the passes in time order, with pass_id, date, begin_utc (the
+stack's time of the pass), platform, track, direction, stack, granules and the two file paths.
+
+load(site) gives the class layers in the shape of PR #33's pipeline.prediction.spatial.labels.load:
+a (pass, y, x) uint8 stack in time order with its codes, 0 dry, 1 wet (open water), 255 unknown
+(water under plants unless under_plants_as_wet=True, not assessed, no data, sea), and the pass list.
+merge(labels.load(site), load(site)) puts NISAR next to the Sentinel-1 passes, in time order.
 
 data/metrics/nisar_labels_summary.json: hectares per class per pass, the share of the labelled
-pixels that an optical or a coherence check covers and how often those checks agree, Sentinel-1 next
-to NISAR, and what was still flooded after the DANA "Adam" rain of 18 to 19 Oct 2026 (16 to 28 Oct on
-066 D and 058 A, 11 to 23 Oct on 167 D) in hectares, per site and per municipality (OpenStreetMap
-boundaries with their INE codes, data/labels/<site>_municipalities_osm.geojson).
-
---export writes one parquet per site to data/interim/nisar-labels/ (gitignored): the table asked for
-in discussion #29, one row per pixel and pass whose class is not 255, with x and y (pixel centre,
-EPSG:32630 metres), row, col, date, track (the stack, track_direction_frame), label (the class),
-confidence (255 on class 3), s1_label (255 without a same-pass map), split ("test" from 15 Oct to
-15 Nov 2026, the DANA window, else "train") and permanent_water (WorldCover water or JRC occurrence
-of 90 % or more, as in pipeline.cv.evaluate).
+pixels that an optical or a coherence check covers and how often those checks agree, and the DANA
+change in hectares, per site and per municipality (OpenStreetMap boundaries with their INE codes,
+data/labels/<site>_municipalities_osm.geojson).
 
 Written with SI assistance (Claude Code), reviewed by the team.
 """
@@ -84,33 +84,31 @@ from pipeline.cv.benchmark_optical import CACHE_DIR, DARK_DB, V1_THRESHOLD, hv_d
 from pipeline.cv.coherence import coherence_for, coherence_path
 from pipeline.cv.data import open_stack
 from pipeline.cv.dataset import OPTICAL_NOT_WATER, OPTICAL_OPEN_WATER, nan_quantile0, optical_classes
-from pipeline.cv.evaluate import (
-    CONTEXT_DIR, DSWX_INUNDATED_VEG, DSWX_OPEN_WATER, LABELS_DIR, METRICS_DIR, labelled_dates, scene_db,
-    site_permanent_water,
-)
+from pipeline.cv.evaluate import CONTEXT_DIR, LABELS_DIR, METRICS_DIR, scene_db, site_permanent_water
 from pipeline.stack import Grid, site_grid
 
 SITES = ("albufera", "pego_oliva")
 OUT_DIR = DATA_DIR / "labels_nisar"
 SUMMARY_PATH = METRICS_DIR / "nisar_labels_summary.json"
-EXPORT_DIR = DATA_DIR / "interim" / "nisar-labels"
 
 NOT_WATER, OPEN_WATER, UNDER_PLANTS, NOT_ASSESSED, NO_DATA = 0, 1, 2, 3, 255
 LABELLED = (NOT_WATER, OPEN_WATER, UNDER_PLANTS)
 CLASS_NAMES = {NOT_WATER: "not_water", OPEN_WATER: "open_water", UNDER_PLANTS: "water_under_plants",
                NOT_ASSESSED: "not_assessed_built"}
+DRY, WET, UNKNOWN = 0, 1, 255      # the water codes of pipeline.prediction.spatial.labels (PR #33)
 OPEN_THRESHOLD = V1_THRESHOLD      # 0.3, pre-registered in docs/CV_RESULTS.md
 COH_CUT = 0.25                     # data/metrics/cv_optical_select.json, chosen on the training sites
 HH_RISE_DB, HV_FLAT_DB = 3.0, 1.5  # the water-under-plants candidate rule
 VEGETATED = (10, 20, 30, 40, 90)   # ESA WorldCover tree, shrub, grass, crop, herbaceous wetland
 BUILT = 50                         # ESA WorldCover built-up
-DSWX_NOT_WATER = 0
 UNDER_PLANTS_CAP = 50
 CONF_STEP = 5
-TEST_WINDOW = ("2026-10-15", "2026-11-15")  # the DANA window, held out of training (discussion #29)
+TEST_WINDOW = ("2026-10-15", "2026-11-15")  # the DANA window, held out of training (discussion #29, PR #33)
 # Before and after the DANA "Adam" rain (18 to 19 Oct 2026) on each stack's own track.
 DANA = {"066_D_069": ("2026-10-16", "2026-10-28"), "058_A_021": ("2026-10-16", "2026-10-28"),
         "167_D_069": ("2026-10-11", "2026-10-23")}
+DANA_CODES = {0: "dry on both dates", 1: "open water on both dates", 2: "new open water", 3: "open water gone",
+              4: "permanent water", 255: "not compared (no data or sea on either date, or built-up)"}
 
 CLASS_LEGEND = ("0 not water, 1 open water, 2 water under plants (possible, not validated), "
                 "3 not assessed (built-up), 255 no data or sea")
@@ -122,7 +120,7 @@ RULES = {
     "confidence": (f"share of agreeing checks, steps of {CONF_STEP}: model margin to {OPEN_THRESHOLD}; HH below "
                    f"{DARK_DB} dB; coherence below {COH_CUT}; clear optical DSWx-HLS within 1 day. Class 2: "
                    f"the model's p(any water) only, capped at {UNDER_PLANTS_CAP}"),
-    "s1": "OPERA DSWx-S1 at most 2 h from the pass: 0 not water, 1 open water, 2 inundated vegetation, 3 built-up",
+    "dana": ", ".join(f"{k} {v}" for k, v in DANA_CODES.items()),
 }
 SI_NOTE = "Written with SI assistance (Claude Code), reviewed by the team."
 
@@ -197,17 +195,6 @@ def confidence(cls: np.ndarray, p_open: np.ndarray, p_any: np.ndarray, hh_db: np
     return out
 
 
-def s1_classes(dswx: np.ndarray, cover: np.ndarray, sea: np.ndarray) -> np.ndarray:
-    """DSWx-S1 classes in the codes of the class layer (built-up not assessed, sea no data)."""
-    out = np.full(dswx.shape, NO_DATA, dtype="uint8")
-    out[dswx == DSWX_NOT_WATER] = NOT_WATER
-    out[dswx == DSWX_OPEN_WATER] = OPEN_WATER
-    out[dswx == DSWX_INUNDATED_VEG] = UNDER_PLANTS
-    out[(out != NO_DATA) & (cover == BUILT)] = NOT_ASSESSED
-    out[sea] = NO_DATA
-    return out
-
-
 def change(before: np.ndarray, after: np.ndarray, permanent: np.ndarray) -> dict:
     """Hectares of water before and after, new, on both and gone, on pixels labelled on both dates
     that are not permanent water; for open water and for open water or water under plants."""
@@ -220,15 +207,28 @@ def change(before: np.ndarray, after: np.ndarray, permanent: np.ndarray) -> dict
     return out
 
 
+def dana_change(before: np.ndarray, after: np.ndarray, permanent: np.ndarray) -> np.ndarray:
+    """The still-flooded layer (DANA_CODES) from the class maps before and after the rain."""
+    ok = np.isin(before, LABELLED) & np.isin(after, LABELLED)
+    b, a = before == OPEN_WATER, after == OPEN_WATER
+    out = np.full(before.shape, NO_DATA, dtype="uint8")
+    out[ok & ~b & ~a] = 0
+    out[ok & b & a] = 1
+    out[ok & ~b & a] = 2
+    out[ok & b & ~a] = 3
+    out[ok & permanent] = 4
+    return out
+
+
 def pass_summary(cls: np.ndarray, conf: np.ndarray, p_any: np.ndarray, coh: np.ndarray, optical: np.ndarray | None,
-                 permanent: np.ndarray, sea: np.ndarray, s1: np.ndarray | None) -> dict:
+                 permanent: np.ndarray, sea: np.ndarray) -> dict:
     """Hectares per class, mean confidence, and how much the optical and coherence checks cover and agree."""
     labelled = np.isin(cls, LABELLED)
     changing_open = (cls == OPEN_WATER) & ~permanent
     has_coh = np.isfinite(coh)
     clear = np.zeros(cls.shape, bool) if optical is None else np.isin(optical, (OPTICAL_NOT_WATER, OPTICAL_OPEN_WATER))
     seen_open = clear & (optical == OPTICAL_OPEN_WATER) if optical is not None else clear
-    out = {
+    return {
         "hectares": {**{name: hectares(cls == c) for c, name in CLASS_NAMES.items()},
                      "open_water_on_permanent_water": hectares((cls == OPEN_WATER) & permanent),
                      "no_data_on_land": hectares((cls == NO_DATA) & ~sea),
@@ -245,17 +245,6 @@ def pass_summary(cls: np.ndarray, conf: np.ndarray, p_any: np.ndarray, coh: np.n
             "changing_open_water_with_low_coherence": share(coh < COH_CUT, changing_open & has_coh),
         },
     }
-    if s1 is not None:
-        both = np.isin(cls, LABELLED) & np.isin(s1, LABELLED) & ~permanent
-        n_open, s_open = (cls == OPEN_WATER) & both, (s1 == OPEN_WATER) & both
-        out["sentinel1"] = {
-            "hectares": {name: hectares(s1 == c) for c, name in
-                         ((0, "not_water"), (1, "open_water"), (2, "inundated_vegetation"), (3, "not_assessed_built"))},
-            "changing_open_water_compared": {"compared_ha": hectares(both), "both_ha": hectares(n_open & s_open),
-                                             "nisar_only_ha": hectares(n_open & ~s_open),
-                                             "sentinel1_only_ha": hectares(s_open & ~n_open)},
-        }
-    return out
 
 
 # ---------------------------------------------------------------- files
@@ -280,7 +269,20 @@ def write_layer(path: Path, array: np.ndarray, grid: Grid, description: str, tag
 
 def layer_paths(site: str, stack_id: str, day: str) -> dict[str, Path]:
     folder = OUT_DIR / f"{site}_{stack_id}"
-    return {k: folder / f"{day}_{k}.tif" for k in ("class", "confidence", "s1")}
+    return {k: folder / f"{day}_{k}.tif" for k in ("class", "confidence")}
+
+
+def dana_path(site: str, stack_id: str) -> Path:
+    before, after = DANA[stack_id]
+    return OUT_DIR / f"{site}_{stack_id}" / f"dana_{before}_{after}.tif"
+
+
+def passes_path(site: str) -> Path:
+    return OUT_DIR / f"{site}_passes.json"
+
+
+def repo_path(path: Path) -> str:
+    return path.relative_to(DATA_DIR.parent).as_posix()
 
 
 def stack_medians(ds) -> tuple[np.ndarray, np.ndarray]:
@@ -306,18 +308,16 @@ def context(site: str) -> tuple[Grid, np.ndarray, np.ndarray, np.ndarray]:
 # ---------------------------------------------------------------- one site
 
 def build_stack(site: str, stack_id: str, grid: Grid, cover: np.ndarray, sea: np.ndarray,
-                permanent: np.ndarray) -> tuple[list[dict], dict[str, np.ndarray]]:
-    """Write the three layers of every pass with HV of one stack; return the pass summaries and the
-    class maps of its DANA dates."""
-    # Sentinel-1 first: labelled_dates opens the stack itself, so only one copy is in memory at a time.
-    s1_maps = {day: (dswx, entry["hours_from_nisar"]) for _, day, _, entry, dswx, _ in labelled_dates(site, stack_id)
-               if dswx is not None}
+                permanent: np.ndarray) -> tuple[list[dict], list[dict], dict[str, np.ndarray]]:
+    """Write the two layers of every pass with HV of one stack; return the pass summaries, the pass
+    list entries and the class maps of its DANA dates."""
     ds = open_stack(STACK_DIR / f"{site}_{stack_id}.nc")
     if (not ds["HH"].rio.transform().almost_equals(grid.transform)
             or (ds.sizes["y"], ds.sizes["x"]) != (grid.height, grid.width)):
         raise ValueError(f"{site} {stack_id}: the stack is not on the site grid")
     medians = stack_medians(ds)
-    summaries, dana_maps = [], {}
+    track, direction = stack_id.split("_")[:2]
+    summaries, passes, dana_maps = [], [], {}
     for day, t in hv_dates(ds).items():
         cached = load_cached("v1", site, stack_id, day)
         if cached is None:
@@ -330,8 +330,6 @@ def build_stack(site: str, stack_id: str, grid: Grid, cover: np.ndarray, sea: np
         coh = coherence_for(site, stack_id, day, cls.shape)
         optical = optical_classes(site, stack_id, day)
         conf = confidence(cls, p_open, p_any, hh_db, coh, optical)
-        s1_entry = s1_maps.get(day)
-        s1 = s1_classes(s1_entry[0], cover, sea) if s1_entry is not None else None
 
         paths = layer_paths(site, stack_id, day)
         tags = {"site": site, "stack": stack_id, "date": day, "note": SI_NOTE}
@@ -340,26 +338,26 @@ def build_stack(site: str, stack_id: str, grid: Grid, cover: np.ndarray, sea: np
                      "water_under_plants": RULES["water_under_plants"], "not_assessed": RULES["not_assessed"]})
         write_layer(paths["confidence"], conf, grid, "confidence 0 to 100",
                     {**tags, "confidence": RULES["confidence"]})
-        if s1 is not None:
-            write_layer(paths["s1"], s1, grid, "Sentinel-1 DSWx-S1 water class",
-                        {**tags, "classes": CLASS_LEGEND, "s1": RULES["s1"],
-                         "hours_from_nisar": s1_entry[1]})
-        elif paths["s1"].exists():
-            paths["s1"].unlink()  # a same-pass map that is no longer in the index
 
         pair = coherence_path(site, stack_id, day)
         summaries.append({
             "site": site, "stack": stack_id, "date": day, "split": split_of(day),
             "maturity": str(ds["maturity"].values[t]), "crid": str(ds["crid"].values[t]),
             "coherence_pair": pair.stem if pair is not None else None,
-            "sentinel1_hours_from_nisar": s1_entry[1] if s1_entry is not None else None,
-            **pass_summary(cls, conf, p_any, coh, optical, permanent, sea, s1),
+            **pass_summary(cls, conf, p_any, coh, optical, permanent, sea),
+        })
+        passes.append({
+            "pass_id": f"NISAR_{stack_id}_{day}", "date": day,
+            "begin_utc": np.datetime_as_string(ds["time"].values[t], unit="s") + "Z", "platform": "NISAR",
+            "track": track, "direction": direction, "stack": stack_id, "granules": [str(ds["granule_ur"].values[t])],
+            "split": split_of(day), "class_file": repo_path(paths["class"]),
+            "confidence_file": repo_path(paths["confidence"]),
         })
         if day in DANA.get(stack_id, ()):
             dana_maps[day] = cls
         print(f"  {site} {stack_id} {day}: open water {summaries[-1]['hectares']['open_water']} ha, "
               f"under plants {summaries[-1]['hectares']['water_under_plants']} ha", flush=True)
-    return summaries, dana_maps
+    return summaries, passes, dana_maps
 
 
 def emsr935_flooded(grid: Grid) -> np.ndarray:
@@ -371,57 +369,6 @@ def emsr935_flooded(grid: Grid) -> np.ndarray:
              if g is not None and not g.is_empty]
     return rasterize(((g, 1) for g in geoms), out_shape=(grid.height, grid.width), transform=grid.transform,
                      fill=0, dtype="uint8").astype(bool)
-
-
-def dana_summary(site: str, maps: dict[str, dict[str, np.ndarray]], grid: Grid, permanent: np.ndarray) -> dict:
-    """Still flooded after the DANA: each stack's before and after pass on its own track; at
-    Pego-Oliva also the EMSR935 flooded area still seen as water, and the 23 Oct water (167 D) still
-    water on 28 Oct (066 D, 058 A), which mixes two viewing geometries and is descriptive only."""
-    out: dict = {"rain": "DANA Adam, 18 to 19 Oct 2026 (pipeline/prediction/flood)",
-                 "region": "land labelled on both dates (not sea, not built-up, not no data), not permanent water",
-                 "stacks": {}}
-    towns = municipality_ids(site, grid)
-    for stack_id, (before, after) in DANA.items():
-        m = maps.get(stack_id, {})
-        if before in m and after in m:
-            out["stacks"][stack_id] = {"before": before, "after": after, **change(m[before], m[after], permanent)}
-            if towns is not None:
-                out["stacks"][stack_id]["per_municipality"] = per_municipality(m[before], m[after], permanent, *towns)
-    if towns is not None:
-        out["municipalities"] = (f"{municipalities_path(site).relative_to(DATA_DIR.parent).as_posix()}: "
-                                 "OpenStreetMap admin_level 8 with INE codes, (c) OpenStreetMap contributors, "
-                                 "ODbL 1.0; built-up land is not assessed, so a town's numbers cover its fields only")
-    if site != "pego_oliva":
-        return out
-    flooded = emsr935_flooded(grid) & ~permanent
-    out["emsr935_flooded_area_still_water"] = {
-        "outline": "EMSR935 flooded_area, imagery 20 to 21 Oct 2026, not permanent water",
-        "outline_ha": hectares(flooded), "per_pass": {}}
-    for stack_id, (_, after) in DANA.items():
-        cls = maps.get(stack_id, {}).get(after)
-        if cls is None:
-            continue
-        seen = flooded & np.isin(cls, LABELLED)
-        out["emsr935_flooded_area_still_water"]["per_pass"][f"{stack_id} {after}"] = {
-            "seen_ha": hectares(seen), "open_water_ha": hectares(seen & (cls == OPEN_WATER)),
-            "open_water_or_under_plants_ha": hectares(seen & np.isin(cls, (OPEN_WATER, UNDER_PLANTS))),
-            "open_water_share": share(cls == OPEN_WATER, seen)}
-    first = maps.get("167_D_069", {}).get("2026-10-23")
-    if first is not None:
-        cross = {}
-        for stack_id in ("066_D_069", "058_A_021"):
-            last = maps.get(stack_id, {}).get("2026-10-28")
-            if last is None:
-                continue
-            ok = np.isin(first, LABELLED) & np.isin(last, LABELLED) & ~permanent
-            w23 = ok & (first == OPEN_WATER)
-            cross[f"{stack_id} 2026-10-28"] = {"compared_ha": hectares(ok), "open_water_23_oct_ha": hectares(w23),
-                                               "still_open_water_28_oct_ha": hectares(w23 & (last == OPEN_WATER)),
-                                               "still_share": share(last == OPEN_WATER, w23)}
-        out["open_water_23_oct_still_there_28_oct"] = {
-            "note": "167 D on 23 Oct against another track on 28 Oct: two viewing geometries, descriptive only",
-            "per_pass": cross}
-    return out
 
 
 OVERPASS_URLS = ["https://overpass-api.de/api/interpreter", "https://overpass.kumi.systems/api/interpreter"]
@@ -445,14 +392,14 @@ def fetch_municipalities(site: str) -> Path:
     """Municipal boundaries (OpenStreetMap admin_level 8, with their INE code) that touch the site box,
     from the Overpass API, to data/labels/<site>_municipalities_osm.geojson. (c) OpenStreetMap
     contributors, ODbL 1.0."""
+    import time
+
     import geopandas as gpd
     import requests
 
     west, south, east, north = get_site(site).bbox
     query = (f'[out:json][timeout:120];relation["boundary"="administrative"]["admin_level"="8"]'
              f'({south},{west},{north},{east});out geom;')
-    import time
-
     for attempt, url in enumerate(OVERPASS_URLS * 2):  # the public servers are often busy (502, 504)
         try:
             resp = requests.post(url, data={"data": query}, headers={"User-Agent": "sar-pipeline/0.1"}, timeout=180)
@@ -515,6 +462,63 @@ def per_municipality(before: np.ndarray, after: np.ndarray, permanent: np.ndarra
     return sorted(out, key=lambda r: -r["open_water"]["new_ha"])
 
 
+def dana_summary(site: str, maps: dict[str, dict[str, np.ndarray]], grid: Grid, permanent: np.ndarray) -> dict:
+    """Still flooded after the DANA: each stack's before and after pass on its own track, written as
+    a layer and counted per site and municipality; at Pego-Oliva also the EMSR935 flooded area still
+    seen as water, and the 23 Oct water (167 D) still water on 28 Oct (066 D, 058 A), which mixes two
+    viewing geometries and is descriptive only."""
+    out: dict = {"rain": "DANA Adam, 18 to 19 Oct 2026 (pipeline/prediction/flood)",
+                 "region": "land labelled on both dates (not sea, not built-up, not no data), not permanent water",
+                 "layer_codes": DANA_CODES, "stacks": {}}
+    towns = municipality_ids(site, grid)
+    for stack_id, (before, after) in DANA.items():
+        m = maps.get(stack_id, {})
+        if before in m and after in m:
+            path = dana_path(site, stack_id)
+            write_layer(path, dana_change(m[before], m[after], permanent), grid, "still flooded after the DANA",
+                        {"site": site, "stack": stack_id, "before": before, "after": after,
+                         "codes": RULES["dana"], "note": SI_NOTE})
+            out["stacks"][stack_id] = {"before": before, "after": after, "layer": repo_path(path),
+                                       **change(m[before], m[after], permanent)}
+            if towns is not None:
+                out["stacks"][stack_id]["per_municipality"] = per_municipality(m[before], m[after], permanent, *towns)
+    if towns is not None:
+        out["municipalities"] = (f"{repo_path(municipalities_path(site))}: OpenStreetMap admin_level 8 with INE "
+                                 "codes, (c) OpenStreetMap contributors, ODbL 1.0; built-up land is not assessed, "
+                                 "so a town's numbers cover its fields only")
+    if site != "pego_oliva":
+        return out
+    flooded = emsr935_flooded(grid) & ~permanent
+    out["emsr935_flooded_area_still_water"] = {
+        "outline": "EMSR935 flooded_area, imagery 20 to 21 Oct 2026, not permanent water",
+        "outline_ha": hectares(flooded), "per_pass": {}}
+    for stack_id, (_, after) in DANA.items():
+        cls = maps.get(stack_id, {}).get(after)
+        if cls is None:
+            continue
+        seen = flooded & np.isin(cls, LABELLED)
+        out["emsr935_flooded_area_still_water"]["per_pass"][f"{stack_id} {after}"] = {
+            "seen_ha": hectares(seen), "open_water_ha": hectares(seen & (cls == OPEN_WATER)),
+            "open_water_or_under_plants_ha": hectares(seen & np.isin(cls, (OPEN_WATER, UNDER_PLANTS))),
+            "open_water_share": share(cls == OPEN_WATER, seen)}
+    first = maps.get("167_D_069", {}).get("2026-10-23")
+    if first is not None:
+        cross = {}
+        for stack_id in ("066_D_069", "058_A_021"):
+            last = maps.get(stack_id, {}).get("2026-10-28")
+            if last is None:
+                continue
+            ok = np.isin(first, LABELLED) & np.isin(last, LABELLED) & ~permanent
+            w23 = ok & (first == OPEN_WATER)
+            cross[f"{stack_id} 2026-10-28"] = {"compared_ha": hectares(ok), "open_water_23_oct_ha": hectares(w23),
+                                               "still_open_water_28_oct_ha": hectares(w23 & (last == OPEN_WATER)),
+                                               "still_share": share(last == OPEN_WATER, w23)}
+        out["open_water_23_oct_still_there_28_oct"] = {
+            "note": "167 D on 23 Oct against another track on 28 Oct: two viewing geometries, descriptive only",
+            "per_pass": cross}
+    return out
+
+
 def cache_provenance() -> dict | None:
     path = CACHE_DIR / "v1" / "manifest.json"
     if not path.exists():
@@ -527,15 +531,19 @@ def cache_provenance() -> dict | None:
 
 def build_site(site: str) -> dict:
     grid, cover, sea, permanent = context(site)
-    passes, maps = [], {}
+    summaries, passes, maps = [], [], {}
     for stack_id in stacks_of(site):
         print(f"{site} {stack_id}", flush=True)
-        rows, dana_maps = build_stack(site, stack_id, grid, cover, sea, permanent)
-        passes += rows
+        rows, entries, dana_maps = build_stack(site, stack_id, grid, cover, sea, permanent)
+        summaries += rows
+        passes += entries
         maps[stack_id] = dana_maps
-    return {"stacks": stacks_of(site), "pass_count": len(passes), "land_ha": hectares(~sea),
-            "permanent_water_ha": hectares(permanent & ~sea),
-            "built_up_ha": hectares((cover == BUILT) & ~sea), "passes": passes,
+    passes.sort(key=lambda p: p["begin_utc"])
+    passes_path(site).write_text(json.dumps(passes, indent=1) + "\n", encoding="utf-8")
+    print(f"-> {passes_path(site)}: {len(passes)} passes")
+    return {"stacks": stacks_of(site), "pass_count": len(summaries), "pass_list": repo_path(passes_path(site)),
+            "land_ha": hectares(~sea), "permanent_water_ha": hectares(permanent & ~sea),
+            "built_up_ha": hectares((cover == BUILT) & ~sea), "passes": summaries,
             "dana": dana_summary(site, maps, grid, permanent)}
 
 
@@ -552,70 +560,64 @@ def save_summary(results: dict[str, dict]) -> None:
     print(f"-> {SUMMARY_PATH}")
 
 
-# ---------------------------------------------------------------- the per-pixel table
+# ---------------------------------------------------------------- for the "where will the water go" model
 
-def export_site(site: str, out_dir: Path = EXPORT_DIR) -> Path:
-    """One parquet per site from the GeoTIFFs on disk: one row per pixel and pass with a class."""
-    import pyarrow as pa
-    import pyarrow.parquet as pq
+def to_water(cls: np.ndarray, under_plants_as_wet: bool = False) -> np.ndarray:
+    """NISAR classes as the water codes of PR #33 (pipeline.prediction.spatial.labels.to_water):
+    0 dry (not water), 1 wet (open water), 255 unknown (water under plants unless
+    under_plants_as_wet, not assessed, no data, sea). Their to_water leaves these codes unchanged."""
+    out = np.full(cls.shape, UNKNOWN, dtype="uint8")
+    out[cls == NOT_WATER] = DRY
+    out[cls == OPEN_WATER] = WET
+    if under_plants_as_wet:
+        out[cls == UNDER_PLANTS] = WET
+    return out
 
+
+def load(site: str, under_plants_as_wet: bool = False) -> tuple[np.ndarray, list[dict]]:
+    """The NISAR passes of a site in the shape of PR #33's labels.load(site): a (pass, y, x) uint8 stack
+    of to_water codes and the pass list (data/labels_nisar/<site>_passes.json), both in time order.
+    Reads only the committed class GeoTIFFs: about 40 to 60 MB in memory per site."""
+    passes = json.loads(passes_path(site).read_text(encoding="utf-8"))
     grid = site_grid(get_site(site))
-    permanent = site_permanent_water(site)
-    xs, ys = grid.x, grid.y
-    schema = pa.schema([("x", pa.float64()), ("y", pa.float64()), ("row", pa.int16()), ("col", pa.int16()),
-                        ("date", pa.string()), ("track", pa.string()), ("label", pa.uint8()),
-                        ("confidence", pa.uint8()), ("s1_label", pa.uint8()), ("split", pa.string()),
-                        ("permanent_water", pa.bool_())])
-    out_dir.mkdir(parents=True, exist_ok=True)
-    path = out_dir / f"{site}_nisar_labels.parquet"
-    tmp = path.with_name(path.stem + ".part.parquet")
-    rows = 0
-    # The label folders, not the stacks: the table can be rebuilt from the committed GeoTIFFs alone.
-    stack_ids = [f.name[len(site) + 1:] for f in sorted(OUT_DIR.glob(f"{site}_*")) if f.is_dir()]
-    if not stack_ids:
-        raise SystemExit(f"no labels in {OUT_DIR} for {site}: run python -m pipeline.cv.labels --site {site}")
-    with pq.ParquetWriter(tmp, schema, compression="zstd") as writer:
-        for stack_id in stack_ids:
-            for class_path in sorted((OUT_DIR / f"{site}_{stack_id}").glob("*_class.tif")):
-                day = class_path.name[:10]
-                paths = layer_paths(site, stack_id, day)
-                cls = read_band(paths["class"])
-                if cls.shape != (grid.height, grid.width):
-                    raise ValueError(f"{class_path} is not on the site grid")
-                conf = read_band(paths["confidence"])
-                s1 = read_band(paths["s1"]) if paths["s1"].exists() else np.full(cls.shape, NO_DATA, "uint8")
-                r, c = np.nonzero(cls != NO_DATA)
-                n = r.size
-                writer.write_table(pa.table({
-                    "x": xs[c], "y": ys[r], "row": r.astype("int16"), "col": c.astype("int16"),
-                    "date": pa.array([day] * n, pa.string()), "track": pa.array([stack_id] * n, pa.string()),
-                    "label": cls[r, c], "confidence": conf[r, c], "s1_label": s1[r, c],
-                    "split": pa.array([split_of(day)] * n, pa.string()), "permanent_water": permanent[r, c],
-                }, schema=schema))
-                rows += n
-    tmp.replace(path)
-    print(f"-> {path}: {rows} rows, {path.stat().st_size / 1e6:.1f} MB", flush=True)
-    return path
+    stack = np.empty((len(passes), grid.height, grid.width), dtype="uint8")
+    for i, p in enumerate(passes):
+        cls = read_band(DATA_DIR.parent / p["class_file"])
+        if cls.shape != stack.shape[1:]:
+            raise ValueError(f"{p['class_file']} is not on the site grid")
+        stack[i] = to_water(cls, under_plants_as_wet)
+    return stack, passes
+
+
+def merge(*sources: tuple[np.ndarray, list[dict]]) -> tuple[np.ndarray, list[dict]]:
+    """Several (stack, passes) pairs on one grid, for example labels.load(site) of PR #33 and load(site),
+    as one pair in time order (by begin_utc, as pipeline.prediction.spatial needs for its lead times).
+    The stacks are copied into one array: with the 413 Sentinel-1 passes, about 0.8 GB per site."""
+    shapes = {tuple(stack.shape[1:]) for stack, _ in sources}
+    if len(shapes) != 1:
+        raise ValueError(f"the stacks are not on one grid: {sorted(shapes)}")
+    order = sorted(((np.datetime64(p["begin_utc"].rstrip("Z"), "ms"), i, k)
+                    for i, (_, passes) in enumerate(sources) for k, p in enumerate(passes)),
+                   key=lambda item: item[0])
+    out = np.empty((len(order),) + shapes.pop(), dtype="uint8")
+    passes_out = []
+    for n, (_, i, k) in enumerate(order):
+        out[n] = sources[i][0][k]
+        passes_out.append(sources[i][1][k])
+    return out, passes_out
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--site", nargs="+", default=list(SITES), choices=list(SITES))
-    parser.add_argument("--export", action="store_true", help="also write one parquet per site (gitignored)")
-    parser.add_argument("--no-build", action="store_true", help="skip the GeoTIFFs and the summary")
-    parser.add_argument("--out", type=Path, default=EXPORT_DIR, help="folder of the parquet files")
     parser.add_argument("--fetch-municipalities", action="store_true",
                         help="download the municipal boundaries (OpenStreetMap, Overpass API) to data/labels first")
     args = parser.parse_args()
     if args.fetch_municipalities:
         for site in args.site:
             fetch_municipalities(site)
-    if not args.no_build:
-        for site in args.site:  # one site at a time: one stack in memory, and a finished site is saved
-            save_summary({site: build_site(site)})
-    if args.export:
-        for site in args.site:
-            export_site(site, args.out)
+    for site in args.site:  # one site at a time: one stack in memory, and a finished site is saved
+        save_summary({site: build_site(site)})
 
 
 if __name__ == "__main__":

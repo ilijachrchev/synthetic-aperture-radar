@@ -30,7 +30,6 @@ cv = [
     "torch>=2.5",
     "segmentation-models-pytorch>=0.4",
     "torchgeo>=0.7",
-    "pyarrow>=17",  # the per-pixel table of the NISAR labels (python -m pipeline.cv.labels --export)
 ]
 # ML model (pipeline.ml): gradient boosting, metrics and COG export. Small, CPU only.
 ml = [
