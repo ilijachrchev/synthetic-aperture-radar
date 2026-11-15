@@ -42,10 +42,6 @@ export function Hero() {
 				</p>
 				<div className="hx-toll" data-a>
 					<p>
-						<b className="display">{TOLL.lives_lost}</b>
-						<span>{HERO.toll.lives}</span>
-					</p>
-					<p>
 						<b className="display">€{TOLL.damage_eur_billion} billion</b>
 						<span>{HERO.toll.damage}</span>
 					</p>
