@@ -248,6 +248,114 @@ Written down on 15 Nov 2026 and committed before any street was scored (see the 
 - **Checks**: pieces and kilometres per town and per `highway` value; the share of sample points on scored pixels; the equal-area cuts of PR #39 rebuilt with the same cell count per town as `results.json`; for key B, what the UPV map holds at the surveyed marks of 0 m (dry spots) and above 0 m.
 - Whatever the numbers show is written here, including where the official zones do better.
 
+### Results
+
+Every number below is in `results.json` → `streets` (`main`, `with_tracks`, `checks`, `inputs`), written by `python -m pipeline.street_scores score`; the tables are printed from it by `python -m pipeline.street_scores report`. Scored streets: 64,174 pieces, **1,591.2 km** in the 10 towns, cut from the 16,092 OSM ways kept in the 10 boxes (of 21,515 read, 3,010 tracks, 2,101 sidewalks and crossings, 124 tunnels, 113 areas and 75 other values were left out; pieces whose midpoint is not on a scored pixel, Valencia city's for instance, are not scored). Key A: **513.7 km flooded** (32.3 % of the streets). Key B: 519.1 km flooded of the 801.5 km that lie inside the UPV outlines (64.8 %).
+
+**Short answer: at the same street length, no method beat the official map; what the official map lacks is reach.** Cut town by town to the 280.0 km of street that the official zones flag, the terrain ranking caught **41.4 %** of the flooded street length (key A), the SIMULATED run **41.3 %** and the zones themselves **41.0 %**, and 75 to 76 % of what each flagged really flooded (a random pick of the same length: 32.3 %). Against the UPV map the zones lead: 50.8 % against 46.4 % for the terrain and 50.4 % for the simulation. But **303 of the 514 km of streets that flooded (59.0 %) lay outside every official zone** (key B: 255 of 519 km, 49.2 %). The SIMULATED run at its own extent (maximum depth above 0.3 m) reaches them: it flags 531.6 km and catches **76.0 %** of the flooded streets with **73.4 %** of its streets really flooded, against 41.0 % and 75.2 % for the zones; it finds 390.4 km of flooded street where the zones find 210.7 km. That run is a hindcast: it was fed the rain measured on the day, with no infiltration (PR #39), so it shows what terrain and rain together point to, not what anyone could have known before the storm.
+
+#### The same street length, town by town (headline)
+
+Key A. Each ranking cut to the street length the official zones (any zone) flag in that town.
+
+| Town | Streets (km) | Flooded (km) | Zones' length (km) | Hit rate: zones / terrain / simulated | Precision: zones / terrain / simulated | Chance precision |
+|---|---|---|---|---|---|---|
+| Paiporta | 76.0 | 75.3 | 27.5 | 36.5 / 36.5 / 36.5 % | 100.0 / 99.9 / 100.0 % | 99.1 % |
+| Massanassa | 35.1 | 24.8 | 32.4 | 89.3 / 97.1 / 94.7 % | 68.4 / 74.3 / 72.4 % | 70.6 % |
+| Sedaví | 30.9 | 23.5 | 0.7 | 3.0 / 3.0 / 3.0 % | 100.0 / 100.0 / 100.0 % | 76.1 % |
+| Catarroja | 103.6 | 64.2 | 77.7 | 83.4 / 84.6 / 82.3 % | 68.9 / 69.9 / 68.0 % | 62.0 % |
+| Alfafar | 86.8 | 67.9 | 60.0 | 77.0 / 84.2 / 77.4 % | 87.1 / 95.2 / 87.5 % | 78.2 % |
+| Benetússer | 21.3 | 5.9 | 6.0 | 44.3 / 22.8 / 39.8 % | 43.0 / 22.1 / 38.6 % | 27.6 % |
+| Picanya | 94.2 | 83.4 | 3.0 | 3.6 / 2.8 / 3.4 % | 98.4 / 75.5 / 93.4 % | 88.6 % |
+| Aldaia | 163.2 | 92.0 | 56.4 | 42.8 / 45.6 / 45.5 % | 69.8 / 74.3 / 74.3 % | 56.4 % |
+| Chiva | 429.3 | 11.0 | 6.5 | 15.8 / 6.2 / 2.8 % | 26.5 / 10.4 / 4.7 % | 2.6 % |
+| Torrent | 551.0 | 65.7 | 9.6 | 11.8 / 3.8 / 11.3 % | 80.7 / 25.6 / 77.4 % | 11.9 % |
+| **Total** | 1,591.2 | 513.7 | 280.0 | 41.0 / 41.4 / 41.3 % | 75.2 / 75.9 / 75.7 % | 32.3 % |
+
+Key B (UPV depth above 0.1 m), on the streets inside the UPV outlines only; the cut is the same, the length counted inside the outlines.
+
+| Town | Streets inside (km) | Flooded (km) | Zones' length inside (km) | Hit rate: zones / terrain / simulated | Precision: zones / terrain / simulated | Chance precision |
+|---|---|---|---|---|---|---|
+| Paiporta | 75.9 | 72.4 | 27.5 | 37.8 / 37.2 / 37.8 % | 99.5 / 97.8 / 99.6 % | 95.4 % |
+| Massanassa | 35.1 | 33.2 | 32.4 | 95.3 / 92.2 / 94.4 % | 97.7 / 94.5 / 96.7 % | 94.5 % |
+| Sedaví | 30.9 | 29.7 | 0.7 | 2.3 / 2.4 / 2.2 % | 100.0 / 100.0 / 92.8 % | 96.2 % |
+| Catarroja | 84.3 | 77.2 | 76.6 | 94.7 / 86.7 / 93.3 % | 95.5 / 93.6 / 94.6 % | 91.7 % |
+| Alfafar | 86.8 | 83.7 | 60.0 | 69.8 / 70.2 / 70.6 % | 97.3 / 97.9 / 98.4 % | 96.5 % |
+| Benetússer | 21.3 | 21.2 | 6.0 | 28.4 / 28.4 / 28.4 % | 100.0 / 100.0 / 100.0 % | 99.9 % |
+| Picanya | 82.9 | 70.9 | 3.0 | 4.2 / 3.0 / 3.9 % | 98.4 / 90.6 / 91.7 % | 85.5 % |
+| Aldaia | 139.2 | 91.7 | 56.4 | 59.5 / 49.9 / 58.1 % | 96.8 / 85.5 / 95.0 % | 65.9 % |
+| Chiva | 121.0 | 5.8 | 0.5 | 8.7 / 15.6 / 9.1 % | 100.0 / 81.8 / 100.0 % | 4.8 % |
+| Torrent | 124.1 | 33.1 | 9.6 | 24.8 / 6.1 / 25.3 % | 85.6 / 69.7 / 93.7 % | 26.7 % |
+| **Total** | 801.5 | 519.1 | 272.7 | 50.8 / 46.4 / 50.4 % | 96.6 / 93.3 / 96.4 % | 64.8 % |
+
+With a budget of 0.7 km (Sedaví), 3.0 km (Picanya) or 0.5 km (Chiva under key B), every ranking catches almost nothing, by design. Inside the UPV outlines 64.8 % of the street length flooded (90.3 % in the surveyed area alone), so key B leaves little room between a good and a random pick.
+
+- **Terrain better**: the low plain by the Albufera again, Massanassa (97.1 against 89.3 %) and Alfafar (84.2 against 77.0 %), and a little in Aldaia (45.6 against 42.8 %).
+- **Terrain worse**: Torrent (3.8 against 11.8 %), Chiva (6.2 against 15.8 %) and Benetússer (22.8 against 44.3 %), as on land in PR #39: in the hills the lowest streets are gully floors, not the Poyo's path. Against key B the zones also lead the terrain in Catarroja (94.7 against 86.7 %) and Aldaia (59.5 against 49.9 %).
+- **SIMULATED ranking**: level with the zones in Torrent (11.3 against 11.8 %; key B 25.3 against 24.8 %), better in Massanassa and Aldaia, worse in Chiva (2.8 %) and Benetússer.
+- **Why the terrain ties here but trailed on land.** PR #39's equal-area terrain map, cut to the zones' land, holds only 230.8 km of street (the zones' land holds 280.0 km): part of its land budget goes to fields and gully floors without streets. Ranking the street pieces themselves removes that handicap, and the terrain then catches as much as the zones (41.4 against 41.0 %). At the pixel cut it is behind (33.6 %, below), like on land.
+
+#### Every method at its own length, the 10 towns together
+
+| Method | Flagged (km) | Share of streets | Key A: hit rate | Key A: precision | Key B: flagged inside (km) | Key B: hit rate | Key B: precision |
+|---|---|---|---|---|---|---|---|
+| Official T10 | 9.0 | 0.6 % | 1.3 % | 76.7 % | 8.1 | 1.4 % | 91.7 % |
+| Official T100 | 37.2 | 2.3 % | 5.1 % | 70.6 % | 34.6 | 6.4 % | 96.5 % |
+| Official T500 | 279.9 | 17.6 % | 41.0 % | 75.2 % | 272.7 | 50.8 % | 96.6 % |
+| **Official, any zone** | 280.0 | 17.6 % | **41.0 %** | **75.2 %** | 272.7 | **50.8 %** | **96.6 %** |
+| Terrain, HAND below 15 m | 1,062.3 | 66.8 % | 98.3 % | 47.5 % | 686.5 | 99.9 % | 75.5 % |
+| Terrain, equal-area cut of PR #39 | 230.8 | 14.5 % | 33.6 % | 74.7 % | 203.8 | 36.6 % | 93.2 % |
+| **SIMULATED, depth above 0.3 m** | 531.6 | 33.4 % | **76.0 %** | **73.4 %** | 479.5 | **81.9 %** | **88.7 %** |
+| SIMULATED, equal-area cut of PR #39 | 255.7 | 16.1 % | 36.3 % | 73.0 % | 239.9 | 44.7 % | 96.6 % |
+| Chance (a random pick) | | | = its share | 32.3 % | | = its share | 64.8 % |
+
+- The frequent and occasional zones flag almost no street: T10 9.0 km (1.3 % of the flooded street length), T100 37.2 km (5.1 %). Everything the official map caught, it caught with the rare T500 zone.
+- HAND below 15 m flags two thirds of the streets: it misses almost nothing (98.3 %), but half of what it flags stayed dry (precision 47.5 %). It says where water cannot go (the hills), not where it went.
+- The SIMULATED extent flags 1.9 times the zones' street length at almost their precision (73.4 against 75.2 %). **Outside every official zone** it flags 291.0 km, of which 70.6 % flooded, where only 23.1 % of all streets outside the zones flooded (key B: 79.2 % against 48.3 %). Descriptive, computed after the headline.
+
+#### Reach: the zones and the SIMULATED extent at their own length, town by town
+
+Key A.
+
+| Town | Zones: km | Zones: hit rate | Zones: precision | SIMULATED: km | SIMULATED: hit rate | SIMULATED: precision |
+|---|---|---|---|---|---|---|
+| Paiporta | 27.5 | 36.5 % | 100.0 % | 58.6 | 77.5 % | 99.5 % |
+| Massanassa | 32.4 | 89.3 % | 68.4 % | 27.4 | 82.3 % | 74.4 % |
+| Sedaví | 0.7 | 3.0 % | 100.0 % | 24.1 | 82.8 % | 80.8 % |
+| Catarroja | 77.7 | 83.4 % | 68.9 % | 58.1 | 61.5 % | 67.9 % |
+| Alfafar | 60.0 | 77.0 % | 87.1 % | 73.9 | 92.6 % | 85.1 % |
+| Benetússer | 6.0 | 44.3 % | 43.0 % | 11.9 | 62.5 % | 30.7 % |
+| Picanya | 3.0 | 3.6 % | 98.4 % | 78.0 | 90.8 % | 97.1 % |
+| Aldaia | 56.4 | 42.8 % | 69.8 % | 82.8 | 66.8 % | 74.3 % |
+| Chiva | 6.5 | 15.8 % | 26.5 % | 41.8 | 55.1 % | 14.5 % |
+| Torrent | 9.6 | 11.8 % | 80.7 % | 75.0 | 65.2 % | 57.1 % |
+| **Total** | 280.0 | 41.0 % | 75.2 % | 531.6 | 76.0 % | 73.4 % |
+
+Where the official map left a town almost bare, the simulated run, fed the day's rain, found most of its flooded streets: Picanya (90.8 against 3.6 %, with 97.1 % of its streets flooded), Sedaví (82.8 against 3.0 %), Torrent (65.2 against 11.8 %, though only 57.1 % of what it flags there flooded), Paiporta (77.5 against 36.5 %). Where the zones were drawn on the fan (Catarroja, Massanassa) they catch more than the simulation (83.4 against 61.5 %, 89.3 against 82.3 %). In Chiva most of what it flags stayed dry (14.5 %), as on land.
+
+#### Sensitivity (never used to pick a version)
+
+At equal street length, hit rate of the zones / terrain / SIMULATED:
+
+- Key A from EMSR773 alone (495.8 km flooded): 40.7 / 41.6 / 41.4 %.
+- Key A from the water marks alone (36.4 km of street within 10 m of a mark): 47.5 / 41.2 / 40.6 %: on the streets beside a surveyed mark the zones lead.
+- Tracks included (2,254.0 km of street, 664.8 km flooded, zones' length 363.3 km): key A 43.4 / 42.5 / 42.4 %, key B 53.0 / 46.7 / 51.7 %. The SIMULATED extent: 76.5 % at 73.3 % precision.
+- **Key B on the surveyed area alone (POST-HOC, see "Changes to the rules", item 4)**: 508.8 km of street, 459.2 km flooded: 53.0 / 47.7 / 51.6 %; the SIMULATED extent 82.3 % at 95.1 % precision, the zones 53.0 % at 97.0 %.
+
+#### Checks
+
+- **The equal-area cuts of PR #39 rebuilt exactly**: for the terrain and the SIMULATED cuts, every town has the same cell count and the same share of land flooded as `results.json` → `methods` (`checks.equal_area_cuts_rebuilt`).
+- **Pieces**: median length 25.0 m (5 % to 95 %: 22.8 to 26.7 m); every scored piece has sample points on scored pixels (none fell back to its midpoint). Street length by class: residential 603.4 km, unclassified 278.5, tertiary 137.5, service 122.6, path 114.4, cycleway 73.5, motorway 63.4, secondary 57.5, footway 37.7, motorway links 34.2, the rest 68.5 km.
+- **The UPV map at the surveyed marks** (`checks.upv_at_marks`): inside its outlines lie 3,663 wet marks; the map has a value at 87.2 % of them, at 91.6 % of the 3,299 in the surveyed area but only at 47.8 % of the 364 in the extra zones. Where it has a value, its median depth is 1.22 m against 1.30 m on the walls (median absolute difference 0.15 m, correlation 0.81; the map is built from such marks). Only 5 marks of 0 m lie inside the outlines, too few to check dry spots. So in the extra zones "no value" is often not dry, and key B, which counts it as dry as the rule says, misses flooded streets there; hence the post-hoc variant above.
+- **The two keys inside the UPV outlines** agree on 76.8 % of the street length; key A has 486.1 km flooded there, key B 519.1 km.
+- A map of the keys and flags around Torrent, Picanya, Paiporta and the plain was looked at before writing this: the flooded streets of both keys follow the Poyo's path along the north edge of Torrent and through Picanya and Paiporta, then spread over the plain; Torrent's centre stayed dry.
+
+#### What this means, and what it does not
+
+- Length for length, the official zones choose flooded streets as well as the terrain ranking and the simulation. Their failure in 2024 was size: they flag 17.6 % of the streets and left out 59 % of the flooded street length (49 % by the UPV map), almost all of Picanya and Sedaví and nearly nine tenths of Torrent's.
+- Only a method that points beyond the zones can reach those streets, and only one of ours did so with few false alarms (about one flagged street in four stayed dry): the simulated run fed with the rain that was measured. Its value for a warning would depend on a rain forecast as good as that measurement; it was not tested with a forecast here.
+- One event, one town network: as above, nothing here is a validation across floods.
+
 ## Limits
 
 - **One event.** The 2024 DANA is one test. A method that ranks well here may rank worse in a flood of another shape; nothing here is a validation across events.
@@ -256,6 +364,8 @@ Written down on 15 Nov 2026 and committed before any street was scored (see the 
 - **The references are satellite outlines.** EMSR773 mapped the flood one to two days after the peak; in dense streets the flood traces are photo-interpreted, and a satellite misses water under trees and roofs. "Own area that flooded" is therefore a lower bound for every method alike. The graded buildings exist only where the AOI03 grading map looked (all of L'Horta Sud, 6 % of Chiva).
 - **Small official zones, small budgets.** Where the official zones cover little (Torrent, Chiva, Picanya), the terrain map at equal area covers just as little, by design.
 - **The simulation is simple and simulated.** No infiltration (all rain runs off, an upper bound), one Manning's n, 25 m cells that cannot resolve streets, no sewers, culverts or bridges other than what the bare-earth terrain shows, and rain only on the three upstream zones.
+- **Streets are OpenStreetMap's.** Its coverage differs from street to street: a dual carriageway counts twice, a cycleway drawn beside a road counts as its own way, and the sidewalks and crossings left out are only those tagged as such. Lengths are those of the centre lines, not the street areas.
+- **The street keys are not ground truth either.** Key A takes the satellite outline (lower bound, photo-interpreted in dense streets) or a mark within 10 m; key B is an interpolation of wall marks, partly the same marks as key A, and is empty in half of its extra zones. Both read one 5 m cell per sample point, so a narrow street at the edge of a zone or a flood outline can fall either way.
 
 ## What more time and data would add
 
@@ -275,6 +385,8 @@ Written down on 15 Nov 2026 and committed before any street was scored (see the 
 | `data/streets/water_marks_2024.geojson` | the 2,699 water heights MEASURED after the 2024 flood in the 10 towns (every surveyed mark above 0 m): `depth_m`, `class` (below 0.2, 0.2 to 1, 1 to 2, above 2 m), `surveyed_by` (UPV, IVE, SGRT, town hall), `town`; from the ICV service `https://terramapas.icv.gva.es/2702_DANA2024` (layers `DANA2024.ZonasInundadas.AlturaAgua.*`), read 15 Nov 2026, CC BY 4.0 Generalitat (WGS84) |
 | `data/streets/estimated_depth_dana_2024.geojson`, `estimated_depth_dana_adam_2026.geojson` | depth ESTIMATED from the flood outline and terrain, classes below 0.2, 0.2 to 1, 1 to 2, above 2 m, with the check against water marks (WGS84) |
 | `tests/test_streets.py`, `tests/test_streets_inertial.py` | the terrain flow, the equal-area cut and the scheme on tiny synthetic grids |
+| `pipeline/street_scores.py` | street by street: `fetch` (OSM streets of 28 Oct 2024 by Overpass, the UPV depth map by WCS), `score`, `report` |
+| `tests/test_street_scores.py` | the street pieces, sample points, the 10 m rule, the majority rule, the equal-length cut and the UPV cell pick on tiny cases |
 
 Needs the downloads of `pipeline.zones` (PR #36) in `data/interim/flood-zones/` (`python -m pipeline.zones fetch`), or `--zones-interim` pointing at them. Downloads go to `data/interim/streets/` (not in git). The terrain sheets are about 2 GB each and are deleted once averaged to 5 m; the terrain step needs about 4 GB of RAM.
 
@@ -316,11 +428,26 @@ python -m pipeline.streets depth
 python -m pipeline.streets report
 ```
 
+Street by street (after `terrain` and `simulate`; the downloads go to `data/interim/streets/osm/` and `upv/`, about 2.5 GB of UPV tiles streamed, 11 MB kept):
+
+```bash
+python -m pipeline.street_scores fetch
+```
+
+```bash
+python -m pipeline.street_scores score
+```
+
+```bash
+python -m pipeline.street_scores report
+```
+
 ## Changes to the rules
 
 1. **Permanent water also counts as drainage for HAND** (decided while writing the code, before any score). The rules make permanent water an outlet of the depression filling, so water that reaches the Albufera leaves the grid there; without this clarification a cell that drains straight into the lake would have no drainage cell on its path. HAND is then measured from the lake surface, as for a river. The lake itself is not a scored pixel.
 2. **In the simulation, only water bodies of at least 1 km² are sinks** (decided before any simulation result existed). "Permanent water" in the rules meant the Albufera and the sea, but ESA WorldCover's class 80 also marks 942 small patches inside the catchment (ponds, a quarry lake; 2.7 km² of its 40.5 km² in the grid). One of them lies on the Poyo near Cheste, and with every patch as a sink the D8 routing ended the Poyo there, with 157.6 km² upstream; in the simulation it would have swallowed the flood. The three bodies of 1 km² or more are the sea, the port and the Albufera (37.8 km²). The rain zones are delineated on this routing: the gauge cell drains 183.0 km² (Pérez Cueva et al.: 183.0), the apex 351.7 km² (351.5), the Saleta 74.6 km² (74.6).
 3. **A post-hoc check of HAND with the same lake-only sinks** (added after the first scores, because of item 2). The pre-registered HAND, with every WorldCover patch as a sink, stays the headline; the lake-only HAND is reported beside it, labelled post-hoc, so a reader can see whether the ponds change the answer.
+4. **Street by street: a post-hoc variant of key B on the UPV surveyed area alone** (added after the first street scores, because of the check of the UPV map at the water marks). The rules count a point without a value inside the UPV outlines as dry; the check showed that in the extra zones the map has no value at 52 % of the wet marks (in the surveyed area at 8 %), so there "no value" is often not dry. Key B as written stays the second headline; the variant limited to the surveyed area (CGAT outline) is reported beside it, labelled post-hoc. It does not change the order (zones 53.0, terrain 47.7, SIMULATED 51.6 % at equal street length).
 
 ## Sources
 
@@ -331,6 +458,8 @@ python -m pipeline.streets report
 - **Buildings**: Dirección General del Catastro, INSPIRE Buildings download service (ATOM), by municipality.
 - **Rain and gauge**: Pérez Cueva, A. J., Armengot Serrano, R., Fansa Saleh, G., Núñez Mora, J. Á., and Revert Ferrero, A. (2025), Estudio cronológico de los volúmenes de precipitación en las subcuencas de la rambla de Poyo en el episodio del 29 octubre de 2024, Investigaciones Geográficas 84, 9 to 29, [doi:10.14198/INGEO.30056](https://doi.org/10.14198/INGEO.30056) ([PDF at AEMET's repository](https://repositorio.aemet.es/bitstream/20.500.11765/17270/1/IG_Perez_2025.pdf)); Confederación Hidrográfica del Júcar, [Informe del episodio de lluvias y avenidas del 28 de octubre al 4 de noviembre de 2024](https://saih.chj.es/docs/20241029-1104Informe-Episodio-C-version2.pdf) (15 Jan 2025); AEMET, [informe del episodio DANA 29 oct 2024](https://repositorio.aemet.es/bitstream/20.500.11765/16360/1/informe_episodio_dana_29_oct_2024_.pdf). Read 15 Nov 2026.
 - **Depth estimate**: Cohen, S., Brakenridge, G. R., Kettner, A., Bates, B., Nelson, J., McDonald, R., Huang, Y.-F., Munasinghe, D., and Zhang, J. (2018), Estimating floodwater depths from flood inundation maps and topography, Journal of the American Water Resources Association 54(4), 847 to 858, doi:10.1111/1752-1688.12609. Cohen, S., et al. (2019), The Floodwater Depth Estimation Tool (FwDET v2.0) for improved remote sensing analysis of coastal flooding, Natural Hazards and Earth System Sciences 19, 2053 to 2065, doi:10.5194/nhess-19-2053-2019. Water marks of 2026: ICV service `2702_DANAAdam2026`, as in `pipeline.labels`.
+- **Streets**: OpenStreetMap, © OpenStreetMap contributors, ODbL 1.0, as mapped on 28 Oct 2024 (Overpass API attic query at `https://overpass-api.de/api/interpreter`), read 15 Nov 2026.
+- **UPV street depth map**: Grup de Cartografia GeoAmbiental i Teledetecció (CGAT), Universitat Politècnica de València, Mapa d'inundació carrer a carrer de l'Horta Sud 2024 ([viewer](https://dana2024.upvusig.car.upv.es), [UPV news](https://www.upv.es/noticias-upv/noticia-15013-mapa-de-inunda-en.html)), GeoServer `https://dana2024.gisserver.car.upv.es/geoserver/dana2024/` (WCS coverage `dana2024__H_lamina`, WFS outlines), result updated 05/11/2026, read 15 Nov 2026; no licence named ("The data are freely available through the WMS server"; Fees NONE, AccessConstraints NONE). Roch Talens, A., Pardo-Pascual, J. E., Almonacid-Caballer, J., Fernández-Sarría, A., Palomar-Vázquez, J., and Cabezas-Rabadán, C. (2025), Mapa de calados máximos de las inundaciones del 29 de octubre de 2024 en l'Horta Sud y la Ribera, Cuadernos de Geografía 114-115, 347 to 374, doi:10.7203/CGUV.114-15.32144.
 - **Further work**: Chini, M., Pelich, R., Pulvirenti, L., Pierdicca, N., Hostache, R., and Matgen, P. (2019), Sentinel-1 InSAR coherence to detect floodwater in urban areas: Houston and Hurricane Harvey as a test case, Remote Sensing 11(2), 107, doi:10.3390/rs11020107. Rossman, L. A. (2015), Storm Water Management Model User's Manual, Version 5.1, EPA/600/R-14/413b, U.S. Environmental Protection Agency.
 - **Methods**: Nobre, A. D., et al. (2011), Height Above the Nearest Drainage, a hydrologically relevant new terrain model, Journal of Hydrology 404, 13 to 29, doi:10.1016/j.jhydrol.2011.03.051. Yamazaki, D., et al. (2019), MERIT Hydro: a high-resolution global hydrography map based on latest topography datasets, Water Resources Research 55, 5053 to 5073, doi:10.1029/2019WR024873 (drainage above 0.5 km²: [MERIT Hydro page](https://global-hydrodynamics.github.io/MERIT_Hydro/), read 15 Nov 2026). Twele, A., Cao, W., Plank, S., and Martinis, S. (2016), Sentinel-1-based flood mapping: a fully automated processing chain, International Journal of Remote Sensing 37(13), 2990 to 3004, doi:10.1080/01431161.2016.1192304. Garbrecht, J., and Martz, L. W. (1997), The assignment of drainage direction over flat surfaces in raster digital elevation models, Journal of Hydrology 193, 204 to 213. Bates, P. D., Horritt, M. S., and Fewtrell, T. J. (2010), A simple inertial formulation of the shallow water equations for efficient two-dimensional flood inundation modelling, Journal of Hydrology 387, 33 to 45, doi:10.1016/j.jhydrol.2010.03.027.
 

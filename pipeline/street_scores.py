@@ -162,13 +162,13 @@ def upv_outlines(manifest: dict) -> dict:
     return out
 
 
-def load_upv_outline():
-    """Union of the UPV outlines (surveyed area and extra zones), EPSG:25830."""
+def load_upv_outline(keys: tuple[str, ...] = tuple(UPV["outlines"])):
+    """Union of the UPV outlines (by default the surveyed area and the extra zones), EPSG:25830."""
     import shapely
     from shapely.geometry import shape
 
     geoms = []
-    for key in UPV["outlines"]:
+    for key in keys:
         doc = json.loads((UPV_DIR / f"outline_{key}.geojson").read_text(encoding="utf-8"))
         geoms += [shape(f["geometry"]) for f in doc["features"]]
     return shapely.union_all(geoms)
@@ -659,10 +659,11 @@ def build_pieces(tracks: bool = False) -> dict:
             "lines": lines}
 
 
-def evaluate(b: dict, lay: dict, marks_xy: np.ndarray, outline) -> dict:
+def evaluate(b: dict, lay: dict, marks_xy: np.ndarray, outline, surveyed=None) -> dict:
     """Keys, method flags, rankings and metrics for one set of pieces (b) with its layers (lay).
 
     lay holds the layer values at the pieces' sample cells followed by their midpoint cells.
+    surveyed: the UPV surveyed area alone (CGAT outline), for the post-hoc variant of key B.
     """
     import shapely
 
@@ -727,6 +728,39 @@ def evaluate(b: dict, lay: dict, marks_xy: np.ndarray, outline) -> dict:
     for r, sel in eq_sel.items():
         equal[r] = {k: by_town(sel, kv, length, town, dom) for k, (kv, dom) in keys.items()}
     town_km = {t: _km(length[town == i + 1].sum()) for i, t in enumerate(TOWNS)}
+    # descriptive, after the headline: the streets the SIMULATED extent flags outside every official zone
+    sim_ext = flags["simulated_depth_above_0p3m"]
+    outside = ~official
+    descriptive = {
+        "what": "descriptive, computed after the headline: flooded streets outside every official zone, and the "
+                "streets the SIMULATED extent (above 0.3 m) flags outside every official zone",
+        "key_a_flooded_km_outside_every_zone": _km(length[key_a & outside].sum()),
+        "key_a_flooded_outside_every_zone_pct": round(100.0 * float(length[key_a & outside].sum())
+                                                      / max(float(length[key_a].sum()), 1e-9), 1),
+        "key_b_flooded_km_outside_every_zone": _km(length[key_b & outside].sum()),
+        "key_b_flooded_outside_every_zone_pct": round(100.0 * float(length[key_b & outside].sum())
+                                                      / max(float(length[key_b].sum()), 1e-9), 1),
+        "simulated_outside_zones": {"A": by_town(sim_ext & outside, key_a, length, town),
+                                    "B": by_town(sim_ext & outside, key_b, length, town, dom_b)},
+        "outside_zones_chance_precision": {
+            "A": street_metrics(outside, key_a, length, outside)["chance_precision_pct"],
+            "B": street_metrics(outside, key_b, length, outside & dom_b)["chance_precision_pct"]},
+    }
+    post_hoc = None
+    if surveyed is not None:
+        shapely.prepare(surveyed)
+        dom_s = shapely.contains_xy(surveyed, mxy[:, 0], mxy[:, 1])
+        key_s = key_b & dom_s
+        post_hoc = {
+            "what": "POST-HOC (added after the check of key B at the water marks, checks.upv_at_marks): key B on "
+                    "the pieces inside the UPV surveyed area (CGAT outline) only, where the map has a value at most "
+                    "wet marks; in the extra zones it has none at about half of them",
+            "inside_km": _km(length[dom_s].sum()), "flooded_km": _km(length[key_s].sum()),
+            "inside_km_by_town": {t: _km(length[dom_s & (town == i + 1)].sum()) for i, t in enumerate(TOWNS)},
+            "equal_length": {r: by_town(sel, key_s, length, town, dom_s)
+                             for r, sel in {"official_union": official, **eq_sel}.items()},
+            "own_length": {name: by_town(fl, key_s, length, town, dom_s) for name, fl in flags.items()},
+        }
     summary = {
         "pieces": n, "street_km": _km(length.sum()), "street_km_by_town": town_km,
         "street_km_by_highway": {h: _km(length[hw == h].sum()) for h in sorted(set(hw))},
@@ -751,7 +785,13 @@ def evaluate(b: dict, lay: dict, marks_xy: np.ndarray, outline) -> dict:
         "key_a_marks_only": {r: by_town(sel, near, length, town) for r, sel in
                              {"official_union": official, **eq_sel}.items()},
     }
-    return {"summary": summary, "methods": methods, "equal_length": equal, "key_sensitivity": sens}
+    table = {"x": mxy[:, 0].astype(np.float32), "y": mxy[:, 1].astype(np.float32), "length": length.astype(np.float32),
+             "town": town.astype(np.uint8), "highway": hw, "key_a": key_a, "in_observed": in_obs, "near_mark": near,
+             "key_b": key_b, "inside_upv": dom_b, "hand_median": hand_med.astype(np.float32),
+             "sim_median": sim_med.astype(np.float32), **{f"flag_{k}": v for k, v in flags.items()},
+             **{f"equal_{k}": v for k, v in eq_sel.items()}}
+    return {"summary": summary, "methods": methods, "equal_length": equal, "key_sensitivity": sens,
+            "descriptive": descriptive, "key_b_surveyed_area_only_post_hoc": post_hoc, "_table": table}
 
 
 METHOD_WHAT = {
@@ -792,11 +832,14 @@ def score(zones_dir: Path) -> dict:
     marks = marks[marks["height_m"] > 0]
     marks_xy = marks[["x", "y"]].to_numpy()
     outline = load_upv_outline()
+    surveyed = load_upv_outline(("cgat",))
     results = {}
     for j, (label, b) in enumerate((("main", main_b), ("with_tracks", track_b))):
         lo, hi = bounds[2 * j], bounds[2 * j + 2]
         lay = {k: v[lo:hi] for k, v in lay_all.items() if isinstance(v, np.ndarray)}
-        results[label] = evaluate(b, lay, marks_xy, outline)
+        results[label] = evaluate(b, lay, marks_xy, outline, surveyed)
+        table = results[label].pop("_table")
+        np.savez_compressed(INTERIM_DIR / f"street_pieces_{label}.npz", **table)
         results[label]["summary"]["ways"] = {"read": b["ways"]["ways_read"], "by_reason": b["ways"]["reasons"]}
         print(f"{label}: {results[label]['summary']['pieces']} scored pieces, "
               f"{results[label]['summary']['street_km']} km, {time.time() - t0:.0f} s", flush=True)
@@ -818,6 +861,12 @@ def score(zones_dir: Path) -> dict:
         vv = v[sel]
         upv_check[label] = {"marks_inside_outlines": int(sel.sum()),
                             "with_a_value_pct": st.pct(int(np.isfinite(vv).sum()), vv.size),
+                            "depth_above_0p1m_pct": st.pct(int((np.nan_to_num(vv) > UPV_DEPTH_M).sum()), vv.size)}
+    in_cgat = shapely.contains_xy(surveyed, allm["x"].to_numpy(), allm["y"].to_numpy()) & (mc >= 0)
+    for label, sel in (("marks_above_0m_surveyed_area", in_cgat & (h > 0)),
+                       ("marks_above_0m_extra_zones_only", inside & ~in_cgat & (h > 0))):
+        vv = v[sel]
+        upv_check[label] = {"marks": int(sel.sum()), "with_a_value_pct": st.pct(int(np.isfinite(vv).sum()), vv.size),
                             "depth_above_0p1m_pct": st.pct(int((np.nan_to_num(vv) > UPV_DEPTH_M).sum()), vv.size)}
     both = inside & (h > 0) & np.isfinite(v)
     if both.any():
@@ -898,6 +947,27 @@ def report() -> str:
         lines.append(f"| `{name}` | {a['flagged_km']:.1f} | {_p(a['flagged_pct_of_streets'])} | {_p(a['hit_rate_pct'])} | "
                      f"{_p(a['precision_pct'])} | {b['flagged_km']:.1f} | {_p(b['hit_rate_pct'])} | "
                      f"{_p(b['precision_pct'])} |")
+    lines += ["", "Reach: the official zones and the SIMULATED extent at their own length, key A:", "",
+              "| Town | Zones: km | Zones: hit rate | Zones: precision | Simulated: km | Simulated: hit rate | "
+              "Simulated: precision |", "|---|---|---|---|---|---|---|"]
+    for t in [*TOWNS, "total"]:
+        o = m["methods"]["official_union"]["A"]
+        si = m["methods"]["simulated_depth_above_0p3m"]["A"]
+        o, si = (o["total"], si["total"]) if t == "total" else (o["towns"][t], si["towns"][t])
+        lines.append(f"| {'**Total**' if t == 'total' else t} | {o['flagged_km']:.1f} | {_p(o['hit_rate_pct'])} | "
+                     f"{_p(o['precision_pct'])} | {si['flagged_km']:.1f} | {_p(si['hit_rate_pct'])} | "
+                     f"{_p(si['precision_pct'])} |")
+    lines += ["", "Sensitivity, equal street length, 10 towns (hit rate zones / terrain / simulated):"]
+    sens = {"key A from EMSR773 alone": m["key_sensitivity"]["key_a_emsr773_only"],
+            "key A from the marks alone": m["key_sensitivity"]["key_a_marks_only"],
+            "tracks included, key A": {r: v["A"] for r, v in s["with_tracks"]["equal_length"].items()},
+            "tracks included, key B": {r: v["B"] for r, v in s["with_tracks"]["equal_length"].items()}}
+    ph = m.get("key_b_surveyed_area_only_post_hoc")
+    if ph:
+        sens["key B, surveyed area only (POST-HOC)"] = ph["equal_length"]
+    for label, blk in sens.items():
+        vals = " / ".join(_p(blk[r]["total"]["hit_rate_pct"]) for r in ("official_union", "terrain_hand", "simulated_depth"))
+        lines.append(f"- {label}: {vals} (flooded {blk['official_union']['total']['flooded_km']:.1f} km)")
     text = "\n".join(lines)
     print(text)
     return text
