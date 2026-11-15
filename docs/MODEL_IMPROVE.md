@@ -261,6 +261,10 @@ lists them). Each `forecast.json` names the candidate (`variant`, `exported_scor
 score (the model alone is under `thresholds.model_alone`). For the EMSR935 test: score evidence 0 pixels with the
 thresholds of each map's `forecast.json`. `comparison.json` and `variants/` are PR #33's own runs.
 
+Checked from a clean checkout of main (`db50103`): `python web/scripts/bake_prediction.py --ref 39c633f` bakes all 16
+maps of both sites, the game and the click data (exit 0), and its drawn areas are within 1 % of `forecast.json`.
+Nothing in `web/` was changed on this branch.
+
 To reproduce (main venv, the DSWx-S1 history in `data/raw/dswx_history`, about 1 hour on 16 threads):
 
     python -m pipeline.prediction.spatial prepare
