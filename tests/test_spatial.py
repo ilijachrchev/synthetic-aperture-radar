@@ -55,7 +55,7 @@ def test_assemble_matches_feature_order():
     rain = {k: 1.0 for k in F.RAIN if k != "lead_days"}
     X = F.assemble(static, np.full(4, 0.5), date(2026, 10, 22).toordinal(), 5.0, rain,
                    np.array([0, 1, np.nan, 0], "float32"), np.array([5, 5, np.nan, 5], "float32"))
-    assert X.shape == (4, len(F.FEATURES))
+    assert X.shape == (4, len(F.ALL))
     assert X[:, F.FEATURES.index("prev_water_missing")].tolist() == [0, 0, 1, 0]
     assert X[0, F.FEATURES.index("lead_days")] == 5.0 and X[0, F.FEATURES.index("s1_wet_freq")] == 0.5
 
@@ -73,6 +73,34 @@ def test_table_leaves_the_held_out_window_out():
     assert F.in_holdout("2026-10-15") and F.in_holdout("2026-11-15") and not F.in_holdout("2026-10-14")
 
 
-def test_past_wet_share_leaves_the_sample_out_and_needs_enough_passes():
-    f = F.wet_frequency(np.array([10, 10, 3]), np.array([40, 40, 10]), minus_wet=np.array([1, 0, 0]), minus_obs=1)
-    assert abs(f[0] - 9 / 39) < 1e-6 and abs(f[1] - 10 / 39) < 1e-6 and np.isnan(f[2])
+def test_past_wet_share_counts_only_passes_up_to_the_issue_pass():
+    days = [f"2026-0{m}-{d:02d}" for m in (6, 7, 8) for d in range(1, 29, 3)]
+    times = np.array([d + "T06:00" for d in days], dtype="datetime64[s]")
+    water = np.zeros((len(days), 2), "uint8")
+    water[-1, 0] = 1                                   # pixel 0 turns wet only at the last pass
+    rain = {date(2026, 4, 1).toordinal() + i: 0.0 for i in range(200)}
+    tab = F.build_table(water, times, days, np.zeros((2, len(F.STATIC)), "float32"), np.ones(2, "float32"),
+                        rain, np.random.default_rng(0), dry_keep=1.0)
+    last = (tab["t"] == len(days) - 1) & (tab["p"] == 0)
+    assert tab["y"][last].tolist() == [1]
+    assert tab["X"][last, F.ALL.index("s1_wet_freq")].tolist() == [0.0]   # its own wet pass is not in its history
+    assert np.isnan(F.wet_frequency(np.array([3]), np.array([10])))[0]    # too few passes to trust
+
+
+def test_soil_columns_are_missing_unless_given():
+    static = np.zeros((2, len(F.STATIC)), "float32")
+    rain = {k: 0.0 for k in F.RAIN if k != "lead_days"}
+    args = (static, np.zeros(2), date(2026, 10, 22).toordinal(), 5.0, rain, np.zeros(2, "float32"), np.ones(2, "float32"))
+    X = F.assemble(*args)
+    assert X.shape == (2, len(F.ALL)) and X[:, F.ALL.index("soil_moisture_missing")].tolist() == [1, 1]
+    X = F.assemble(*args, np.array([0.2, np.nan], "float32"), 6.0)
+    assert X[0, F.ALL.index("soil_moisture")] == np.float32(0.2) and X[0, F.ALL.index("soil_moisture_age_d")] == 6.0
+    assert X[:, F.ALL.index("soil_moisture_missing")].tolist() == [0, 1] and np.isnan(X[1, F.ALL.index("soil_moisture_age_d")])
+
+
+def test_merged_stack_is_in_time_order():
+    a = (np.array([[[1]], [[3]]], "uint8"), [{"begin_utc": "2026-06-18T06:00:00Z"}, {"begin_utc": "2026-06-30T06:00:00Z"}])
+    b = (np.array([[[0]]], "uint8"), [{"begin_utc": "2026-06-20T05:00:00Z", "platform": "NISAR"}])
+    m = labels.Merged(a, b)
+    assert m.shape == (3, 1, 1) and [int(m[i][0, 0]) for i in range(3)] == [1, 0, 3]
+    assert m.passes[1]["platform"] == "NISAR"

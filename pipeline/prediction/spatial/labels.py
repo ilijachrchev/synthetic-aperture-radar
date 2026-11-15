@@ -62,5 +62,58 @@ def load(site: str) -> tuple[np.ndarray, list[dict]]:
     return np.load(npy, mmap_mode="r"), json.loads(meta.read_text(encoding="utf-8"))
 
 
+class Merged:
+    """Sentinel-1 and NISAR passes as one time-ordered stack, read pass by pass (no 0.8 GB copy).
+
+    The NISAR passes come from pipeline.cv.labels.load, already as 0 / 1 / 255 water codes,
+    which to_water leaves unchanged.
+    """
+
+    def __init__(self, *sources: tuple[np.ndarray, list[dict]]):
+        order = sorted(((p["begin_utc"].rstrip("Z"), i, k) for i, (_, passes) in enumerate(sources)
+                        for k, p in enumerate(passes)))
+        self._sources = sources
+        self._where = [(i, k) for _, i, k in order]
+        self.passes = [sources[i][1][k] for i, k in self._where]
+        self.shape = (len(order),) + tuple(sources[0][0].shape[1:])
+
+    def __getitem__(self, n: int) -> np.ndarray:
+        i, k = self._where[n]
+        return self._sources[i][0][k]
+
+
+def load_set(site: str, label_set: str = "s1"):
+    """(stack, passes) for 's1' (DSWx-S1 only) or 's1+nisar' (with the team's NISAR water labels)."""
+    s1 = load(site)
+    if label_set == "s1":
+        return s1
+    if label_set != "s1+nisar":
+        raise ValueError(label_set)
+    m = Merged(s1, load_nisar(site))
+    return m, m.passes
+
+
+NISAR_DIR = HISTORY_RAW.parents[1] / "labels_nisar"   # data/labels_nisar, written by pipeline.cv.labels
+
+
+def load_nisar(site: str, labels_dir: Path = NISAR_DIR) -> tuple[np.ndarray, list[dict]]:
+    """The team's NISAR water labels as 0 dry / 1 wet / 255 unknown, with their pass list.
+
+    Same mapping as pipeline.cv.labels.load (class 0 not water, 1 open water; 2 water under plants
+    and 3 not assessed stay unknown), read here directly so that PyTorch is not needed.
+    """
+    import rasterio
+    passes = json.loads((labels_dir / f"{site}_passes.json").read_text(encoding="utf-8"))
+    out = None
+    for i, p in enumerate(passes):
+        with rasterio.open(labels_dir.parents[1] / p["class_file"]) as src:
+            cls = src.read(1)
+        if out is None:
+            out = np.full((len(passes),) + cls.shape, UNKNOWN, dtype="uint8")
+        out[i][cls == 0] = 0
+        out[i][cls == 1] = 1
+    return out, passes
+
+
 def pass_times(passes: list[dict]) -> np.ndarray:
     return np.array([p["begin_utc"].rstrip("Z") for p in passes], dtype="datetime64[s]")

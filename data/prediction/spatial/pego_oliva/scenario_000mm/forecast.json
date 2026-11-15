@@ -1,7 +1,7 @@
 {
   "site": "pego_oliva",
   "model": "spatial water likelihood (LightGBM)",
-  "model_sha256_16": "749d27c3f84f5633",
+  "model_sha256_16": "e241d10cd9290a75",
   "rain_source": "Open-Meteo, ECMWF IFS 9 km, wettest lattice point of the site per day",
   "holdout": {
     "start": "2026-10-15",
@@ -46,12 +46,12 @@
     "255": "sea or outside the land grid"
   },
   "thresholds": {
-    "water": 0.3129008966120227,
-    "new_water": 0.20000887192001116
+    "water": 0.28405811008713044,
+    "new_water": 0.17041007967415503
   },
   "area_ha": {
-    "likely_water": 674.7,
-    "likely_new_water": 404.0,
+    "likely_water": 621.9,
+    "likely_new_water": 405.1,
     "counted_on": "evidence 0 pixels only"
   },
   "native_resolution": {
