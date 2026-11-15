@@ -89,7 +89,7 @@ export function MoreStories() {
 			<ul className="mr-list">
 				{STORIES.map((s) => (
 					<li key={s.key}>
-						<Link href={s.path} className="mr-card">
+						<Link href={s.path} className="mr-card" prefetch={false}>
 							{/* eslint-disable-next-line @next/next/no-img-element */}
 							<img src={`/films${s.path}-still.jpg`} alt="" width={1280} height={720} loading="lazy" />
 							<span className="mr-text">

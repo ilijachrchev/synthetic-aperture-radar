@@ -346,6 +346,13 @@ export function ExploreApp({ onGuide, onScreen }: { onGuide?: () => void; onScre
 					if (map.getSource(key)) map.addLayer({ id: `${key}-hit`, type: 'fill', source: key, paint: { 'fill-opacity': 0 } })
 				}
 				if (map.getSource('buildings_2024')) map.addLayer({ id: 'buildings_2024-hit', type: 'circle', source: 'buildings_2024', paint: { 'circle-opacity': 0, 'circle-radius': 7 } })
+				// on a phone the photo credit folds into its (i) button, so it does not cover "What if it rains" (MapLibre
+				// opens it once its sources have loaded: fold it then too), as on the guided map
+				const fold = () => {
+					if (window.innerWidth < 900) mapEl.current?.querySelector('.maplibregl-ctrl-attrib')?.classList.remove('maplibregl-compact-show')
+				}
+				fold()
+				map.once('idle', fold)
 				setReady(true)
 			})
 		})()

@@ -22,7 +22,7 @@ import { ArrowLeft, ArrowRight, Layers, RotateCcw, X } from 'lucide-react'
 import type { GeoJSONSource, Map as MapLibreMap, MapMouseEvent } from 'maplibre-gl'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ICV, PNOA } from '@/content/explore'
-import { COLORS, REVEAL_FADE_MS, REVEAL_MS, SCREENS, STEP3_METHODS, STEPS, STREET_TITLES, type StepKey, SWIPE_WATER } from '@/content/guided'
+import { CHANNEL_M, COLORS, REVEAL_FADE_MS, REVEAL_MS, SCREENS, STEP3_METHODS, STEPS, STREET_TITLES, type StepKey, SWIPE_WATER } from '@/content/guided'
 import { RainSlider } from '../explore/rain-slider'
 import { SiteNav } from '../site-nav'
 import { MapSwipe } from './map-swipe'
@@ -75,7 +75,11 @@ type SwipeDoc = {
 	s1: Pic & { time_utc: string; product: string }
 	numbers: Record<string, { value: number; what: string; source: string[] }>
 }
-type ExploreDoc = { sites: { pego_oliva?: { nisar: { still?: { date: string; open_water_share: number; source: string } } | null } } }
+type ExploreDoc = { sites: { pego_oliva?: { nisar: { still?: { date: string; outline?: string; open_water_share: number; source: string } } | null } } }
+/** 2026-10-28 as "28 Oct" */
+const dayMonth = (iso: string) => new Date(`${iso}T12:00:00Z`).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', timeZone: 'UTC' })
+/** the dates of the Copernicus EMS imagery in the outline's description ("EMSR935 flooded_area, imagery 20 to 21 Oct 2026, ...") */
+const emsImagery = (outline?: string) => outline?.match(/imagery ([^,]+?)(?: \d{4})?(?:,|$)/)?.[1] ?? null
 type ExamDoc = {
 	baked_utc: string
 	bounds: [number, number, number, number]
@@ -388,7 +392,7 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 		map.addLayer({ id: 'g-s3-missed', type: 'line', source: 'g-streets', filter: first['g-s3-missed'] as never, layout: line, paint: { 'line-color': COLORS.flooded, 'line-width': lineWidth(), 'line-opacity': 0.9 } })
 		map.addLayer({ id: 'g-s3-dry', type: 'line', source: 'g-streets', filter: first['g-s3-dry'] as never, layout: line, paint: { 'line-color': COLORS.falseAlarm, 'line-width': lineWidth(), 'line-opacity': 0.95 } })
 		map.addLayer({ id: 'g-s3-found', type: 'line', source: 'g-streets', filter: first['g-s3-found'] as never, layout: line, paint: { 'line-color': COLORS.hit, 'line-width': lineWidth(1.15), 'line-opacity': 1 } })
-		map.addLayer({ id: 'g-pick', type: 'line', source: 'g-pick', layout: { ...hidden, 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-color': '#ffffff', 'line-width': lineWidth(2.2), 'line-opacity': 0.95 } }, binLayer(0))
+		map.addLayer({ id: 'g-pick', type: 'line', source: 'g-pick', layout: { ...hidden, 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-color': '#ffffff', 'line-width': lineWidth(2.2), 'line-opacity': 0.95 } })
 		// what a tap reads: every street drawn, wide and unseen
 		map.addLayer({ id: 'g-hit', type: 'line', source: 'g-streets', paint: { 'line-width': ['interpolate', ['linear'], ['zoom'], 11, 10, 16, 22] as never, 'line-opacity': 0 } })
 	}, [map, ready, streets])
@@ -404,21 +408,45 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 	const methods = useMemo(() => (streets?.methods ?? []).filter((m) => STEP3_METHODS.includes(m.key)), [streets])
 	const method = methods.find((m) => m.key === methodKey) ?? methods[0] ?? null
 
-	// which layers show
+	// which layers show, step by step (a step change moves the camera anyway). In the streets step the official map and
+	// our simulation are both laid out, and the switch between them only fades their opacity (below): turning a
+	// layer's visibility on or changing its filter makes MapLibre lay its source out again, which dropped frames on
+	// every switch
 	useEffect(() => {
 		if (!map || !ready) return
 		const on = new Set(STEP_LAYERS[key])
-		if (key === 'streets') for (const id of method?.key === 'sim' ? SIM_LAYERS : OFFICIAL_LAYERS) on.add(id)
+		if (key === 'streets') for (const id of [...OFFICIAL_LAYERS, ...SIM_LAYERS]) on.add(id)
 		if (key === 'streets' && pick) on.add('g-pick')
 		for (const id of ALL_LAYERS) if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', on.has(id) ? 'visible' : 'none')
 		if (map.getLayer('g-hit')) map.setLayoutProperty('g-hit', 'visibility', key === 'streets' ? 'visible' : 'none')
-	}, [map, ready, key, pick, streets, exam, method])
+	}, [map, ready, key, pick, streets, exam])
+
+	// the switch of the streets step: the official map (its zones and the flooded streets) or our simulation's streets,
+	// by opacity only; MapLibre fades it in 300 ms. The last step shows the simulation's streets of the chosen rain.
+	const officialOn = useRef(true)
+	const revealDone = useRef(false)
+	useEffect(() => {
+		if (!map || !ready || !map.getLayer('g-s3-found')) return
+		const official = key === 'streets' && method?.key !== 'sim'
+		officialOn.current = official
+		const opacity: [string, string, number][] = [
+			['g-zones-fill', 'fill-opacity', official ? 0.13 : 0],
+			['g-zones-line', 'line-opacity', official ? 0.95 : 0],
+			['g-s3-missed', 'line-opacity', official ? 0 : 0.9],
+			['g-s3-dry', 'line-opacity', official ? 0 : 0.95],
+			['g-s3-found', 'line-opacity', official ? 0 : 1],
+		]
+		for (const [id, prop, v] of opacity) map.setPaintProperty(id, prop as 'line-opacity', v)
+		// the flooded streets of the official map: the reveal draws them in when the step opens; after it, the switch
+		if (revealDone.current) for (const id of BIN_LAYERS) map.setPaintProperty(id, 'line-opacity', official ? 1 : 0)
+	}, [map, ready, key, method, streets])
 
 	// the streets step: the chosen method's streets; the last step: the chosen rain's (none while still arriving)
 	const rains = coming?.options ?? []
 	const rainOpt = rains.find((o) => o.key === rainKey) ?? rains[0] ?? null
 	const rainProp = rainOpt && rainOpt.status === 'in' && streets?.methods.some((m) => m.prop === rainOpt.streets) ? rainOpt.streets : null
-	const s3Prop = key === 'coming' ? rainProp : (method?.prop ?? null)
+	const simProp = methods.find((m) => m.key === 'sim')?.prop ?? null
+	const s3Prop = key === 'coming' ? rainProp : simProp
 	useEffect(() => {
 		if (!map || !ready || !map.getLayer('g-s3-found')) return
 		for (const [id, f] of Object.entries(s3Filters(s3Prop))) map.setFilter(id, f as never)
@@ -431,6 +459,7 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 		const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 		const gap = (REVEAL_MS - REVEAL_FADE_MS) / (BINS - 1)
 		const t0 = performance.now()
+		revealDone.current = false
 		const frame = (now: number) => {
 			if (stop) return
 			const t = reduce ? Infinity : now - t0
@@ -438,9 +467,11 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 			for (let i = 0; i < BINS; i++) {
 				const k = Math.min(1, Math.max(0, (t - i * gap) / REVEAL_FADE_MS))
 				if (k < 1) done = false
-				map.setPaintProperty(binLayer(i), 'line-opacity', k * k * (3 - 2 * k))
+				// switched to our simulation while it plays: the official streets stay out
+				map.setPaintProperty(binLayer(i), 'line-opacity', officialOn.current ? k * k * (3 - 2 * k) : 0)
 			}
-			if (!done) requestAnimationFrame(frame)
+			if (done) revealDone.current = true
+			else requestAnimationFrame(frame)
 		}
 		requestAnimationFrame(frame)
 		return () => {
@@ -556,6 +587,11 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 		setPick(null)
 		setAt({ step: Math.max(0, Math.min(STEPS.length - 1, i)), extra: null })
 	}, [])
+	/** "Start again": the first step as it opens, on the official map */
+	const restart = useCallback(() => {
+		setMethod(null)
+		go(0)
+	}, [go])
 	const openScreen = useCallback((k: Extra) => {
 		setPick(null)
 		setAt((was) => ({ step: was.step, extra: k }))
@@ -664,13 +700,19 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 			<dl className="gd-rec">
 				<dt>Official map</dt>
 				<dd data-zone={pick.zoneCode === 0 || undefined}>{pick.zoneCode === 0 ? 'No flood zone' : `In the ${pick.zone}`}</dd>
-				<dt>Our simulation, simulated</dt>
-				<dd>{pick.sim ? `Flooded${pick.simDepth !== null ? `, ${pick.simDepth.toFixed(1)} m deep` : ''}` : 'Dry'}</dd>
+				<dt>Our simulation</dt>
+				<dd>
+					{!pick.sim
+						? 'Dry'
+						: pick.simDepth !== null && pick.simDepth >= CHANNEL_M
+							? 'Flooded, over the ravine channel'
+							: `Flooded${pick.simDepth !== null ? `, ${pick.simDepth.toFixed(1)} m deep` : ''}`}
+				</dd>
 			</dl>
 			<p className="gd-rec-head">What really happened, measured</p>
 			<dl className="gd-rec">
 				<dt>Water mark</dt>
-				<dd>{pick.water !== null ? `${pick.water.toFixed(1)} m, measured` : 'None within 25 m'}</dd>
+				<dd>{pick.water === null ? 'None within 25 m' : pick.water < 0.05 ? 'Under 0.1 m, measured' : `${pick.water.toFixed(1)} m, measured`}</dd>
 				<dt>Copernicus EMS map</dt>
 				<dd>{pick.ems ? 'Inside the flooded area' : 'Outside the flooded area'}</dd>
 				<dt>UPV depth map</dt>
@@ -770,7 +812,12 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 						</p>
 					</div>
 				)}
-				{still && <p className="gd-small">9 days after the flood, {pct(still.open_water_share * 100)} of the flooded farmland was still under water.</p>}
+				{still && (
+					<p className="gd-small">
+						On {dayMonth(still.date)}, NISAR still saw open water on {pct(still.open_water_share * 100)} of the area Copernicus EMS mapped as flooded
+						{emsImagery(still.outline) ? ` on ${emsImagery(still.outline)}` : ''}.
+					</p>
+				)}
 				<ul className="gd-key">
 					<li>
 						<i className="gd-sw" data-k="water" data-fill /> {SWIPE_WATER === 'open' ? 'Open water' : 'Water'} on each radar map
@@ -826,7 +873,7 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 				{coming && <p className="gd-small">{coming.ceiling.text}</p>}
 				{coming && <p className="gd-close">{coming.closing}</p>}
 				<div className="gd-end">
-					<button type="button" className="gd-btn" onClick={() => go(0)}>
+					<button type="button" className="gd-btn" onClick={restart}>
 						<RotateCcw size={15} strokeWidth={2.4} /> Start again
 					</button>
 					<button type="button" className="gd-btn" data-quiet onClick={onAllLayers}>
@@ -892,7 +939,7 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 				{rain?.rain_mm === 0 && <p className="gd-small">With no rain the model still marks this much: water the marsh holds in this season.</p>}
 				<p className="gd-note">Version 1. Its tested score is on the step before.</p>
 				<div className="gd-end">
-					<button type="button" className="gd-btn" onClick={() => go(0)}>
+					<button type="button" className="gd-btn" onClick={restart}>
 						<RotateCcw size={15} strokeWidth={2.4} /> Start again
 					</button>
 					<button type="button" className="gd-btn" data-quiet onClick={onAllLayers}>

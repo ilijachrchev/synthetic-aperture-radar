@@ -35,6 +35,23 @@ OUT = bv.WEB / "public" / "layers" / "guided"
 SITE = "pego_oliva"
 DAY = "2026-10-28"
 THIS = "web/scripts/bake_swipe_open.py"
+# the sea under both pictures, one even colour: the base map's own sea is a patchwork of dark tiles with hard edges
+SEA_RGBA = (14, 36, 49, 255)
+
+
+def save_even_sea(classes: np.ndarray, path: Path) -> int:
+    """bake_views.save_rgba, with the sea (meta.json's base.png, red 255 on the sea, the same lattice) in one colour
+    wherever the picture paints nothing there or only "not covered" (alpha under 200); the water each radar sees
+    along the coast stays on top."""
+    from PIL import Image
+
+    meta = json.loads((bv.WEB / "public" / "layers" / SITE / "meta.json").read_text(encoding="utf-8"))
+    sea = np.asarray(Image.open(bv.WEB / "public" / "layers" / SITE / meta["base"]).convert("RGB"))[..., 0] == 255
+    rgba = bv.LUT[classes].copy()
+    rgba[sea & (rgba[..., 3] < 200)] = SEA_RGBA
+    path.parent.mkdir(parents=True, exist_ok=True)
+    Image.fromarray(rgba, "RGBA").save(path, "WEBP", lossless=True, quality=100, method=6)
+    return path.stat().st_size
 
 
 def main() -> None:
@@ -68,7 +85,7 @@ def main() -> None:
     files = {}
     for name, ok in (("s1", s_ok), ("nisar", n_ok)):
         path = OUT / f"swipe_{DAY}_{name}_open.webp"
-        size = bv.save_rgba(bv.on_web(bv.picture(maps["open"][name], ok, sea), ds, grid), path)
+        size = save_even_sea(bv.on_web(bv.picture(maps["open"][name], ok, sea), ds, grid), path)
         files[name] = {"file": path.name, "bytes": size}
 
     t = bv.date_index(ds)[DAY]

@@ -4,7 +4,8 @@
 // and a button there brings the guide back. The choice sits in the address (?all), so it can be shared. The address
 // is read after hydration (the server sends an empty map frame), so the first paint never disagrees with it.
 
-import { useSyncExternalStore } from 'react'
+import { useEffect, useSyncExternalStore } from 'react'
+import { META, TITLE_ALL } from '@/content/guided'
 import { ExploreApp } from '../explore/explore-app'
 import { GuidedApp } from './guided-app'
 
@@ -34,6 +35,10 @@ function open(on: boolean, screen?: 'exam' | 'rain') {
 
 export function ExploreRoot() {
 	const all = useSyncExternalStore(subscribe, allLayers, onServer)
+	// the tab's title follows the page on screen: the guide, or every layer
+	useEffect(() => {
+		if (all !== null) document.title = all ? TITLE_ALL : META.title
+	}, [all])
 	if (all === null) return <div className="gd gd-boot" />
 	return all ? <ExploreApp onGuide={() => open(false)} onScreen={(k) => open(false, k)} /> : <GuidedApp onAllLayers={() => open(true)} />
 }

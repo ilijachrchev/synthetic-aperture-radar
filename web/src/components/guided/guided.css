@@ -631,12 +631,13 @@
 	font-weight: 600;
 	color: rgb(244 249 255 / 0.72);
 }
+/* beside the line, never past the screen's edge (a label is about 104 px wide on the left, 88 px on the right) */
 .gd-swipe-label[data-side="left"] {
-	right: calc(100% - var(--x) + 14px);
+	right: min(calc(100% - var(--x) + 14px), calc(100% - var(--pad) - 104px));
 	text-align: right;
 }
 .gd-swipe-label[data-side="right"] {
-	left: calc(var(--x) + 14px);
+	left: min(calc(var(--x) + 14px), calc(100% - var(--pad) - 88px));
 }
 
 /* MapLibre's own attribution, made quiet */
@@ -667,6 +668,16 @@
 	}
 	.gd-swipe-knob {
 		top: 30%;
+	}
+	/* a tapped street or the last step makes the card scroll: Back, Sources and Next stay at its foot */
+	.gd-nav {
+		position: sticky;
+		bottom: -8px;
+		z-index: 2;
+		margin: 12px -15px -8px;
+		padding: 8px 15px;
+		border-radius: 0 0 20px 20px;
+		background: color-mix(in oklab, var(--bg) 97%, transparent);
 	}
 	.gd .maplibregl-ctrl-bottom-right {
 		bottom: auto;
