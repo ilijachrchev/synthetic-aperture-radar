@@ -1,6 +1,6 @@
 {
  "site": "pego_oliva",
- "baked_utc": "2026-11-15T01:44:08Z",
+ "baked_utc": "2026-11-15T01:59:17Z",
  "made_by": "web/scripts/bake_prediction.py",
  "source": {
   "folder": "pr-33:data/prediction/spatial",
@@ -107,9 +107,10 @@
    "validation_status": "retrospective check on the held-out October 2026 window against Sentinel-1 maps; not yet scored against Copernicus EMSR935",
    "caption": {
     "title": "0 mm of rain",
-    "line": "If 0 mm fell in the 4 days after the Sentinel-1 map of 10 Nov",
+    "line": "If no rain fell in the 4 days after the Sentinel-1 map of 10 Nov",
     "note": "Relative likelihood from our model, not depth and not a flood probability",
-    "warning": null
+    "warning": null,
+    "detail": "With no rain the model still marks 404 ha of likely new water: water the marsh holds in this season anyway, not new rain."
    },
    "sources": {
     "forecast": "pr-33:data/prediction/spatial/pego_oliva/scenario_000mm/forecast.json",
@@ -177,7 +178,8 @@
     "title": "50 mm of rain",
     "line": "If 50 mm fell in the 4 days after the Sentinel-1 map of 10 Nov",
     "note": "Relative likelihood from our model, not depth and not a flood probability",
-    "warning": null
+    "warning": null,
+    "detail": "50 and 100 mm give almost the same map (474 and 476 ha): the model saw few storms of this size (nine in ten of its training examples had at most 60 mm)."
    },
    "sources": {
     "forecast": "pr-33:data/prediction/spatial/pego_oliva/scenario_050mm/forecast.json",
@@ -245,7 +247,8 @@
     "title": "100 mm of rain",
     "line": "If 100 mm fell in the 4 days after the Sentinel-1 map of 10 Nov",
     "note": "Relative likelihood from our model, not depth and not a flood probability",
-    "warning": null
+    "warning": null,
+    "detail": "50 and 100 mm give almost the same map (474 and 476 ha): the model saw few storms of this size (nine in ten of its training examples had at most 60 mm)."
    },
    "sources": {
     "forecast": "pr-33:data/prediction/spatial/pego_oliva/scenario_100mm/forecast.json",
@@ -313,7 +316,8 @@
     "title": "200 mm of rain",
     "line": "If 200 mm fell in the 4 days after the Sentinel-1 map of 10 Nov",
     "note": "Relative likelihood from our model, not depth and not a flood probability",
-    "warning": "More rain than the model saw in training (at most 194 mm): a guess beyond its data"
+    "warning": "Beyond the storms the model learned from: the largest had 194 mm",
+    "detail": null
    },
    "sources": {
     "forecast": "pr-33:data/prediction/spatial/pego_oliva/scenario_200mm/forecast.json",
@@ -377,7 +381,8 @@
     "title": "Model map for 22 Oct",
     "line": "Issued from the Sentinel-1 map of 17 Oct, given the 171 mm that fell after it",
     "note": "A reconstruction with the rain that fell, not a forecast. Relative likelihood, not depth",
-    "warning": null
+    "warning": null,
+    "detail": null
    },
    "sources": {
     "forecast": "pr-33:data/prediction/spatial/pego_oliva/replay_2026-10-22/forecast.json",
@@ -439,7 +444,8 @@
     "title": "Model map for 28 Oct",
     "line": "Issued from the Sentinel-1 map of 23 Oct, given the 0 mm that fell after it",
     "note": "A reconstruction with the rain that fell, not a forecast. Relative likelihood, not depth",
-    "warning": null
+    "warning": null,
+    "detail": null
    },
    "sources": {
     "forecast": "pr-33:data/prediction/spatial/pego_oliva/replay_2026-10-28/forecast.json",
@@ -501,7 +507,8 @@
     "title": "Model map for 28 Oct",
     "line": "Issued from the Sentinel-1 map of 17 Oct, given the 172 mm that fell after it",
     "note": "A reconstruction with the rain that fell, not a forecast. Relative likelihood, not depth",
-    "warning": null
+    "warning": null,
+    "detail": null
    },
    "sources": {
     "forecast": "pr-33:data/prediction/spatial/pego_oliva/replay_2026-10-28_prestorm/forecast.json",
@@ -671,5 +678,24 @@
  "game": {
   "file": "prediction/game.json",
   "map": "replay_2026-10-28_prestorm"
+ },
+ "still_flooded": {
+  "file": "prediction/still_flooded.webp",
+  "bytes": 38308,
+  "stack": "066_D_069",
+  "after": "2026-10-28",
+  "outline": "EMSR935 flooded_area, imagery 20 to 21 Oct 2026, not permanent water",
+  "outline_ha": 877.4,
+  "seen_ha": 864.84,
+  "open_water_ha": 264.28,
+  "open_water_share": 0.3056,
+  "recounted_ha": 264.28,
+  "drawn_ha": 265.0,
+  "sources": {
+   "numbers": "data/metrics/nisar_labels_summary.json sites.pego_oliva.dana.emsr935_flooded_area_still_water.per_pass['066_D_069 2026-10-28']",
+   "class": "data/labels_nisar/pego_oliva_066_D_069/2026-10-28_class.tif",
+   "dana": "data/labels_nisar/pego_oliva_066_D_069/dana_2026-10-16_2026-10-28.tif",
+   "outline": "data/labels/pego_oliva_emsr935_flood.geojson"
+  }
  }
 }

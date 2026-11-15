@@ -3,11 +3,12 @@
 // The model gives a relative likelihood of water (scripts/bake_prediction.py, G of each frame), not a measured
 // shoreline and not depth. So it is drawn as an estimate on purpose, never like a radar pass:
 //   a see-through fill whose strength follows the likelihood (faint where it is low)
-//   one dashed line where the likelihood reaches the model's own "likely water" threshold: the hectares on the
-//   page are counted inside that line
 //   water that would be new (dry on the map the prediction was issued from) bright; water that was already there
 //   deep and quiet, as on the radar layer
-//   ground where the model only extrapolates (towns, ground Sentinel-1 rarely maps) at half strength
+//   one dashed line around the likely new water: where the likelihood reaches the model's "new water" threshold on
+//   ground that was dry and that the model predicts itself (evidence 0). The hectares on the page are counted
+//   inside that line, by the same rule (forecast.json, "counted on evidence 0 pixels only")
+//   ground where the model only extrapolates (towns, ground Sentinel-1 rarely maps) at half strength, with no line
 // No light, no ripples: nothing on it moves but the change from one rain to the next. Like the water shader it only
 // knows the ground (v_uv over the baked grid), so the same code draws flat and draped over the terrain.
 export const LIKELIHOOD_FRAG = `#version 300 es
@@ -75,9 +76,11 @@ void main() {
 	float along = abs(tangent.x) > abs(tangent.y) ? g.x : g.y;
 	float dashes = smoothstep(0.36, 0.52, abs(fract(along / 5.0) - 0.5) * 2.0);
 	float dash = mix(0.62, dashes, smoothstep(3.0, 6.0, 5.0 / texel));
-	float line = clamp(1.25 - abs(px), 0.0, 1.0) * dash * mix(0.55, 1.0, own);
+	// the line only where water would be new and the value is the model's own: what the hectares count
+	float counted = own * smoothstep(0.6, 0.9, dry);
+	float line = clamp(1.25 - abs(px), 0.0, 1.0) * dash * counted;
 	// a thin dark casing on the outer side keeps the line readable on a bright picture
-	float casing = clamp(1.0 - abs(px + 1.6), 0.0, 1.0) * 0.35 * mix(0.55, 1.0, own);
+	float casing = clamp(1.0 - abs(px + 1.6), 0.0, 1.0) * 0.35 * counted;
 
 	vec4 acc = vec4(0.0);
 	acc = over(acc, fill, fillA);

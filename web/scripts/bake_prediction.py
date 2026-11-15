@@ -214,16 +214,50 @@ def caption(doc: dict) -> dict:
         train = doc.get("rain_seen_in_training") or {}
         warn = None
         if train and not train.get("inside_training_range", True):
-            warn = f"More rain than the model saw in training (at most {round(train['max'])} mm): a guess beyond its data"
+            warn = f"Beyond the storms the model learned from: the largest had {round(train['max'])} mm"
+        days = round(doc["lead_days"])
         return {"title": f"{mm} mm of rain",
-                "line": f"If {mm} mm fell in the {round(doc['lead_days'])} days after the {radar} map of {issued}",
-                "note": "Relative likelihood from our model, not depth and not a flood probability", "warning": warn}
+                "line": f"If no rain fell in the {days} days after the {radar} map of {issued}" if mm == 0
+                else f"If {mm} mm fell in the {days} days after the {radar} map of {issued}",
+                "note": "Relative likelihood from our model, not depth and not a flood probability", "warning": warn, "detail": None}
     return {
         "title": f"Model map for {target}",
         "line": f"Issued from the {radar} map of {issued}, given the {round(rain)} mm that fell after it",
         "note": "A reconstruction with the rain that fell, not a forecast. Relative likelihood, not depth",
         "warning": None,
+        "detail": None,
     }
+
+
+# what the model marks with no rain at all is the water of the season, not rain: in the words of the model's author
+# (discussion #37), per site
+SEASON = {
+    "pego_oliva": "water the marsh holds in this season anyway",
+    "albufera": "mostly rice fields that farmers flood in this season",
+}
+# two rain stops whose likely new water differs by less than this share read as "almost the same map"
+SAME_MAP = 0.10
+
+
+def slider_notes(site: str, scenarios: list[dict]) -> None:
+    """The plain notes the rain slider needs, from the numbers of the scenarios themselves: what 0 mm already holds,
+    stops that give almost the same map and why, (the step beyond the training rain is the caption's warning)."""
+    ha = lambda v: f"{int(v + 0.5):,}"  # noqa: E731  (half up, as the page rounds)
+    new = lambda r: r["area_ha"]["likely_new_water"]  # noqa: E731
+    for r in scenarios:
+        if r["rain_mm"] == 0:
+            r["caption"]["detail"] = (f"With no rain the model still marks {ha(new(r))} ha of likely new water: "
+                                      f"{SEASON.get(site, 'water of the season')}, not new rain.")
+    for a, b in zip(scenarios, scenarios[1:]):
+        if not a["rain_mm"] or not b["rain_mm"]:
+            continue
+        if abs(new(a) - new(b)) <= SAME_MAP * max(new(a), new(b)):
+            p90 = (b.get("rain_seen_in_training") or {}).get("p90")
+            why = f" (nine in ten of its training examples had at most {int(p90 + 0.5)} mm)" if p90 is not None else ""
+            text = (f"{a['rain_mm']} and {b['rain_mm']} mm give almost the same map ({ha(new(a))} and {ha(new(b))} ha): "
+                    f"the model saw few storms of this size{why}.")
+            for r in (a, b):
+                r["caption"]["detail"] = text
 
 
 def bake_one(src: Source, site: str, entry: dict, grid: dict, out: Path) -> dict | None:
@@ -374,6 +408,67 @@ def inspect_layers(site: str, grid: dict, meta: dict, out: Path) -> dict:
     return info
 
 
+# ---------------------------------------------------------------- still flooded after the DANA (PR #35's labels)
+
+LABELS = REPO / "data" / "labels_nisar"
+LABELS_SUMMARY = REPO / "data" / "metrics" / "nisar_labels_summary.json"
+EMSR935 = REPO / "data" / "labels" / "pego_oliva_emsr935_flood.geojson"
+OPEN_WATER, PERMANENT = 1, 4  # the class of open water in <date>_class.tif, the code of permanent water in dana_*.tif
+
+
+def still_flooded(site: str, out: Path) -> dict | None:
+    """The ground the Copernicus EMS map EMSR935 marked flooded (imagery 20 to 21 Oct) that NISAR still saw as open
+    water on 28 Oct, for the last step of the DANA replay: the same rule as nisar_labels_summary.json
+    (pipeline/cv/labels.py, emsr935_flooded_area_still_water), drawn as one frame in the encoding of bake_water.py
+    on the box of meta.json, so the water layer draws it. The numbers on the page are the summary's own."""
+    stack = STORY_SERIES.get(site, "").replace("nisar_", "")
+    if not (LABELS_SUMMARY.exists() and EMSR935.exists() and stack):
+        return None
+    entry = json.loads(LABELS_SUMMARY.read_text(encoding="utf-8"))["sites"].get(site, {}).get("dana", {}).get("emsr935_flooded_area_still_water")
+    key = next((k for k in (entry or {}).get("per_pass", {}) if k.startswith(stack)), None)
+    if not key:
+        return None
+    after = key.split()[-1]
+    numbers = entry["per_pass"][key]
+    f_cls = LABELS / f"{site}_{stack}" / f"{after}_class.tif"
+    f_dana = next((LABELS / f"{site}_{stack}").glob(f"dana_*_{after}.tif"), None)
+    if not f_cls.exists() or f_dana is None:
+        return None
+    from bake_water import encode, signed_distance
+    from rasterio.features import rasterize
+    from rasterio.warp import transform_geom
+
+    with rasterio.open(f_cls) as s:
+        cls, t, crs = s.read(1), s.transform, s.crs
+    with rasterio.open(f_dana) as s:
+        dana = s.read(1)
+    feats = [f for f in json.loads(EMSR935.read_text(encoding="utf-8"))["features"] if f["properties"].get("class") == "flooded_area"]
+    shapes = [(transform_geom("EPSG:4326", crs, f["geometry"]), 1) for f in feats]
+    flooded = rasterize(shapes, out_shape=cls.shape, transform=t, fill=0, dtype="uint8").astype(bool) & (dana != PERMANENT)
+    still = flooded & (cls == OPEN_WATER)
+    utm_ha = round(float(still.sum()) * abs(t.a * t.e) / 1e4, 2)
+
+    mt, w, h = web_grid(SITES[site]["bbox"])
+    web = np.zeros((h, w), "uint8")
+    reproject(still.astype("uint8"), web, src_transform=t, src_crs=crs, dst_transform=mt, dst_crs="EPSG:3857",
+              src_nodata=None, dst_nodata=None, resampling=Resampling.nearest)
+    mask = web == 1
+    g = encode(signed_distance(mask))
+    path = out / "prediction" / "still_flooded.webp"
+    size = webp(path, np.dstack([np.full((h, w), 255, "uint8"), g, g]))
+    drawn = round(float((pixel_ha(mt, h)[:, None] * mask).sum()), 1)
+    print(f"  {site} still flooded on {after}: {numbers['open_water_ha']} ha in the summary, {utm_ha} ha recounted on its grid, "
+          f"{drawn} ha drawn; {size / 1e3:.0f} kB", flush=True)
+    return {
+        "file": "prediction/still_flooded.webp", "bytes": size, "stack": stack, "after": after,
+        "outline": entry.get("outline"), "outline_ha": entry.get("outline_ha"),
+        "seen_ha": numbers.get("seen_ha"), "open_water_ha": numbers.get("open_water_ha"), "open_water_share": numbers.get("open_water_share"),
+        "recounted_ha": utm_ha, "drawn_ha": drawn,
+        "sources": {"numbers": f"{LABELS_SUMMARY.relative_to(REPO).as_posix()} sites.{site}.dana.emsr935_flooded_area_still_water.per_pass['{key}']",
+                    "class": f_cls.relative_to(REPO).as_posix(), "dana": f_dana.relative_to(REPO).as_posix(), "outline": EMSR935.relative_to(REPO).as_posix()},
+    }
+
+
 # ---------------------------------------------------------------- the model's answer in the flood game
 
 def game_answer(src: Source, site: str, map_id: str, grid: dict, out: Path) -> dict | None:
@@ -483,6 +578,7 @@ def bake_site(src: Source, site: str, entries: list[dict], index: dict, game_map
     first = json.loads((src.root / site / recs[0]["id"] / "forecast.json").read_text(encoding="utf-8")) if recs else {}
     scenarios = sorted((r for r in recs if r["mode"] == "scenario"), key=lambda r: r["rain_mm"] if r["rain_mm"] is not None else 0)
     replays = sorted((r for r in recs if r["mode"] != "scenario"), key=lambda r: (r["target_time_utc"] or "", r["issue_time_utc"] or ""))
+    slider_notes(site, scenarios)
     doc = {
         "site": site,
         "baked_utc": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
@@ -513,6 +609,7 @@ def bake_site(src: Source, site: str, entries: list[dict], index: dict, game_map
         "replays": replays,
         "inspect": inspect_layers(site, grid, meta, out),
         "game": game_answer(src, site, game_map, grid, out),
+        "still_flooded": still_flooded(site, out),
     }
     path = out / "prediction.json"
     path.write_text(json.dumps(doc, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")

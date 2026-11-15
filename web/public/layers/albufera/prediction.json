@@ -1,6 +1,6 @@
 {
  "site": "albufera",
- "baked_utc": "2026-11-15T01:45:45Z",
+ "baked_utc": "2026-11-15T02:00:48Z",
  "made_by": "web/scripts/bake_prediction.py",
  "source": {
   "folder": "pr-33:data/prediction/spatial",
@@ -107,9 +107,10 @@
    "validation_status": "retrospective check on the held-out October 2026 window against Sentinel-1 maps; not yet scored against Copernicus EMSR935",
    "caption": {
     "title": "0 mm of rain",
-    "line": "If 0 mm fell in the 4 days after the Sentinel-1 map of 10 Nov",
+    "line": "If no rain fell in the 4 days after the Sentinel-1 map of 10 Nov",
     "note": "Relative likelihood from our model, not depth and not a flood probability",
-    "warning": null
+    "warning": null,
+    "detail": "With no rain the model still marks 1,208 ha of likely new water: mostly rice fields that farmers flood in this season, not new rain."
    },
    "sources": {
     "forecast": "pr-33:data/prediction/spatial/albufera/scenario_000mm/forecast.json",
@@ -177,7 +178,8 @@
     "title": "50 mm of rain",
     "line": "If 50 mm fell in the 4 days after the Sentinel-1 map of 10 Nov",
     "note": "Relative likelihood from our model, not depth and not a flood probability",
-    "warning": null
+    "warning": null,
+    "detail": "50 and 100 mm give almost the same map (1,989 and 2,129 ha): the model saw few storms of this size (nine in ten of its training examples had at most 54 mm)."
    },
    "sources": {
     "forecast": "pr-33:data/prediction/spatial/albufera/scenario_050mm/forecast.json",
@@ -245,7 +247,8 @@
     "title": "100 mm of rain",
     "line": "If 100 mm fell in the 4 days after the Sentinel-1 map of 10 Nov",
     "note": "Relative likelihood from our model, not depth and not a flood probability",
-    "warning": null
+    "warning": null,
+    "detail": "50 and 100 mm give almost the same map (1,989 and 2,129 ha): the model saw few storms of this size (nine in ten of its training examples had at most 54 mm)."
    },
    "sources": {
     "forecast": "pr-33:data/prediction/spatial/albufera/scenario_100mm/forecast.json",
@@ -313,7 +316,8 @@
     "title": "200 mm of rain",
     "line": "If 200 mm fell in the 4 days after the Sentinel-1 map of 10 Nov",
     "note": "Relative likelihood from our model, not depth and not a flood probability",
-    "warning": null
+    "warning": null,
+    "detail": null
    },
    "sources": {
     "forecast": "pr-33:data/prediction/spatial/albufera/scenario_200mm/forecast.json",
@@ -377,7 +381,8 @@
     "title": "Model map for 22 Oct",
     "line": "Issued from the Sentinel-1 map of 17 Oct, given the 258 mm that fell after it",
     "note": "A reconstruction with the rain that fell, not a forecast. Relative likelihood, not depth",
-    "warning": null
+    "warning": null,
+    "detail": null
    },
    "sources": {
     "forecast": "pr-33:data/prediction/spatial/albufera/replay_2026-10-22/forecast.json",
@@ -439,7 +444,8 @@
     "title": "Model map for 28 Oct",
     "line": "Issued from the Sentinel-1 map of 23 Oct, given the 0 mm that fell after it",
     "note": "A reconstruction with the rain that fell, not a forecast. Relative likelihood, not depth",
-    "warning": null
+    "warning": null,
+    "detail": null
    },
    "sources": {
     "forecast": "pr-33:data/prediction/spatial/albufera/replay_2026-10-28/forecast.json",
@@ -501,7 +507,8 @@
     "title": "Model map for 28 Oct",
     "line": "Issued from the Sentinel-1 map of 17 Oct, given the 258 mm that fell after it",
     "note": "A reconstruction with the rain that fell, not a forecast. Relative likelihood, not depth",
-    "warning": null
+    "warning": null,
+    "detail": null
    },
    "sources": {
     "forecast": "pr-33:data/prediction/spatial/albufera/replay_2026-10-28_prestorm/forecast.json",
@@ -669,5 +676,6 @@
   "bytes": 524633,
   "planes": 13
  },
- "game": null
+ "game": null,
+ "still_flooded": null
 }

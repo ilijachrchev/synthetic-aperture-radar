@@ -32,7 +32,8 @@ export type PredictionMap = {
 	area_ha_drawn: { likely_water: number; likely_new_water: number }
 	mode_note: string
 	validation_status: string
-	caption: { title: string; line: string; note: string; warning: string | null }
+	/** the words of the page; `detail` is a plain note about this stop of the slider (scripts/bake_prediction.py) */
+	caption: { title: string; line: string; note: string; warning: string | null; detail?: string | null }
 	sources: Record<string, unknown>
 }
 
@@ -49,6 +50,20 @@ export type Prediction = {
 	attribution: string
 	scenarios: PredictionMap[]
 	replays: PredictionMap[]
+	/** the EU map's flooded land still under open water on the pass after the DANA (PR #35's labels): one frame in the
+	 *  encoding of the water frames, and the numbers of data/metrics/nisar_labels_summary.json */
+	still_flooded?: {
+		file: string
+		stack: string
+		after: string
+		outline: string
+		outline_ha: number
+		seen_ha: number
+		open_water_ha: number
+		open_water_share: number
+		drawn_ha: number
+		sources: Record<string, string>
+	} | null
 	inspect: {
 		file: string
 		bytes: number
