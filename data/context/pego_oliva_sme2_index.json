@@ -1,0 +1,199 @@
+{
+ "product": "NISAR_L3_SME2_PROVISIONAL_V1",
+ "maturity": "PROVISIONAL",
+ "units": "m3/m3",
+ "storage": "uint16 x 10000, 65535 no data",
+ "grid": "200 m, aligned with the 20 m site grid (pipeline.stack.site_grid); load() resamples to 20 m",
+ "dates": [
+  {
+   "date": "2026-06-18",
+   "granules": [
+    "NISAR_L3_PR_SME2_023_058_A_021_2005_DHDH_A_20260618T050655_20260618T050722_P05023_N_F_J_001",
+    "NISAR_L3_PR_SME2_023_066_D_069_2005_DHDH_M_20260618T185321_20260618T185356_P05023_N_F_J_001"
+   ],
+   "file": "C:/Projects/synthetic-aperture-radar/data/context/pego_oliva_sme2_2026-06-18_200m.tif",
+   "share_with_value": 0.583,
+   "share_recommended": 0.399,
+   "median_m3m3": 0.325
+  },
+  {
+   "date": "2026-06-25",
+   "granules": [
+    "NISAR_L3_PR_SME2_023_167_D_069_2005_DHDH_A_20260625T190141_20260625T190216_P05023_N_F_J_001"
+   ],
+   "file": "C:/Projects/synthetic-aperture-radar/data/context/pego_oliva_sme2_2026-06-25_200m.tif",
+   "share_with_value": 0.405,
+   "share_recommended": 0.366,
+   "median_m3m3": 0.306
+  },
+  {
+   "date": "2026-06-30",
+   "granules": [
+    "NISAR_L3_PR_SME2_024_058_A_021_2005_DHDH_A_20260630T050650_20260630T050721_P05023_N_F_J_001",
+    "NISAR_L3_PR_SME2_024_066_D_069_2005_DHDH_M_20260630T185321_20260630T185356_P05023_N_F_J_001"
+   ],
+   "file": "C:/Projects/synthetic-aperture-radar/data/context/pego_oliva_sme2_2026-06-30_200m.tif",
+   "share_with_value": 0.583,
+   "share_recommended": 0.399,
+   "median_m3m3": 0.322
+  },
+  {
+   "date": "2026-07-07",
+   "granules": [
+    "NISAR_L3_PR_SME2_024_167_D_069_2005_DHDH_A_20260707T190140_20260707T190215_P05023_N_F_J_001"
+   ],
+   "file": "C:/Projects/synthetic-aperture-radar/data/context/pego_oliva_sme2_2026-07-07_200m.tif",
+   "share_with_value": 0.405,
+   "share_recommended": 0.366,
+   "median_m3m3": 0.307
+  },
+  {
+   "date": "2026-07-12",
+   "granules": [
+    "NISAR_L3_PR_SME2_025_058_A_021_2005_DHDH_A_20260712T050653_20260712T050721_P05023_N_F_J_001",
+    "NISAR_L3_PR_SME2_025_066_D_069_2005_DHDH_M_20260712T185320_20260712T185355_P05023_N_F_J_001"
+   ],
+   "file": "C:/Projects/synthetic-aperture-radar/data/context/pego_oliva_sme2_2026-07-12_200m.tif",
+   "share_with_value": 0.602,
+   "share_recommended": 0.386,
+   "median_m3m3": 0.215
+  },
+  {
+   "date": "2026-07-19",
+   "granules": [
+    "NISAR_L3_PR_SME2_025_167_D_069_2005_DHDH_A_20260719T190140_20260719T190214_P05023_N_F_J_001"
+   ],
+   "file": "C:/Projects/synthetic-aperture-radar/data/context/pego_oliva_sme2_2026-07-19_200m.tif",
+   "share_with_value": 0.409,
+   "share_recommended": 0.362,
+   "median_m3m3": 0.209
+  },
+  {
+   "date": "2026-07-24",
+   "granules": [
+    "NISAR_L3_PR_SME2_026_058_A_021_2005_DHDH_A_20260724T050653_20260724T050720_P05023_N_F_J_001",
+    "NISAR_L3_PR_SME2_026_066_D_069_2005_DHDH_M_20260724T185319_20260724T185354_P05023_N_F_J_001"
+   ],
+   "file": "C:/Projects/synthetic-aperture-radar/data/context/pego_oliva_sme2_2026-07-24_200m.tif",
+   "share_with_value": 0.602,
+   "share_recommended": 0.386,
+   "median_m3m3": 0.2
+  },
+  {
+   "date": "2026-08-17",
+   "granules": [
+    "NISAR_L3_PR_SME2_028_058_A_021_2005_DHDH_A_20260817T050652_20260817T050719_P05023_N_F_J_001",
+    "NISAR_L3_PR_SME2_028_066_D_069_2005_DHDH_M_20260817T185318_20260817T185353_P05023_N_F_J_001"
+   ],
+   "file": "C:/Projects/synthetic-aperture-radar/data/context/pego_oliva_sme2_2026-08-17_200m.tif",
+   "share_with_value": 0.602,
+   "share_recommended": 0.386,
+   "median_m3m3": 0.217
+  },
+  {
+   "date": "2026-08-24",
+   "granules": [
+    "NISAR_L3_PR_SME2_028_167_D_069_2005_DHDH_A_20260824T190138_20260824T190212_P05023_N_F_J_001"
+   ],
+   "file": "C:/Projects/synthetic-aperture-radar/data/context/pego_oliva_sme2_2026-08-24_200m.tif",
+   "share_with_value": 0.409,
+   "share_recommended": 0.362,
+   "median_m3m3": 0.212
+  },
+  {
+   "date": "2026-08-29",
+   "granules": [
+    "NISAR_L3_PR_SME2_029_058_A_021_2005_DHDH_A_20260829T050652_20260829T050719_P05023_N_F_J_001",
+    "NISAR_L3_PR_SME2_029_066_D_069_2005_DHDH_M_20260829T185318_20260829T185353_P05023_N_F_J_001"
+   ],
+   "file": "C:/Projects/synthetic-aperture-radar/data/context/pego_oliva_sme2_2026-08-29_200m.tif",
+   "share_with_value": 0.602,
+   "share_recommended": 0.386,
+   "median_m3m3": 0.213
+  },
+  {
+   "date": "2026-09-05",
+   "granules": [
+    "NISAR_L3_PR_SME2_029_167_D_069_2005_DHDH_A_20260905T190137_20260905T190212_P05023_N_F_J_001"
+   ],
+   "file": "C:/Projects/synthetic-aperture-radar/data/context/pego_oliva_sme2_2026-09-05_200m.tif",
+   "share_with_value": 0.41,
+   "share_recommended": 0.362,
+   "median_m3m3": 0.209
+  },
+  {
+   "date": "2026-09-10",
+   "granules": [
+    "NISAR_L3_PR_SME2_030_058_A_021_2005_DHDH_A_20260910T050651_20260910T050718_P05023_N_F_J_001",
+    "NISAR_L3_PR_SME2_030_066_D_069_2005_DHDH_M_20260910T185318_20260910T185353_P05023_N_F_J_001"
+   ],
+   "file": "C:/Projects/synthetic-aperture-radar/data/context/pego_oliva_sme2_2026-09-10_200m.tif",
+   "share_with_value": 0.602,
+   "share_recommended": 0.361,
+   "median_m3m3": 0.242
+  },
+  {
+   "date": "2026-09-17",
+   "granules": [
+    "NISAR_L3_PR_SME2_030_167_D_069_2005_DHDH_A_20260917T190137_20260917T190212_P05023_N_F_J_001"
+   ],
+   "file": "C:/Projects/synthetic-aperture-radar/data/context/pego_oliva_sme2_2026-09-17_200m.tif",
+   "share_with_value": 0.41,
+   "share_recommended": 0.362,
+   "median_m3m3": 0.216
+  },
+  {
+   "date": "2026-09-22",
+   "granules": [
+    "NISAR_L3_PR_SME2_031_058_A_021_2005_SHSH_A_20260922T050651_20260922T050719_P05023_N_F_J_001",
+    "NISAR_L3_PR_SME2_031_066_D_069_2005_DHDH_M_20260922T185318_20260922T185353_P05023_N_F_J_001"
+   ],
+   "file": "C:/Projects/synthetic-aperture-radar/data/context/pego_oliva_sme2_2026-09-22_200m.tif",
+   "share_with_value": 0.602,
+   "share_recommended": 0.385,
+   "median_m3m3": 0.193
+  },
+  {
+   "date": "2026-09-29",
+   "granules": [
+    "NISAR_L3_PR_SME2_031_167_D_069_2005_DHDH_A_20260929T190137_20260929T190212_P05023_N_F_J_001"
+   ],
+   "file": "C:/Projects/synthetic-aperture-radar/data/context/pego_oliva_sme2_2026-09-29_200m.tif",
+   "share_with_value": 0.409,
+   "share_recommended": 0.361,
+   "median_m3m3": 0.202
+  },
+  {
+   "date": "2026-10-04",
+   "granules": [
+    "NISAR_L3_PR_SME2_032_058_A_021_2005_DHDH_A_20261004T050652_20261004T050719_P05023_N_F_J_001",
+    "NISAR_L3_PR_SME2_032_066_D_069_2005_DHDH_M_20261004T185318_20261004T185353_P05023_N_F_J_001"
+   ],
+   "file": "C:/Projects/synthetic-aperture-radar/data/context/pego_oliva_sme2_2026-10-04_200m.tif",
+   "share_with_value": 0.602,
+   "share_recommended": 0.385,
+   "median_m3m3": 0.228
+  },
+  {
+   "date": "2026-10-11",
+   "granules": [
+    "NISAR_L3_PR_SME2_032_167_D_069_2005_DHDH_A_20261011T190137_20261011T190212_P05023_N_F_J_001"
+   ],
+   "file": "C:/Projects/synthetic-aperture-radar/data/context/pego_oliva_sme2_2026-10-11_200m.tif",
+   "share_with_value": 0.408,
+   "share_recommended": 0.361,
+   "median_m3m3": 0.218
+  },
+  {
+   "date": "2026-10-16",
+   "granules": [
+    "NISAR_L3_PR_SME2_033_058_A_021_2005_DHDH_A_20261016T050652_20261016T050719_P05023_N_F_J_001",
+    "NISAR_L3_PR_SME2_033_066_D_069_2005_DHDH_M_20261016T185318_20261016T185353_P05023_N_F_J_001"
+   ],
+   "file": "C:/Projects/synthetic-aperture-radar/data/context/pego_oliva_sme2_2026-10-16_200m.tif",
+   "share_with_value": 0.602,
+   "share_recommended": 0.386,
+   "median_m3m3": 0.205
+  }
+ ]
+}
