@@ -41,7 +41,7 @@ export const ZONES = [
 	{ key: 'rare', label: 'T500', name: 'rare', detail: 'low probability, 1 in 500 each year', color: '#ffd60a' },
 ] as const
 
-export type LayerKey = 'zones' | 'floods2024' | 'buildings2024' | 'marks2024' | 'floods2026' | 'nisar' | 'still' | 'model' | 'sim2024'
+export type LayerKey = 'zones' | 'floods2024' | 'buildings2024' | 'marks2024' | 'streets2024' | 'floods2026' | 'nisar' | 'still' | 'model' | 'sim2024'
 
 /** the classes of the surveyed water marks of 2024 and of the simulated depth (data/streets, PR #39), light to deep */
 export const MARK_CLASSES = [
@@ -65,6 +65,7 @@ export const LEGEND: { title: string; layers: { key: LayerKey; label: string; de
 			{ key: 'floods2024', label: '2024, Copernicus EMS', detail: "EMSR773, L'Horta Sud", swatch: 'flood2024' },
 			{ key: 'buildings2024', label: '2024, damaged buildings', detail: 'graded by EMSR773', swatch: 'buildings' },
 			{ key: 'marks2024', label: '2024, measured water depth', detail: 'marks surveyed after the flood (ICV)', swatch: 'marks' },
+			{ key: 'streets2024', label: '2024, streets that flooded', detail: 'Copernicus EMS map or a water mark, street by street', swatch: 'streets' },
 			{ key: 'floods2026', label: '2026, Copernicus EMS', detail: 'EMSR935, Pego and Oliva', swatch: 'flood2026' },
 			{ key: 'nisar', label: '2026, NISAR water', detail: 'new on 28 Oct, and on both dates', swatch: 'nisar' },
 			{ key: 'still', label: '2026, still flooded', detail: 'NISAR, 28 Oct, inside EMSR935', swatch: 'still' },
@@ -83,6 +84,7 @@ export const DEFAULT_LAYERS: Record<LayerKey, boolean> = {
 	floods2024: true,
 	buildings2024: true,
 	marks2024: false,
+	streets2024: false,
 	floods2026: true,
 	nisar: false,
 	still: false,

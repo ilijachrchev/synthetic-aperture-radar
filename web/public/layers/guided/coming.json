@@ -1,5 +1,5 @@
 {
- "what": "The numbers of step 5 (Would we have seen it coming?). Edit them here, no code: the page reads this file as it is. An option whose status is \"arriving\" shows a quiet arriving state instead of numbers.",
+ "what": "The numbers of the tour's last step (Would we have seen it coming?). Edit them here, no code: the page reads this file as it is. An option whose status is \"arriving\" shows a quiet arriving state instead of numbers.",
  "options": [
   {
    "key": "real",

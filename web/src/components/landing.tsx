@@ -11,7 +11,7 @@ import { Smoke } from './smoke'
 import { ThemeSwitch } from './theme-switch'
 import './landing.css'
 
-/** The one film of the monitor: steps 2 and 3 of the guided tour, recorded from the running app (scripts/landing_films.py). */
+/** The one film of the monitor: the guided tour's streets step (official map, then our simulation), recorded from the running app (scripts/landing_films.py). */
 const FILMS: Film[] = [TOUR_FILM]
 
 /**

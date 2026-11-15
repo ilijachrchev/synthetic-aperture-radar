@@ -82,6 +82,7 @@ const SHOWS: Record<LayerKey, string[]> = {
 	still: ['still-pego_oliva'],
 	model: [],
 	marks2024: ['marks2024'],
+	streets2024: ['streets2024'],
 	sim2024: ['sim2024'],
 }
 /** the DANA replay: its steps, how long each holds while it plays, and the map layers of each */
@@ -118,6 +119,23 @@ function addMarks(map: MapLibreMap, idx: ExploreIndex, onAdd: () => void) {
 		map.getLayer('zones_horta_sud-hit') ? 'zones_horta_sud-hit' : undefined,
 	)
 	onAdd()
+}
+/** the streets that flooded in 2024 (key A of the street scores), the layer of the guided tour's streets step
+ *  (public/layers/guided/streets_2024.json), added the first time it is switched on */
+function addStreets(map: MapLibreMap) {
+	if (map.getSource('streets_2024')) return
+	map.addSource('streets_2024', { type: 'geojson', data: '/layers/guided/streets_2024.json' } as never)
+	map.addLayer(
+		{
+			id: 'streets2024',
+			type: 'line',
+			source: 'streets_2024',
+			filter: ['==', ['coalesce', ['get', 'f'], 0], 1] as never,
+			layout: { visibility: 'none', 'line-cap': 'round', 'line-join': 'round' },
+			paint: { 'line-color': '#2f8cff', 'line-width': ['interpolate', ['exponential', 1.6], ['zoom'], 11, 0.9, 13, 1.8, 15, 3.4, 17, 6.5] as never },
+		},
+		map.getLayer('zones_horta_sud-hit') ? 'zones_horta_sud-hit' : undefined,
+	)
 }
 function addSim(map: MapLibreMap, idx: ExploreIndex) {
 	const vec = idx.vectors.simulated_2024
@@ -376,6 +394,7 @@ export function ExploreApp({ onGuide, onScreen }: { onGuide?: () => void; onScre
 		// the layers of data/streets come in the first time they are asked for
 		if (layers.marks2024) addMarks(map, idx, hoverMarks)
 		if (layers.sim2024) addSim(map, idx)
+		if (layers.streets2024) addStreets(map)
 		if (!layers.marks2024) tip.current?.remove()
 		const on = new Set(replaying ? SCENE_LAYERS[scene] : (Object.keys(layers) as LayerKey[]).filter((k) => layers[k]).flatMap((k) => SHOWS[k]))
 		for (const id of ALL_SHOWN) if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', on.has(id) ? 'visible' : 'none')

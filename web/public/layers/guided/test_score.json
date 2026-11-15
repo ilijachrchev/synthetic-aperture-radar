@@ -1,5 +1,5 @@
 {
- "what": "The numbers of step 5 (Did we get it right?). Swap them here, no code: the page reads this file as it is.",
+ "what": "The numbers of the marsh model's screen (Did we get it right?), opened from All layers. Swap them here, no code: the page reads this file as it is.",
  "score": "F1",
  "help": "a score from 0 to 1 that rewards finding the flood without false alarms",
  "model_rain_fell": 0.417,

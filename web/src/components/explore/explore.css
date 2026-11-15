@@ -262,6 +262,9 @@
 		radial-gradient(circle at 64% 62%, #2463eb 0 2.6px, transparent 3px),
 		radial-gradient(circle at 85% 40%, #7a1fd6 0 2.6px, transparent 3px);
 }
+.ex-sw[data-kind="streets"] {
+	background: linear-gradient(transparent 42%, #2f8cff 42% 62%, transparent 62%);
+}
 .ex-sw[data-kind="sim"] {
 	background: repeating-linear-gradient(45deg, #2463eb 0 2px, rgb(36 99 235 / 0.25) 2px 5px);
 }
