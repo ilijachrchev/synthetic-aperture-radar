@@ -385,7 +385,7 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 		for (let i = 0; i < BINS; i++) {
 			map.addLayer({ id: binLayer(i), type: 'line', source: 'g-streets', filter: ['==', ['get', 'r'], i], layout: { ...hidden, 'line-cap': 'round', 'line-join': 'round' }, paint: street as never })
 		}
-		// step 3: the streets the chosen method flags, green where they flooded, red where they stayed dry, and the
+		// step 3: the streets the chosen method flags, green where they flooded, red where no official record shows water (the UPV street map mostly does), and the
 		// flooded streets it missed in blue
 		const line = { ...hidden, 'line-cap': 'round' as const, 'line-join': 'round' as const }
 		const first = s3Filters(streets.methods[0]?.prop ?? 'z')
@@ -775,7 +775,7 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 								<i className="gd-sw" data-k="flooded" /> Flooded, not flagged
 							</li>
 							<li>
-								<i className="gd-sw" data-k="false" /> Flagged, stayed dry
+								<i className="gd-sw" data-k="false" /> Flagged, not in the official records
 							</li>
 						</>
 					) : (
@@ -866,7 +866,7 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 						<i className="gd-sw" data-k="flooded" /> Flooded, not flagged
 					</li>
 					<li>
-						<i className="gd-sw" data-k="false" /> Flagged, stayed dry
+						<i className="gd-sw" data-k="false" /> Flagged, not in the official records
 					</li>
 				</ul>
 				{rainOpt && <p className="gd-note">{rainOpt.line}</p>}
@@ -907,7 +907,7 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 						<i className="gd-sw" data-k="hit" data-fill /> Predicted, and it flooded{exam ? ` (${ha(exam.hectares.hit)} ha)` : ''}
 					</li>
 					<li>
-						<i className="gd-sw" data-k="false" data-fill /> Predicted, stayed dry{exam ? ` (${ha(exam.hectares.false_alarm)} ha)` : ''}
+						<i className="gd-sw" data-k="false" data-fill /> Predicted, not in the Copernicus map{exam ? ` (${ha(exam.hectares.false_alarm)} ha)` : ''}
 					</li>
 					<li>
 						<i className="gd-sw" data-k="missed" data-fill /> Flooded, we missed it{exam ? ` (${ha(exam.hectares.missed)} ha)` : ''}
