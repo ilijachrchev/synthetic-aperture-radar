@@ -1,0 +1,114 @@
+{
+  "rule": "docs/MODEL_IMPROVE.md, selection rule: mean over the two sites of the development-check new-water average precision at 20 m; a monotone-rain candidate within 0.01 of the best wins; ties to fewer changes",
+  "best_development_score": 0.3873,
+  "chosen": "mono_neigh+blend",
+  "trained_variants": [
+    "base",
+    "mono",
+    "mono_neigh",
+    "mono_storm",
+    "mono_storm_neigh",
+    "neigh",
+    "nisar_flag",
+    "storm"
+  ],
+  "candidates": [
+    {
+      "candidate": "mono_neigh+blend",
+      "development_score": 0.3873,
+      "monotone_rain": true,
+      "changes": 3
+    },
+    {
+      "candidate": "mono_neigh",
+      "development_score": 0.3862,
+      "monotone_rain": true,
+      "changes": 2
+    },
+    {
+      "candidate": "neigh+blend",
+      "development_score": 0.3846,
+      "monotone_rain": false,
+      "changes": 2
+    },
+    {
+      "candidate": "mono",
+      "development_score": 0.3842,
+      "monotone_rain": true,
+      "changes": 1
+    },
+    {
+      "candidate": "mono_storm_neigh+blend",
+      "development_score": 0.3819,
+      "monotone_rain": true,
+      "changes": 4
+    },
+    {
+      "candidate": "nisar_flag+blend",
+      "development_score": 0.3815,
+      "monotone_rain": false,
+      "changes": 2
+    },
+    {
+      "candidate": "nisar_flag",
+      "development_score": 0.3804,
+      "monotone_rain": false,
+      "changes": 1
+    },
+    {
+      "candidate": "neigh",
+      "development_score": 0.3803,
+      "monotone_rain": false,
+      "changes": 1
+    },
+    {
+      "candidate": "mono+blend",
+      "development_score": 0.38,
+      "monotone_rain": true,
+      "changes": 2
+    },
+    {
+      "candidate": "base",
+      "development_score": 0.3794,
+      "monotone_rain": false,
+      "changes": 0
+    },
+    {
+      "candidate": "base+blend",
+      "development_score": 0.3784,
+      "monotone_rain": false,
+      "changes": 1
+    },
+    {
+      "candidate": "mono_storm_neigh",
+      "development_score": 0.3774,
+      "monotone_rain": true,
+      "changes": 3
+    },
+    {
+      "candidate": "mono_storm+blend",
+      "development_score": 0.3727,
+      "monotone_rain": true,
+      "changes": 3
+    },
+    {
+      "candidate": "mono_storm",
+      "development_score": 0.3705,
+      "monotone_rain": true,
+      "changes": 2
+    },
+    {
+      "candidate": "storm+blend",
+      "development_score": 0.3668,
+      "monotone_rain": false,
+      "changes": 2
+    },
+    {
+      "candidate": "storm",
+      "development_score": 0.3592,
+      "monotone_rain": false,
+      "changes": 1
+    }
+  ],
+  "held_out_scored_before_this_file": false
+}

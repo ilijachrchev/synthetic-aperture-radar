@@ -104,3 +104,50 @@ def test_merged_stack_is_in_time_order():
     m = labels.Merged(a, b)
     assert m.shape == (3, 1, 1) and [int(m[i][0, 0]) for i in range(3)] == [1, 0, 3]
     assert m.passes[1]["platform"] == "NISAR"
+
+
+def test_neighbourhood_share_counts_only_observed_pixels():
+    state = np.full((7, 7), np.nan, dtype="float32")
+    state[3, 3] = 1.0                     # one wet pixel
+    state[3, 4] = 0.0                     # one dry pixel next to it, everything else unknown
+    out = F.neighbourhood(state)
+    assert out.shape == (len(F.NEIGH), 7, 7)
+    assert out[0, 3, 3] == 0.5            # 1 wet of 2 observed in the 5 x 5 square
+    assert np.isnan(out[0, 0, 0])         # no observed pixel in its square
+    assert out[1, 0, 0] == 0.5            # the 25 x 25 square reaches both
+
+
+def test_assemble_leaves_neighbourhood_missing_unless_given():
+    n = 3
+    static = np.zeros((n, len(F.STATIC)), "float32")
+    rain = {k: 0.0 for k in F.RAIN if k != "lead_days"}
+    state = np.zeros(n, "float32")
+    X = F.assemble(static, np.zeros(n, "float32"), date(2026, 10, 1).toordinal(), 4.0, rain, state, state)
+    assert np.isnan(X[:, F.ALL.index("prev_wet_share_100m")]).all()
+    nb = np.array([[0.1, 0.2], [0.3, 0.4], [0.5, 0.6]], "float32")
+    X = F.assemble(static, np.zeros(n, "float32"), date(2026, 10, 1).toordinal(), 4.0, rain, state, state, neigh=nb)
+    assert np.allclose(X[:, F.ALL.index("prev_wet_share_500m")], [0.2, 0.4, 0.6])
+
+
+def test_blend_keeps_the_order_of_the_rank_average():
+    from pipeline.prediction.spatial import improve as I
+    rng = np.random.default_rng(1)
+    pm, pt, w = rng.random(5000), rng.random(5000) ** 3, rng.random(5000) + 0.5
+    ref = {"model": I.reference(pm, w), "terrain": I.reference(pt, w)}
+    b = I.blend(pm, pt, ref)
+    u = 0.5 * np.interp(pm, ref["model"], I.U) + 0.5 * np.interp(pt, ref["terrain"], I.U)
+    o = np.argsort(u)
+    assert np.all(np.diff(b[o]) >= -1e-12)
+    assert pm.min() - 1e-9 <= b.min() and b.max() <= pm.max() + 1e-9   # on the model's own scale
+
+
+def test_cell_scores_count_overlap_per_cell():
+    from pipeline.prediction.spatial import improve as I
+    n = np.array([10.0, 10.0])
+    new = np.array([5.0, 0.0])
+    mean = np.array([0.9, 0.1])
+    marked = np.array([2.0, 4.0])
+    out = I._cell_scores(n, new, mean, marked)
+    assert out["hit_rate"] == 0.4                 # min(2, 5) of 5 found
+    assert out["precision"] == round(2 / 6, 4)    # 2 of the 6 marked
+    assert out["new_water_ap"] == 0.5             # the wet cell first: precision 5 / 10 over all its new water
