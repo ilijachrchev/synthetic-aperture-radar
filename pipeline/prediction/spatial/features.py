@@ -131,13 +131,21 @@ def rain_features(rain: dict[int, float], issue_day: int, target_day: int) -> di
 
 # ---------------------------------------------------------------- time and state
 
-def issue_index(times: np.ndarray, t: int, min_lead: float = MIN_LEAD_DAYS, max_lead: float = MAX_LEAD_DAYS) -> int | None:
-    """Index of the latest pass at least min_lead days before pass t, or None if none within max_lead."""
-    cutoff = times[t] - np.timedelta64(int(min_lead * 86400), "s")
+def issue_before(times: np.ndarray, target_time, min_lead: float = MIN_LEAD_DAYS, max_lead: float = MAX_LEAD_DAYS,
+                 not_after=None) -> int | None:
+    """Index of the latest pass at least min_lead days before a target time (and not after not_after), or None."""
+    cutoff = target_time - np.timedelta64(int(min_lead * 86400), "s")
+    if not_after is not None:
+        cutoff = min(cutoff, not_after)
     j = int(np.searchsorted(times, cutoff, side="right")) - 1
-    if j < 0 or (times[t] - times[j]) / np.timedelta64(1, "D") > max_lead:
+    if j < 0 or (target_time - times[j]) / np.timedelta64(1, "D") > max_lead:
         return None
     return j
+
+
+def issue_index(times: np.ndarray, t: int, min_lead: float = MIN_LEAD_DAYS, max_lead: float = MAX_LEAD_DAYS) -> int | None:
+    """Index of the latest pass at least min_lead days before pass t, or None if none within max_lead."""
+    return issue_before(times, times[t], min_lead, max_lead)
 
 
 def prev_state(get, times: np.ndarray, j: int, target_time, n: int,
