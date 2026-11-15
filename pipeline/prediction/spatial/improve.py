@@ -559,7 +559,8 @@ def export_maps(candidate):
         s = _site(name, VARIANTS[variant]["labels"])
         st, grid = s["static"], s["grid"]
         ctx = _context(s, rng)
-        common = {"site": name, "model": "spatial water likelihood (LightGBM)", "variant": candidate, "model_sha256_16": model_sha,
+        common = {"site": name, "model": "spatial water likelihood (LightGBM)", "variant": candidate, "exported_score": key,
+                  "model_sha256_16": model_sha,
                   "rain_source": "Open-Meteo, ECMWF IFS 9 km, wettest lattice point of the site per day",
                   "holdout": {"start": HOLDOUT_START, "end": HOLDOUT_END},
                   "validation_status": "retrospective check on the held-out October 2026 window against Sentinel-1 maps "
@@ -653,8 +654,12 @@ def export_maps(candidate):
     for fname in ("feature_schema.json", "training_manifest.json", "holdout_s1_metrics.json"):
         shutil.copyfile(vdir / fname, OUT / fname)
     dev = json.loads((vdir / "development_metrics.json").read_text(encoding="utf-8"))
+    dev["thresholds"] = {**thresholds, "rain_and_state": thr, "model_alone": thresholds["rain_and_state"]}
     dev["exported"] = {"candidate": candidate, "score": key, "thresholds": thr,
-                       "note": "the exported maps hold this candidate's score; its frozen thresholds are thresholds['%s']" % key}
+                       "note": f"The exported maps hold the '{key}' score of {candidate}. thresholds.rain_and_state holds that score's "
+                               "frozen thresholds (as in PR #33, where it named the model behind the maps); thresholds.model_alone "
+                               f"are those of the {variant} model on its own. In scores, methods.rain_and_state is the model on its own "
+                               "and methods.blend the blend."}
     _json(dev, OUT / "development_metrics.json")
     _write_index(index, lambda e: True)
 
@@ -714,8 +719,11 @@ def nisar(candidate):
 
 
 DANA_READING = ("hit_rate = share of NISAR's new open water (PR #35 change layer, code 2) that the map marks at its frozen "
-                "new-water threshold; precision = share of the marked pixels that NISAR saw as new open water; candidates = "
-                "codes 0 (dry on 16 and 28 Oct) and 2 inside the model's domain")
+                "new-water threshold; precision = share of the marked pixels that NISAR saw as new open water. Pixels: the "
+                "model's domain where the pre-storm map has a new-water likelihood (dry on the issue map). all_assessed = "
+                "NISAR codes 0 to 3 (everything NISAR compared except permanent water: water on both dates and water gone "
+                "count as misses of 'new'), the protocol of the team's first check (b4c69d9: 26 % and 15 %); "
+                "dry_before = codes 0 and 2 only (NISAR also dry on 16 Oct)")
 
 
 def dana_check(name, folder):
@@ -728,12 +736,13 @@ def dana_check(name, folder):
         ev = src.read(1)
     dom = F.train_domain(F.load_static(name))
     thr = doc["thresholds"]["new_water"]
-    res = {"map": folder.as_posix(), "threshold_new_water": thr}
+    res = {"map": folder.as_posix(), "threshold_new_water": thr,
+           "evidence_0_share_of_scored": round(float((ev[dom & np.isfinite(new)] == 0).mean()), 4)}
     dana = DATA_DIR / "labels_nisar" / f"{name}_{NISAR_EXPORT_STACK}" / f"dana_{NISAR_BEFORE}_{NISAR_AFTER}.tif"
     with rasterio.open(dana) as src:
         code = src.read(1)
-    for label, mask in (("domain_evidence0", dom & (ev == 0)), ("domain", dom)):
-        cand = mask & np.isin(code, (0, 2)) & np.isfinite(new)
+    for label, codes in (("all_assessed", (0, 1, 2, 3)), ("dry_before", (0, 2))):
+        cand = dom & np.isin(code, codes) & np.isfinite(new)
         obs, pred = code[cand] == 2, new[cand] >= thr
         tp = float((obs & pred).sum())
         yv = obs.astype("uint8")

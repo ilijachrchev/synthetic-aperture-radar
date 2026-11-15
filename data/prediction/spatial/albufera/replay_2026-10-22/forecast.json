@@ -1,13 +1,15 @@
 {
   "site": "albufera",
   "model": "spatial water likelihood (LightGBM)",
-  "model_sha256_16": "e241d10cd9290a75",
+  "variant": "mono_neigh+blend",
+  "exported_score": "blend",
+  "model_sha256_16": "2eea321ceebe7d37",
   "rain_source": "Open-Meteo, ECMWF IFS 9 km, wettest lattice point of the site per day",
   "holdout": {
     "start": "2026-10-15",
     "end": "2026-11-15"
   },
-  "validation_status": "retrospective check on the held-out October 2026 window against Sentinel-1 maps; not yet scored against Copernicus EMSR935",
+  "validation_status": "retrospective check on the held-out October 2026 window against Sentinel-1 maps (data/prediction/spatial/improve); not yet scored against Copernicus EMSR935",
   "scenario_id": "replay_2026-10-22",
   "mode": "reconstruction",
   "mode_note": "rain between issue and target is the rain that fell (IFS archive), not a forecast",
@@ -25,22 +27,42 @@
   },
   "check_against_sentinel1": {
     "rain_and_state": {
-      "water_ap": 0.8526,
-      "new_water_ap": 0.6391,
+      "water_ap": 0.8671,
+      "new_water_ap": 0.6882,
       "water_at_threshold": {
-        "precision": 0.7535,
-        "recall": 0.8044,
-        "f1": 0.7781,
-        "iou": 0.6368,
-        "predicted_w": 138948.0,
+        "precision": 0.7743,
+        "recall": 0.7915,
+        "f1": 0.7828,
+        "iou": 0.6431,
+        "predicted_w": 133055.0,
         "observed_w": 130165.0
       },
       "new_water_at_threshold": {
-        "precision": 0.4495,
-        "recall": 0.9013,
-        "f1": 0.5999,
-        "iou": 0.4285,
-        "predicted_w": 138348.0,
+        "precision": 0.4661,
+        "recall": 0.8894,
+        "f1": 0.6116,
+        "iou": 0.4405,
+        "predicted_w": 131677.0,
+        "observed_w": 69001.0
+      }
+    },
+    "blend": {
+      "water_ap": 0.8665,
+      "new_water_ap": 0.7072,
+      "water_at_threshold": {
+        "precision": 0.8174,
+        "recall": 0.7466,
+        "f1": 0.7804,
+        "iou": 0.6399,
+        "predicted_w": 118901.0,
+        "observed_w": 130165.0
+      },
+      "new_water_at_threshold": {
+        "precision": 0.6227,
+        "recall": 0.7503,
+        "f1": 0.6806,
+        "iou": 0.5158,
+        "predicted_w": 83138.0,
         "observed_w": 69001.0
       }
     },
@@ -102,12 +124,12 @@
     "255": "sea or outside the land grid"
   },
   "thresholds": {
-    "water": 0.28405811008713044,
-    "new_water": 0.17041007967415503
+    "water": 0.2946479241707799,
+    "new_water": 0.17653340825370928
   },
   "area_ha": {
-    "likely_water": 5557.9,
-    "likely_new_water": 5533.9,
+    "likely_water": 4756.0,
+    "likely_new_water": 3325.5,
     "counted_on": "evidence 0 pixels only"
   },
   "native_resolution": {

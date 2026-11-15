@@ -1,6 +1,7 @@
 {
-  "reading": "The model never saw a NISAR map. Here its replays for the NISAR pass of 28 Oct 2026 are scored against the team's NISAR water map of that pass (data/cv). 'New water' = dry in the NISAR map of 16 Oct, water on 28 Oct. issued_before_storm starts from the last Sentinel-1 map before the rain; issued_after_storm from a map 3 to 5 days before the target, when the flood was already visible. (water_ap, new_water_ap) = average precision.",
+  "reading": "The model never saw a NISAR map. Here its replays for the NISAR pass of 28 Oct 2026 are scored against the team's NISAR water map of that pass (data/cv). 'New water' = dry in the NISAR map of 16 Oct, water on 28 Oct. issued_before_storm starts from the last Sentinel-1 map before the rain; issued_after_storm from a map 3 to 5 days before the target, when the flood was already visible. (water_ap, new_water_ap) = average precision. The exported score is 'blend' of candidate mono_neigh+blend; computed after the choice of improve/selection.json.",
   "caution": "The NISAR map comes from a model trained with Sentinel-1 labels at Albufera, so Albufera is not an independent check. Pego-Oliva was a test site of that model.",
+  "variant": "mono_neigh+blend",
   "thresholds_frozen_from": "development_metrics.json",
   "sites": {
     "albufera": {
@@ -25,22 +26,42 @@
           "weighted_new_water_share": 0.09877,
           "methods": {
             "rain_and_state": {
-              "water_ap": 0.8331,
-              "new_water_ap": 0.6797,
+              "water_ap": 0.848,
+              "new_water_ap": 0.7192,
               "water_at_threshold": {
-                "precision": 0.8532,
-                "recall": 0.6375,
-                "f1": 0.7297,
-                "iou": 0.5744,
-                "predicted_w": 115411.0,
+                "precision": 0.8478,
+                "recall": 0.6808,
+                "f1": 0.7552,
+                "iou": 0.6067,
+                "predicted_w": 124036.0,
                 "observed_w": 154463.0
               },
               "new_water_at_threshold": {
-                "precision": 0.6834,
-                "recall": 0.6843,
-                "f1": 0.6839,
-                "iou": 0.5196,
-                "predicted_w": 90635.0,
+                "precision": 0.6511,
+                "recall": 0.7779,
+                "f1": 0.7089,
+                "iou": 0.549,
+                "predicted_w": 108145.0,
+                "observed_w": 90526.0
+              }
+            },
+            "blend": {
+              "water_ap": 0.8416,
+              "new_water_ap": 0.7071,
+              "water_at_threshold": {
+                "precision": 0.8534,
+                "recall": 0.6927,
+                "f1": 0.7647,
+                "iou": 0.6191,
+                "predicted_w": 125372.0,
+                "observed_w": 154463.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.693,
+                "recall": 0.6954,
+                "f1": 0.6942,
+                "iou": 0.5317,
+                "predicted_w": 90837.0,
                 "observed_w": 90526.0
               }
             },
@@ -104,22 +125,42 @@
           "weighted_new_water_share": 0.09877,
           "methods": {
             "rain_and_state": {
-              "water_ap": 0.8002,
-              "new_water_ap": 0.6454,
+              "water_ap": 0.8559,
+              "new_water_ap": 0.7412,
               "water_at_threshold": {
-                "precision": 0.8653,
-                "recall": 0.6337,
-                "f1": 0.7316,
-                "iou": 0.5768,
-                "predicted_w": 113116.0,
+                "precision": 0.8597,
+                "recall": 0.7198,
+                "f1": 0.7836,
+                "iou": 0.6442,
+                "predicted_w": 129337.0,
                 "observed_w": 154463.0
               },
               "new_water_at_threshold": {
-                "precision": 0.7099,
-                "recall": 0.5493,
-                "f1": 0.6194,
-                "iou": 0.4486,
-                "predicted_w": 70042.0,
+                "precision": 0.682,
+                "recall": 0.7072,
+                "f1": 0.6944,
+                "iou": 0.5319,
+                "predicted_w": 93872.0,
+                "observed_w": 90526.0
+              }
+            },
+            "blend": {
+              "water_ap": 0.8414,
+              "new_water_ap": 0.7147,
+              "water_at_threshold": {
+                "precision": 0.8467,
+                "recall": 0.7034,
+                "f1": 0.7684,
+                "iou": 0.6239,
+                "predicted_w": 128323.0,
+                "observed_w": 154463.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.6755,
+                "recall": 0.6809,
+                "f1": 0.6782,
+                "iou": 0.5131,
+                "predicted_w": 91246.0,
                 "observed_w": 90526.0
               }
             },
@@ -191,22 +232,42 @@
           "weighted_new_water_share": 0.08514,
           "methods": {
             "rain_and_state": {
-              "water_ap": 0.8878,
-              "new_water_ap": 0.719,
+              "water_ap": 0.8928,
+              "new_water_ap": 0.7515,
               "water_at_threshold": {
-                "precision": 0.8624,
-                "recall": 0.7351,
-                "f1": 0.7937,
-                "iou": 0.6579,
-                "predicted_w": 115411.0,
+                "precision": 0.8394,
+                "recall": 0.7689,
+                "f1": 0.8026,
+                "iou": 0.6703,
+                "predicted_w": 124036.0,
                 "observed_w": 135400.0
               },
               "new_water_at_threshold": {
-                "precision": 0.6498,
-                "recall": 0.8139,
-                "f1": 0.7227,
-                "iou": 0.5658,
-                "predicted_w": 98821.0,
+                "precision": 0.5968,
+                "recall": 0.8829,
+                "f1": 0.7122,
+                "iou": 0.553,
+                "predicted_w": 116712.0,
+                "observed_w": 78902.0
+              }
+            },
+            "blend": {
+              "water_ap": 0.8958,
+              "new_water_ap": 0.7593,
+              "water_at_threshold": {
+                "precision": 0.8553,
+                "recall": 0.7919,
+                "f1": 0.8224,
+                "iou": 0.6984,
+                "predicted_w": 125372.0,
+                "observed_w": 135400.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.6604,
+                "recall": 0.8254,
+                "f1": 0.7337,
+                "iou": 0.5794,
+                "predicted_w": 98612.0,
                 "observed_w": 78902.0
               }
             },
@@ -270,22 +331,42 @@
           "weighted_new_water_share": 0.08514,
           "methods": {
             "rain_and_state": {
-              "water_ap": 0.8835,
-              "new_water_ap": 0.7481,
+              "water_ap": 0.9166,
+              "new_water_ap": 0.8282,
               "water_at_threshold": {
-                "precision": 0.8656,
-                "recall": 0.7484,
-                "f1": 0.8027,
-                "iou": 0.6705,
-                "predicted_w": 117056.0,
+                "precision": 0.8664,
+                "recall": 0.8059,
+                "f1": 0.8351,
+                "iou": 0.7168,
+                "predicted_w": 125940.0,
                 "observed_w": 135400.0
               },
               "new_water_at_threshold": {
-                "precision": 0.6956,
-                "recall": 0.7174,
-                "f1": 0.7064,
-                "iou": 0.546,
-                "predicted_w": 81374.0,
+                "precision": 0.6815,
+                "recall": 0.8252,
+                "f1": 0.7465,
+                "iou": 0.5955,
+                "predicted_w": 95546.0,
+                "observed_w": 78902.0
+              }
+            },
+            "blend": {
+              "water_ap": 0.9064,
+              "new_water_ap": 0.8008,
+              "water_at_threshold": {
+                "precision": 0.858,
+                "recall": 0.798,
+                "f1": 0.8269,
+                "iou": 0.7049,
+                "predicted_w": 125931.0,
+                "observed_w": 135400.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.6702,
+                "recall": 0.8135,
+                "f1": 0.7349,
+                "iou": 0.5809,
+                "predicted_w": 95780.0,
                 "observed_w": 78902.0
               }
             },
@@ -359,22 +440,42 @@
           "weighted_new_water_share": 0.00773,
           "methods": {
             "rain_and_state": {
-              "water_ap": 0.3975,
-              "new_water_ap": 0.2367,
+              "water_ap": 0.3799,
+              "new_water_ap": 0.2344,
               "water_at_threshold": {
-                "precision": 0.436,
-                "recall": 0.426,
-                "f1": 0.4309,
-                "iou": 0.2746,
-                "predicted_w": 13626.0,
+                "precision": 0.4029,
+                "recall": 0.3892,
+                "f1": 0.3959,
+                "iou": 0.2468,
+                "predicted_w": 13471.0,
                 "observed_w": 13947.0
               },
               "new_water_at_threshold": {
-                "precision": 0.2415,
-                "recall": 0.4109,
-                "f1": 0.3042,
-                "iou": 0.1794,
-                "predicted_w": 14165.0,
+                "precision": 0.2462,
+                "recall": 0.4295,
+                "f1": 0.313,
+                "iou": 0.1856,
+                "predicted_w": 14522.0,
+                "observed_w": 8326.0
+              }
+            },
+            "blend": {
+              "water_ap": 0.3697,
+              "new_water_ap": 0.2236,
+              "water_at_threshold": {
+                "precision": 0.4136,
+                "recall": 0.4633,
+                "f1": 0.437,
+                "iou": 0.2796,
+                "predicted_w": 15621.0,
+                "observed_w": 13947.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.2501,
+                "recall": 0.4783,
+                "f1": 0.3284,
+                "iou": 0.1965,
+                "predicted_w": 15923.0,
                 "observed_w": 8326.0
               }
             },
@@ -438,22 +539,42 @@
           "weighted_new_water_share": 0.00773,
           "methods": {
             "rain_and_state": {
-              "water_ap": 0.4604,
-              "new_water_ap": 0.279,
+              "water_ap": 0.4815,
+              "new_water_ap": 0.315,
               "water_at_threshold": {
-                "precision": 0.5376,
-                "recall": 0.5135,
-                "f1": 0.5253,
-                "iou": 0.3562,
-                "predicted_w": 13323.0,
+                "precision": 0.5111,
+                "recall": 0.5953,
+                "f1": 0.55,
+                "iou": 0.3793,
+                "predicted_w": 16246.0,
                 "observed_w": 13947.0
               },
               "new_water_at_threshold": {
-                "precision": 0.2909,
-                "recall": 0.4922,
-                "f1": 0.3657,
-                "iou": 0.2238,
-                "predicted_w": 14086.0,
+                "precision": 0.2985,
+                "recall": 0.6681,
+                "f1": 0.4127,
+                "iou": 0.26,
+                "predicted_w": 18634.0,
+                "observed_w": 8326.0
+              }
+            },
+            "blend": {
+              "water_ap": 0.4141,
+              "new_water_ap": 0.2534,
+              "water_at_threshold": {
+                "precision": 0.4644,
+                "recall": 0.5787,
+                "f1": 0.5153,
+                "iou": 0.3471,
+                "predicted_w": 17380.0,
+                "observed_w": 13947.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.2555,
+                "recall": 0.5459,
+                "f1": 0.3481,
+                "iou": 0.2107,
+                "predicted_w": 17790.0,
                 "observed_w": 8326.0
               }
             },
@@ -525,22 +646,42 @@
           "weighted_new_water_share": 0.00851,
           "methods": {
             "rain_and_state": {
-              "water_ap": 0.4119,
-              "new_water_ap": 0.2648,
+              "water_ap": 0.3907,
+              "new_water_ap": 0.2588,
               "water_at_threshold": {
-                "precision": 0.4594,
-                "recall": 0.4348,
-                "f1": 0.4467,
-                "iou": 0.2876,
-                "predicted_w": 13626.0,
+                "precision": 0.4225,
+                "recall": 0.3952,
+                "f1": 0.4084,
+                "iou": 0.2566,
+                "predicted_w": 13471.0,
                 "observed_w": 14399.0
               },
               "new_water_at_threshold": {
-                "precision": 0.2869,
-                "recall": 0.4331,
-                "f1": 0.3451,
-                "iou": 0.2086,
-                "predicted_w": 13850.0,
+                "precision": 0.2881,
+                "recall": 0.4454,
+                "f1": 0.3499,
+                "iou": 0.2121,
+                "predicted_w": 14181.0,
+                "observed_w": 9173.0
+              }
+            },
+            "blend": {
+              "water_ap": 0.3841,
+              "new_water_ap": 0.25,
+              "water_at_threshold": {
+                "precision": 0.4377,
+                "recall": 0.4749,
+                "f1": 0.4556,
+                "iou": 0.295,
+                "predicted_w": 15621.0,
+                "observed_w": 14399.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.293,
+                "recall": 0.4981,
+                "f1": 0.369,
+                "iou": 0.2262,
+                "predicted_w": 15593.0,
                 "observed_w": 9173.0
               }
             },
@@ -604,22 +745,42 @@
           "weighted_new_water_share": 0.00851,
           "methods": {
             "rain_and_state": {
-              "water_ap": 0.5086,
-              "new_water_ap": 0.347,
+              "water_ap": 0.5975,
+              "new_water_ap": 0.4544,
               "water_at_threshold": {
-                "precision": 0.5275,
-                "recall": 0.5877,
-                "f1": 0.5559,
-                "iou": 0.385,
-                "predicted_w": 16043.0,
+                "precision": 0.5506,
+                "recall": 0.6478,
+                "f1": 0.5953,
+                "iou": 0.4238,
+                "predicted_w": 16941.0,
                 "observed_w": 14399.0
               },
               "new_water_at_threshold": {
-                "precision": 0.3347,
-                "recall": 0.5879,
-                "f1": 0.4266,
-                "iou": 0.2711,
-                "predicted_w": 16112.0,
+                "precision": 0.3914,
+                "recall": 0.7759,
+                "f1": 0.5203,
+                "iou": 0.3516,
+                "predicted_w": 18184.0,
+                "observed_w": 9173.0
+              }
+            },
+            "blend": {
+              "water_ap": 0.4713,
+              "new_water_ap": 0.3195,
+              "water_at_threshold": {
+                "precision": 0.494,
+                "recall": 0.5963,
+                "f1": 0.5403,
+                "iou": 0.3702,
+                "predicted_w": 17382.0,
+                "observed_w": 14399.0
+              },
+              "new_water_at_threshold": {
+                "precision": 0.3178,
+                "recall": 0.5904,
+                "f1": 0.4132,
+                "iou": 0.2604,
+                "predicted_w": 17041.0,
                 "observed_w": 9173.0
               }
             },
