@@ -7,7 +7,8 @@
     python -m pipeline.prediction.spatial all       the four steps above for the base model
 
     train and predict take --variant: base (Sentinel-1 labels), soil (+ NISAR soil moisture as an input),
-    nisar (+ NISAR water labels), nisar_soil (both). Only base writes maps; the others write scores to
+    nisar (+ NISAR water labels), nisar_soil (both), nisar_flag (NISAR labels plus two columns that say which
+    radar a water map comes from). nisar also takes --variant. Only base writes maps; the others write scores to
     data/prediction/spatial/variants/<name>/.
     python -m pipeline.prediction.spatial compare   one table of the held-out scores of every trained variant
 """
@@ -44,7 +45,9 @@ CV_DIR = DATA_DIR / "cv"
 NISAR_BEFORE, NISAR_AFTER = "2026-10-16", "2026-10-28"   # the NISAR passes on either side of the DANA
 PRE_STORM = np.datetime64("2026-10-17T23:59:59")          # last moment before the rain of 18 and 19 Oct
 NISAR_EXPORT_STACK = "066_D_069"                          # the track both sites share
-VARIANTS = {"base": ("s1", False), "soil": ("s1", True), "nisar": ("s1+nisar", False), "nisar_soil": ("s1+nisar", True)}
+# variant: (labels, soil moisture as an input, sensor columns)
+VARIANTS = {"base": ("s1", False, False), "soil": ("s1", True, False), "nisar": ("s1+nisar", False, False),
+            "nisar_soil": ("s1+nisar", True, False), "nisar_flag": ("s1+nisar", False, True)}
 FORECAST_TARGET = "2026-10-22"                            # first Sentinel-1 pass after the DANA rain
 STORM_DATES = ("2026-10-22", "2026-10-23")
 
@@ -54,7 +57,7 @@ def _vdir(variant):
 
 
 def _names(variant):
-    return F.FEATURES + (F.SOIL if VARIANTS[variant][1] else ())
+    return F.FEATURES + (F.SOIL if VARIANTS[variant][1] else ()) + (F.SENSOR if VARIANTS[variant][2] else ())
 
 
 def _boosters(variant="base"):
@@ -101,7 +104,7 @@ def _site(name, label_set="s1"):
         wet, obs = F.counts(lambda k: labels.to_water(np.asarray(stack[k])), len(passes), fit, stack.shape[1:])
         np.savez_compressed(cache, wet=wet, obs=obs)
     return {"name": name, "stack": stack, "passes": passes, "days": days, "times": labels.pass_times(passes),
-            "static": static, "fit": fit, "wet": wet, "obs": obs, "grid": site_grid(get_site(name)),
+            "is_nisar": np.array([p.get("platform") == "NISAR" for p in passes]), "static": static, "fit": fit, "wet": wet, "obs": obs, "grid": site_grid(get_site(name)),
             "rain": F.load_rain(name)}
 
 
@@ -122,7 +125,7 @@ def prepare(_args):
 
 def train(args):
     variant = getattr(args, "variant", "base")
-    label_set, use_soil = VARIANTS[variant]
+    label_set, use_soil, _ = VARIANTS[variant]
     out, full = _vdir(variant), _names(variant)
     rng = np.random.default_rng(M.SEED)
     parts, manifest = [], {}
@@ -132,7 +135,7 @@ def train(args):
         pool, pool_w = F.pick_pool(domain, s["wet"], s["obs"], POOL_SIZE, rng, n_fit=int(s["fit"].sum()))
         pool_water = np.stack([labels.to_water(np.asarray(s["stack"][k]).ravel()[pool]) for k in range(len(s["passes"]))])
         tab = F.build_table(pool_water, s["times"], s["days"], F.static_columns(s["static"], pool), pool_w, s["rain"], rng,
-                            soil=F.soil_reader(name, pool) if use_soil else None)
+                            soil=F.soil_reader(name, pool) if use_soil else None, is_nisar=s["is_nisar"])
         train_blocks, val_blocks = split_blocks(domain.shape)
         late = np.array([d >= M.DEV_SPLIT for d in s["days"]])[tab["t"]]
         tab["dev_train"] = ~late & train_blocks.ravel()[pool][tab["p"]]
@@ -208,11 +211,14 @@ def train(args):
     print("rounds", rounds)
 
 
-def _predict_pass(s, idx, static_cols, freq, boosters, issue_j, target_time, target_day, lead, rain_feats, soil=None):
+def _predict_pass(s, idx, static_cols, freq, boosters, issue_j, target_time, target_day, lead, rain_feats, soil=None,
+                  target_nisar=False):
     get = lambda k: labels.to_water(np.asarray(s["stack"][k]).ravel()[idx])
-    state, age = F.prev_state(get, s["times"], issue_j, target_time, idx.size)
+    src = np.empty(idx.size, dtype="int64")
+    state, age = F.prev_state(get, s["times"], issue_j, target_time, idx.size, source=src)
+    prev_nisar = np.where(src >= 0, s["is_nisar"][np.maximum(src, 0)], False)
     sm, sm_age = soil(s["days"][issue_j], date.fromordinal(target_day).isoformat()) if soil is not None else (None, None)
-    X = F.assemble(static_cols, freq, target_day, lead, rain_feats, state, age, sm, sm_age)
+    X = F.assemble(static_cols, freq, target_day, lead, rain_feats, state, age, sm, sm_age, target_nisar, prev_nisar)
     out = {name: M.predict(b, X, names) for name, (b, names) in boosters.items()}
     out.update(M.baselines(X))
     return out, state
@@ -234,7 +240,7 @@ def _forecast_rain(name, run_day, n_days):
 
 def predict(args):
     variant = getattr(args, "variant", "base")
-    label_set, use_soil = VARIANTS[variant]
+    label_set, use_soil, _ = VARIANTS[variant]
     vdir, primary = _vdir(variant), variant == "base"
     dev = json.loads((vdir / "development_metrics.json").read_text(encoding="utf-8"))
     thresholds = dev["thresholds"]
@@ -382,16 +388,19 @@ def _cv_on_grid(path, grid):
     return out
 
 
-def nisar(_args):
+def nisar(args):
     """Score replays of 28 Oct 2026 against the NISAR water map of that pass, issued before and after the storm."""
-    dev = json.loads((OUT / "development_metrics.json").read_text(encoding="utf-8"))
+    variant = getattr(args, "variant", "base")
+    label_set, _, sensor = VARIANTS[variant]
+    vdir, primary = _vdir(variant), variant == "base"
+    dev = json.loads((vdir / "development_metrics.json").read_text(encoding="utf-8"))
     thresholds = dev["thresholds"]
-    boosters = _boosters()
+    boosters = _boosters(variant)
     cv_entries = {(e["site"], e["stack"], e["date"]): e for e in manifest_mod.read(MANIFEST)
                   if e.get("model") == "cv" and e.get("layer") == "water"}
     report, index = {}, []
     for name in SITES:
-        s = _site(name)
+        s = _site(name, label_set)
         st, grid = s["static"], s["grid"]
         idx = np.flatnonzero((st["land"] & np.isfinite(st["hand_m"])).ravel())
         static_cols = F.static_columns(st, idx)
@@ -417,11 +426,12 @@ def nisar(_args):
                     continue
                 rf = F.rain_features(s["rain"], date.fromisoformat(s["days"][j]).toordinal(), target_day)
                 lead = float((target_time - s["times"][j]) / np.timedelta64(1, "D"))
-                scores, state = _predict_pass(s, idx, static_cols, freq, boosters, j, target_time, target_day, lead, rf)
+                scores, state = _predict_pass(s, idx, static_cols, freq, boosters, j, target_time, target_day, lead, rf,
+                                              target_nisar=sensor)   # with sensor columns: predict what NISAR will see
                 runs[label] = {"issue_pass": s["passes"][j]["pass_id"], "lead_days": round(lead, 2),
                                **{k: round(v, 1) for k, v in rf.items()},
                                **M.score_all(y, w1, {k: v[ok] for k, v in scores.items()}, nisar_dry_before, thresholds)}
-                if label == "issued_before_storm" and stack == NISAR_EXPORT_STACK:
+                if primary and label == "issued_before_storm" and stack == NISAR_EXPORT_STACK:
                     sid = f"replay_{NISAR_AFTER}_prestorm"
                     doc = export.write(OUT / name / sid, grid, scores["rain_and_state"], state,
                                        export.evidence(st, freq, state, idx, (grid.height, grid.width)), idx,
@@ -452,8 +462,9 @@ def nisar(_args):
                       "days before the target, when the flood was already visible. (water_ap, new_water_ap) = average precision.",
            "caution": "The NISAR map comes from a model trained with Sentinel-1 labels at Albufera, so Albufera is not an independent "
                       "check. Pego-Oliva was a test site of that model.",
-           "thresholds_frozen_from": "development_metrics.json", "sites": report}, OUT / "nisar_check.json")
-    _write_index(index, lambda e: e["scenario_id"].endswith("_prestorm"))
+           "variant": variant, "thresholds_frozen_from": "development_metrics.json", "sites": report}, vdir / "nisar_check.json")
+    if primary:
+        _write_index(index, lambda e: e["scenario_id"].endswith("_prestorm"))
 
 
 def compare(_args):
@@ -493,7 +504,7 @@ def main():
     for name, fn in (("prepare", prepare), ("train", train), ("predict", predict), ("nisar", nisar), ("compare", compare)):
         sp = sub.add_parser(name)
         sp.set_defaults(fn=fn)
-        if name in ("train", "predict"):
+        if name in ("train", "predict", "nisar"):
             sp.add_argument("--variant", choices=list(VARIANTS), default="base")
     sub.add_parser("all").set_defaults(fn=lambda a: (prepare(a), train(a), predict(a), nisar(a)))
     args = parser.parse_args()

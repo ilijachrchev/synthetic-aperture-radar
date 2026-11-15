@@ -53,6 +53,10 @@ Scenarios: `replay_2026-10-22`, `replay_2026-10-28` (DANA, reconstruction) and `
 - `base` is the model behind every exported map: Sentinel-1 labels, no soil moisture.
 - `soil` adds the newest NISAR SME2 map before the issue day as an input. `nisar` adds the team's NISAR water labels
   (`data/labels_nisar`, open water wet, water under plants unknown) as extra passes. `nisar_soil` does both.
+- `nisar_flag` is `nisar` plus two columns saying which radar the target and the previous water map come from.
+  Without them the model cannot tell NISAR's extra water in the rice fields from Sentinel-1's view and blames it on
+  the rain of those weeks, which wrecked four Albufera passes in November. With them the Sentinel-1 scores equal
+  `base`, and `nisar --variant nisar_flag` predicts what NISAR will see.
   They write scores only, to `variants/<name>/`. All are scored on the same held-out Sentinel-1 passes.
 - `forecast_2026-10-22` is the storm replay with the rain the ECMWF IFS run of the issue day forecast
   (Open-Meteo Single Runs, cached in `ifs_runs.json`), not the rain that fell. It is the only forecast-mode output.
@@ -63,6 +67,7 @@ Scenarios: `replay_2026-10-22`, `replay_2026-10-28` (DANA, reconstruction) and `
 - Sentinel-1 water maps are noisy and miss water under crops; they are labels, not truth.
 - Rain is site-wide, so the model learns "how much", and terrain and history decide "where".
 - Not yet scored against Copernicus EMSR935 (Luka's independent test).
-- Soil moisture and the NISAR labels did not improve the held-out scores so far, see `comparison.json`.
+- Soil moisture did not improve the held-out scores. The NISAR labels do not change the Sentinel-1 scores, but they
+  improve the prediction of NISAR's own 28 Oct map, see `comparison.json` and `variants/nisar_flag/nisar_check.json`.
 
 Written with SI assistance (Claude Code).

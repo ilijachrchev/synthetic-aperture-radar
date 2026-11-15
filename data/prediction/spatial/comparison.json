@@ -140,6 +140,41 @@
           "past_wet_share_new_water_ap": 0.3211
         }
       }
+    },
+    "nisar_flag": {
+      "labels": "s1+nisar",
+      "soil_moisture": false,
+      "rounds": {
+        "terrain_only": 238,
+        "rain_and_state": 238
+      },
+      "soil_importance_gain_share": 0,
+      "sites": {
+        "albufera": {
+          "all_held_out_passes": {
+            "water_ap": 0.8103,
+            "new_water_ap": 0.4641
+          },
+          "storm_passes_mean": {
+            "water_ap": 0.8219,
+            "new_water_ap": 0.6508
+          },
+          "terrain_only_new_water_ap": 0.4038,
+          "past_wet_share_new_water_ap": 0.3273
+        },
+        "pego_oliva": {
+          "all_held_out_passes": {
+            "water_ap": 0.6292,
+            "new_water_ap": 0.366
+          },
+          "storm_passes_mean": {
+            "water_ap": 0.5183,
+            "new_water_ap": 0.4665
+          },
+          "terrain_only_new_water_ap": 0.312,
+          "past_wet_share_new_water_ap": 0.3211
+        }
+      }
     }
   }
 }
