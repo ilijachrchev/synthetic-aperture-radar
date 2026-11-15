@@ -1,0 +1,2065 @@
+{
+ "views": {
+  "swipe": {
+   "title": "Sentinel-1 against NISAR, the same evening",
+   "what": "Left of the handle the Sentinel-1 water map (C band, OPERA DSWx-S1: open water and flooded vegetation), right of it NISAR's (L band, the team CV model v1 at 0.3), from passes about an hour apart. Grey: ground the map does not cover.",
+   "legend": {
+    "water": "#2a8fff",
+    "not_covered": "rgba(10,16,24,0.49)"
+   },
+   "items": [
+    {
+     "date": "2026-06-18",
+     "nisar": {
+      "file": "views/swipe/2026-06-18_nisar.webp",
+      "bytes": 6352,
+      "time_utc": "2026-06-18T18:53:21Z",
+      "granule": "NISAR_L2_PR_GCOV_023_066_D_069_2005_DHDH_M_20260618T185321_20260618T185356_P05023_N_F_J_001",
+      "product": "NISAR GCOV, team CV model v1 (5 U-Nets) at 0.3",
+      "model_cache": "data/interim/cv_prob/v1/albufera_066_D_069_2026-06-18.npz"
+     },
+     "s1": {
+      "file": "views/swipe/2026-06-18_s1.webp",
+      "bytes": 11428,
+      "time_utc": "2026-06-18T17:54:10Z",
+      "granules": [
+       "OPERA_L3_DSWx-S1_T30SYJ_20260618T175410Z_20260826T154002Z_S1A_30_v1.0_B01_WTR.tif",
+       "OPERA_L3_DSWx-S1_T31SBD_20260618T175410Z_20260826T154002Z_S1A_30_v1.0_B01_WTR.tif"
+      ],
+      "product": "OPERA DSWx-S1 B01_WTR (open water 1, flooded vegetation 3)"
+     },
+     "referee": null,
+     "caption": [
+      "18 Jun, the same evening: NISAR 18:53, Sentinel-1 17:54 UTC (59 min apart).",
+      "NISAR maps 2,979 ha of water, Sentinel-1 2,987 ha; 446 ha only on NISAR's map, 453 ha only on Sentinel-1's.",
+      "Too cloudy for an optical check within a day of the pass."
+     ],
+     "numbers": {
+      "minutes_apart": {
+       "value": 59,
+       "unit": "min",
+       "what": "between the NISAR and the Sentinel-1 pass",
+       "source": [
+        "data/stack/albufera_066_D_069.nc",
+        "data/raw/dswx/albufera/index.json",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "land_both_cover": {
+       "value": 0.997,
+       "unit": "share",
+       "what": "of the land (sea left out) both maps cover",
+       "source": [
+        "data/stack/albufera_066_D_069.nc",
+        "data/interim/cv_prob/v1/albufera_066_D_069_2026-06-18.npz",
+        "data/raw/dswx/albufera/066_D_069/20260618/OPERA_L3_DSWx-S1_T30SYJ_20260618T175410Z_20260826T154002Z_S1A_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/albufera/066_D_069/20260618/OPERA_L3_DSWx-S1_T31SBD_20260618T175410Z_20260826T154002Z_S1A_30_v1.0_B01_WTR.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "nisar_water_ha": {
+       "value": 2979.4,
+       "unit": "ha",
+       "what": "water NISAR maps (v1 at 0.3) on the land both maps cover",
+       "source": [
+        "data/stack/albufera_066_D_069.nc",
+        "data/interim/cv_prob/v1/albufera_066_D_069_2026-06-18.npz",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "s1_water_ha": {
+       "value": 2986.8,
+       "unit": "ha",
+       "what": "water Sentinel-1 maps (open water and flooded vegetation) there",
+       "source": [
+        "data/raw/dswx/albufera/066_D_069/20260618/OPERA_L3_DSWx-S1_T30SYJ_20260618T175410Z_20260826T154002Z_S1A_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/albufera/066_D_069/20260618/OPERA_L3_DSWx-S1_T31SBD_20260618T175410Z_20260826T154002Z_S1A_30_v1.0_B01_WTR.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "s1_flooded_vegetation_ha": {
+       "value": 398.4,
+       "unit": "ha",
+       "what": "of it marked flooded vegetation by Sentinel-1",
+       "source": [
+        "data/raw/dswx/albufera/066_D_069/20260618/OPERA_L3_DSWx-S1_T30SYJ_20260618T175410Z_20260826T154002Z_S1A_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/albufera/066_D_069/20260618/OPERA_L3_DSWx-S1_T31SBD_20260618T175410Z_20260826T154002Z_S1A_30_v1.0_B01_WTR.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "nisar_only_ha": {
+       "value": 446.0,
+       "unit": "ha",
+       "what": "water only NISAR maps",
+       "source": [
+        "data/stack/albufera_066_D_069.nc",
+        "data/interim/cv_prob/v1/albufera_066_D_069_2026-06-18.npz",
+        "data/raw/dswx/albufera/066_D_069/20260618/OPERA_L3_DSWx-S1_T30SYJ_20260618T175410Z_20260826T154002Z_S1A_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/albufera/066_D_069/20260618/OPERA_L3_DSWx-S1_T31SBD_20260618T175410Z_20260826T154002Z_S1A_30_v1.0_B01_WTR.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "s1_only_ha": {
+       "value": 453.4,
+       "unit": "ha",
+       "what": "water only Sentinel-1 maps",
+       "source": [
+        "data/stack/albufera_066_D_069.nc",
+        "data/interim/cv_prob/v1/albufera_066_D_069_2026-06-18.npz",
+        "data/raw/dswx/albufera/066_D_069/20260618/OPERA_L3_DSWx-S1_T30SYJ_20260618T175410Z_20260826T154002Z_S1A_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/albufera/066_D_069/20260618/OPERA_L3_DSWx-S1_T31SBD_20260618T175410Z_20260826T154002Z_S1A_30_v1.0_B01_WTR.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "both_ha": {
+       "value": 2533.4,
+       "unit": "ha",
+       "what": "water both map",
+       "source": [
+        "data/stack/albufera_066_D_069.nc",
+        "data/interim/cv_prob/v1/albufera_066_D_069_2026-06-18.npz",
+        "data/raw/dswx/albufera/066_D_069/20260618/OPERA_L3_DSWx-S1_T30SYJ_20260618T175410Z_20260826T154002Z_S1A_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/albufera/066_D_069/20260618/OPERA_L3_DSWx-S1_T31SBD_20260618T175410Z_20260826T154002Z_S1A_30_v1.0_B01_WTR.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "optical_clear": {
+       "value": 0.0,
+       "unit": "share",
+       "what": "of the changing land the optical map saw clear",
+       "source": [
+        "data/optical/albufera_066_D_069/2026-06-18.tif",
+        "web/scripts/bake_views.py"
+       ]
+      }
+     }
+    },
+    {
+     "date": "2026-10-16",
+     "nisar": {
+      "file": "views/swipe/2026-10-16_nisar.webp",
+      "bytes": 9198,
+      "time_utc": "2026-10-16T18:53:18Z",
+      "granule": "NISAR_L2_PR_GCOV_033_066_D_069_2005_DHDH_M_20261016T185318_20261016T185353_P05023_N_F_J_001",
+      "product": "NISAR GCOV, team CV model v1 (5 U-Nets) at 0.3",
+      "model_cache": "data/interim/cv_prob/v1/albufera_066_D_069_2026-10-16.npz"
+     },
+     "s1": {
+      "file": "views/swipe/2026-10-16_s1.webp",
+      "bytes": 11030,
+      "time_utc": "2026-10-16T18:01:45Z",
+      "granules": [
+       "OPERA_L3_DSWx-S1_T30SYJ_20261016T180145Z_20261017T085509Z_S1D_30_v1.0_B01_WTR.tif",
+       "OPERA_L3_DSWx-S1_T31SBD_20261016T180145Z_20261017T085509Z_S1D_30_v1.0_B01_WTR.tif"
+      ],
+      "product": "OPERA DSWx-S1 B01_WTR (open water 1, flooded vegetation 3)"
+     },
+     "referee": {
+      "optical_days": [
+       "2026-10-16"
+      ],
+      "granules": [
+       "OPERA_L3_DSWx-HLS_T30SYJ_20261016T105031Z_20261022T064551Z_S2C_30_v1.1_B01_WTR.tif",
+       "OPERA_L3_DSWx-HLS_T31SBD_20261016T105031Z_20261022T054720Z_S2C_30_v1.1_B01_WTR.tif"
+      ]
+     },
+     "caption": [
+      "16 Oct, the same evening: NISAR 18:53, Sentinel-1 18:01 UTC (52 min apart).",
+      "NISAR maps 4,542 ha of water, Sentinel-1 3,982 ha; 872 ha only on NISAR's map, 313 ha only on Sentinel-1's.",
+      "An optical map within a day (clear on 33 % of it) sees 2,197 ha of open water outside permanent water: NISAR finds 60 % of it, Sentinel-1 44 %.",
+      "Where only NISAR maps water, optical sees water on 98 %; where only Sentinel-1 does, on 65 %."
+     ],
+     "numbers": {
+      "minutes_apart": {
+       "value": 52,
+       "unit": "min",
+       "what": "between the NISAR and the Sentinel-1 pass",
+       "source": [
+        "data/stack/albufera_066_D_069.nc",
+        "data/raw/dswx/albufera/index.json",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "land_both_cover": {
+       "value": 0.997,
+       "unit": "share",
+       "what": "of the land (sea left out) both maps cover",
+       "source": [
+        "data/stack/albufera_066_D_069.nc",
+        "data/interim/cv_prob/v1/albufera_066_D_069_2026-10-16.npz",
+        "data/raw/dswx/albufera/066_D_069/20261016/OPERA_L3_DSWx-S1_T30SYJ_20261016T180145Z_20261017T085509Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/albufera/066_D_069/20261016/OPERA_L3_DSWx-S1_T31SBD_20261016T180145Z_20261017T085509Z_S1D_30_v1.0_B01_WTR.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "nisar_water_ha": {
+       "value": 4541.6,
+       "unit": "ha",
+       "what": "water NISAR maps (v1 at 0.3) on the land both maps cover",
+       "source": [
+        "data/stack/albufera_066_D_069.nc",
+        "data/interim/cv_prob/v1/albufera_066_D_069_2026-10-16.npz",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "s1_water_ha": {
+       "value": 3982.5,
+       "unit": "ha",
+       "what": "water Sentinel-1 maps (open water and flooded vegetation) there",
+       "source": [
+        "data/raw/dswx/albufera/066_D_069/20261016/OPERA_L3_DSWx-S1_T30SYJ_20261016T180145Z_20261017T085509Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/albufera/066_D_069/20261016/OPERA_L3_DSWx-S1_T31SBD_20261016T180145Z_20261017T085509Z_S1D_30_v1.0_B01_WTR.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "s1_flooded_vegetation_ha": {
+       "value": 245.8,
+       "unit": "ha",
+       "what": "of it marked flooded vegetation by Sentinel-1",
+       "source": [
+        "data/raw/dswx/albufera/066_D_069/20261016/OPERA_L3_DSWx-S1_T30SYJ_20261016T180145Z_20261017T085509Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/albufera/066_D_069/20261016/OPERA_L3_DSWx-S1_T31SBD_20261016T180145Z_20261017T085509Z_S1D_30_v1.0_B01_WTR.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "nisar_only_ha": {
+       "value": 872.4,
+       "unit": "ha",
+       "what": "water only NISAR maps",
+       "source": [
+        "data/stack/albufera_066_D_069.nc",
+        "data/interim/cv_prob/v1/albufera_066_D_069_2026-10-16.npz",
+        "data/raw/dswx/albufera/066_D_069/20261016/OPERA_L3_DSWx-S1_T30SYJ_20261016T180145Z_20261017T085509Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/albufera/066_D_069/20261016/OPERA_L3_DSWx-S1_T31SBD_20261016T180145Z_20261017T085509Z_S1D_30_v1.0_B01_WTR.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "s1_only_ha": {
+       "value": 313.4,
+       "unit": "ha",
+       "what": "water only Sentinel-1 maps",
+       "source": [
+        "data/stack/albufera_066_D_069.nc",
+        "data/interim/cv_prob/v1/albufera_066_D_069_2026-10-16.npz",
+        "data/raw/dswx/albufera/066_D_069/20261016/OPERA_L3_DSWx-S1_T30SYJ_20261016T180145Z_20261017T085509Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/albufera/066_D_069/20261016/OPERA_L3_DSWx-S1_T31SBD_20261016T180145Z_20261017T085509Z_S1D_30_v1.0_B01_WTR.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "both_ha": {
+       "value": 3669.2,
+       "unit": "ha",
+       "what": "water both map",
+       "source": [
+        "data/stack/albufera_066_D_069.nc",
+        "data/interim/cv_prob/v1/albufera_066_D_069_2026-10-16.npz",
+        "data/raw/dswx/albufera/066_D_069/20261016/OPERA_L3_DSWx-S1_T30SYJ_20261016T180145Z_20261017T085509Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/albufera/066_D_069/20261016/OPERA_L3_DSWx-S1_T31SBD_20261016T180145Z_20261017T085509Z_S1D_30_v1.0_B01_WTR.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "optical_clear": {
+       "value": 0.333,
+       "unit": "share",
+       "what": "of the changing land the optical map saw clear",
+       "source": [
+        "data/optical/albufera_066_D_069/2026-10-16.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "optical_open_water_ha": {
+       "value": 2197.4,
+       "unit": "ha",
+       "what": "open water the optical map sees, outside permanent water",
+       "source": [
+        "data/optical/albufera_066_D_069/2026-10-16.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "nisar_finds": {
+       "value": 0.596,
+       "unit": "share",
+       "what": "of that open water on NISAR's map",
+       "source": [
+        "data/stack/albufera_066_D_069.nc",
+        "data/interim/cv_prob/v1/albufera_066_D_069_2026-10-16.npz",
+        "data/optical/albufera_066_D_069/2026-10-16.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "s1_finds": {
+       "value": 0.444,
+       "unit": "share",
+       "what": "of that open water on Sentinel-1's map",
+       "source": [
+        "data/raw/dswx/albufera/066_D_069/20261016/OPERA_L3_DSWx-S1_T30SYJ_20261016T180145Z_20261017T085509Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/albufera/066_D_069/20261016/OPERA_L3_DSWx-S1_T31SBD_20261016T180145Z_20261017T085509Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/optical/albufera_066_D_069/2026-10-16.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "nisar_only_clear_ha": {
+       "value": 453.4,
+       "unit": "ha",
+       "what": "water only NISAR maps, where the optical map is clear",
+       "source": [
+        "data/stack/albufera_066_D_069.nc",
+        "data/interim/cv_prob/v1/albufera_066_D_069_2026-10-16.npz",
+        "data/raw/dswx/albufera/066_D_069/20261016/OPERA_L3_DSWx-S1_T30SYJ_20261016T180145Z_20261017T085509Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/albufera/066_D_069/20261016/OPERA_L3_DSWx-S1_T31SBD_20261016T180145Z_20261017T085509Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/optical/albufera_066_D_069/2026-10-16.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "nisar_only_optical_water": {
+       "value": 0.975,
+       "unit": "share",
+       "what": "of it the optical map calls water (open or partial)",
+       "source": [
+        "data/optical/albufera_066_D_069/2026-10-16.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "s1_only_clear_ha": {
+       "value": 138.2,
+       "unit": "ha",
+       "what": "water only Sentinel-1 maps, where the optical map is clear",
+       "source": [
+        "data/stack/albufera_066_D_069.nc",
+        "data/interim/cv_prob/v1/albufera_066_D_069_2026-10-16.npz",
+        "data/raw/dswx/albufera/066_D_069/20261016/OPERA_L3_DSWx-S1_T30SYJ_20261016T180145Z_20261017T085509Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/albufera/066_D_069/20261016/OPERA_L3_DSWx-S1_T31SBD_20261016T180145Z_20261017T085509Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/optical/albufera_066_D_069/2026-10-16.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "s1_only_optical_water": {
+       "value": 0.652,
+       "unit": "share",
+       "what": "of it the optical map calls water (open or partial)",
+       "source": [
+        "data/optical/albufera_066_D_069/2026-10-16.tif",
+        "web/scripts/bake_views.py"
+       ]
+      }
+     }
+    },
+    {
+     "date": "2026-10-28",
+     "nisar": {
+      "file": "views/swipe/2026-10-28_nisar.webp",
+      "bytes": 12882,
+      "time_utc": "2026-10-28T18:53:18Z",
+      "granule": "NISAR_L2_PR_GCOV_034_066_D_069_2005_DHDH_M_20261028T185318_20261028T185353_P05036_N_F_J_001",
+      "product": "NISAR GCOV, team CV model v1 (5 U-Nets) at 0.3",
+      "model_cache": "data/interim/cv_prob/v1/albufera_066_D_069_2026-10-28.npz"
+     },
+     "s1": {
+      "file": "views/swipe/2026-10-28_s1.webp",
+      "bytes": 15936,
+      "time_utc": "2026-10-28T18:01:44Z",
+      "granules": [
+       "OPERA_L3_DSWx-S1_T30SYJ_20261028T180144Z_20261030T090804Z_S1D_30_v1.0_B01_WTR.tif",
+       "OPERA_L3_DSWx-S1_T31SBD_20261028T180144Z_20261030T090804Z_S1D_30_v1.0_B01_WTR.tif"
+      ],
+      "product": "OPERA DSWx-S1 B01_WTR (open water 1, flooded vegetation 3)"
+     },
+     "referee": {
+      "optical_days": [
+       "2026-10-27",
+       "2026-10-28"
+      ],
+      "granules": [
+       "OPERA_L3_DSWx-HLS_T30SYJ_20261028T103706Z_20261031T150138Z_L9_30_v1.1_B01_WTR.tif",
+       "OPERA_L3_DSWx-HLS_T30SYJ_20261028T105051Z_20261031T145314Z_S2A_30_v1.1_B01_WTR.tif",
+       "OPERA_L3_DSWx-HLS_T31SBD_20261028T103706Z_20261031T150138Z_L9_30_v1.1_B01_WTR.tif",
+       "OPERA_L3_DSWx-HLS_T31SBD_20261028T105051Z_20261031T145316Z_S2A_30_v1.1_B01_WTR.tif",
+       "OPERA_L3_DSWx-HLS_T30SYJ_20261027T104317Z_20261031T074117Z_L8_30_v1.1_B01_WTR.tif",
+       "OPERA_L3_DSWx-HLS_T31SBD_20261027T104317Z_20261031T074112Z_L8_30_v1.1_B01_WTR.tif"
+      ]
+     },
+     "caption": [
+      "28 Oct, the same evening: NISAR 18:53, Sentinel-1 18:01 UTC (52 min apart).",
+      "NISAR maps 7,654 ha of water, Sentinel-1 5,716 ha; 2,255 ha only on NISAR's map, 318 ha only on Sentinel-1's.",
+      "An optical map within a day (clear on 99.7 % of it) sees 7,059 ha of open water outside permanent water: NISAR finds 70 % of it, Sentinel-1 45 %.",
+      "Where only NISAR maps water, optical sees water on 98 %; where only Sentinel-1 does, on 67 %."
+     ],
+     "numbers": {
+      "minutes_apart": {
+       "value": 52,
+       "unit": "min",
+       "what": "between the NISAR and the Sentinel-1 pass",
+       "source": [
+        "data/stack/albufera_066_D_069.nc",
+        "data/raw/dswx/albufera/index.json",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "land_both_cover": {
+       "value": 0.997,
+       "unit": "share",
+       "what": "of the land (sea left out) both maps cover",
+       "source": [
+        "data/stack/albufera_066_D_069.nc",
+        "data/interim/cv_prob/v1/albufera_066_D_069_2026-10-28.npz",
+        "data/raw/dswx/albufera/066_D_069/20261028/OPERA_L3_DSWx-S1_T30SYJ_20261028T180144Z_20261030T090804Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/albufera/066_D_069/20261028/OPERA_L3_DSWx-S1_T31SBD_20261028T180144Z_20261030T090804Z_S1D_30_v1.0_B01_WTR.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "nisar_water_ha": {
+       "value": 7653.8,
+       "unit": "ha",
+       "what": "water NISAR maps (v1 at 0.3) on the land both maps cover",
+       "source": [
+        "data/stack/albufera_066_D_069.nc",
+        "data/interim/cv_prob/v1/albufera_066_D_069_2026-10-28.npz",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "s1_water_ha": {
+       "value": 5716.5,
+       "unit": "ha",
+       "what": "water Sentinel-1 maps (open water and flooded vegetation) there",
+       "source": [
+        "data/raw/dswx/albufera/066_D_069/20261028/OPERA_L3_DSWx-S1_T30SYJ_20261028T180144Z_20261030T090804Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/albufera/066_D_069/20261028/OPERA_L3_DSWx-S1_T31SBD_20261028T180144Z_20261030T090804Z_S1D_30_v1.0_B01_WTR.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "s1_flooded_vegetation_ha": {
+       "value": 243.0,
+       "unit": "ha",
+       "what": "of it marked flooded vegetation by Sentinel-1",
+       "source": [
+        "data/raw/dswx/albufera/066_D_069/20261028/OPERA_L3_DSWx-S1_T30SYJ_20261028T180144Z_20261030T090804Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/albufera/066_D_069/20261028/OPERA_L3_DSWx-S1_T31SBD_20261028T180144Z_20261030T090804Z_S1D_30_v1.0_B01_WTR.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "nisar_only_ha": {
+       "value": 2255.1,
+       "unit": "ha",
+       "what": "water only NISAR maps",
+       "source": [
+        "data/stack/albufera_066_D_069.nc",
+        "data/interim/cv_prob/v1/albufera_066_D_069_2026-10-28.npz",
+        "data/raw/dswx/albufera/066_D_069/20261028/OPERA_L3_DSWx-S1_T30SYJ_20261028T180144Z_20261030T090804Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/albufera/066_D_069/20261028/OPERA_L3_DSWx-S1_T31SBD_20261028T180144Z_20261030T090804Z_S1D_30_v1.0_B01_WTR.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "s1_only_ha": {
+       "value": 317.8,
+       "unit": "ha",
+       "what": "water only Sentinel-1 maps",
+       "source": [
+        "data/stack/albufera_066_D_069.nc",
+        "data/interim/cv_prob/v1/albufera_066_D_069_2026-10-28.npz",
+        "data/raw/dswx/albufera/066_D_069/20261028/OPERA_L3_DSWx-S1_T30SYJ_20261028T180144Z_20261030T090804Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/albufera/066_D_069/20261028/OPERA_L3_DSWx-S1_T31SBD_20261028T180144Z_20261030T090804Z_S1D_30_v1.0_B01_WTR.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "both_ha": {
+       "value": 5398.7,
+       "unit": "ha",
+       "what": "water both map",
+       "source": [
+        "data/stack/albufera_066_D_069.nc",
+        "data/interim/cv_prob/v1/albufera_066_D_069_2026-10-28.npz",
+        "data/raw/dswx/albufera/066_D_069/20261028/OPERA_L3_DSWx-S1_T30SYJ_20261028T180144Z_20261030T090804Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/albufera/066_D_069/20261028/OPERA_L3_DSWx-S1_T31SBD_20261028T180144Z_20261030T090804Z_S1D_30_v1.0_B01_WTR.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "optical_clear": {
+       "value": 0.997,
+       "unit": "share",
+       "what": "of the changing land the optical map saw clear",
+       "source": [
+        "data/optical/albufera_066_D_069/2026-10-28.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "optical_open_water_ha": {
+       "value": 7059.4,
+       "unit": "ha",
+       "what": "open water the optical map sees, outside permanent water",
+       "source": [
+        "data/optical/albufera_066_D_069/2026-10-28.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "nisar_finds": {
+       "value": 0.702,
+       "unit": "share",
+       "what": "of that open water on NISAR's map",
+       "source": [
+        "data/stack/albufera_066_D_069.nc",
+        "data/interim/cv_prob/v1/albufera_066_D_069_2026-10-28.npz",
+        "data/optical/albufera_066_D_069/2026-10-28.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "s1_finds": {
+       "value": 0.45,
+       "unit": "share",
+       "what": "of that open water on Sentinel-1's map",
+       "source": [
+        "data/raw/dswx/albufera/066_D_069/20261028/OPERA_L3_DSWx-S1_T30SYJ_20261028T180144Z_20261030T090804Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/albufera/066_D_069/20261028/OPERA_L3_DSWx-S1_T31SBD_20261028T180144Z_20261030T090804Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/optical/albufera_066_D_069/2026-10-28.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "nisar_only_clear_ha": {
+       "value": 2109.4,
+       "unit": "ha",
+       "what": "water only NISAR maps, where the optical map is clear",
+       "source": [
+        "data/stack/albufera_066_D_069.nc",
+        "data/interim/cv_prob/v1/albufera_066_D_069_2026-10-28.npz",
+        "data/raw/dswx/albufera/066_D_069/20261028/OPERA_L3_DSWx-S1_T30SYJ_20261028T180144Z_20261030T090804Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/albufera/066_D_069/20261028/OPERA_L3_DSWx-S1_T31SBD_20261028T180144Z_20261030T090804Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/optical/albufera_066_D_069/2026-10-28.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "nisar_only_optical_water": {
+       "value": 0.98,
+       "unit": "share",
+       "what": "of it the optical map calls water (open or partial)",
+       "source": [
+        "data/optical/albufera_066_D_069/2026-10-28.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "s1_only_clear_ha": {
+       "value": 298.5,
+       "unit": "ha",
+       "what": "water only Sentinel-1 maps, where the optical map is clear",
+       "source": [
+        "data/stack/albufera_066_D_069.nc",
+        "data/interim/cv_prob/v1/albufera_066_D_069_2026-10-28.npz",
+        "data/raw/dswx/albufera/066_D_069/20261028/OPERA_L3_DSWx-S1_T30SYJ_20261028T180144Z_20261030T090804Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/albufera/066_D_069/20261028/OPERA_L3_DSWx-S1_T31SBD_20261028T180144Z_20261030T090804Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/optical/albufera_066_D_069/2026-10-28.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "s1_only_optical_water": {
+       "value": 0.669,
+       "unit": "share",
+       "what": "of it the optical map calls water (open or partial)",
+       "source": [
+        "data/optical/albufera_066_D_069/2026-10-28.tif",
+        "web/scripts/bake_views.py"
+       ]
+      }
+     }
+    }
+   ],
+   "context": [
+    {
+     "text": "Albufera is one of the three sites the CV model learned from (with Sentinel-1 maps as labels), so these numbers are not a test. Pego-Oliva and Doñana are test sites.",
+     "numbers": {},
+     "source": [
+      {
+       "file": "docs/CV_BENCHMARK.md",
+       "path": "sections 5 and 7"
+      }
+     ]
+    }
+   ]
+  },
+  "coherence": {
+   "title": "Coherence takes out the dry ground",
+   "what": "At L-band smooth dry ground is as dark as water. Over 12 days water loses its radar phase and dry ground keeps it, so NISAR's coherence tells them apart. Off: every dark pixel (HH below -15 dB). On: only dark pixels with low coherence (below 0.25) stay water. The amber layer, to lay on top if wanted, is the dark ground coherence takes out.",
+   "legend": {
+    "water": "#2a8fff",
+    "dry_ground_removed": "#ffab4a",
+    "not_covered": "rgba(10,16,24,0.49)"
+   },
+   "items": [
+    {
+     "date": "2026-06-30",
+     "rule": "the date with a coherence pair and an optical answer key at least 90 % clear that has the most dark ground",
+     "tried": [
+      {
+       "date": "2026-06-18",
+       "answer_key_clear": 0.0,
+       "dark_ha": 7547.8
+      },
+      {
+       "date": "2026-06-30",
+       "answer_key_clear": 0.964,
+       "dark_ha": 3064.7
+      },
+      {
+       "date": "2026-07-24",
+       "answer_key_clear": 0.991,
+       "dark_ha": 1330.7
+      },
+      {
+       "date": "2026-08-17",
+       "answer_key_clear": 0.984,
+       "dark_ha": 846.6
+      },
+      {
+       "date": "2026-08-29",
+       "answer_key_clear": 0.983,
+       "dark_ha": 1166.4
+      },
+      {
+       "date": "2026-09-10",
+       "answer_key_clear": 0.679,
+       "dark_ha": 593.1
+      },
+      {
+       "date": "2026-09-22",
+       "answer_key_clear": 0.273,
+       "dark_ha": 584.8
+      },
+      {
+       "date": "2026-10-04",
+       "answer_key_clear": 0.004,
+       "dark_ha": 2224.2
+      },
+      {
+       "date": "2026-10-16",
+       "answer_key_clear": 0.284,
+       "dark_ha": 3465.1
+      }
+     ],
+     "dark": {
+      "file": "views/coherence/2026-06-30_dark.webp",
+      "bytes": 14096
+     },
+     "coh": {
+      "file": "views/coherence/2026-06-30_coh.webp",
+      "bytes": 12668
+     },
+     "removed": {
+      "file": "views/coherence/2026-06-30_removed.webp",
+      "bytes": 18964
+     },
+     "photo": {
+      "file": "views/coherence/2026-06-30_photo.webp",
+      "bytes": 147826,
+      "day": "2026-06-30",
+      "time_utc": "2026-06-30T11:00:31Z",
+      "scenes": [
+       "S2A_30SYJ_20260630_1_L2A"
+      ],
+      "cloud_pct": 0.4,
+      "covered": 1.0,
+      "source": "Sentinel-2 L2A true colour (visual), Element 84 Earth Search",
+      "credit": "Contains modified Copernicus Sentinel data 2026, Element 84 Earth Search"
+     },
+     "pair": {
+      "file": "data/coherence/albufera_066_D_069/2026-06-18_2026-06-30.tif",
+      "granule": "NISAR_L2_PR_GUNW_023_066_D_069_024_2000_SH_20260618T185321_20260618T185356_20260630T185321_20260630T185356_P05023_N_F_J_001",
+      "maturity": "PROVISIONAL"
+     },
+     "nisar": {
+      "granule": "NISAR_L2_PR_GCOV_024_066_D_069_2005_DHDH_M_20260630T185321_20260630T185356_P05023_N_F_J_001",
+      "time_utc": "2026-06-30T18:53:21Z"
+     },
+     "answer_key": {
+      "optical_days": [
+       "2026-06-30"
+      ],
+      "granules": [
+       "OPERA_L3_DSWx-HLS_T30SYJ_20260630T103624Z_20260702T032015Z_L8_30_v1.1_B01_WTR.tif",
+       "OPERA_L3_DSWx-HLS_T30SYJ_20260630T104701Z_20260702T030710Z_S2A_30_v1.1_B01_WTR.tif"
+      ]
+     },
+     "caption": [
+      "30 Jun: 2,022 ha outside permanent water look as dark as water to the radar.",
+      "Coherence over the 12 days before (18 Jun to 30 Jun) keeps 206 ha of them as water and takes out the 1,816 ha that kept their coherence, as dry ground.",
+      "Scored as in the benchmark: Albufera's held-out validation blocks, outside the sea and permanent water, where the optical map of the day is clear (10,139 ha).",
+      "There darkness alone calls 5 % of the dry ground water, coherence 0.3 %.",
+      "Those pixels hold only 4 ha of open water, too little to say what coherence costs there."
+     ],
+     "numbers": {
+      "dark_ha": {
+       "value": 2021.7,
+       "unit": "ha",
+       "what": "dark (HH below -15 dB) in the window, outside the sea and permanent water",
+       "source": [
+        "data/stack/albufera_066_D_069.nc",
+        "data/coherence/albufera_066_D_069/2026-06-18_2026-06-30.tif",
+        "data/context/albufera_worldcover_2021_20m.tif",
+        "data/context/albufera_jrc_occurrence_20m.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "kept_ha": {
+       "value": 205.7,
+       "unit": "ha",
+       "what": "of it with low coherence (below 0.25): kept as water",
+       "source": [
+        "data/stack/albufera_066_D_069.nc",
+        "data/coherence/albufera_066_D_069/2026-06-18_2026-06-30.tif",
+        "data/context/albufera_worldcover_2021_20m.tif",
+        "data/context/albufera_jrc_occurrence_20m.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "removed_ha": {
+       "value": 1816.0,
+       "unit": "ha",
+       "what": "of it coherent: called dry ground by the rule",
+       "source": [
+        "data/stack/albufera_066_D_069.nc",
+        "data/coherence/albufera_066_D_069/2026-06-18_2026-06-30.tif",
+        "data/context/albufera_worldcover_2021_20m.tif",
+        "data/context/albufera_jrc_occurrence_20m.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "scored_ha": {
+       "value": 10138.6,
+       "unit": "ha",
+       "what": "pixels scored, on the benchmark's pixels: Albufera's held-out validation blocks, outside the sea and permanent water, optical map clear",
+       "source": [
+        "data/stack/albufera_066_D_069.nc",
+        "data/coherence/albufera_066_D_069/2026-06-18_2026-06-30.tif",
+        "data/context/albufera_worldcover_2021_20m.tif",
+        "data/context/albufera_jrc_occurrence_20m.tif",
+        "data/optical/albufera_066_D_069/2026-06-30.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "scored_open_water_ha": {
+       "value": 3.7,
+       "unit": "ha",
+       "what": "open water the optical map sees there",
+       "source": [
+        "data/stack/albufera_066_D_069.nc",
+        "data/coherence/albufera_066_D_069/2026-06-18_2026-06-30.tif",
+        "data/context/albufera_worldcover_2021_20m.tif",
+        "data/context/albufera_jrc_occurrence_20m.tif",
+        "data/optical/albufera_066_D_069/2026-06-30.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "answer_key_clear": {
+       "value": 0.99,
+       "unit": "share",
+       "what": "of the usable changing pixels the optical map saw clear (the benchmark's clear share)",
+       "source": [
+        "data/optical/albufera_066_D_069/2026-06-30.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "dark_false_water": {
+       "value": 0.0464,
+       "unit": "share",
+       "what": "of the optical dry ground darkness alone calls water, on the benchmark's pixels: Albufera's held-out validation blocks, outside the sea and permanent water, optical map clear",
+       "source": [
+        "data/stack/albufera_066_D_069.nc",
+        "data/coherence/albufera_066_D_069/2026-06-18_2026-06-30.tif",
+        "data/context/albufera_worldcover_2021_20m.tif",
+        "data/context/albufera_jrc_occurrence_20m.tif",
+        "data/optical/albufera_066_D_069/2026-06-30.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "coh_false_water": {
+       "value": 0.0033,
+       "unit": "share",
+       "what": "of the optical dry ground the coherence rule calls water, on the benchmark's pixels: Albufera's held-out validation blocks, outside the sea and permanent water, optical map clear",
+       "source": [
+        "data/stack/albufera_066_D_069.nc",
+        "data/coherence/albufera_066_D_069/2026-06-18_2026-06-30.tif",
+        "data/context/albufera_worldcover_2021_20m.tif",
+        "data/context/albufera_jrc_occurrence_20m.tif",
+        "data/optical/albufera_066_D_069/2026-06-30.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "dark_finds": {
+       "value": 0.0,
+       "unit": "share",
+       "what": "of the optical open water darkness alone finds, on the benchmark's pixels: Albufera's held-out validation blocks, outside the sea and permanent water, optical map clear",
+       "source": [
+        "data/stack/albufera_066_D_069.nc",
+        "data/coherence/albufera_066_D_069/2026-06-18_2026-06-30.tif",
+        "data/context/albufera_worldcover_2021_20m.tif",
+        "data/context/albufera_jrc_occurrence_20m.tif",
+        "data/optical/albufera_066_D_069/2026-06-30.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "coh_finds": {
+       "value": 0.0,
+       "unit": "share",
+       "what": "of the optical open water the coherence rule finds, on the benchmark's pixels: Albufera's held-out validation blocks, outside the sea and permanent water, optical map clear",
+       "source": [
+        "data/stack/albufera_066_D_069.nc",
+        "data/coherence/albufera_066_D_069/2026-06-18_2026-06-30.tif",
+        "data/context/albufera_worldcover_2021_20m.tif",
+        "data/context/albufera_jrc_occurrence_20m.tif",
+        "data/optical/albufera_066_D_069/2026-06-30.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "dark_iou": {
+       "value": 0.0,
+       "unit": "IoU",
+       "what": "darkness alone against the optical map, on the benchmark's pixels: Albufera's held-out validation blocks, outside the sea and permanent water, optical map clear",
+       "source": [
+        "data/stack/albufera_066_D_069.nc",
+        "data/coherence/albufera_066_D_069/2026-06-18_2026-06-30.tif",
+        "data/context/albufera_worldcover_2021_20m.tif",
+        "data/context/albufera_jrc_occurrence_20m.tif",
+        "data/optical/albufera_066_D_069/2026-06-30.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "coh_iou": {
+       "value": 0.0,
+       "unit": "IoU",
+       "what": "the coherence rule against the optical map, on the benchmark's pixels: Albufera's held-out validation blocks, outside the sea and permanent water, optical map clear",
+       "source": [
+        "data/stack/albufera_066_D_069.nc",
+        "data/coherence/albufera_066_D_069/2026-06-18_2026-06-30.tif",
+        "data/context/albufera_worldcover_2021_20m.tif",
+        "data/context/albufera_jrc_occurrence_20m.tif",
+        "data/optical/albufera_066_D_069/2026-06-30.tif",
+        "web/scripts/bake_views.py"
+       ]
+      }
+     },
+     "benchmark_check": {
+      "file": "data/interim/cv_optical_counts.json",
+      "set": "all_dates",
+      "methods": {
+       "nisar_threshold_15db": {
+        "false_water_share_of_dry": 0.04644,
+        "equal": true
+       },
+       "nisar_dark_lowcoh@0.25": {
+        "false_water_share_of_dry": 0.00328,
+        "equal": true
+       }
+      }
+     }
+    }
+   ],
+   "context": [
+    {
+     "text": "Albufera is one of the three sites the coherence cut of 0.25 was chosen on, so these numbers are not a test. Pego-Oliva and Doñana are test sites.",
+     "numbers": {},
+     "source": [
+      {
+       "file": "docs/CV_BENCHMARK.md",
+       "path": "sections 5 and 7"
+      }
+     ]
+    },
+    {
+     "text": "Across 26 dates at Doñana, scored the same way, coherence cuts the false water from 32 % to 5 % of the dry ground.",
+     "numbers": {
+      "dark_false_water": {
+       "value": 0.31669,
+       "unit": "share",
+       "what": "of the optical dry ground darkness alone calls water",
+       "source": [
+        {
+         "file": "data/metrics/cv_optical_benchmark.json",
+         "path": "tables[10].methods.nisar_threshold_15db.false_water_share_of_dry"
+        }
+       ]
+      },
+      "coh_false_water": {
+       "value": 0.05382,
+       "unit": "share",
+       "what": "with coherence",
+       "source": [
+        {
+         "file": "data/metrics/cv_optical_benchmark.json",
+         "path": "tables[10].methods.nisar_dark_lowcoh.false_water_share_of_dry"
+        }
+       ]
+      }
+     }
+    },
+    {
+     "text": "In the Pego-Oliva marsh, where water keeps some coherence, it does not help: across 19 dates scored the same way, IoU 0.306 with coherence against 0.340 for darkness alone.",
+     "numbers": {
+      "dark_iou": {
+       "value": 0.3398,
+       "unit": "IoU",
+       "what": "darkness alone, changing open water",
+       "source": [
+        {
+         "file": "data/metrics/cv_optical_benchmark.json",
+         "path": "tables[0].methods.nisar_threshold_15db.iou"
+        }
+       ]
+      },
+      "coh_iou": {
+       "value": 0.3057,
+       "unit": "IoU",
+       "what": "dark and low coherence",
+       "source": [
+        {
+         "file": "data/metrics/cv_optical_benchmark.json",
+         "path": "tables[0].methods.nisar_dark_lowcoh.iou"
+        }
+       ]
+      }
+     }
+    }
+   ]
+  },
+  "soil": {
+   "title": "Soil wetness before the storm",
+   "what": "NISAR soil moisture of the top soil (L3 SME2, a provisional product, not yet validated), as stored for the spatial model by pipeline/soil_moisture.py: every pass over the site, the passes of one day averaged, on 200 m cells. The last dates before the DANA of 18 to 19 Oct; dates are compared on the cells both have.",
+   "product": "NISAR_L3_SME2_PROVISIONAL_V1",
+   "maturity": "PROVISIONAL",
+   "units": "m3/m3",
+   "legend": {
+    "stops": [
+     {
+      "value": 0.05,
+      "color": "#f3e7c8"
+     },
+     {
+      "value": 0.15,
+      "color": "#d6c496"
+     },
+     {
+      "value": 0.25,
+      "color": "#96bebe"
+     },
+     {
+      "value": 0.35,
+      "color": "#4696d2"
+     },
+     {
+      "value": 0.45,
+      "color": "#1e5abe"
+     },
+     {
+      "value": 0.55,
+      "color": "#0f2d78"
+     }
+    ],
+    "alpha": 0.8431372549019608
+   },
+   "items": [
+    {
+     "date": "2026-10-04",
+     "file": "views/soil/2026-10-04.webp",
+     "bytes": 38048,
+     "granules": [
+      "NISAR_L3_PR_SME2_032_058_A_021_2005_DHDH_A_20261004T050652_20261004T050719_P05023_N_F_J_001",
+      "NISAR_L3_PR_SME2_032_058_A_022_2005_DHDH_A_20261004T050718_20261004T050752_P05023_N_F_J_001",
+      "NISAR_L3_PR_SME2_032_066_D_069_2005_DHDH_M_20261004T185318_20261004T185353_P05023_N_F_J_001"
+     ],
+     "tracks": [
+      "058_A",
+      "066_D"
+     ],
+     "source": "data/context/albufera_sme2_2026-10-04_200m.tif"
+    },
+    {
+     "date": "2026-10-11",
+     "file": "views/soil/2026-10-11.webp",
+     "bytes": 37914,
+     "granules": [
+      "NISAR_L3_PR_SME2_032_167_D_068_2005_DHDH_A_20261011T190103_20261011T190138_P05023_N_F_J_001",
+      "NISAR_L3_PR_SME2_032_167_D_069_2005_DHDH_A_20261011T190137_20261011T190212_P05023_N_F_J_001"
+     ],
+     "tracks": [
+      "167_D"
+     ],
+     "source": "data/context/albufera_sme2_2026-10-11_200m.tif"
+    },
+    {
+     "date": "2026-10-16",
+     "file": "views/soil/2026-10-16.webp",
+     "bytes": 37612,
+     "granules": [
+      "NISAR_L3_PR_SME2_033_058_A_021_2005_DHDH_A_20261016T050652_20261016T050719_P05023_N_F_J_001",
+      "NISAR_L3_PR_SME2_033_058_A_022_2005_DHDH_A_20261016T050718_20261016T050753_P05023_N_F_J_001",
+      "NISAR_L3_PR_SME2_033_066_D_069_2005_DHDH_M_20261016T185318_20261016T185353_P05023_N_F_J_001"
+     ],
+     "tracks": [
+      "058_A",
+      "066_D"
+     ],
+     "source": "data/context/albufera_sme2_2026-10-16_200m.tif"
+    }
+   ],
+   "series": [
+    {
+     "date": "2026-06-18",
+     "granules": [
+      "NISAR_L3_PR_SME2_023_058_A_021_2005_DHDH_A_20260618T050655_20260618T050722_P05023_N_F_J_001",
+      "NISAR_L3_PR_SME2_023_066_D_069_2005_DHDH_M_20260618T185321_20260618T185356_P05023_N_F_J_001",
+      "NISAR_L3_PR_SME2_023_058_A_022_2005_DHDH_A_20260618T050721_20260618T050756_P05023_N_F_J_001"
+     ],
+     "tracks": [
+      "058_A",
+      "066_D"
+     ],
+     "cells": 6485,
+     "median": 0.291,
+     "p90": 0.344,
+     "shared_cells": 6485,
+     "median_shared": 0.291,
+     "last_median_shared": 0.224
+    },
+    {
+     "date": "2026-06-25",
+     "granules": [
+      "NISAR_L3_PR_SME2_023_167_D_068_2005_DHDH_A_20260625T190107_20260625T190142_P05023_N_F_J_001",
+      "NISAR_L3_PR_SME2_023_167_D_069_2005_DHDH_A_20260625T190141_20260625T190216_P05023_N_F_J_001"
+     ],
+     "tracks": [
+      "167_D"
+     ],
+     "cells": 6480,
+     "median": 0.284,
+     "p90": 0.351,
+     "shared_cells": 6480,
+     "median_shared": 0.284,
+     "last_median_shared": 0.224
+    },
+    {
+     "date": "2026-06-30",
+     "granules": [
+      "NISAR_L3_PR_SME2_024_058_A_021_2005_DHDH_A_20260630T050650_20260630T050721_P05023_N_F_J_001",
+      "NISAR_L3_PR_SME2_024_058_A_022_2005_DHDH_A_20260630T050720_20260630T050755_P05023_N_F_J_001",
+      "NISAR_L3_PR_SME2_024_066_D_069_2005_DHDH_M_20260630T185321_20260630T185356_P05023_N_F_J_001"
+     ],
+     "tracks": [
+      "058_A",
+      "066_D"
+     ],
+     "cells": 6485,
+     "median": 0.296,
+     "p90": 0.356,
+     "shared_cells": 6485,
+     "median_shared": 0.296,
+     "last_median_shared": 0.224
+    },
+    {
+     "date": "2026-07-07",
+     "granules": [
+      "NISAR_L3_PR_SME2_024_167_D_069_2005_DHDH_A_20260707T190140_20260707T190215_P05023_N_F_J_001",
+      "NISAR_L3_PR_SME2_024_167_D_068_2005_DHDH_A_20260707T190106_20260707T190141_P05023_N_F_J_001"
+     ],
+     "tracks": [
+      "167_D"
+     ],
+     "cells": 6480,
+     "median": 0.282,
+     "p90": 0.346,
+     "shared_cells": 6480,
+     "median_shared": 0.282,
+     "last_median_shared": 0.224
+    },
+    {
+     "date": "2026-07-12",
+     "granules": [
+      "NISAR_L3_PR_SME2_025_058_A_021_2005_DHDH_A_20260712T050653_20260712T050721_P05023_N_F_J_001",
+      "NISAR_L3_PR_SME2_025_066_D_069_2005_DHDH_M_20260712T185320_20260712T185355_P05023_N_F_J_001"
+     ],
+     "tracks": [
+      "058_A",
+      "066_D"
+     ],
+     "cells": 9734,
+     "median": 0.22,
+     "p90": 0.262,
+     "shared_cells": 9734,
+     "median_shared": 0.22,
+     "last_median_shared": 0.226
+    },
+    {
+     "date": "2026-07-19",
+     "granules": [
+      "NISAR_L3_PR_SME2_025_167_D_068_2005_DHDH_A_20260719T190106_20260719T190141_P05023_N_F_J_001",
+      "NISAR_L3_PR_SME2_025_167_D_069_2005_DHDH_A_20260719T190140_20260719T190214_P05023_N_F_J_001"
+     ],
+     "tracks": [
+      "167_D"
+     ],
+     "cells": 9734,
+     "median": 0.238,
+     "p90": 0.288,
+     "shared_cells": 9734,
+     "median_shared": 0.238,
+     "last_median_shared": 0.226
+    },
+    {
+     "date": "2026-07-24",
+     "granules": [
+      "NISAR_L3_PR_SME2_026_058_A_021_2005_DHDH_A_20260724T050653_20260724T050720_P05023_N_F_J_001",
+      "NISAR_L3_PR_SME2_026_058_A_022_2005_DHDH_A_20260724T050719_20260724T050754_P05023_N_F_J_001",
+      "NISAR_L3_PR_SME2_026_066_D_069_2005_DHDH_M_20260724T185319_20260724T185354_P05023_N_F_J_001"
+     ],
+     "tracks": [
+      "058_A",
+      "066_D"
+     ],
+     "cells": 9734,
+     "median": 0.223,
+     "p90": 0.265,
+     "shared_cells": 9734,
+     "median_shared": 0.223,
+     "last_median_shared": 0.226
+    },
+    {
+     "date": "2026-08-17",
+     "granules": [
+      "NISAR_L3_PR_SME2_028_058_A_021_2005_DHDH_A_20260817T050652_20260817T050719_P05023_N_F_J_001",
+      "NISAR_L3_PR_SME2_028_058_A_022_2005_DHDH_A_20260817T050718_20260817T050753_P05023_N_F_J_001",
+      "NISAR_L3_PR_SME2_028_066_D_069_2005_DHDH_M_20260817T185318_20260817T185353_P05023_N_F_J_001"
+     ],
+     "tracks": [
+      "058_A",
+      "066_D"
+     ],
+     "cells": 9734,
+     "median": 0.203,
+     "p90": 0.241,
+     "shared_cells": 9734,
+     "median_shared": 0.203,
+     "last_median_shared": 0.226
+    },
+    {
+     "date": "2026-08-24",
+     "granules": [
+      "NISAR_L3_PR_SME2_028_167_D_068_2005_DHDH_A_20260824T190104_20260824T190139_P05023_N_F_J_001",
+      "NISAR_L3_PR_SME2_028_167_D_069_2005_DHDH_A_20260824T190138_20260824T190212_P05023_N_F_J_001"
+     ],
+     "tracks": [
+      "167_D"
+     ],
+     "cells": 9734,
+     "median": 0.203,
+     "p90": 0.246,
+     "shared_cells": 9734,
+     "median_shared": 0.203,
+     "last_median_shared": 0.226
+    },
+    {
+     "date": "2026-08-29",
+     "granules": [
+      "NISAR_L3_PR_SME2_029_058_A_021_2005_DHDH_A_20260829T050652_20260829T050719_P05023_N_F_J_001",
+      "NISAR_L3_PR_SME2_029_066_D_069_2005_DHDH_M_20260829T185318_20260829T185353_P05023_N_F_J_001"
+     ],
+     "tracks": [
+      "058_A",
+      "066_D"
+     ],
+     "cells": 9734,
+     "median": 0.187,
+     "p90": 0.225,
+     "shared_cells": 9734,
+     "median_shared": 0.187,
+     "last_median_shared": 0.226
+    },
+    {
+     "date": "2026-09-05",
+     "granules": [
+      "NISAR_L3_PR_SME2_029_167_D_069_2005_DHDH_A_20260905T190137_20260905T190212_P05023_N_F_J_001",
+      "NISAR_L3_PR_SME2_029_167_D_068_2005_DHDH_A_20260905T190104_20260905T190138_P05023_N_F_J_001"
+     ],
+     "tracks": [
+      "167_D"
+     ],
+     "cells": 9734,
+     "median": 0.211,
+     "p90": 0.252,
+     "shared_cells": 9734,
+     "median_shared": 0.211,
+     "last_median_shared": 0.226
+    },
+    {
+     "date": "2026-09-10",
+     "granules": [
+      "NISAR_L3_PR_SME2_030_058_A_021_2005_DHDH_A_20260910T050651_20260910T050718_P05023_N_F_J_001",
+      "NISAR_L3_PR_SME2_030_058_A_022_2005_DHDH_A_20260910T050717_20260910T050752_P05023_N_F_J_001",
+      "NISAR_L3_PR_SME2_030_066_D_069_2005_DHDH_M_20260910T185318_20260910T185353_P05023_N_F_J_001"
+     ],
+     "tracks": [
+      "058_A",
+      "066_D"
+     ],
+     "cells": 9734,
+     "median": 0.236,
+     "p90": 0.274,
+     "shared_cells": 9734,
+     "median_shared": 0.236,
+     "last_median_shared": 0.226
+    },
+    {
+     "date": "2026-09-17",
+     "granules": [
+      "NISAR_L3_PR_SME2_030_167_D_068_2005_DHDH_A_20260917T190103_20260917T190138_P05023_N_F_J_001",
+      "NISAR_L3_PR_SME2_030_167_D_069_2005_DHDH_A_20260917T190137_20260917T190212_P05023_N_F_J_001"
+     ],
+     "tracks": [
+      "167_D"
+     ],
+     "cells": 9734,
+     "median": 0.241,
+     "p90": 0.285,
+     "shared_cells": 9734,
+     "median_shared": 0.241,
+     "last_median_shared": 0.226
+    },
+    {
+     "date": "2026-09-22",
+     "granules": [
+      "NISAR_L3_PR_SME2_031_058_A_021_2005_SHSH_A_20260922T050651_20260922T050719_P05023_N_F_J_001",
+      "NISAR_L3_PR_SME2_031_066_D_069_2005_DHDH_M_20260922T185318_20260922T185353_P05023_N_F_J_001"
+     ],
+     "tracks": [
+      "058_A",
+      "066_D"
+     ],
+     "cells": 9734,
+     "median": 0.2,
+     "p90": 0.243,
+     "shared_cells": 9734,
+     "median_shared": 0.2,
+     "last_median_shared": 0.226
+    },
+    {
+     "date": "2026-09-29",
+     "granules": [
+      "NISAR_L3_PR_SME2_031_167_D_068_2005_DHDH_A_20260929T190103_20260929T190138_P05023_N_F_J_001",
+      "NISAR_L3_PR_SME2_031_167_D_069_2005_DHDH_A_20260929T190137_20260929T190212_P05023_N_F_J_001"
+     ],
+     "tracks": [
+      "167_D"
+     ],
+     "cells": 9734,
+     "median": 0.217,
+     "p90": 0.273,
+     "shared_cells": 9734,
+     "median_shared": 0.217,
+     "last_median_shared": 0.226
+    },
+    {
+     "date": "2026-10-04",
+     "granules": [
+      "NISAR_L3_PR_SME2_032_058_A_021_2005_DHDH_A_20261004T050652_20261004T050719_P05023_N_F_J_001",
+      "NISAR_L3_PR_SME2_032_058_A_022_2005_DHDH_A_20261004T050718_20261004T050752_P05023_N_F_J_001",
+      "NISAR_L3_PR_SME2_032_066_D_069_2005_DHDH_M_20261004T185318_20261004T185353_P05023_N_F_J_001"
+     ],
+     "tracks": [
+      "058_A",
+      "066_D"
+     ],
+     "cells": 9734,
+     "median": 0.215,
+     "p90": 0.261,
+     "shared_cells": 9734,
+     "median_shared": 0.215,
+     "last_median_shared": 0.226
+    },
+    {
+     "date": "2026-10-11",
+     "granules": [
+      "NISAR_L3_PR_SME2_032_167_D_068_2005_DHDH_A_20261011T190103_20261011T190138_P05023_N_F_J_001",
+      "NISAR_L3_PR_SME2_032_167_D_069_2005_DHDH_A_20261011T190137_20261011T190212_P05023_N_F_J_001"
+     ],
+     "tracks": [
+      "167_D"
+     ],
+     "cells": 9734,
+     "median": 0.197,
+     "p90": 0.251,
+     "shared_cells": 9734,
+     "median_shared": 0.197,
+     "last_median_shared": 0.226
+    },
+    {
+     "date": "2026-10-16",
+     "granules": [
+      "NISAR_L3_PR_SME2_033_058_A_021_2005_DHDH_A_20261016T050652_20261016T050719_P05023_N_F_J_001",
+      "NISAR_L3_PR_SME2_033_058_A_022_2005_DHDH_A_20261016T050718_20261016T050753_P05023_N_F_J_001",
+      "NISAR_L3_PR_SME2_033_066_D_069_2005_DHDH_M_20261016T185318_20261016T185353_P05023_N_F_J_001"
+     ],
+     "tracks": [
+      "058_A",
+      "066_D"
+     ],
+     "cells": 9734,
+     "median": 0.226,
+     "p90": 0.278,
+     "shared_cells": 9734,
+     "median_shared": 0.226,
+     "last_median_shared": 0.226
+    }
+   ],
+   "caption": [
+    "16 Oct, two days before the storm: half of the land read below 0.23 m³/m³ of soil moisture, nine in ten cells below 0.28.",
+    "Of the 17 earlier dates, from 18 Jun on, 10 read drier on the same cells.",
+    "The ground was not soaked when the storm came: it read within the range of the summer, below its wettest date (30 Jun, 0.30 on the same cells)."
+   ],
+   "numbers": {
+    "last_median": {
+     "value": 0.226,
+     "unit": "m3/m3",
+     "what": "median soil moisture of the land on 16 Oct",
+     "source": [
+      "data/context/albufera_sme2_2026-10-16_200m.tif",
+      "data/context/albufera_sme2_index.json",
+      "web/scripts/bake_views.py"
+     ]
+    },
+    "last_p90": {
+     "value": 0.278,
+     "unit": "m3/m3",
+     "what": "nine in ten cells read below this",
+     "source": [
+      "data/context/albufera_sme2_2026-10-16_200m.tif",
+      "data/context/albufera_sme2_index.json",
+      "web/scripts/bake_views.py"
+     ]
+    },
+    "last_cells": {
+     "value": 9734,
+     "unit": "cells",
+     "what": "200 m cells with a value",
+     "source": [
+      "data/context/albufera_sme2_2026-10-16_200m.tif",
+      "data/context/albufera_sme2_index.json",
+      "web/scripts/bake_views.py"
+     ]
+    },
+    "earlier_dates": {
+     "value": 17,
+     "unit": "dates",
+     "what": "earlier SME2 dates from 18 Jun",
+     "source": [
+      "data/context/albufera_sme2_2026-06-18_200m.tif",
+      "data/context/albufera_sme2_2026-06-25_200m.tif",
+      "data/context/albufera_sme2_2026-06-30_200m.tif",
+      "data/context/albufera_sme2_2026-07-07_200m.tif",
+      "data/context/albufera_sme2_2026-07-12_200m.tif",
+      "data/context/albufera_sme2_2026-07-19_200m.tif",
+      "data/context/albufera_sme2_2026-07-24_200m.tif",
+      "data/context/albufera_sme2_2026-08-17_200m.tif",
+      "data/context/albufera_sme2_2026-08-24_200m.tif",
+      "data/context/albufera_sme2_2026-08-29_200m.tif",
+      "data/context/albufera_sme2_2026-09-05_200m.tif",
+      "data/context/albufera_sme2_2026-09-10_200m.tif",
+      "data/context/albufera_sme2_2026-09-17_200m.tif",
+      "data/context/albufera_sme2_2026-09-22_200m.tif",
+      "data/context/albufera_sme2_2026-09-29_200m.tif",
+      "data/context/albufera_sme2_2026-10-04_200m.tif",
+      "data/context/albufera_sme2_2026-10-11_200m.tif",
+      "data/context/albufera_sme2_2026-10-16_200m.tif",
+      "data/context/albufera_sme2_index.json",
+      "web/scripts/bake_views.py"
+     ]
+    },
+    "earlier_drier": {
+     "value": 10,
+     "unit": "dates",
+     "what": "earlier dates that read drier than the last on the cells both have",
+     "source": [
+      "data/context/albufera_sme2_2026-06-18_200m.tif",
+      "data/context/albufera_sme2_2026-06-25_200m.tif",
+      "data/context/albufera_sme2_2026-06-30_200m.tif",
+      "data/context/albufera_sme2_2026-07-07_200m.tif",
+      "data/context/albufera_sme2_2026-07-12_200m.tif",
+      "data/context/albufera_sme2_2026-07-19_200m.tif",
+      "data/context/albufera_sme2_2026-07-24_200m.tif",
+      "data/context/albufera_sme2_2026-08-17_200m.tif",
+      "data/context/albufera_sme2_2026-08-24_200m.tif",
+      "data/context/albufera_sme2_2026-08-29_200m.tif",
+      "data/context/albufera_sme2_2026-09-05_200m.tif",
+      "data/context/albufera_sme2_2026-09-10_200m.tif",
+      "data/context/albufera_sme2_2026-09-17_200m.tif",
+      "data/context/albufera_sme2_2026-09-22_200m.tif",
+      "data/context/albufera_sme2_2026-09-29_200m.tif",
+      "data/context/albufera_sme2_2026-10-04_200m.tif",
+      "data/context/albufera_sme2_2026-10-11_200m.tif",
+      "data/context/albufera_sme2_2026-10-16_200m.tif",
+      "data/context/albufera_sme2_index.json",
+      "web/scripts/bake_views.py"
+     ]
+    },
+    "earlier_median_low": {
+     "value": 0.187,
+     "unit": "m3/m3",
+     "what": "lowest median of the earlier dates",
+     "source": [
+      "data/context/albufera_sme2_2026-06-18_200m.tif",
+      "data/context/albufera_sme2_2026-06-25_200m.tif",
+      "data/context/albufera_sme2_2026-06-30_200m.tif",
+      "data/context/albufera_sme2_2026-07-07_200m.tif",
+      "data/context/albufera_sme2_2026-07-12_200m.tif",
+      "data/context/albufera_sme2_2026-07-19_200m.tif",
+      "data/context/albufera_sme2_2026-07-24_200m.tif",
+      "data/context/albufera_sme2_2026-08-17_200m.tif",
+      "data/context/albufera_sme2_2026-08-24_200m.tif",
+      "data/context/albufera_sme2_2026-08-29_200m.tif",
+      "data/context/albufera_sme2_2026-09-05_200m.tif",
+      "data/context/albufera_sme2_2026-09-10_200m.tif",
+      "data/context/albufera_sme2_2026-09-17_200m.tif",
+      "data/context/albufera_sme2_2026-09-22_200m.tif",
+      "data/context/albufera_sme2_2026-09-29_200m.tif",
+      "data/context/albufera_sme2_2026-10-04_200m.tif",
+      "data/context/albufera_sme2_2026-10-11_200m.tif",
+      "data/context/albufera_sme2_2026-10-16_200m.tif",
+      "data/context/albufera_sme2_index.json",
+      "web/scripts/bake_views.py"
+     ]
+    },
+    "earlier_median_high": {
+     "value": 0.296,
+     "unit": "m3/m3",
+     "what": "highest median of the earlier dates",
+     "source": [
+      "data/context/albufera_sme2_2026-06-18_200m.tif",
+      "data/context/albufera_sme2_2026-06-25_200m.tif",
+      "data/context/albufera_sme2_2026-06-30_200m.tif",
+      "data/context/albufera_sme2_2026-07-07_200m.tif",
+      "data/context/albufera_sme2_2026-07-12_200m.tif",
+      "data/context/albufera_sme2_2026-07-19_200m.tif",
+      "data/context/albufera_sme2_2026-07-24_200m.tif",
+      "data/context/albufera_sme2_2026-08-17_200m.tif",
+      "data/context/albufera_sme2_2026-08-24_200m.tif",
+      "data/context/albufera_sme2_2026-08-29_200m.tif",
+      "data/context/albufera_sme2_2026-09-05_200m.tif",
+      "data/context/albufera_sme2_2026-09-10_200m.tif",
+      "data/context/albufera_sme2_2026-09-17_200m.tif",
+      "data/context/albufera_sme2_2026-09-22_200m.tif",
+      "data/context/albufera_sme2_2026-09-29_200m.tif",
+      "data/context/albufera_sme2_2026-10-04_200m.tif",
+      "data/context/albufera_sme2_2026-10-11_200m.tif",
+      "data/context/albufera_sme2_2026-10-16_200m.tif",
+      "data/context/albufera_sme2_index.json",
+      "web/scripts/bake_views.py"
+     ]
+    }
+   }
+  },
+  "timeline": {
+   "title": "Water every 12 days, through cloud",
+   "what": "NISAR water (the team CV model v1 at 0.3) on every pass of track 066 D. A frame is one pass; nothing is drawn between passes. Grey: ground the radar did not see.",
+   "legend": {
+    "water": "#2a8fff",
+    "not_covered": "rgba(10,16,24,0.49)"
+   },
+   "stack": "066_D_069",
+   "frames": [
+    {
+     "date": "2026-06-18",
+     "time_utc": "2026-06-18T18:53:21Z",
+     "granule": "NISAR_L2_PR_GCOV_023_066_D_069_2005_DHDH_M_20260618T185321_20260618T185356_P05023_N_F_J_001",
+     "file": "views/timeline/00.webp",
+     "bytes": 6352,
+     "numbers": {
+      "water_ha": {
+       "value": 2979.4,
+       "unit": "ha",
+       "what": "water on NISAR's map (v1 at 0.3), sea left out",
+       "source": [
+        "data/stack/albufera_066_D_069.nc",
+        "data/interim/cv_prob/v1/albufera_066_D_069_2026-06-18.npz",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "exported_water_ha": {
+       "value": 2974.6,
+       "unit": "ha",
+       "what": "the same layer as exported (data/cv), a check",
+       "source": [
+        {
+         "file": "data/manifest.json",
+         "path": "[model=cv, site=albufera, stack=066_D_069, layer=water, date=2026-06-18].open_water_ha"
+        }
+       ]
+      },
+      "radar_saw": {
+       "value": 0.997,
+       "unit": "share",
+       "what": "of the land the radar saw",
+       "source": [
+        "data/stack/albufera_066_D_069.nc",
+        "data/interim/cv_prob/v1/albufera_066_D_069_2026-06-18.npz",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "optical_clear": {
+       "value": 0.0,
+       "unit": "share",
+       "what": "of the land an optical map saw clear within a day (OPERA DSWx-HLS; 0 when there is no image)",
+       "source": [
+        "data/optical/albufera_066_D_069/2026-06-18.tif",
+        "web/scripts/bake_views.py"
+       ]
+      }
+     }
+    },
+    {
+     "date": "2026-06-30",
+     "time_utc": "2026-06-30T18:53:21Z",
+     "granule": "NISAR_L2_PR_GCOV_024_066_D_069_2005_DHDH_M_20260630T185321_20260630T185356_P05023_N_F_J_001",
+     "file": "views/timeline/01.webp",
+     "bytes": 4414,
+     "numbers": {
+      "water_ha": {
+       "value": 2601.0,
+       "unit": "ha",
+       "what": "water on NISAR's map (v1 at 0.3), sea left out",
+       "source": [
+        "data/stack/albufera_066_D_069.nc",
+        "data/interim/cv_prob/v1/albufera_066_D_069_2026-06-30.npz",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "exported_water_ha": {
+       "value": 2599.0,
+       "unit": "ha",
+       "what": "the same layer as exported (data/cv), a check",
+       "source": [
+        {
+         "file": "data/manifest.json",
+         "path": "[model=cv, site=albufera, stack=066_D_069, layer=water, date=2026-06-30].open_water_ha"
+        }
+       ]
+      },
+      "radar_saw": {
+       "value": 0.997,
+       "unit": "share",
+       "what": "of the land the radar saw",
+       "source": [
+        "data/stack/albufera_066_D_069.nc",
+        "data/interim/cv_prob/v1/albufera_066_D_069_2026-06-30.npz",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "optical_clear": {
+       "value": 1.0,
+       "unit": "share",
+       "what": "of the land an optical map saw clear within a day (OPERA DSWx-HLS; 0 when there is no image)",
+       "source": [
+        "data/optical/albufera_066_D_069/2026-06-30.tif",
+        "web/scripts/bake_views.py"
+       ]
+      }
+     }
+    },
+    {
+     "date": "2026-07-12",
+     "time_utc": "2026-07-12T18:53:20Z",
+     "granule": "NISAR_L2_PR_GCOV_025_066_D_069_2005_DHDH_M_20260712T185320_20260712T185355_P05023_N_F_J_001",
+     "file": "views/timeline/02.webp",
+     "bytes": 4332,
+     "numbers": {
+      "water_ha": {
+       "value": 2640.6,
+       "unit": "ha",
+       "what": "water on NISAR's map (v1 at 0.3), sea left out",
+       "source": [
+        "data/stack/albufera_066_D_069.nc",
+        "data/interim/cv_prob/v1/albufera_066_D_069_2026-07-12.npz",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "exported_water_ha": {
+       "value": 2638.9,
+       "unit": "ha",
+       "what": "the same layer as exported (data/cv), a check",
+       "source": [
+        {
+         "file": "data/manifest.json",
+         "path": "[model=cv, site=albufera, stack=066_D_069, layer=water, date=2026-07-12].open_water_ha"
+        }
+       ]
+      },
+      "radar_saw": {
+       "value": 0.997,
+       "unit": "share",
+       "what": "of the land the radar saw",
+       "source": [
+        "data/stack/albufera_066_D_069.nc",
+        "data/interim/cv_prob/v1/albufera_066_D_069_2026-07-12.npz",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "optical_clear": {
+       "value": 0.0,
+       "unit": "share",
+       "what": "of the land an optical map saw clear within a day (OPERA DSWx-HLS; 0 when there is no image)",
+       "source": [
+        "data/optical/index.json",
+        "web/scripts/bake_views.py"
+       ]
+      }
+     }
+    },
+    {
+     "date": "2026-07-24",
+     "time_utc": "2026-07-24T18:53:19Z",
+     "granule": "NISAR_L2_PR_GCOV_026_066_D_069_2005_DHDH_M_20260724T185319_20260724T185354_P05023_N_F_J_001",
+     "file": "views/timeline/03.webp",
+     "bytes": 4188,
+     "numbers": {
+      "water_ha": {
+       "value": 2546.5,
+       "unit": "ha",
+       "what": "water on NISAR's map (v1 at 0.3), sea left out",
+       "source": [
+        "data/stack/albufera_066_D_069.nc",
+        "data/interim/cv_prob/v1/albufera_066_D_069_2026-07-24.npz",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "exported_water_ha": {
+       "value": 2544.8,
+       "unit": "ha",
+       "what": "the same layer as exported (data/cv), a check",
+       "source": [
+        {
+         "file": "data/manifest.json",
+         "path": "[model=cv, site=albufera, stack=066_D_069, layer=water, date=2026-07-24].open_water_ha"
+        }
+       ]
+      },
+      "radar_saw": {
+       "value": 0.997,
+       "unit": "share",
+       "what": "of the land the radar saw",
+       "source": [
+        "data/stack/albufera_066_D_069.nc",
+        "data/interim/cv_prob/v1/albufera_066_D_069_2026-07-24.npz",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "optical_clear": {
+       "value": 1.0,
+       "unit": "share",
+       "what": "of the land an optical map saw clear within a day (OPERA DSWx-HLS; 0 when there is no image)",
+       "source": [
+        "data/optical/albufera_066_D_069/2026-07-24.tif",
+        "web/scripts/bake_views.py"
+       ]
+      }
+     }
+    },
+    {
+     "date": "2026-08-17",
+     "time_utc": "2026-08-17T18:53:18Z",
+     "granule": "NISAR_L2_PR_GCOV_028_066_D_069_2005_DHDH_M_20260817T185318_20260817T185353_P05023_N_F_J_001",
+     "file": "views/timeline/04.webp",
+     "bytes": 4020,
+     "numbers": {
+      "water_ha": {
+       "value": 2507.1,
+       "unit": "ha",
+       "what": "water on NISAR's map (v1 at 0.3), sea left out",
+       "source": [
+        "data/stack/albufera_066_D_069.nc",
+        "data/interim/cv_prob/v1/albufera_066_D_069_2026-08-17.npz",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "exported_water_ha": {
+       "value": 2506.0,
+       "unit": "ha",
+       "what": "the same layer as exported (data/cv), a check",
+       "source": [
+        {
+         "file": "data/manifest.json",
+         "path": "[model=cv, site=albufera, stack=066_D_069, layer=water, date=2026-08-17].open_water_ha"
+        }
+       ]
+      },
+      "radar_saw": {
+       "value": 0.997,
+       "unit": "share",
+       "what": "of the land the radar saw",
+       "source": [
+        "data/stack/albufera_066_D_069.nc",
+        "data/interim/cv_prob/v1/albufera_066_D_069_2026-08-17.npz",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "optical_clear": {
+       "value": 1.0,
+       "unit": "share",
+       "what": "of the land an optical map saw clear within a day (OPERA DSWx-HLS; 0 when there is no image)",
+       "source": [
+        "data/optical/albufera_066_D_069/2026-08-17.tif",
+        "web/scripts/bake_views.py"
+       ]
+      }
+     }
+    },
+    {
+     "date": "2026-08-29",
+     "time_utc": "2026-08-29T18:53:18Z",
+     "granule": "NISAR_L2_PR_GCOV_029_066_D_069_2005_DHDH_M_20260829T185318_20260829T185353_P05023_N_F_J_001",
+     "file": "views/timeline/05.webp",
+     "bytes": 3956,
+     "numbers": {
+      "water_ha": {
+       "value": 2504.1,
+       "unit": "ha",
+       "what": "water on NISAR's map (v1 at 0.3), sea left out",
+       "source": [
+        "data/stack/albufera_066_D_069.nc",
+        "data/interim/cv_prob/v1/albufera_066_D_069_2026-08-29.npz",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "exported_water_ha": {
+       "value": 2502.8,
+       "unit": "ha",
+       "what": "the same layer as exported (data/cv), a check",
+       "source": [
+        {
+         "file": "data/manifest.json",
+         "path": "[model=cv, site=albufera, stack=066_D_069, layer=water, date=2026-08-29].open_water_ha"
+        }
+       ]
+      },
+      "radar_saw": {
+       "value": 0.997,
+       "unit": "share",
+       "what": "of the land the radar saw",
+       "source": [
+        "data/stack/albufera_066_D_069.nc",
+        "data/interim/cv_prob/v1/albufera_066_D_069_2026-08-29.npz",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "optical_clear": {
+       "value": 0.997,
+       "unit": "share",
+       "what": "of the land an optical map saw clear within a day (OPERA DSWx-HLS; 0 when there is no image)",
+       "source": [
+        "data/optical/albufera_066_D_069/2026-08-29.tif",
+        "web/scripts/bake_views.py"
+       ]
+      }
+     }
+    },
+    {
+     "date": "2026-09-10",
+     "time_utc": "2026-09-10T18:53:18Z",
+     "granule": "NISAR_L2_PR_GCOV_030_066_D_069_2005_DHDH_M_20260910T185318_20260910T185353_P05023_N_F_J_001",
+     "file": "views/timeline/06.webp",
+     "bytes": 3778,
+     "numbers": {
+      "water_ha": {
+       "value": 2491.1,
+       "unit": "ha",
+       "what": "water on NISAR's map (v1 at 0.3), sea left out",
+       "source": [
+        "data/stack/albufera_066_D_069.nc",
+        "data/interim/cv_prob/v1/albufera_066_D_069_2026-09-10.npz",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "exported_water_ha": {
+       "value": 2489.9,
+       "unit": "ha",
+       "what": "the same layer as exported (data/cv), a check",
+       "source": [
+        {
+         "file": "data/manifest.json",
+         "path": "[model=cv, site=albufera, stack=066_D_069, layer=water, date=2026-09-10].open_water_ha"
+        }
+       ]
+      },
+      "radar_saw": {
+       "value": 0.997,
+       "unit": "share",
+       "what": "of the land the radar saw",
+       "source": [
+        "data/stack/albufera_066_D_069.nc",
+        "data/interim/cv_prob/v1/albufera_066_D_069_2026-09-10.npz",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "optical_clear": {
+       "value": 0.749,
+       "unit": "share",
+       "what": "of the land an optical map saw clear within a day (OPERA DSWx-HLS; 0 when there is no image)",
+       "source": [
+        "data/optical/albufera_066_D_069/2026-09-10.tif",
+        "web/scripts/bake_views.py"
+       ]
+      }
+     }
+    },
+    {
+     "date": "2026-09-22",
+     "time_utc": "2026-09-22T18:53:18Z",
+     "granule": "NISAR_L2_PR_GCOV_031_066_D_069_2005_DHDH_M_20260922T185318_20260922T185353_P05023_N_F_J_001",
+     "file": "views/timeline/07.webp",
+     "bytes": 4466,
+     "numbers": {
+      "water_ha": {
+       "value": 2497.0,
+       "unit": "ha",
+       "what": "water on NISAR's map (v1 at 0.3), sea left out",
+       "source": [
+        "data/stack/albufera_066_D_069.nc",
+        "data/interim/cv_prob/v1/albufera_066_D_069_2026-09-22.npz",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "exported_water_ha": {
+       "value": 2495.8,
+       "unit": "ha",
+       "what": "the same layer as exported (data/cv), a check",
+       "source": [
+        {
+         "file": "data/manifest.json",
+         "path": "[model=cv, site=albufera, stack=066_D_069, layer=water, date=2026-09-22].open_water_ha"
+        }
+       ]
+      },
+      "radar_saw": {
+       "value": 0.997,
+       "unit": "share",
+       "what": "of the land the radar saw",
+       "source": [
+        "data/stack/albufera_066_D_069.nc",
+        "data/interim/cv_prob/v1/albufera_066_D_069_2026-09-22.npz",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "optical_clear": {
+       "value": 0.265,
+       "unit": "share",
+       "what": "of the land an optical map saw clear within a day (OPERA DSWx-HLS; 0 when there is no image)",
+       "source": [
+        "data/optical/albufera_066_D_069/2026-09-22.tif",
+        "web/scripts/bake_views.py"
+       ]
+      }
+     }
+    },
+    {
+     "date": "2026-10-04",
+     "time_utc": "2026-10-04T18:53:18Z",
+     "granule": "NISAR_L2_PR_GCOV_032_066_D_069_2005_DHDH_M_20261004T185318_20261004T185353_P05023_N_F_J_001",
+     "file": "views/timeline/08.webp",
+     "bytes": 5568,
+     "numbers": {
+      "water_ha": {
+       "value": 2994.6,
+       "unit": "ha",
+       "what": "water on NISAR's map (v1 at 0.3), sea left out",
+       "source": [
+        "data/stack/albufera_066_D_069.nc",
+        "data/interim/cv_prob/v1/albufera_066_D_069_2026-10-04.npz",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "exported_water_ha": {
+       "value": 2991.2,
+       "unit": "ha",
+       "what": "the same layer as exported (data/cv), a check",
+       "source": [
+        {
+         "file": "data/manifest.json",
+         "path": "[model=cv, site=albufera, stack=066_D_069, layer=water, date=2026-10-04].open_water_ha"
+        }
+       ]
+      },
+      "radar_saw": {
+       "value": 0.997,
+       "unit": "share",
+       "what": "of the land the radar saw",
+       "source": [
+        "data/stack/albufera_066_D_069.nc",
+        "data/interim/cv_prob/v1/albufera_066_D_069_2026-10-04.npz",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "optical_clear": {
+       "value": 0.011,
+       "unit": "share",
+       "what": "of the land an optical map saw clear within a day (OPERA DSWx-HLS; 0 when there is no image)",
+       "source": [
+        "data/optical/albufera_066_D_069/2026-10-04.tif",
+        "web/scripts/bake_views.py"
+       ]
+      }
+     }
+    },
+    {
+     "date": "2026-10-16",
+     "time_utc": "2026-10-16T18:53:18Z",
+     "granule": "NISAR_L2_PR_GCOV_033_066_D_069_2005_DHDH_M_20261016T185318_20261016T185353_P05023_N_F_J_001",
+     "file": "views/timeline/09.webp",
+     "bytes": 9198,
+     "numbers": {
+      "water_ha": {
+       "value": 4541.6,
+       "unit": "ha",
+       "what": "water on NISAR's map (v1 at 0.3), sea left out",
+       "source": [
+        "data/stack/albufera_066_D_069.nc",
+        "data/interim/cv_prob/v1/albufera_066_D_069_2026-10-16.npz",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "exported_water_ha": {
+       "value": 4534.0,
+       "unit": "ha",
+       "what": "the same layer as exported (data/cv), a check",
+       "source": [
+        {
+         "file": "data/manifest.json",
+         "path": "[model=cv, site=albufera, stack=066_D_069, layer=water, date=2026-10-16].open_water_ha"
+        }
+       ]
+      },
+      "radar_saw": {
+       "value": 0.997,
+       "unit": "share",
+       "what": "of the land the radar saw",
+       "source": [
+        "data/stack/albufera_066_D_069.nc",
+        "data/interim/cv_prob/v1/albufera_066_D_069_2026-10-16.npz",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "optical_clear": {
+       "value": 0.355,
+       "unit": "share",
+       "what": "of the land an optical map saw clear within a day (OPERA DSWx-HLS; 0 when there is no image)",
+       "source": [
+        "data/optical/albufera_066_D_069/2026-10-16.tif",
+        "web/scripts/bake_views.py"
+       ]
+      }
+     }
+    },
+    {
+     "date": "2026-10-28",
+     "time_utc": "2026-10-28T18:53:18Z",
+     "granule": "NISAR_L2_PR_GCOV_034_066_D_069_2005_DHDH_M_20261028T185318_20261028T185353_P05036_N_F_J_001",
+     "file": "views/timeline/10.webp",
+     "bytes": 12882,
+     "numbers": {
+      "water_ha": {
+       "value": 7653.8,
+       "unit": "ha",
+       "what": "water on NISAR's map (v1 at 0.3), sea left out",
+       "source": [
+        "data/stack/albufera_066_D_069.nc",
+        "data/interim/cv_prob/v1/albufera_066_D_069_2026-10-28.npz",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "exported_water_ha": {
+       "value": 7642.6,
+       "unit": "ha",
+       "what": "the same layer as exported (data/cv), a check",
+       "source": [
+        {
+         "file": "data/manifest.json",
+         "path": "[model=cv, site=albufera, stack=066_D_069, layer=water, date=2026-10-28].open_water_ha"
+        }
+       ]
+      },
+      "radar_saw": {
+       "value": 0.997,
+       "unit": "share",
+       "what": "of the land the radar saw",
+       "source": [
+        "data/stack/albufera_066_D_069.nc",
+        "data/interim/cv_prob/v1/albufera_066_D_069_2026-10-28.npz",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "optical_clear": {
+       "value": 0.997,
+       "unit": "share",
+       "what": "of the land an optical map saw clear within a day (OPERA DSWx-HLS; 0 when there is no image)",
+       "source": [
+        "data/optical/albufera_066_D_069/2026-10-28.tif",
+        "web/scripts/bake_views.py"
+       ]
+      }
+     }
+    }
+   ],
+   "caption": [
+    "11 NISAR passes from 18 Jun to 28 Oct on a 12-day repeat (1 pass missed), each at 18:53 UTC. The radar needs no daylight and sees through cloud.",
+    "Water goes from 2,491 ha on 10 Sep to 7,654 ha on 28 Oct.",
+    "On 5 of the 11 passes an optical satellite saw less than half of the land clear within a day."
+   ],
+   "context": [
+    {
+     "text": "Albufera is one of the three sites the CV model learned from (with Sentinel-1 maps as labels), so these numbers are not a test. Pego-Oliva and Doñana are test sites.",
+     "numbers": {},
+     "source": [
+      {
+       "file": "docs/CV_BENCHMARK.md",
+       "path": "sections 5 and 7"
+      }
+     ]
+    }
+   ],
+   "numbers": {
+    "passes": {
+     "value": 11,
+     "unit": "passes",
+     "what": "NISAR passes of track 066 D with HH and HV",
+     "source": [
+      "data/stack/albufera_066_D_069.nc",
+      "web/scripts/bake_views.py"
+     ]
+    },
+    "cloudy_passes": {
+     "value": 5,
+     "unit": "passes",
+     "what": "with less than half of the land clear to optical within a day",
+     "source": [
+      "data/optical/index.json",
+      "web/scripts/bake_views.py"
+     ]
+    }
+   }
+  }
+ },
+ "site": "albufera",
+ "title": "Albufera lagoon and rice fields",
+ "zoom": 13,
+ "width": 1341,
+ "height": 2260,
+ "bounds": [
+  -0.4500961,
+  39.1498983,
+  -0.2198982,
+  39.4501125
+ ],
+ "pixel_m": 14.79,
+ "note": "Every image covers bounds (west, south, east, north). Ask for files with ?v=baked_utc. Numbers carry the files they come from.",
+ "written_with": "Written with SI assistance (Claude Code), reviewed by the team.",
+ "ground": {
+  "file": "views/ground.webp",
+  "bytes": 81110,
+  "width": 671,
+  "height": 1130,
+  "source": "EOX Sentinel-2 cloudless 2017 (web/public/tiles/base/12)",
+  "credit": "EOxCloudless 2017, https://cloudless.eox.at, by EOX IT Services GmbH (contains modified Copernicus Sentinel data 2017), CC BY 4.0"
+ },
+ "baked_utc": "2026-11-15T01:33:17Z",
+ "bytes_total": 518218,
+ "focus": null
+}
