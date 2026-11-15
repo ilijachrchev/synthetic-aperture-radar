@@ -31,12 +31,14 @@ def _dataset(X, y, w, names):
     return lgb.Dataset(X[:, cols], label=y, weight=w, feature_name=list(names), categorical_feature=cat, free_raw_data=False)
 
 
-def fit(X, y, w, names, rounds: int | None = None, valid=None) -> lgb.Booster:
+def fit(X, y, w, names, rounds: int | None = None, valid=None, params: dict | None = None) -> lgb.Booster:
+    """params: extra LightGBM settings on top of PARAMS (for example monotone constraints)."""
+    p = PARAMS if not params else {**PARAMS, **params}
     train = _dataset(X, y, w, names)
     if valid is None:
-        return lgb.train(PARAMS, train, num_boost_round=rounds or MAX_ROUNDS)
+        return lgb.train(p, train, num_boost_round=rounds or MAX_ROUNDS)
     val = _dataset(*valid, names)
-    return lgb.train(PARAMS, train, num_boost_round=MAX_ROUNDS, valid_sets=[val],
+    return lgb.train(p, train, num_boost_round=MAX_ROUNDS, valid_sets=[val],
                      callbacks=[lgb.early_stopping(EARLY_STOP, verbose=False)])
 
 

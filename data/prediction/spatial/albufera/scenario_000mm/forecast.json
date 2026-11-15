@@ -1,13 +1,15 @@
 {
   "site": "albufera",
   "model": "spatial water likelihood (LightGBM)",
-  "model_sha256_16": "e241d10cd9290a75",
+  "variant": "mono_neigh+blend",
+  "exported_score": "blend",
+  "model_sha256_16": "2eea321ceebe7d37",
   "rain_source": "Open-Meteo, ECMWF IFS 9 km, wettest lattice point of the site per day",
   "holdout": {
     "start": "2026-10-15",
     "end": "2026-11-15"
   },
-  "validation_status": "retrospective check on the held-out October 2026 window against Sentinel-1 maps; not yet scored against Copernicus EMSR935",
+  "validation_status": "retrospective check on the held-out October 2026 window against Sentinel-1 maps (data/prediction/spatial/improve); not yet scored against Copernicus EMSR935",
   "scenario_id": "scenario_000mm",
   "mode": "scenario",
   "mode_note": "hypothetical: 0 mm at the wettest point of the site over the 4 days after the latest water map, 60 % of it on one day, two days before the target",
@@ -46,12 +48,12 @@
     "255": "sea or outside the land grid"
   },
   "thresholds": {
-    "water": 0.28405811008713044,
-    "new_water": 0.17041007967415503
+    "water": 0.2946479241707799,
+    "new_water": 0.17653340825370928
   },
   "area_ha": {
-    "likely_water": 4414.5,
-    "likely_new_water": 1009.9,
+    "likely_water": 5157.1,
+    "likely_new_water": 1837.9,
     "counted_on": "evidence 0 pixels only"
   },
   "native_resolution": {

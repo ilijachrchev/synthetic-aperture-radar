@@ -1,6 +1,15 @@
 {
   "site": "pego_oliva",
   "model": "spatial water likelihood (LightGBM)",
+  "variant": "mono_neigh+blend",
+  "exported_score": "blend",
+  "model_sha256_16": "2eea321ceebe7d37",
+  "rain_source": "Open-Meteo, ECMWF IFS 9 km, wettest lattice point of the site per day",
+  "holdout": {
+    "start": "2026-10-15",
+    "end": "2026-11-15"
+  },
+  "validation_status": "checked against the NISAR water map of the target pass, see nisar_check.json",
   "scenario_id": "replay_2026-10-28_prestorm",
   "mode": "reconstruction",
   "mode_note": "issued from the last Sentinel-1 map before the rain of 18 and 19 Oct, for the NISAR pass of 28 Oct; the rain in between is the rain that fell (IFS archive), not a forecast",
@@ -16,12 +25,6 @@
     "rain_between_max1d_mm": 94.4,
     "days_since_rain_peak": 9.0
   },
-  "rain_source": "Open-Meteo, ECMWF IFS 9 km, wettest lattice point of the site per day",
-  "holdout": {
-    "start": "2026-10-15",
-    "end": "2026-11-15"
-  },
-  "validation_status": "checked against the NISAR water map of the target pass, see nisar_check.json",
   "score": "relative water likelihood 0-1 learned from Sentinel-1 water maps; not a calibrated flood probability",
   "files": {
     "water_likelihood_utm.tif": "float32 0-1, NaN outside land, EPSG:32630 20 m",
@@ -39,12 +42,12 @@
     "255": "sea or outside the land grid"
   },
   "thresholds": {
-    "water": 0.28405811008713044,
-    "new_water": 0.17041007967415503
+    "water": 0.2946479241707799,
+    "new_water": 0.17653340825370928
   },
   "area_ha": {
-    "likely_water": 607.2,
-    "likely_new_water": 463.8,
+    "likely_water": 696.5,
+    "likely_new_water": 541.4,
     "counted_on": "evidence 0 pixels only"
   },
   "native_resolution": {

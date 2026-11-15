@@ -1,0 +1,118 @@
+{
+  "site": "pego_oliva",
+  "candidate": "mono_neigh+blend",
+  "threshold_new_water": 0.17653340825370928,
+  "targets": 238,
+  "settings": {
+    "min0px": {
+      "min_patch_px": 0,
+      "majority_3x3": false,
+      "f1": 0.4519,
+      "hit_rate": 0.6444,
+      "false_alarm_ratio": 0.6521,
+      "tp": 229855,
+      "fp": 430771,
+      "fn": 126820,
+      "marked_ha_all_blocks": 85830.4
+    },
+    "min3px": {
+      "min_patch_px": 3,
+      "majority_3x3": false,
+      "f1": 0.4433,
+      "hit_rate": 0.614,
+      "false_alarm_ratio": 0.6532,
+      "tp": 219016,
+      "fp": 412502,
+      "fn": 137659,
+      "marked_ha_all_blocks": 81871.1
+    },
+    "min5px": {
+      "min_patch_px": 5,
+      "majority_3x3": false,
+      "f1": 0.4327,
+      "hit_rate": 0.5818,
+      "false_alarm_ratio": 0.6556,
+      "tp": 207504,
+      "fp": 395042,
+      "fn": 149171,
+      "marked_ha_all_blocks": 77926.3
+    },
+    "min10px": {
+      "min_patch_px": 10,
+      "majority_3x3": false,
+      "f1": 0.4159,
+      "hit_rate": 0.5347,
+      "false_alarm_ratio": 0.6597,
+      "tp": 190715,
+      "fp": 369636,
+      "fn": 165960,
+      "marked_ha_all_blocks": 71775.2
+    },
+    "min25px": {
+      "min_patch_px": 25,
+      "majority_3x3": false,
+      "f1": 0.3909,
+      "hit_rate": 0.469,
+      "false_alarm_ratio": 0.6648,
+      "tp": 167263,
+      "fp": 331788,
+      "fn": 189412,
+      "marked_ha_all_blocks": 64115.2
+    },
+    "min0px_majority": {
+      "min_patch_px": 0,
+      "majority_3x3": true,
+      "f1": 0.3942,
+      "hit_rate": 0.4662,
+      "false_alarm_ratio": 0.6586,
+      "tp": 166288,
+      "fp": 320801,
+      "fn": 190387,
+      "marked_ha_all_blocks": 62960.6
+    },
+    "min3px_majority": {
+      "min_patch_px": 3,
+      "majority_3x3": true,
+      "f1": 0.391,
+      "hit_rate": 0.4588,
+      "false_alarm_ratio": 0.6593,
+      "tp": 163632,
+      "fp": 316682,
+      "fn": 193043,
+      "marked_ha_all_blocks": 62027.3
+    },
+    "min5px_majority": {
+      "min_patch_px": 5,
+      "majority_3x3": true,
+      "f1": 0.3868,
+      "hit_rate": 0.4489,
+      "false_alarm_ratio": 0.6602,
+      "tp": 160114,
+      "fp": 311137,
+      "fn": 196561,
+      "marked_ha_all_blocks": 60815.3
+    },
+    "min10px_majority": {
+      "min_patch_px": 10,
+      "majority_3x3": true,
+      "f1": 0.3759,
+      "hit_rate": 0.4246,
+      "false_alarm_ratio": 0.6628,
+      "tp": 151457,
+      "fp": 297655,
+      "fn": 205218,
+      "marked_ha_all_blocks": 58066.0
+    },
+    "min25px_majority": {
+      "min_patch_px": 25,
+      "majority_3x3": true,
+      "f1": 0.3581,
+      "hit_rate": 0.3853,
+      "false_alarm_ratio": 0.6656,
+      "tp": 137432,
+      "fp": 273559,
+      "fn": 219243,
+      "marked_ha_all_blocks": 53363.9
+    }
+  }
+}

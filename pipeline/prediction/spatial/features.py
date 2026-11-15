@@ -45,7 +45,9 @@ STATE = ("prev_water", "prev_water_age_d", "prev_water_missing")
 FEATURES = STATIC + CONTEXT + RAIN + STATE
 SOIL = ("soil_moisture", "soil_moisture_age_d", "soil_moisture_missing")   # NISAR SME2, optional
 SENSOR = ("target_is_nisar", "prev_is_nisar")   # which radar the target and the previous map come from, optional
-ALL = FEATURES + SOIL + SENSOR           # column order of every feature matrix
+NEIGH = ("prev_wet_share_100m", "prev_wet_share_500m")   # water around a pixel in the issue-time map, optional
+NEIGH_SIZES = (5, 25)                    # square windows in pixels (100 m and 500 m on the 20 m grid)
+ALL = FEATURES + SOIL + SENSOR + NEIGH   # column order of every feature matrix
 TERRAIN_ONLY = STATIC + CONTEXT          # the comparison model: no rain, no previous water
 CATEGORICAL = ("worldcover_class",)
 
@@ -57,6 +59,8 @@ UNITS = {
     "soil_moisture": "m3/m3, newest NISAR SME2 map before the issue day (200 m, provisional)",
     "target_is_nisar": "1 when the water map to predict is NISAR's, 0 for Sentinel-1: the two radars see different water",
     "prev_is_nisar": "1 where the previous water map is NISAR's",
+    "prev_wet_share_100m": "share of water among the observed pixels of the issue-time map in the 100 m square around the pixel",
+    "prev_wet_share_500m": "the same in the 500 m square",
     "soil_moisture_age_d": "days from that map to the target", "soil_moisture_missing": "1 where there is no such map",
     "doy_sin": "season", "doy_cos": "season",
     "rain_prior_7d_mm": "mm in the 7 days before the issue day", "rain_prior_30d_mm": "mm in the 30 days before the issue day",
@@ -191,10 +195,12 @@ def wet_frequency(wet_count: np.ndarray, obs_count: np.ndarray) -> np.ndarray:
 def assemble(static_cols: np.ndarray, freq: np.ndarray, target_day: int, lead_days: float,
              rain: dict[str, float], state: np.ndarray, age: np.ndarray,
              soil: np.ndarray | None = None, soil_age: float | None = None,
-             target_nisar: bool = False, prev_nisar: np.ndarray | None = None) -> np.ndarray:
-    """(n, len(ALL)) float32 in ALL order; the soil columns are missing unless a soil map is given."""
+             target_nisar: bool = False, prev_nisar: np.ndarray | None = None,
+             neigh: np.ndarray | None = None) -> np.ndarray:
+    """(n, len(ALL)) float32 in ALL order; the soil and neighbourhood columns are missing unless given."""
     n = static_cols.shape[0]
     soil = np.full(n, np.nan, "float32") if soil is None else soil
+    neigh = np.full((n, len(NEIGH)), np.nan, "float32") if neigh is None else neigh
     doy = date.fromordinal(int(target_day)).timetuple().tm_yday
     ang = 2 * np.pi * doy / 365.25
     cols = {
@@ -205,9 +211,28 @@ def assemble(static_cols: np.ndarray, freq: np.ndarray, target_day: int, lead_da
         "prev_is_nisar": np.zeros(n) if prev_nisar is None else prev_nisar,
         "soil_moisture": soil, "soil_moisture_missing": np.isnan(soil).astype("float32"),
         "soil_moisture_age_d": np.where(np.isnan(soil), np.nan, np.nan if soil_age is None else soil_age),
+        **{name: neigh[:, i] for i, name in enumerate(NEIGH)},
     }
     dyn = np.stack([np.asarray(cols[name], dtype="float32") for name in ALL[len(STATIC):]], axis=1)
     return np.concatenate([static_cols.astype("float32"), dyn], axis=1)
+
+
+def neighbourhood(state: np.ndarray) -> np.ndarray:
+    """(len(NEIGH), y, x) share of water among the observed pixels in squares of NEIGH_SIZES around each pixel.
+
+    state: (y, x) issue-time water map, 1 water, 0 dry, NaN unknown. NaN where a square holds no observed pixel.
+    Outside the grid counts as unknown.
+    """
+    from scipy import ndimage
+    known = np.isfinite(state).astype("float64")
+    wet = (state == 1).astype("float64")
+    out = np.full((len(NEIGH_SIZES),) + state.shape, np.nan, dtype="float32")
+    for i, size in enumerate(NEIGH_SIZES):
+        k = ndimage.uniform_filter(known, size, mode="constant") * size * size
+        w = ndimage.uniform_filter(wet, size, mode="constant") * size * size
+        ok = k > 0.5
+        out[i][ok] = (w[ok] / k[ok]).astype("float32")
+    return np.clip(out, 0.0, 1.0)
 
 
 # ---------------------------------------------------------------- training table
@@ -248,7 +273,8 @@ def pick_pool(domain: np.ndarray, wet: np.ndarray, obs: np.ndarray, size: int, r
 
 def build_table(pool_water: np.ndarray, times: np.ndarray, days: list[str], static_cols: np.ndarray,
                 pool_weight: np.ndarray, rain: dict[int, float], rng: np.random.Generator,
-                dry_keep: float = 0.1, soil=None, is_nisar: np.ndarray | None = None) -> dict[str, np.ndarray]:
+                dry_keep: float = 0.1, soil=None, is_nisar: np.ndarray | None = None, neigh=None,
+                fit: np.ndarray | None = None, only: np.ndarray | None = None) -> dict[str, np.ndarray]:
     """Samples of every target pass outside the held-out window.
 
     pool_water: (passes, pixels) 0 / 1 / 255. Dry samples are thinned to dry_keep
@@ -256,16 +282,19 @@ def build_table(pool_water: np.ndarray, times: np.ndarray, days: list[str], stat
     its issue pass, so nothing later than the issue time enters it.
     soil(issue_day, target_day) returns (values per pool pixel or None, age in days).
     is_nisar flags the NISAR passes, for the two sensor columns.
+    neigh(j) returns the neighbourhood columns (pixels, len(NEIGH)) of issue pass j, for the optional NEIGH inputs.
+    fit (passes that may be targets and count in the past wet share; default: every pass outside the held-out window)
+    and only (restrict the targets further) are for the fit-then-test version, which adds held-out passes of one site.
     """
     nisar = np.zeros(len(days), bool) if is_nisar is None else is_nisar
     src = np.empty(pool_water.shape[1], dtype="int64")
-    fit = np.array([not in_holdout(d) for d in days])
+    fit = np.array([not in_holdout(d) for d in days]) if fit is None else np.asarray(fit, bool)
     cum_wet = np.cumsum((pool_water == 1) & fit[:, None], axis=0, dtype="int16")
     cum_obs = np.cumsum((pool_water != UNKNOWN) & fit[:, None], axis=0, dtype="int16")
     X, y, w, tt, pp = [], [], [], [], []
     for t in range(len(days)):
-        if not fit[t]:
-            continue                      # the held-out storm never enters the table
+        if not fit[t] or (only is not None and not only[t]):
+            continue                      # the held-out storm never enters the table (unless fit says so)
         j = issue_index(times, t)
         if j is None:
             continue
@@ -281,7 +310,8 @@ def build_table(pool_water: np.ndarray, times: np.ndarray, days: list[str], stat
         lead = float((times[t] - times[j]) / np.timedelta64(1, "D"))
         sm, sm_age = soil(days[j], days[t]) if soil is not None else (None, None)
         feats = assemble(static_cols, freq, target_day, lead, rain_features(rain, issue_day, target_day), state, age,
-                         sm, sm_age, bool(nisar[t]), np.where(src >= 0, nisar[np.maximum(src, 0)], False))
+                         sm, sm_age, bool(nisar[t]), np.where(src >= 0, nisar[np.maximum(src, 0)], False),
+                         None if neigh is None else neigh(j))
         X.append(feats[keep]); y.append(lab[keep]); tt.append(np.full(int(keep.sum()), t, "int32"))
         pp.append(np.flatnonzero(keep).astype("int32"))
         w.append(pool_weight[keep] * np.where(lab[keep] == 1, 1.0, 1.0 / dry_keep))
