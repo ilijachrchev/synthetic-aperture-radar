@@ -7,8 +7,8 @@
 //   2  The official map said safe /    the streets that flooded in 2024 over the official zones, then one switch to the
 //      Our simulation saw it           streets our simulation flags; any street tapped shows what each record says
 //   3  NISAR sees more water           drag the line between Sentinel-1 and NISAR of the same evening, open water
-//   4  Would we have seen it coming?   one switch: the street simulation with the real rain, the forecast of the same
-//                                      morning or the forecast of the night before
+//   4  Where the map said safe         the streets outside every official zone, over the zones: what our model found
+//                                      there, how often its warnings there were right, against chance
 //
 // Out of the flow, opened from "All layers" (?screen=exam, ?screen=rain): the marsh model's test against EMSR935 (drag
 // the line between our prediction and what happened) and its rain slider (one outline).
@@ -115,7 +115,9 @@ type ComingOption = {
 	line: string
 	source: string
 }
-type ComingDoc = { options: ComingOption[]; ceiling: { text: string; pair: number[]; source: string }; closing: string }
+/** the last step: the streets outside every official zone (coming.json "safe", from data/streets/results.json) */
+type SafeDoc = { found_km: number; outside_km: number; precision_pct: number; chance_pct: number; run_minutes: number; line: string; small: string; source: string }
+type ComingDoc = { options: ComingOption[]; ceiling: { text: string; pair: number[]; source: string }; closing: string; safe?: SafeDoc }
 
 /** a tapped street: what each record says there (streets_2024.json, the water marks of streets.json) */
 type Pick = {
@@ -151,7 +153,7 @@ const BIN_LAYERS = Array.from({ length: BINS }, (_, i) => binLayer(i))
 const STEP_LAYERS: Record<StepKey, string[]> = {
 	streets: [],
 	nisar: [],
-	coming: ['g-s3-missed', 'g-s3-dry', 'g-s3-found'],
+	coming: ['g-zones-fill', 'g-s3-missed', 'g-s3-dry', 'g-s3-found'],
 	exam: [],
 	rain: ['g-rain-fill', 'g-rain-line'],
 }
@@ -164,6 +166,8 @@ const FLOODED = ['==', ['coalesce', ['get', 'f'], 0], 1]
 const flagged = (prop: string) => ['>', ['coalesce', ['get', prop], 0], 0]
 /** a filter that keeps nothing (a bare ['==', 1, 0] reads as the old filter syntax and is refused) */
 const NOTHING = ['literal', false]
+/** a street piece outside every official flood zone */
+const OUTSIDE = ['==', ['coalesce', ['get', 'z'], 0], 0]
 /** the streets a method flags, green or red, and the flooded streets it missed, blue; with no method (its streets
  *  are still arriving), the flooded streets alone */
 const s3Filters = (prop: string | null) =>
@@ -259,7 +263,6 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 	const [pick, setPick] = useState<Pick | null>(null)
 	const [methodKey, setMethod] = useState<string | null>(null)
 	const [rainIdx, setRainIdx] = useState(2)
-	const [rainKey, setRainKey] = useState<string | null>(null)
 
 	const s = at.extra ? SCREENS.find((x) => x.key === at.extra)! : STEPS[step]
 	const key = s.key
@@ -430,7 +433,7 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 		const official = key === 'streets' && method?.key !== 'sim'
 		officialOn.current = official
 		const opacity: [string, string, number][] = [
-			['g-zones-fill', 'fill-opacity', official ? 0.13 : 0],
+			['g-zones-fill', 'fill-opacity', official ? 0.13 : key === 'coming' ? 0.1 : 0],
 			['g-zones-line', 'line-opacity', official ? 0.95 : 0],
 			['g-s3-missed', 'line-opacity', official ? 0 : 0.9],
 			['g-s3-dry', 'line-opacity', official ? 0 : 0.95],
@@ -441,16 +444,15 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 		if (revealDone.current) for (const id of BIN_LAYERS) map.setPaintProperty(id, 'line-opacity', official ? 1 : 0)
 	}, [map, ready, key, method, streets])
 
-	// the streets step: the chosen method's streets; the last step: the chosen rain's (none while still arriving)
-	const rains = coming?.options ?? []
-	const rainOpt = rains.find((o) => o.key === rainKey) ?? rains[0] ?? null
-	const rainProp = rainOpt && rainOpt.status === 'in' && streets?.methods.some((m) => m.prop === rainOpt.streets) ? rainOpt.streets : null
+	// the streets step: the chosen method's streets
 	const simProp = methods.find((m) => m.key === 'sim')?.prop ?? null
-	const s3Prop = key === 'coming' ? rainProp : simProp
+	// the last step: our simulation's streets, outside every official zone only
+	const s3Prop = simProp
+	const outsideOnly = key === 'coming'
 	useEffect(() => {
 		if (!map || !ready || !map.getLayer('g-s3-found')) return
-		for (const [id, f] of Object.entries(s3Filters(s3Prop))) map.setFilter(id, f as never)
-	}, [map, ready, s3Prop, streets])
+		for (const [id, f] of Object.entries(s3Filters(s3Prop))) map.setFilter(id, (outsideOnly && f !== NOTHING ? ['all', OUTSIDE, f] : f) as never)
+	}, [map, ready, s3Prop, streets, outsideOnly])
 
 	// step 2 opens with the flooded streets appearing outward from the ravines, about 4 s, then still
 	const playReveal = useCallback(() => {
@@ -647,7 +649,6 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 			step: (i: number) => go(i - 2),
 			screen: openScreen,
 			method: setMethod,
-			coming: setRainKey,
 			rain: setRainIdx,
 			reveal: () => void playReveal(),
 			ready: () => ready && !!map?.loaded(),
@@ -835,29 +836,20 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 			</>
 		)
 	} else if (key === 'coming') {
+		const safe = coming?.safe
 		body = (
 			<>
-				<div className="gd-seg" role="radiogroup" aria-label="Which rain" data-n={rains.length} style={{ ['--n' as string]: Math.max(1, rains.length) }}>
-					{rains.map((o) => (
-						<button key={o.key} type="button" role="radio" aria-checked={o.key === rainOpt?.key} onClick={() => setRainKey(o.key)}>
-							{o.label}
-						</button>
-					))}
-				</div>
-				{rainOpt && (
-					<div className="gd-pair" data-n={rains.length}>
-						{rains.map((o) => (
-							<p key={o.key} data-on={o.key === rainOpt.key || undefined} data-arriving={o.status !== 'in' || undefined}>
-								{o.status === 'in' && o.found_pct !== null ? <b className="display">{pct(o.found_pct)}</b> : <b className="gd-arriving">Arriving</b>}
-								<span>of the flooded streets found {o.found_text}</span>
-							</p>
-						))}
-					</div>
+				{safe && (
+					<>
+						<div className="gd-num">
+							<b className="display">{Math.round(safe.found_km)} km</b>
+							<span>{safe.line}</span>
+						</div>
+						<p className="gd-small">
+							<b>{pct(safe.precision_pct)}</b> of its warnings there were right, where chance gives {pct(safe.chance_pct)}.
+						</p>
+					</>
 				)}
-				{rainOpt && rainOpt.status === 'in' && rainOpt.really_flooded_pct !== null && (
-					<p className="gd-small">{pct(rainOpt.really_flooded_pct)} of the streets it flagged really flooded.</p>
-				)}
-				{rainOpt && rainOpt.status !== 'in' && <p className="gd-small">This forecast run is still being simulated: its streets and numbers arrive here when it is done.</p>}
 				<ul className="gd-key">
 					<li>
 						<i className="gd-sw" data-k="hit" /> Flagged, and it flooded
@@ -868,9 +860,11 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 					<li>
 						<i className="gd-sw" data-k="false" /> Flagged, not in the official records
 					</li>
+					<li>
+						<i className="gd-sw" data-k="zone" data-fill /> Official flood zone (SNCZI)
+					</li>
 				</ul>
-				{rainOpt && <p className="gd-note">{rainOpt.line}</p>}
-				{coming && <p className="gd-small">{coming.ceiling.text}</p>}
+				{safe && <p className="gd-note">{safe.small}</p>}
 				{coming && <p className="gd-close">{coming.closing}</p>}
 				<div className="gd-end">
 					<button type="button" className="gd-btn" onClick={restart}>
@@ -958,10 +952,7 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 		if (key === 'streets' && method && method.exact === false) src.push(`The streets drawn for ${sentence(method.label)} come from ${method.drawn_from}; the numbers are those of the scores.`)
 		if (streets) src.push(`Numbers: ${streets.sources.scores}.`)
 	}
-	if (key === 'coming' && coming) {
-		for (const o of coming.options) src.push(`${o.label}: ${o.source}.`)
-		src.push(`Two records: ${coming.ceiling.source}.`)
-	}
+	if (key === 'coming' && coming?.safe) src.push(`Where the map said safe: ${coming.safe.source}.`)
 	if (key === 'nisar') {
 		if (SWIPE_WATER === 'open') {
 			src.push('NISAR: NASA-ISRO L2 GCOV, track 066 D, open water by the team CV model (v1 at 0.3 on p(open water)).', 'Sentinel-1: OPERA DSWx-S1, open water (class 1).')
