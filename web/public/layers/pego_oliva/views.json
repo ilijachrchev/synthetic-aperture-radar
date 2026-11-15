@@ -1,0 +1,1864 @@
+{
+ "views": {
+  "swipe": {
+   "title": "Sentinel-1 against NISAR, the same evening",
+   "what": "Left of the handle the Sentinel-1 water map (C band, OPERA DSWx-S1: open water and flooded vegetation), right of it NISAR's (L band, the team CV model v1 at 0.3), from passes about an hour apart. Grey: ground the map does not cover.",
+   "legend": {
+    "water": "#2a8fff",
+    "not_covered": "rgba(10,16,24,0.49)"
+   },
+   "items": [
+    {
+     "date": "2026-06-18",
+     "nisar": {
+      "file": "views/swipe/2026-06-18_nisar.webp",
+      "bytes": 4592,
+      "time_utc": "2026-06-18T18:53:21Z",
+      "granule": "NISAR_L2_PR_GCOV_023_066_D_069_2005_DHDH_M_20260618T185321_20260618T185356_P05023_N_F_J_001",
+      "product": "NISAR GCOV, team CV model v1 (5 U-Nets) at 0.3",
+      "model_cache": "data/interim/cv_prob/v1/pego_oliva_066_D_069_2026-06-18.npz"
+     },
+     "s1": {
+      "file": "views/swipe/2026-06-18_s1.webp",
+      "bytes": 13076,
+      "time_utc": "2026-06-18T17:54:10Z",
+      "granules": [
+       "OPERA_L3_DSWx-S1_T30SYH_20260618T175410Z_20260826T154002Z_S1A_30_v1.0_B01_WTR.tif",
+       "OPERA_L3_DSWx-S1_T30SYJ_20260618T175410Z_20260826T154002Z_S1A_30_v1.0_B01_WTR.tif",
+       "OPERA_L3_DSWx-S1_T31SBC_20260618T175410Z_20260826T154002Z_S1A_30_v1.0_B01_WTR.tif",
+       "OPERA_L3_DSWx-S1_T31SBD_20260618T175410Z_20260826T154002Z_S1A_30_v1.0_B01_WTR.tif"
+      ],
+      "product": "OPERA DSWx-S1 B01_WTR (open water 1, flooded vegetation 3)"
+     },
+     "referee": null,
+     "caption": [
+      "18 Jun, the same evening: NISAR 18:53, Sentinel-1 17:54 UTC (59 min apart).",
+      "NISAR maps 367 ha of water, Sentinel-1 479 ha; 249 ha only on NISAR's map, 362 ha only on Sentinel-1's.",
+      "Too cloudy for an optical check within a day of the pass."
+     ],
+     "numbers": {
+      "minutes_apart": {
+       "value": 59,
+       "unit": "min",
+       "what": "between the NISAR and the Sentinel-1 pass",
+       "source": [
+        "data/stack/pego_oliva_066_D_069.nc",
+        "data/raw/dswx/pego_oliva/index.json",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "land_both_cover": {
+       "value": 0.973,
+       "unit": "share",
+       "what": "of the land (sea left out) both maps cover",
+       "source": [
+        "data/stack/pego_oliva_066_D_069.nc",
+        "data/interim/cv_prob/v1/pego_oliva_066_D_069_2026-06-18.npz",
+        "data/raw/dswx/pego_oliva/066_D_069/20260618/OPERA_L3_DSWx-S1_T30SYH_20260618T175410Z_20260826T154002Z_S1A_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/pego_oliva/066_D_069/20260618/OPERA_L3_DSWx-S1_T30SYJ_20260618T175410Z_20260826T154002Z_S1A_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/pego_oliva/066_D_069/20260618/OPERA_L3_DSWx-S1_T31SBC_20260618T175410Z_20260826T154002Z_S1A_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/pego_oliva/066_D_069/20260618/OPERA_L3_DSWx-S1_T31SBD_20260618T175410Z_20260826T154002Z_S1A_30_v1.0_B01_WTR.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "nisar_water_ha": {
+       "value": 366.9,
+       "unit": "ha",
+       "what": "water NISAR maps (v1 at 0.3) on the land both maps cover",
+       "source": [
+        "data/stack/pego_oliva_066_D_069.nc",
+        "data/interim/cv_prob/v1/pego_oliva_066_D_069_2026-06-18.npz",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "s1_water_ha": {
+       "value": 479.2,
+       "unit": "ha",
+       "what": "water Sentinel-1 maps (open water and flooded vegetation) there",
+       "source": [
+        "data/raw/dswx/pego_oliva/066_D_069/20260618/OPERA_L3_DSWx-S1_T30SYH_20260618T175410Z_20260826T154002Z_S1A_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/pego_oliva/066_D_069/20260618/OPERA_L3_DSWx-S1_T30SYJ_20260618T175410Z_20260826T154002Z_S1A_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/pego_oliva/066_D_069/20260618/OPERA_L3_DSWx-S1_T31SBC_20260618T175410Z_20260826T154002Z_S1A_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/pego_oliva/066_D_069/20260618/OPERA_L3_DSWx-S1_T31SBD_20260618T175410Z_20260826T154002Z_S1A_30_v1.0_B01_WTR.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "s1_flooded_vegetation_ha": {
+       "value": 443.5,
+       "unit": "ha",
+       "what": "of it marked flooded vegetation by Sentinel-1",
+       "source": [
+        "data/raw/dswx/pego_oliva/066_D_069/20260618/OPERA_L3_DSWx-S1_T30SYH_20260618T175410Z_20260826T154002Z_S1A_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/pego_oliva/066_D_069/20260618/OPERA_L3_DSWx-S1_T30SYJ_20260618T175410Z_20260826T154002Z_S1A_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/pego_oliva/066_D_069/20260618/OPERA_L3_DSWx-S1_T31SBC_20260618T175410Z_20260826T154002Z_S1A_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/pego_oliva/066_D_069/20260618/OPERA_L3_DSWx-S1_T31SBD_20260618T175410Z_20260826T154002Z_S1A_30_v1.0_B01_WTR.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "nisar_only_ha": {
+       "value": 249.2,
+       "unit": "ha",
+       "what": "water only NISAR maps",
+       "source": [
+        "data/stack/pego_oliva_066_D_069.nc",
+        "data/interim/cv_prob/v1/pego_oliva_066_D_069_2026-06-18.npz",
+        "data/raw/dswx/pego_oliva/066_D_069/20260618/OPERA_L3_DSWx-S1_T30SYH_20260618T175410Z_20260826T154002Z_S1A_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/pego_oliva/066_D_069/20260618/OPERA_L3_DSWx-S1_T30SYJ_20260618T175410Z_20260826T154002Z_S1A_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/pego_oliva/066_D_069/20260618/OPERA_L3_DSWx-S1_T31SBC_20260618T175410Z_20260826T154002Z_S1A_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/pego_oliva/066_D_069/20260618/OPERA_L3_DSWx-S1_T31SBD_20260618T175410Z_20260826T154002Z_S1A_30_v1.0_B01_WTR.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "s1_only_ha": {
+       "value": 361.6,
+       "unit": "ha",
+       "what": "water only Sentinel-1 maps",
+       "source": [
+        "data/stack/pego_oliva_066_D_069.nc",
+        "data/interim/cv_prob/v1/pego_oliva_066_D_069_2026-06-18.npz",
+        "data/raw/dswx/pego_oliva/066_D_069/20260618/OPERA_L3_DSWx-S1_T30SYH_20260618T175410Z_20260826T154002Z_S1A_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/pego_oliva/066_D_069/20260618/OPERA_L3_DSWx-S1_T30SYJ_20260618T175410Z_20260826T154002Z_S1A_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/pego_oliva/066_D_069/20260618/OPERA_L3_DSWx-S1_T31SBC_20260618T175410Z_20260826T154002Z_S1A_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/pego_oliva/066_D_069/20260618/OPERA_L3_DSWx-S1_T31SBD_20260618T175410Z_20260826T154002Z_S1A_30_v1.0_B01_WTR.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "both_ha": {
+       "value": 117.7,
+       "unit": "ha",
+       "what": "water both map",
+       "source": [
+        "data/stack/pego_oliva_066_D_069.nc",
+        "data/interim/cv_prob/v1/pego_oliva_066_D_069_2026-06-18.npz",
+        "data/raw/dswx/pego_oliva/066_D_069/20260618/OPERA_L3_DSWx-S1_T30SYH_20260618T175410Z_20260826T154002Z_S1A_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/pego_oliva/066_D_069/20260618/OPERA_L3_DSWx-S1_T30SYJ_20260618T175410Z_20260826T154002Z_S1A_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/pego_oliva/066_D_069/20260618/OPERA_L3_DSWx-S1_T31SBC_20260618T175410Z_20260826T154002Z_S1A_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/pego_oliva/066_D_069/20260618/OPERA_L3_DSWx-S1_T31SBD_20260618T175410Z_20260826T154002Z_S1A_30_v1.0_B01_WTR.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "optical_clear": {
+       "value": 0.0,
+       "unit": "share",
+       "what": "of the changing land the optical map saw clear",
+       "source": [
+        "data/optical/pego_oliva_066_D_069/2026-06-18.tif",
+        "web/scripts/bake_views.py"
+       ]
+      }
+     }
+    },
+    {
+     "date": "2026-10-16",
+     "nisar": {
+      "file": "views/swipe/2026-10-16_nisar.webp",
+      "bytes": 3978,
+      "time_utc": "2026-10-16T18:53:18Z",
+      "granule": "NISAR_L2_PR_GCOV_033_066_D_069_2005_DHDH_M_20261016T185318_20261016T185353_P05023_N_F_J_001",
+      "product": "NISAR GCOV, team CV model v1 (5 U-Nets) at 0.3",
+      "model_cache": "data/interim/cv_prob/v1/pego_oliva_066_D_069_2026-10-16.npz"
+     },
+     "s1": {
+      "file": "views/swipe/2026-10-16_s1.webp",
+      "bytes": 8846,
+      "time_utc": "2026-10-16T18:01:45Z",
+      "granules": [
+       "OPERA_L3_DSWx-S1_T30SYH_20261016T180145Z_20261017T085509Z_S1D_30_v1.0_B01_WTR.tif",
+       "OPERA_L3_DSWx-S1_T30SYJ_20261016T180145Z_20261017T085509Z_S1D_30_v1.0_B01_WTR.tif",
+       "OPERA_L3_DSWx-S1_T31SBC_20261016T180145Z_20261017T085509Z_S1D_30_v1.0_B01_WTR.tif",
+       "OPERA_L3_DSWx-S1_T31SBD_20261016T180145Z_20261017T085509Z_S1D_30_v1.0_B01_WTR.tif"
+      ],
+      "product": "OPERA DSWx-S1 B01_WTR (open water 1, flooded vegetation 3)"
+     },
+     "referee": {
+      "optical_days": [
+       "2026-10-16"
+      ],
+      "granules": [
+       "OPERA_L3_DSWx-HLS_T30SYH_20261016T105031Z_20261022T064549Z_S2C_30_v1.1_B01_WTR.tif",
+       "OPERA_L3_DSWx-HLS_T30SYJ_20261016T105031Z_20261022T064551Z_S2C_30_v1.1_B01_WTR.tif",
+       "OPERA_L3_DSWx-HLS_T31SBC_20261016T105031Z_20261022T054717Z_S2C_30_v1.1_B01_WTR.tif",
+       "OPERA_L3_DSWx-HLS_T31SBD_20261016T105031Z_20261022T054720Z_S2C_30_v1.1_B01_WTR.tif"
+      ]
+     },
+     "caption": [
+      "16 Oct, the same evening: NISAR 18:53, Sentinel-1 18:01 UTC (52 min apart).",
+      "NISAR maps 243 ha of water, Sentinel-1 418 ha; 146 ha only on NISAR's map, 320 ha only on Sentinel-1's.",
+      "An optical map within a day (clear on 99.7 % of it) sees 28 ha of open water outside permanent water: NISAR finds 50 % of it, Sentinel-1 46 %.",
+      "Where only NISAR maps water, optical sees water on 66 %; where only Sentinel-1 does, on 29 %."
+     ],
+     "numbers": {
+      "minutes_apart": {
+       "value": 52,
+       "unit": "min",
+       "what": "between the NISAR and the Sentinel-1 pass",
+       "source": [
+        "data/stack/pego_oliva_066_D_069.nc",
+        "data/raw/dswx/pego_oliva/index.json",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "land_both_cover": {
+       "value": 0.981,
+       "unit": "share",
+       "what": "of the land (sea left out) both maps cover",
+       "source": [
+        "data/stack/pego_oliva_066_D_069.nc",
+        "data/interim/cv_prob/v1/pego_oliva_066_D_069_2026-10-16.npz",
+        "data/raw/dswx/pego_oliva/066_D_069/20261016/OPERA_L3_DSWx-S1_T30SYH_20261016T180145Z_20261017T085509Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/pego_oliva/066_D_069/20261016/OPERA_L3_DSWx-S1_T30SYJ_20261016T180145Z_20261017T085509Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/pego_oliva/066_D_069/20261016/OPERA_L3_DSWx-S1_T31SBC_20261016T180145Z_20261017T085509Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/pego_oliva/066_D_069/20261016/OPERA_L3_DSWx-S1_T31SBD_20261016T180145Z_20261017T085509Z_S1D_30_v1.0_B01_WTR.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "nisar_water_ha": {
+       "value": 243.3,
+       "unit": "ha",
+       "what": "water NISAR maps (v1 at 0.3) on the land both maps cover",
+       "source": [
+        "data/stack/pego_oliva_066_D_069.nc",
+        "data/interim/cv_prob/v1/pego_oliva_066_D_069_2026-10-16.npz",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "s1_water_ha": {
+       "value": 417.6,
+       "unit": "ha",
+       "what": "water Sentinel-1 maps (open water and flooded vegetation) there",
+       "source": [
+        "data/raw/dswx/pego_oliva/066_D_069/20261016/OPERA_L3_DSWx-S1_T30SYH_20261016T180145Z_20261017T085509Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/pego_oliva/066_D_069/20261016/OPERA_L3_DSWx-S1_T30SYJ_20261016T180145Z_20261017T085509Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/pego_oliva/066_D_069/20261016/OPERA_L3_DSWx-S1_T31SBC_20261016T180145Z_20261017T085509Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/pego_oliva/066_D_069/20261016/OPERA_L3_DSWx-S1_T31SBD_20261016T180145Z_20261017T085509Z_S1D_30_v1.0_B01_WTR.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "s1_flooded_vegetation_ha": {
+       "value": 390.5,
+       "unit": "ha",
+       "what": "of it marked flooded vegetation by Sentinel-1",
+       "source": [
+        "data/raw/dswx/pego_oliva/066_D_069/20261016/OPERA_L3_DSWx-S1_T30SYH_20261016T180145Z_20261017T085509Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/pego_oliva/066_D_069/20261016/OPERA_L3_DSWx-S1_T30SYJ_20261016T180145Z_20261017T085509Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/pego_oliva/066_D_069/20261016/OPERA_L3_DSWx-S1_T31SBC_20261016T180145Z_20261017T085509Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/pego_oliva/066_D_069/20261016/OPERA_L3_DSWx-S1_T31SBD_20261016T180145Z_20261017T085509Z_S1D_30_v1.0_B01_WTR.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "nisar_only_ha": {
+       "value": 146.1,
+       "unit": "ha",
+       "what": "water only NISAR maps",
+       "source": [
+        "data/stack/pego_oliva_066_D_069.nc",
+        "data/interim/cv_prob/v1/pego_oliva_066_D_069_2026-10-16.npz",
+        "data/raw/dswx/pego_oliva/066_D_069/20261016/OPERA_L3_DSWx-S1_T30SYH_20261016T180145Z_20261017T085509Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/pego_oliva/066_D_069/20261016/OPERA_L3_DSWx-S1_T30SYJ_20261016T180145Z_20261017T085509Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/pego_oliva/066_D_069/20261016/OPERA_L3_DSWx-S1_T31SBC_20261016T180145Z_20261017T085509Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/pego_oliva/066_D_069/20261016/OPERA_L3_DSWx-S1_T31SBD_20261016T180145Z_20261017T085509Z_S1D_30_v1.0_B01_WTR.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "s1_only_ha": {
+       "value": 320.4,
+       "unit": "ha",
+       "what": "water only Sentinel-1 maps",
+       "source": [
+        "data/stack/pego_oliva_066_D_069.nc",
+        "data/interim/cv_prob/v1/pego_oliva_066_D_069_2026-10-16.npz",
+        "data/raw/dswx/pego_oliva/066_D_069/20261016/OPERA_L3_DSWx-S1_T30SYH_20261016T180145Z_20261017T085509Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/pego_oliva/066_D_069/20261016/OPERA_L3_DSWx-S1_T30SYJ_20261016T180145Z_20261017T085509Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/pego_oliva/066_D_069/20261016/OPERA_L3_DSWx-S1_T31SBC_20261016T180145Z_20261017T085509Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/pego_oliva/066_D_069/20261016/OPERA_L3_DSWx-S1_T31SBD_20261016T180145Z_20261017T085509Z_S1D_30_v1.0_B01_WTR.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "both_ha": {
+       "value": 97.2,
+       "unit": "ha",
+       "what": "water both map",
+       "source": [
+        "data/stack/pego_oliva_066_D_069.nc",
+        "data/interim/cv_prob/v1/pego_oliva_066_D_069_2026-10-16.npz",
+        "data/raw/dswx/pego_oliva/066_D_069/20261016/OPERA_L3_DSWx-S1_T30SYH_20261016T180145Z_20261017T085509Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/pego_oliva/066_D_069/20261016/OPERA_L3_DSWx-S1_T30SYJ_20261016T180145Z_20261017T085509Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/pego_oliva/066_D_069/20261016/OPERA_L3_DSWx-S1_T31SBC_20261016T180145Z_20261017T085509Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/pego_oliva/066_D_069/20261016/OPERA_L3_DSWx-S1_T31SBD_20261016T180145Z_20261017T085509Z_S1D_30_v1.0_B01_WTR.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "optical_clear": {
+       "value": 0.997,
+       "unit": "share",
+       "what": "of the changing land the optical map saw clear",
+       "source": [
+        "data/optical/pego_oliva_066_D_069/2026-10-16.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "optical_open_water_ha": {
+       "value": 27.9,
+       "unit": "ha",
+       "what": "open water the optical map sees, outside permanent water",
+       "source": [
+        "data/optical/pego_oliva_066_D_069/2026-10-16.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "nisar_finds": {
+       "value": 0.497,
+       "unit": "share",
+       "what": "of that open water on NISAR's map",
+       "source": [
+        "data/stack/pego_oliva_066_D_069.nc",
+        "data/interim/cv_prob/v1/pego_oliva_066_D_069_2026-10-16.npz",
+        "data/optical/pego_oliva_066_D_069/2026-10-16.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "s1_finds": {
+       "value": 0.456,
+       "unit": "share",
+       "what": "of that open water on Sentinel-1's map",
+       "source": [
+        "data/raw/dswx/pego_oliva/066_D_069/20261016/OPERA_L3_DSWx-S1_T30SYH_20261016T180145Z_20261017T085509Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/pego_oliva/066_D_069/20261016/OPERA_L3_DSWx-S1_T30SYJ_20261016T180145Z_20261017T085509Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/pego_oliva/066_D_069/20261016/OPERA_L3_DSWx-S1_T31SBC_20261016T180145Z_20261017T085509Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/pego_oliva/066_D_069/20261016/OPERA_L3_DSWx-S1_T31SBD_20261016T180145Z_20261017T085509Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/optical/pego_oliva_066_D_069/2026-10-16.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "nisar_only_clear_ha": {
+       "value": 145.2,
+       "unit": "ha",
+       "what": "water only NISAR maps, where the optical map is clear",
+       "source": [
+        "data/stack/pego_oliva_066_D_069.nc",
+        "data/interim/cv_prob/v1/pego_oliva_066_D_069_2026-10-16.npz",
+        "data/raw/dswx/pego_oliva/066_D_069/20261016/OPERA_L3_DSWx-S1_T30SYH_20261016T180145Z_20261017T085509Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/pego_oliva/066_D_069/20261016/OPERA_L3_DSWx-S1_T30SYJ_20261016T180145Z_20261017T085509Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/pego_oliva/066_D_069/20261016/OPERA_L3_DSWx-S1_T31SBC_20261016T180145Z_20261017T085509Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/pego_oliva/066_D_069/20261016/OPERA_L3_DSWx-S1_T31SBD_20261016T180145Z_20261017T085509Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/optical/pego_oliva_066_D_069/2026-10-16.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "nisar_only_optical_water": {
+       "value": 0.656,
+       "unit": "share",
+       "what": "of it the optical map calls water (open or partial)",
+       "source": [
+        "data/optical/pego_oliva_066_D_069/2026-10-16.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "s1_only_clear_ha": {
+       "value": 310.1,
+       "unit": "ha",
+       "what": "water only Sentinel-1 maps, where the optical map is clear",
+       "source": [
+        "data/stack/pego_oliva_066_D_069.nc",
+        "data/interim/cv_prob/v1/pego_oliva_066_D_069_2026-10-16.npz",
+        "data/raw/dswx/pego_oliva/066_D_069/20261016/OPERA_L3_DSWx-S1_T30SYH_20261016T180145Z_20261017T085509Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/pego_oliva/066_D_069/20261016/OPERA_L3_DSWx-S1_T30SYJ_20261016T180145Z_20261017T085509Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/pego_oliva/066_D_069/20261016/OPERA_L3_DSWx-S1_T31SBC_20261016T180145Z_20261017T085509Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/pego_oliva/066_D_069/20261016/OPERA_L3_DSWx-S1_T31SBD_20261016T180145Z_20261017T085509Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/optical/pego_oliva_066_D_069/2026-10-16.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "s1_only_optical_water": {
+       "value": 0.291,
+       "unit": "share",
+       "what": "of it the optical map calls water (open or partial)",
+       "source": [
+        "data/optical/pego_oliva_066_D_069/2026-10-16.tif",
+        "web/scripts/bake_views.py"
+       ]
+      }
+     }
+    },
+    {
+     "date": "2026-10-28",
+     "nisar": {
+      "file": "views/swipe/2026-10-28_nisar.webp",
+      "bytes": 4190,
+      "time_utc": "2026-10-28T18:53:18Z",
+      "granule": "NISAR_L2_PR_GCOV_034_066_D_069_2005_DHDH_M_20261028T185318_20261028T185353_P05036_N_F_J_001",
+      "product": "NISAR GCOV, team CV model v1 (5 U-Nets) at 0.3",
+      "model_cache": "data/interim/cv_prob/v1/pego_oliva_066_D_069_2026-10-28.npz"
+     },
+     "s1": {
+      "file": "views/swipe/2026-10-28_s1.webp",
+      "bytes": 9576,
+      "time_utc": "2026-10-28T18:01:44Z",
+      "granules": [
+       "OPERA_L3_DSWx-S1_T30SYH_20261028T180144Z_20261030T090804Z_S1D_30_v1.0_B01_WTR.tif",
+       "OPERA_L3_DSWx-S1_T30SYJ_20261028T180144Z_20261030T090804Z_S1D_30_v1.0_B01_WTR.tif",
+       "OPERA_L3_DSWx-S1_T31SBC_20261028T180144Z_20261030T090804Z_S1D_30_v1.0_B01_WTR.tif",
+       "OPERA_L3_DSWx-S1_T31SBD_20261028T180144Z_20261030T090804Z_S1D_30_v1.0_B01_WTR.tif"
+      ],
+      "product": "OPERA DSWx-S1 B01_WTR (open water 1, flooded vegetation 3)"
+     },
+     "referee": {
+      "optical_days": [
+       "2026-10-27",
+       "2026-10-28"
+      ],
+      "granules": [
+       "OPERA_L3_DSWx-HLS_T30SYH_20261028T103729Z_20261031T154611Z_L9_30_v1.1_B01_WTR.tif",
+       "OPERA_L3_DSWx-HLS_T30SYH_20261028T105051Z_20261031T145318Z_S2A_30_v1.1_B01_WTR.tif",
+       "OPERA_L3_DSWx-HLS_T30SYJ_20261028T103706Z_20261031T150138Z_L9_30_v1.1_B01_WTR.tif",
+       "OPERA_L3_DSWx-HLS_T30SYJ_20261028T105051Z_20261031T145314Z_S2A_30_v1.1_B01_WTR.tif",
+       "OPERA_L3_DSWx-HLS_T31SBC_20261028T103729Z_20261031T150134Z_L9_30_v1.1_B01_WTR.tif",
+       "OPERA_L3_DSWx-HLS_T31SBC_20261028T105051Z_20261031T145314Z_S2A_30_v1.1_B01_WTR.tif",
+       "OPERA_L3_DSWx-HLS_T31SBD_20261028T103706Z_20261031T150138Z_L9_30_v1.1_B01_WTR.tif",
+       "OPERA_L3_DSWx-HLS_T31SBD_20261028T105051Z_20261031T145316Z_S2A_30_v1.1_B01_WTR.tif",
+       "OPERA_L3_DSWx-HLS_T30SYH_20261027T104341Z_20261031T074111Z_L8_30_v1.1_B01_WTR.tif",
+       "OPERA_L3_DSWx-HLS_T30SYJ_20261027T104317Z_20261031T074117Z_L8_30_v1.1_B01_WTR.tif",
+       "OPERA_L3_DSWx-HLS_T31SBC_20261027T104341Z_20261031T074111Z_L8_30_v1.1_B01_WTR.tif",
+       "OPERA_L3_DSWx-HLS_T31SBD_20261027T104317Z_20261031T074112Z_L8_30_v1.1_B01_WTR.tif"
+      ]
+     },
+     "caption": [
+      "28 Oct, the same evening: NISAR 18:53, Sentinel-1 18:01 UTC (52 min apart).",
+      "NISAR maps 576 ha of water, Sentinel-1 651 ha; 181 ha only on NISAR's map, 256 ha only on Sentinel-1's.",
+      "An optical map within a day (clear on 88 % of it) sees 192 ha of open water outside permanent water: NISAR finds 59 % of it, Sentinel-1 42 %.",
+      "Where only NISAR maps water, optical sees water on 47 %; where only Sentinel-1 does, on 45 %."
+     ],
+     "numbers": {
+      "minutes_apart": {
+       "value": 52,
+       "unit": "min",
+       "what": "between the NISAR and the Sentinel-1 pass",
+       "source": [
+        "data/stack/pego_oliva_066_D_069.nc",
+        "data/raw/dswx/pego_oliva/index.json",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "land_both_cover": {
+       "value": 0.981,
+       "unit": "share",
+       "what": "of the land (sea left out) both maps cover",
+       "source": [
+        "data/stack/pego_oliva_066_D_069.nc",
+        "data/interim/cv_prob/v1/pego_oliva_066_D_069_2026-10-28.npz",
+        "data/raw/dswx/pego_oliva/066_D_069/20261028/OPERA_L3_DSWx-S1_T30SYH_20261028T180144Z_20261030T090804Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/pego_oliva/066_D_069/20261028/OPERA_L3_DSWx-S1_T30SYJ_20261028T180144Z_20261030T090804Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/pego_oliva/066_D_069/20261028/OPERA_L3_DSWx-S1_T31SBC_20261028T180144Z_20261030T090804Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/pego_oliva/066_D_069/20261028/OPERA_L3_DSWx-S1_T31SBD_20261028T180144Z_20261030T090804Z_S1D_30_v1.0_B01_WTR.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "nisar_water_ha": {
+       "value": 575.5,
+       "unit": "ha",
+       "what": "water NISAR maps (v1 at 0.3) on the land both maps cover",
+       "source": [
+        "data/stack/pego_oliva_066_D_069.nc",
+        "data/interim/cv_prob/v1/pego_oliva_066_D_069_2026-10-28.npz",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "s1_water_ha": {
+       "value": 651.2,
+       "unit": "ha",
+       "what": "water Sentinel-1 maps (open water and flooded vegetation) there",
+       "source": [
+        "data/raw/dswx/pego_oliva/066_D_069/20261028/OPERA_L3_DSWx-S1_T30SYH_20261028T180144Z_20261030T090804Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/pego_oliva/066_D_069/20261028/OPERA_L3_DSWx-S1_T30SYJ_20261028T180144Z_20261030T090804Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/pego_oliva/066_D_069/20261028/OPERA_L3_DSWx-S1_T31SBC_20261028T180144Z_20261030T090804Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/pego_oliva/066_D_069/20261028/OPERA_L3_DSWx-S1_T31SBD_20261028T180144Z_20261030T090804Z_S1D_30_v1.0_B01_WTR.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "s1_flooded_vegetation_ha": {
+       "value": 319.2,
+       "unit": "ha",
+       "what": "of it marked flooded vegetation by Sentinel-1",
+       "source": [
+        "data/raw/dswx/pego_oliva/066_D_069/20261028/OPERA_L3_DSWx-S1_T30SYH_20261028T180144Z_20261030T090804Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/pego_oliva/066_D_069/20261028/OPERA_L3_DSWx-S1_T30SYJ_20261028T180144Z_20261030T090804Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/pego_oliva/066_D_069/20261028/OPERA_L3_DSWx-S1_T31SBC_20261028T180144Z_20261030T090804Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/pego_oliva/066_D_069/20261028/OPERA_L3_DSWx-S1_T31SBD_20261028T180144Z_20261030T090804Z_S1D_30_v1.0_B01_WTR.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "nisar_only_ha": {
+       "value": 180.8,
+       "unit": "ha",
+       "what": "water only NISAR maps",
+       "source": [
+        "data/stack/pego_oliva_066_D_069.nc",
+        "data/interim/cv_prob/v1/pego_oliva_066_D_069_2026-10-28.npz",
+        "data/raw/dswx/pego_oliva/066_D_069/20261028/OPERA_L3_DSWx-S1_T30SYH_20261028T180144Z_20261030T090804Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/pego_oliva/066_D_069/20261028/OPERA_L3_DSWx-S1_T30SYJ_20261028T180144Z_20261030T090804Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/pego_oliva/066_D_069/20261028/OPERA_L3_DSWx-S1_T31SBC_20261028T180144Z_20261030T090804Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/pego_oliva/066_D_069/20261028/OPERA_L3_DSWx-S1_T31SBD_20261028T180144Z_20261030T090804Z_S1D_30_v1.0_B01_WTR.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "s1_only_ha": {
+       "value": 256.5,
+       "unit": "ha",
+       "what": "water only Sentinel-1 maps",
+       "source": [
+        "data/stack/pego_oliva_066_D_069.nc",
+        "data/interim/cv_prob/v1/pego_oliva_066_D_069_2026-10-28.npz",
+        "data/raw/dswx/pego_oliva/066_D_069/20261028/OPERA_L3_DSWx-S1_T30SYH_20261028T180144Z_20261030T090804Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/pego_oliva/066_D_069/20261028/OPERA_L3_DSWx-S1_T30SYJ_20261028T180144Z_20261030T090804Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/pego_oliva/066_D_069/20261028/OPERA_L3_DSWx-S1_T31SBC_20261028T180144Z_20261030T090804Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/pego_oliva/066_D_069/20261028/OPERA_L3_DSWx-S1_T31SBD_20261028T180144Z_20261030T090804Z_S1D_30_v1.0_B01_WTR.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "both_ha": {
+       "value": 394.8,
+       "unit": "ha",
+       "what": "water both map",
+       "source": [
+        "data/stack/pego_oliva_066_D_069.nc",
+        "data/interim/cv_prob/v1/pego_oliva_066_D_069_2026-10-28.npz",
+        "data/raw/dswx/pego_oliva/066_D_069/20261028/OPERA_L3_DSWx-S1_T30SYH_20261028T180144Z_20261030T090804Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/pego_oliva/066_D_069/20261028/OPERA_L3_DSWx-S1_T30SYJ_20261028T180144Z_20261030T090804Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/pego_oliva/066_D_069/20261028/OPERA_L3_DSWx-S1_T31SBC_20261028T180144Z_20261030T090804Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/pego_oliva/066_D_069/20261028/OPERA_L3_DSWx-S1_T31SBD_20261028T180144Z_20261030T090804Z_S1D_30_v1.0_B01_WTR.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "optical_clear": {
+       "value": 0.879,
+       "unit": "share",
+       "what": "of the changing land the optical map saw clear",
+       "source": [
+        "data/optical/pego_oliva_066_D_069/2026-10-28.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "optical_open_water_ha": {
+       "value": 192.1,
+       "unit": "ha",
+       "what": "open water the optical map sees, outside permanent water",
+       "source": [
+        "data/optical/pego_oliva_066_D_069/2026-10-28.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "nisar_finds": {
+       "value": 0.59,
+       "unit": "share",
+       "what": "of that open water on NISAR's map",
+       "source": [
+        "data/stack/pego_oliva_066_D_069.nc",
+        "data/interim/cv_prob/v1/pego_oliva_066_D_069_2026-10-28.npz",
+        "data/optical/pego_oliva_066_D_069/2026-10-28.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "s1_finds": {
+       "value": 0.42,
+       "unit": "share",
+       "what": "of that open water on Sentinel-1's map",
+       "source": [
+        "data/raw/dswx/pego_oliva/066_D_069/20261028/OPERA_L3_DSWx-S1_T30SYH_20261028T180144Z_20261030T090804Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/pego_oliva/066_D_069/20261028/OPERA_L3_DSWx-S1_T30SYJ_20261028T180144Z_20261030T090804Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/pego_oliva/066_D_069/20261028/OPERA_L3_DSWx-S1_T31SBC_20261028T180144Z_20261030T090804Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/pego_oliva/066_D_069/20261028/OPERA_L3_DSWx-S1_T31SBD_20261028T180144Z_20261030T090804Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/optical/pego_oliva_066_D_069/2026-10-28.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "nisar_only_clear_ha": {
+       "value": 98.7,
+       "unit": "ha",
+       "what": "water only NISAR maps, where the optical map is clear",
+       "source": [
+        "data/stack/pego_oliva_066_D_069.nc",
+        "data/interim/cv_prob/v1/pego_oliva_066_D_069_2026-10-28.npz",
+        "data/raw/dswx/pego_oliva/066_D_069/20261028/OPERA_L3_DSWx-S1_T30SYH_20261028T180144Z_20261030T090804Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/pego_oliva/066_D_069/20261028/OPERA_L3_DSWx-S1_T30SYJ_20261028T180144Z_20261030T090804Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/pego_oliva/066_D_069/20261028/OPERA_L3_DSWx-S1_T31SBC_20261028T180144Z_20261030T090804Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/pego_oliva/066_D_069/20261028/OPERA_L3_DSWx-S1_T31SBD_20261028T180144Z_20261030T090804Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/optical/pego_oliva_066_D_069/2026-10-28.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "nisar_only_optical_water": {
+       "value": 0.468,
+       "unit": "share",
+       "what": "of it the optical map calls water (open or partial)",
+       "source": [
+        "data/optical/pego_oliva_066_D_069/2026-10-28.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "s1_only_clear_ha": {
+       "value": 103.8,
+       "unit": "ha",
+       "what": "water only Sentinel-1 maps, where the optical map is clear",
+       "source": [
+        "data/stack/pego_oliva_066_D_069.nc",
+        "data/interim/cv_prob/v1/pego_oliva_066_D_069_2026-10-28.npz",
+        "data/raw/dswx/pego_oliva/066_D_069/20261028/OPERA_L3_DSWx-S1_T30SYH_20261028T180144Z_20261030T090804Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/pego_oliva/066_D_069/20261028/OPERA_L3_DSWx-S1_T30SYJ_20261028T180144Z_20261030T090804Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/pego_oliva/066_D_069/20261028/OPERA_L3_DSWx-S1_T31SBC_20261028T180144Z_20261030T090804Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/raw/dswx/pego_oliva/066_D_069/20261028/OPERA_L3_DSWx-S1_T31SBD_20261028T180144Z_20261030T090804Z_S1D_30_v1.0_B01_WTR.tif",
+        "data/optical/pego_oliva_066_D_069/2026-10-28.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "s1_only_optical_water": {
+       "value": 0.45,
+       "unit": "share",
+       "what": "of it the optical map calls water (open or partial)",
+       "source": [
+        "data/optical/pego_oliva_066_D_069/2026-10-28.tif",
+        "web/scripts/bake_views.py"
+       ]
+      }
+     }
+    }
+   ],
+   "context": [
+    {
+     "text": "Across the 11 same-evening dates of the benchmark here, scored on open water against optical maps, the two are level: IoU 0.272 for NISAR and 0.289 for Sentinel-1.",
+     "numbers": {
+      "nisar_iou": {
+       "value": 0.2715,
+       "unit": "IoU",
+       "what": "v1 at 0.3, changing open water, same-evening dates",
+       "source": [
+        {
+         "file": "data/metrics/cv_optical_benchmark.json",
+         "path": "tables[5].methods.v1_preregistered_0.3.iou"
+        }
+       ]
+      },
+      "s1_iou": {
+       "value": 0.2889,
+       "unit": "IoU",
+       "what": "Sentinel-1 map, same pixels",
+       "source": [
+        {
+         "file": "data/metrics/cv_optical_benchmark.json",
+         "path": "tables[5].methods.sentinel1_dswx.iou"
+        }
+       ]
+      }
+     }
+    },
+    {
+     "text": "On the new flood water (16 Oct to 28 Oct, against the Copernicus EMS map drawn by people) NISAR scores IoU 0.305, Sentinel-1 0.230.",
+     "numbers": {
+      "nisar_gain_iou": {
+       "value": 0.3053,
+       "unit": "IoU",
+       "what": "water gain, v1 at 0.3, against EMSR935",
+       "source": [
+        {
+         "file": "data/metrics/cv_optical_benchmark.json",
+         "path": "dana_flood_emsr935.methods.v1_preregistered_0.3.water_gain.iou"
+        }
+       ]
+      },
+      "s1_gain_iou": {
+       "value": 0.2299,
+       "unit": "IoU",
+       "what": "water gain, Sentinel-1 map, same pixels",
+       "source": [
+        {
+         "file": "data/metrics/cv_optical_benchmark.json",
+         "path": "dana_flood_emsr935.methods.sentinel1_dswx.water_gain.iou"
+        }
+       ]
+      },
+      "nisar_gain_precision": {
+       "value": 0.8221,
+       "unit": "share",
+       "what": "of the new water NISAR maps, inside the EMS map",
+       "source": [
+        {
+         "file": "data/metrics/cv_optical_benchmark.json",
+         "path": "dana_flood_emsr935.methods.v1_preregistered_0.3.water_gain.precision"
+        }
+       ]
+      },
+      "s1_gain_precision": {
+       "value": 0.6646,
+       "unit": "share",
+       "what": "of the new water Sentinel-1 maps, inside the EMS map",
+       "source": [
+        {
+         "file": "data/metrics/cv_optical_benchmark.json",
+         "path": "dana_flood_emsr935.methods.sentinel1_dswx.water_gain.precision"
+        }
+       ]
+      }
+     }
+    }
+   ]
+  },
+  "soil": {
+   "title": "Soil wetness before the storm",
+   "what": "NISAR soil moisture of the top soil (L3 SME2, a provisional product, not yet validated), as stored for the spatial model by pipeline/soil_moisture.py: every pass over the site, the passes of one day averaged, on 200 m cells. The last dates before the DANA of 18 to 19 Oct; dates are compared on the cells both have.",
+   "product": "NISAR_L3_SME2_PROVISIONAL_V1",
+   "maturity": "PROVISIONAL",
+   "units": "m3/m3",
+   "legend": {
+    "stops": [
+     {
+      "value": 0.05,
+      "color": "#f3e7c8"
+     },
+     {
+      "value": 0.15,
+      "color": "#d6c496"
+     },
+     {
+      "value": 0.25,
+      "color": "#96bebe"
+     },
+     {
+      "value": 0.35,
+      "color": "#4696d2"
+     },
+     {
+      "value": 0.45,
+      "color": "#1e5abe"
+     },
+     {
+      "value": 0.55,
+      "color": "#0f2d78"
+     }
+    ],
+    "alpha": 0.8431372549019608
+   },
+   "items": [
+    {
+     "date": "2026-10-04",
+     "file": "views/soil/2026-10-04.webp",
+     "bytes": 40134,
+     "granules": [
+      "NISAR_L3_PR_SME2_032_058_A_021_2005_DHDH_A_20261004T050652_20261004T050719_P05023_N_F_J_001",
+      "NISAR_L3_PR_SME2_032_066_D_069_2005_DHDH_M_20261004T185318_20261004T185353_P05023_N_F_J_001"
+     ],
+     "tracks": [
+      "058_A",
+      "066_D"
+     ],
+     "source": "data/context/pego_oliva_sme2_2026-10-04_200m.tif"
+    },
+    {
+     "date": "2026-10-11",
+     "file": "views/soil/2026-10-11.webp",
+     "bytes": 28364,
+     "granules": [
+      "NISAR_L3_PR_SME2_032_167_D_069_2005_DHDH_A_20261011T190137_20261011T190212_P05023_N_F_J_001"
+     ],
+     "tracks": [
+      "167_D"
+     ],
+     "source": "data/context/pego_oliva_sme2_2026-10-11_200m.tif"
+    },
+    {
+     "date": "2026-10-16",
+     "file": "views/soil/2026-10-16.webp",
+     "bytes": 40080,
+     "granules": [
+      "NISAR_L3_PR_SME2_033_058_A_021_2005_DHDH_A_20261016T050652_20261016T050719_P05023_N_F_J_001",
+      "NISAR_L3_PR_SME2_033_066_D_069_2005_DHDH_M_20261016T185318_20261016T185353_P05023_N_F_J_001"
+     ],
+     "tracks": [
+      "058_A",
+      "066_D"
+     ],
+     "source": "data/context/pego_oliva_sme2_2026-10-16_200m.tif"
+    }
+   ],
+   "series": [
+    {
+     "date": "2026-06-18",
+     "granules": [
+      "NISAR_L3_PR_SME2_023_058_A_021_2005_DHDH_A_20260618T050655_20260618T050722_P05023_N_F_J_001",
+      "NISAR_L3_PR_SME2_023_066_D_069_2005_DHDH_M_20260618T185321_20260618T185356_P05023_N_F_J_001"
+     ],
+     "tracks": [
+      "058_A",
+      "066_D"
+     ],
+     "cells": 11191,
+     "median": 0.325,
+     "p90": 0.359,
+     "shared_cells": 11191,
+     "median_shared": 0.325,
+     "last_median_shared": 0.205
+    },
+    {
+     "date": "2026-06-25",
+     "granules": [
+      "NISAR_L3_PR_SME2_023_167_D_069_2005_DHDH_A_20260625T190141_20260625T190216_P05023_N_F_J_001"
+     ],
+     "tracks": [
+      "167_D"
+     ],
+     "cells": 7771,
+     "median": 0.306,
+     "p90": 0.352,
+     "shared_cells": 7771,
+     "median_shared": 0.306,
+     "last_median_shared": 0.207
+    },
+    {
+     "date": "2026-06-30",
+     "granules": [
+      "NISAR_L3_PR_SME2_024_058_A_021_2005_DHDH_A_20260630T050650_20260630T050721_P05023_N_F_J_001",
+      "NISAR_L3_PR_SME2_024_066_D_069_2005_DHDH_M_20260630T185321_20260630T185356_P05023_N_F_J_001"
+     ],
+     "tracks": [
+      "058_A",
+      "066_D"
+     ],
+     "cells": 11191,
+     "median": 0.322,
+     "p90": 0.356,
+     "shared_cells": 11191,
+     "median_shared": 0.322,
+     "last_median_shared": 0.205
+    },
+    {
+     "date": "2026-07-07",
+     "granules": [
+      "NISAR_L3_PR_SME2_024_167_D_069_2005_DHDH_A_20260707T190140_20260707T190215_P05023_N_F_J_001"
+     ],
+     "tracks": [
+      "167_D"
+     ],
+     "cells": 7777,
+     "median": 0.307,
+     "p90": 0.353,
+     "shared_cells": 7777,
+     "median_shared": 0.307,
+     "last_median_shared": 0.207
+    },
+    {
+     "date": "2026-07-12",
+     "granules": [
+      "NISAR_L3_PR_SME2_025_058_A_021_2005_DHDH_A_20260712T050653_20260712T050721_P05023_N_F_J_001",
+      "NISAR_L3_PR_SME2_025_066_D_069_2005_DHDH_M_20260712T185320_20260712T185355_P05023_N_F_J_001"
+     ],
+     "tracks": [
+      "058_A",
+      "066_D"
+     ],
+     "cells": 11548,
+     "median": 0.215,
+     "p90": 0.235,
+     "shared_cells": 11548,
+     "median_shared": 0.215,
+     "last_median_shared": 0.205
+    },
+    {
+     "date": "2026-07-19",
+     "granules": [
+      "NISAR_L3_PR_SME2_025_167_D_069_2005_DHDH_A_20260719T190140_20260719T190214_P05023_N_F_J_001"
+     ],
+     "tracks": [
+      "167_D"
+     ],
+     "cells": 7848,
+     "median": 0.209,
+     "p90": 0.234,
+     "shared_cells": 7848,
+     "median_shared": 0.209,
+     "last_median_shared": 0.207
+    },
+    {
+     "date": "2026-07-24",
+     "granules": [
+      "NISAR_L3_PR_SME2_026_058_A_021_2005_DHDH_A_20260724T050653_20260724T050720_P05023_N_F_J_001",
+      "NISAR_L3_PR_SME2_026_066_D_069_2005_DHDH_M_20260724T185319_20260724T185354_P05023_N_F_J_001"
+     ],
+     "tracks": [
+      "058_A",
+      "066_D"
+     ],
+     "cells": 11548,
+     "median": 0.2,
+     "p90": 0.223,
+     "shared_cells": 11548,
+     "median_shared": 0.2,
+     "last_median_shared": 0.205
+    },
+    {
+     "date": "2026-08-17",
+     "granules": [
+      "NISAR_L3_PR_SME2_028_058_A_021_2005_DHDH_A_20260817T050652_20260817T050719_P05023_N_F_J_001",
+      "NISAR_L3_PR_SME2_028_066_D_069_2005_DHDH_M_20260817T185318_20260817T185353_P05023_N_F_J_001"
+     ],
+     "tracks": [
+      "058_A",
+      "066_D"
+     ],
+     "cells": 11548,
+     "median": 0.218,
+     "p90": 0.241,
+     "shared_cells": 11548,
+     "median_shared": 0.218,
+     "last_median_shared": 0.205
+    },
+    {
+     "date": "2026-08-24",
+     "granules": [
+      "NISAR_L3_PR_SME2_028_167_D_069_2005_DHDH_A_20260824T190138_20260824T190212_P05023_N_F_J_001"
+     ],
+     "tracks": [
+      "167_D"
+     ],
+     "cells": 7850,
+     "median": 0.212,
+     "p90": 0.239,
+     "shared_cells": 7850,
+     "median_shared": 0.212,
+     "last_median_shared": 0.207
+    },
+    {
+     "date": "2026-08-29",
+     "granules": [
+      "NISAR_L3_PR_SME2_029_058_A_021_2005_DHDH_A_20260829T050652_20260829T050719_P05023_N_F_J_001",
+      "NISAR_L3_PR_SME2_029_066_D_069_2005_DHDH_M_20260829T185318_20260829T185353_P05023_N_F_J_001"
+     ],
+     "tracks": [
+      "058_A",
+      "066_D"
+     ],
+     "cells": 11548,
+     "median": 0.213,
+     "p90": 0.233,
+     "shared_cells": 11548,
+     "median_shared": 0.213,
+     "last_median_shared": 0.205
+    },
+    {
+     "date": "2026-09-05",
+     "granules": [
+      "NISAR_L3_PR_SME2_029_167_D_069_2005_DHDH_A_20260905T190137_20260905T190212_P05023_N_F_J_001"
+     ],
+     "tracks": [
+      "167_D"
+     ],
+     "cells": 7858,
+     "median": 0.209,
+     "p90": 0.234,
+     "shared_cells": 7858,
+     "median_shared": 0.209,
+     "last_median_shared": 0.207
+    },
+    {
+     "date": "2026-09-10",
+     "granules": [
+      "NISAR_L3_PR_SME2_030_058_A_021_2005_DHDH_A_20260910T050651_20260910T050718_P05023_N_F_J_001",
+      "NISAR_L3_PR_SME2_030_066_D_069_2005_DHDH_M_20260910T185318_20260910T185353_P05023_N_F_J_001"
+     ],
+     "tracks": [
+      "058_A",
+      "066_D"
+     ],
+     "cells": 11548,
+     "median": 0.242,
+     "p90": 0.263,
+     "shared_cells": 11548,
+     "median_shared": 0.242,
+     "last_median_shared": 0.205
+    },
+    {
+     "date": "2026-09-17",
+     "granules": [
+      "NISAR_L3_PR_SME2_030_167_D_069_2005_DHDH_A_20260917T190137_20260917T190212_P05023_N_F_J_001"
+     ],
+     "tracks": [
+      "167_D"
+     ],
+     "cells": 7856,
+     "median": 0.216,
+     "p90": 0.243,
+     "shared_cells": 7856,
+     "median_shared": 0.216,
+     "last_median_shared": 0.207
+    },
+    {
+     "date": "2026-09-22",
+     "granules": [
+      "NISAR_L3_PR_SME2_031_058_A_021_2005_SHSH_A_20260922T050651_20260922T050719_P05023_N_F_J_001",
+      "NISAR_L3_PR_SME2_031_066_D_069_2005_DHDH_M_20260922T185318_20260922T185353_P05023_N_F_J_001"
+     ],
+     "tracks": [
+      "058_A",
+      "066_D"
+     ],
+     "cells": 11548,
+     "median": 0.193,
+     "p90": 0.213,
+     "shared_cells": 11548,
+     "median_shared": 0.193,
+     "last_median_shared": 0.205
+    },
+    {
+     "date": "2026-09-29",
+     "granules": [
+      "NISAR_L3_PR_SME2_031_167_D_069_2005_DHDH_A_20260929T190137_20260929T190212_P05023_N_F_J_001"
+     ],
+     "tracks": [
+      "167_D"
+     ],
+     "cells": 7846,
+     "median": 0.202,
+     "p90": 0.226,
+     "shared_cells": 7846,
+     "median_shared": 0.202,
+     "last_median_shared": 0.207
+    },
+    {
+     "date": "2026-10-04",
+     "granules": [
+      "NISAR_L3_PR_SME2_032_058_A_021_2005_DHDH_A_20261004T050652_20261004T050719_P05023_N_F_J_001",
+      "NISAR_L3_PR_SME2_032_066_D_069_2005_DHDH_M_20261004T185318_20261004T185353_P05023_N_F_J_001"
+     ],
+     "tracks": [
+      "058_A",
+      "066_D"
+     ],
+     "cells": 11548,
+     "median": 0.228,
+     "p90": 0.253,
+     "shared_cells": 11548,
+     "median_shared": 0.228,
+     "last_median_shared": 0.205
+    },
+    {
+     "date": "2026-10-11",
+     "granules": [
+      "NISAR_L3_PR_SME2_032_167_D_069_2005_DHDH_A_20261011T190137_20261011T190212_P05023_N_F_J_001"
+     ],
+     "tracks": [
+      "167_D"
+     ],
+     "cells": 7835,
+     "median": 0.218,
+     "p90": 0.246,
+     "shared_cells": 7835,
+     "median_shared": 0.218,
+     "last_median_shared": 0.207
+    },
+    {
+     "date": "2026-10-16",
+     "granules": [
+      "NISAR_L3_PR_SME2_033_058_A_021_2005_DHDH_A_20261016T050652_20261016T050719_P05023_N_F_J_001",
+      "NISAR_L3_PR_SME2_033_066_D_069_2005_DHDH_M_20261016T185318_20261016T185353_P05023_N_F_J_001"
+     ],
+     "tracks": [
+      "058_A",
+      "066_D"
+     ],
+     "cells": 11548,
+     "median": 0.205,
+     "p90": 0.229,
+     "shared_cells": 11548,
+     "median_shared": 0.205,
+     "last_median_shared": 0.205
+    }
+   ],
+   "caption": [
+    "16 Oct, two days before the storm: half of the land read below 0.21 m³/m³ of soil moisture, nine in ten cells below 0.23.",
+    "Of the 17 earlier dates, from 18 Jun on, 3 read drier on the same cells.",
+    "Over the ground that then flooded (the 681 cells touching the Copernicus EMS outline) it read 0.18, the rest of the land 0.21.",
+    "The ground was not soaked when the storm came: it was among the driest readings of the season."
+   ],
+   "numbers": {
+    "last_median": {
+     "value": 0.205,
+     "unit": "m3/m3",
+     "what": "median soil moisture of the land on 16 Oct",
+     "source": [
+      "data/context/pego_oliva_sme2_2026-10-16_200m.tif",
+      "data/context/pego_oliva_sme2_index.json",
+      "web/scripts/bake_views.py"
+     ]
+    },
+    "last_p90": {
+     "value": 0.229,
+     "unit": "m3/m3",
+     "what": "nine in ten cells read below this",
+     "source": [
+      "data/context/pego_oliva_sme2_2026-10-16_200m.tif",
+      "data/context/pego_oliva_sme2_index.json",
+      "web/scripts/bake_views.py"
+     ]
+    },
+    "last_cells": {
+     "value": 11548,
+     "unit": "cells",
+     "what": "200 m cells with a value",
+     "source": [
+      "data/context/pego_oliva_sme2_2026-10-16_200m.tif",
+      "data/context/pego_oliva_sme2_index.json",
+      "web/scripts/bake_views.py"
+     ]
+    },
+    "earlier_dates": {
+     "value": 17,
+     "unit": "dates",
+     "what": "earlier SME2 dates from 18 Jun",
+     "source": [
+      "data/context/pego_oliva_sme2_2026-06-18_200m.tif",
+      "data/context/pego_oliva_sme2_2026-06-25_200m.tif",
+      "data/context/pego_oliva_sme2_2026-06-30_200m.tif",
+      "data/context/pego_oliva_sme2_2026-07-07_200m.tif",
+      "data/context/pego_oliva_sme2_2026-07-12_200m.tif",
+      "data/context/pego_oliva_sme2_2026-07-19_200m.tif",
+      "data/context/pego_oliva_sme2_2026-07-24_200m.tif",
+      "data/context/pego_oliva_sme2_2026-08-17_200m.tif",
+      "data/context/pego_oliva_sme2_2026-08-24_200m.tif",
+      "data/context/pego_oliva_sme2_2026-08-29_200m.tif",
+      "data/context/pego_oliva_sme2_2026-09-05_200m.tif",
+      "data/context/pego_oliva_sme2_2026-09-10_200m.tif",
+      "data/context/pego_oliva_sme2_2026-09-17_200m.tif",
+      "data/context/pego_oliva_sme2_2026-09-22_200m.tif",
+      "data/context/pego_oliva_sme2_2026-09-29_200m.tif",
+      "data/context/pego_oliva_sme2_2026-10-04_200m.tif",
+      "data/context/pego_oliva_sme2_2026-10-11_200m.tif",
+      "data/context/pego_oliva_sme2_2026-10-16_200m.tif",
+      "data/context/pego_oliva_sme2_index.json",
+      "web/scripts/bake_views.py"
+     ]
+    },
+    "earlier_drier": {
+     "value": 3,
+     "unit": "dates",
+     "what": "earlier dates that read drier than the last on the cells both have",
+     "source": [
+      "data/context/pego_oliva_sme2_2026-06-18_200m.tif",
+      "data/context/pego_oliva_sme2_2026-06-25_200m.tif",
+      "data/context/pego_oliva_sme2_2026-06-30_200m.tif",
+      "data/context/pego_oliva_sme2_2026-07-07_200m.tif",
+      "data/context/pego_oliva_sme2_2026-07-12_200m.tif",
+      "data/context/pego_oliva_sme2_2026-07-19_200m.tif",
+      "data/context/pego_oliva_sme2_2026-07-24_200m.tif",
+      "data/context/pego_oliva_sme2_2026-08-17_200m.tif",
+      "data/context/pego_oliva_sme2_2026-08-24_200m.tif",
+      "data/context/pego_oliva_sme2_2026-08-29_200m.tif",
+      "data/context/pego_oliva_sme2_2026-09-05_200m.tif",
+      "data/context/pego_oliva_sme2_2026-09-10_200m.tif",
+      "data/context/pego_oliva_sme2_2026-09-17_200m.tif",
+      "data/context/pego_oliva_sme2_2026-09-22_200m.tif",
+      "data/context/pego_oliva_sme2_2026-09-29_200m.tif",
+      "data/context/pego_oliva_sme2_2026-10-04_200m.tif",
+      "data/context/pego_oliva_sme2_2026-10-11_200m.tif",
+      "data/context/pego_oliva_sme2_2026-10-16_200m.tif",
+      "data/context/pego_oliva_sme2_index.json",
+      "web/scripts/bake_views.py"
+     ]
+    },
+    "earlier_median_low": {
+     "value": 0.193,
+     "unit": "m3/m3",
+     "what": "lowest median of the earlier dates",
+     "source": [
+      "data/context/pego_oliva_sme2_2026-06-18_200m.tif",
+      "data/context/pego_oliva_sme2_2026-06-25_200m.tif",
+      "data/context/pego_oliva_sme2_2026-06-30_200m.tif",
+      "data/context/pego_oliva_sme2_2026-07-07_200m.tif",
+      "data/context/pego_oliva_sme2_2026-07-12_200m.tif",
+      "data/context/pego_oliva_sme2_2026-07-19_200m.tif",
+      "data/context/pego_oliva_sme2_2026-07-24_200m.tif",
+      "data/context/pego_oliva_sme2_2026-08-17_200m.tif",
+      "data/context/pego_oliva_sme2_2026-08-24_200m.tif",
+      "data/context/pego_oliva_sme2_2026-08-29_200m.tif",
+      "data/context/pego_oliva_sme2_2026-09-05_200m.tif",
+      "data/context/pego_oliva_sme2_2026-09-10_200m.tif",
+      "data/context/pego_oliva_sme2_2026-09-17_200m.tif",
+      "data/context/pego_oliva_sme2_2026-09-22_200m.tif",
+      "data/context/pego_oliva_sme2_2026-09-29_200m.tif",
+      "data/context/pego_oliva_sme2_2026-10-04_200m.tif",
+      "data/context/pego_oliva_sme2_2026-10-11_200m.tif",
+      "data/context/pego_oliva_sme2_2026-10-16_200m.tif",
+      "data/context/pego_oliva_sme2_index.json",
+      "web/scripts/bake_views.py"
+     ]
+    },
+    "earlier_median_high": {
+     "value": 0.325,
+     "unit": "m3/m3",
+     "what": "highest median of the earlier dates",
+     "source": [
+      "data/context/pego_oliva_sme2_2026-06-18_200m.tif",
+      "data/context/pego_oliva_sme2_2026-06-25_200m.tif",
+      "data/context/pego_oliva_sme2_2026-06-30_200m.tif",
+      "data/context/pego_oliva_sme2_2026-07-07_200m.tif",
+      "data/context/pego_oliva_sme2_2026-07-12_200m.tif",
+      "data/context/pego_oliva_sme2_2026-07-19_200m.tif",
+      "data/context/pego_oliva_sme2_2026-07-24_200m.tif",
+      "data/context/pego_oliva_sme2_2026-08-17_200m.tif",
+      "data/context/pego_oliva_sme2_2026-08-24_200m.tif",
+      "data/context/pego_oliva_sme2_2026-08-29_200m.tif",
+      "data/context/pego_oliva_sme2_2026-09-05_200m.tif",
+      "data/context/pego_oliva_sme2_2026-09-10_200m.tif",
+      "data/context/pego_oliva_sme2_2026-09-17_200m.tif",
+      "data/context/pego_oliva_sme2_2026-09-22_200m.tif",
+      "data/context/pego_oliva_sme2_2026-09-29_200m.tif",
+      "data/context/pego_oliva_sme2_2026-10-04_200m.tif",
+      "data/context/pego_oliva_sme2_2026-10-11_200m.tif",
+      "data/context/pego_oliva_sme2_2026-10-16_200m.tif",
+      "data/context/pego_oliva_sme2_index.json",
+      "web/scripts/bake_views.py"
+     ]
+    },
+    "flooded_ground_median": {
+     "value": 0.179,
+     "unit": "m3/m3",
+     "what": "median of the 200 m cells touching the Copernicus EMS flood outline (EMSR935)",
+     "source": [
+      "data/context/pego_oliva_sme2_2026-10-16_200m.tif",
+      "data/context/pego_oliva_sme2_index.json",
+      "data/labels/pego_oliva_emsr935_flood.geojson",
+      "web/scripts/bake_views.py"
+     ]
+    },
+    "flooded_ground_cells": {
+     "value": 681,
+     "unit": "cells",
+     "what": "cells touching the outline with a value",
+     "source": [
+      "data/context/pego_oliva_sme2_2026-10-16_200m.tif",
+      "data/context/pego_oliva_sme2_index.json",
+      "data/labels/pego_oliva_emsr935_flood.geojson",
+      "web/scripts/bake_views.py"
+     ]
+    },
+    "other_land_median": {
+     "value": 0.205,
+     "unit": "m3/m3",
+     "what": "median of the other cells",
+     "source": [
+      "data/context/pego_oliva_sme2_2026-10-16_200m.tif",
+      "data/context/pego_oliva_sme2_index.json",
+      "data/labels/pego_oliva_emsr935_flood.geojson",
+      "web/scripts/bake_views.py"
+     ]
+    }
+   }
+  },
+  "timeline": {
+   "title": "Water every 12 days, through cloud",
+   "what": "NISAR water (the team CV model v1 at 0.3) on every pass of track 066 D. A frame is one pass; nothing is drawn between passes. Grey: ground the radar did not see.",
+   "legend": {
+    "water": "#2a8fff",
+    "not_covered": "rgba(10,16,24,0.49)"
+   },
+   "stack": "066_D_069",
+   "frames": [
+    {
+     "date": "2026-06-18",
+     "time_utc": "2026-06-18T18:53:21Z",
+     "granule": "NISAR_L2_PR_GCOV_023_066_D_069_2005_DHDH_M_20260618T185321_20260618T185356_P05023_N_F_J_001",
+     "file": "views/timeline/00.webp",
+     "bytes": 4592,
+     "numbers": {
+      "water_ha": {
+       "value": 371.4,
+       "unit": "ha",
+       "what": "water on NISAR's map (v1 at 0.3), sea left out",
+       "source": [
+        "data/stack/pego_oliva_066_D_069.nc",
+        "data/interim/cv_prob/v1/pego_oliva_066_D_069_2026-06-18.npz",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "exported_water_ha": {
+       "value": 369.1,
+       "unit": "ha",
+       "what": "the same layer as exported (data/cv), a check",
+       "source": [
+        {
+         "file": "data/manifest.json",
+         "path": "[model=cv, site=pego_oliva, stack=066_D_069, layer=water, date=2026-06-18].open_water_ha"
+        }
+       ]
+      },
+      "radar_saw": {
+       "value": 0.997,
+       "unit": "share",
+       "what": "of the land the radar saw",
+       "source": [
+        "data/stack/pego_oliva_066_D_069.nc",
+        "data/interim/cv_prob/v1/pego_oliva_066_D_069_2026-06-18.npz",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "optical_clear": {
+       "value": 0.0,
+       "unit": "share",
+       "what": "of the land an optical map saw clear within a day (OPERA DSWx-HLS; 0 when there is no image)",
+       "source": [
+        "data/optical/pego_oliva_066_D_069/2026-06-18.tif",
+        "web/scripts/bake_views.py"
+       ]
+      }
+     }
+    },
+    {
+     "date": "2026-06-30",
+     "time_utc": "2026-06-30T18:53:21Z",
+     "granule": "NISAR_L2_PR_GCOV_024_066_D_069_2005_DHDH_M_20260630T185321_20260630T185356_P05023_N_F_J_001",
+     "file": "views/timeline/01.webp",
+     "bytes": 3904,
+     "numbers": {
+      "water_ha": {
+       "value": 226.1,
+       "unit": "ha",
+       "what": "water on NISAR's map (v1 at 0.3), sea left out",
+       "source": [
+        "data/stack/pego_oliva_066_D_069.nc",
+        "data/interim/cv_prob/v1/pego_oliva_066_D_069_2026-06-30.npz",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "exported_water_ha": {
+       "value": 224.6,
+       "unit": "ha",
+       "what": "the same layer as exported (data/cv), a check",
+       "source": [
+        {
+         "file": "data/manifest.json",
+         "path": "[model=cv, site=pego_oliva, stack=066_D_069, layer=water, date=2026-06-30].open_water_ha"
+        }
+       ]
+      },
+      "radar_saw": {
+       "value": 0.997,
+       "unit": "share",
+       "what": "of the land the radar saw",
+       "source": [
+        "data/stack/pego_oliva_066_D_069.nc",
+        "data/interim/cv_prob/v1/pego_oliva_066_D_069_2026-06-30.npz",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "optical_clear": {
+       "value": 1.0,
+       "unit": "share",
+       "what": "of the land an optical map saw clear within a day (OPERA DSWx-HLS; 0 when there is no image)",
+       "source": [
+        "data/optical/pego_oliva_066_D_069/2026-06-30.tif",
+        "web/scripts/bake_views.py"
+       ]
+      }
+     }
+    },
+    {
+     "date": "2026-07-12",
+     "time_utc": "2026-07-12T18:53:20Z",
+     "granule": "NISAR_L2_PR_GCOV_025_066_D_069_2005_DHDH_M_20260712T185320_20260712T185355_P05023_N_F_J_001",
+     "file": "views/timeline/02.webp",
+     "bytes": 2806,
+     "numbers": {
+      "water_ha": {
+       "value": 110.7,
+       "unit": "ha",
+       "what": "water on NISAR's map (v1 at 0.3), sea left out",
+       "source": [
+        "data/stack/pego_oliva_066_D_069.nc",
+        "data/interim/cv_prob/v1/pego_oliva_066_D_069_2026-07-12.npz",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "exported_water_ha": {
+       "value": 109.8,
+       "unit": "ha",
+       "what": "the same layer as exported (data/cv), a check",
+       "source": [
+        {
+         "file": "data/manifest.json",
+         "path": "[model=cv, site=pego_oliva, stack=066_D_069, layer=water, date=2026-07-12].open_water_ha"
+        }
+       ]
+      },
+      "radar_saw": {
+       "value": 0.997,
+       "unit": "share",
+       "what": "of the land the radar saw",
+       "source": [
+        "data/stack/pego_oliva_066_D_069.nc",
+        "data/interim/cv_prob/v1/pego_oliva_066_D_069_2026-07-12.npz",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "optical_clear": {
+       "value": 0.03,
+       "unit": "share",
+       "what": "of the land an optical map saw clear within a day (OPERA DSWx-HLS; 0 when there is no image)",
+       "source": [
+        "data/optical/pego_oliva_066_D_069/2026-07-12.tif",
+        "web/scripts/bake_views.py"
+       ]
+      }
+     }
+    },
+    {
+     "date": "2026-07-24",
+     "time_utc": "2026-07-24T18:53:19Z",
+     "granule": "NISAR_L2_PR_GCOV_026_066_D_069_2005_DHDH_M_20260724T185319_20260724T185354_P05023_N_F_J_001",
+     "file": "views/timeline/03.webp",
+     "bytes": 3202,
+     "numbers": {
+      "water_ha": {
+       "value": 116.9,
+       "unit": "ha",
+       "what": "water on NISAR's map (v1 at 0.3), sea left out",
+       "source": [
+        "data/stack/pego_oliva_066_D_069.nc",
+        "data/interim/cv_prob/v1/pego_oliva_066_D_069_2026-07-24.npz",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "exported_water_ha": {
+       "value": 116.0,
+       "unit": "ha",
+       "what": "the same layer as exported (data/cv), a check",
+       "source": [
+        {
+         "file": "data/manifest.json",
+         "path": "[model=cv, site=pego_oliva, stack=066_D_069, layer=water, date=2026-07-24].open_water_ha"
+        }
+       ]
+      },
+      "radar_saw": {
+       "value": 0.997,
+       "unit": "share",
+       "what": "of the land the radar saw",
+       "source": [
+        "data/stack/pego_oliva_066_D_069.nc",
+        "data/interim/cv_prob/v1/pego_oliva_066_D_069_2026-07-24.npz",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "optical_clear": {
+       "value": 1.0,
+       "unit": "share",
+       "what": "of the land an optical map saw clear within a day (OPERA DSWx-HLS; 0 when there is no image)",
+       "source": [
+        "data/optical/pego_oliva_066_D_069/2026-07-24.tif",
+        "web/scripts/bake_views.py"
+       ]
+      }
+     }
+    },
+    {
+     "date": "2026-08-17",
+     "time_utc": "2026-08-17T18:53:18Z",
+     "granule": "NISAR_L2_PR_GCOV_028_066_D_069_2005_DHDH_M_20260817T185318_20260817T185353_P05023_N_F_J_001",
+     "file": "views/timeline/04.webp",
+     "bytes": 3144,
+     "numbers": {
+      "water_ha": {
+       "value": 92.6,
+       "unit": "ha",
+       "what": "water on NISAR's map (v1 at 0.3), sea left out",
+       "source": [
+        "data/stack/pego_oliva_066_D_069.nc",
+        "data/interim/cv_prob/v1/pego_oliva_066_D_069_2026-08-17.npz",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "exported_water_ha": {
+       "value": 91.7,
+       "unit": "ha",
+       "what": "the same layer as exported (data/cv), a check",
+       "source": [
+        {
+         "file": "data/manifest.json",
+         "path": "[model=cv, site=pego_oliva, stack=066_D_069, layer=water, date=2026-08-17].open_water_ha"
+        }
+       ]
+      },
+      "radar_saw": {
+       "value": 0.997,
+       "unit": "share",
+       "what": "of the land the radar saw",
+       "source": [
+        "data/stack/pego_oliva_066_D_069.nc",
+        "data/interim/cv_prob/v1/pego_oliva_066_D_069_2026-08-17.npz",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "optical_clear": {
+       "value": 0.935,
+       "unit": "share",
+       "what": "of the land an optical map saw clear within a day (OPERA DSWx-HLS; 0 when there is no image)",
+       "source": [
+        "data/optical/pego_oliva_066_D_069/2026-08-17.tif",
+        "web/scripts/bake_views.py"
+       ]
+      }
+     }
+    },
+    {
+     "date": "2026-08-29",
+     "time_utc": "2026-08-29T18:53:18Z",
+     "granule": "NISAR_L2_PR_GCOV_029_066_D_069_2005_DHDH_M_20260829T185318_20260829T185353_P05023_N_F_J_001",
+     "file": "views/timeline/05.webp",
+     "bytes": 3098,
+     "numbers": {
+      "water_ha": {
+       "value": 74.0,
+       "unit": "ha",
+       "what": "water on NISAR's map (v1 at 0.3), sea left out",
+       "source": [
+        "data/stack/pego_oliva_066_D_069.nc",
+        "data/interim/cv_prob/v1/pego_oliva_066_D_069_2026-08-29.npz",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "exported_water_ha": {
+       "value": 73.2,
+       "unit": "ha",
+       "what": "the same layer as exported (data/cv), a check",
+       "source": [
+        {
+         "file": "data/manifest.json",
+         "path": "[model=cv, site=pego_oliva, stack=066_D_069, layer=water, date=2026-08-29].open_water_ha"
+        }
+       ]
+      },
+      "radar_saw": {
+       "value": 0.997,
+       "unit": "share",
+       "what": "of the land the radar saw",
+       "source": [
+        "data/stack/pego_oliva_066_D_069.nc",
+        "data/interim/cv_prob/v1/pego_oliva_066_D_069_2026-08-29.npz",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "optical_clear": {
+       "value": 0.999,
+       "unit": "share",
+       "what": "of the land an optical map saw clear within a day (OPERA DSWx-HLS; 0 when there is no image)",
+       "source": [
+        "data/optical/pego_oliva_066_D_069/2026-08-29.tif",
+        "web/scripts/bake_views.py"
+       ]
+      }
+     }
+    },
+    {
+     "date": "2026-09-10",
+     "time_utc": "2026-09-10T18:53:18Z",
+     "granule": "NISAR_L2_PR_GCOV_030_066_D_069_2005_DHDH_M_20260910T185318_20260910T185353_P05023_N_F_J_001",
+     "file": "views/timeline/06.webp",
+     "bytes": 3578,
+     "numbers": {
+      "water_ha": {
+       "value": 170.8,
+       "unit": "ha",
+       "what": "water on NISAR's map (v1 at 0.3), sea left out",
+       "source": [
+        "data/stack/pego_oliva_066_D_069.nc",
+        "data/interim/cv_prob/v1/pego_oliva_066_D_069_2026-09-10.npz",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "exported_water_ha": {
+       "value": 169.5,
+       "unit": "ha",
+       "what": "the same layer as exported (data/cv), a check",
+       "source": [
+        {
+         "file": "data/manifest.json",
+         "path": "[model=cv, site=pego_oliva, stack=066_D_069, layer=water, date=2026-09-10].open_water_ha"
+        }
+       ]
+      },
+      "radar_saw": {
+       "value": 0.997,
+       "unit": "share",
+       "what": "of the land the radar saw",
+       "source": [
+        "data/stack/pego_oliva_066_D_069.nc",
+        "data/interim/cv_prob/v1/pego_oliva_066_D_069_2026-09-10.npz",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "optical_clear": {
+       "value": 0.0,
+       "unit": "share",
+       "what": "of the land an optical map saw clear within a day (OPERA DSWx-HLS; 0 when there is no image)",
+       "source": [
+        "data/optical/pego_oliva_066_D_069/2026-09-10.tif",
+        "web/scripts/bake_views.py"
+       ]
+      }
+     }
+    },
+    {
+     "date": "2026-09-22",
+     "time_utc": "2026-09-22T18:53:18Z",
+     "granule": "NISAR_L2_PR_GCOV_031_066_D_069_2005_DHDH_M_20260922T185318_20260922T185353_P05023_N_F_J_001",
+     "file": "views/timeline/07.webp",
+     "bytes": 3464,
+     "numbers": {
+      "water_ha": {
+       "value": 114.6,
+       "unit": "ha",
+       "what": "water on NISAR's map (v1 at 0.3), sea left out",
+       "source": [
+        "data/stack/pego_oliva_066_D_069.nc",
+        "data/interim/cv_prob/v1/pego_oliva_066_D_069_2026-09-22.npz",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "exported_water_ha": {
+       "value": 113.6,
+       "unit": "ha",
+       "what": "the same layer as exported (data/cv), a check",
+       "source": [
+        {
+         "file": "data/manifest.json",
+         "path": "[model=cv, site=pego_oliva, stack=066_D_069, layer=water, date=2026-09-22].open_water_ha"
+        }
+       ]
+      },
+      "radar_saw": {
+       "value": 0.997,
+       "unit": "share",
+       "what": "of the land the radar saw",
+       "source": [
+        "data/stack/pego_oliva_066_D_069.nc",
+        "data/interim/cv_prob/v1/pego_oliva_066_D_069_2026-09-22.npz",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "optical_clear": {
+       "value": 0.736,
+       "unit": "share",
+       "what": "of the land an optical map saw clear within a day (OPERA DSWx-HLS; 0 when there is no image)",
+       "source": [
+        "data/optical/pego_oliva_066_D_069/2026-09-22.tif",
+        "web/scripts/bake_views.py"
+       ]
+      }
+     }
+    },
+    {
+     "date": "2026-10-04",
+     "time_utc": "2026-10-04T18:53:18Z",
+     "granule": "NISAR_L2_PR_GCOV_032_066_D_069_2005_DHDH_M_20261004T185318_20261004T185353_P05023_N_F_J_001",
+     "file": "views/timeline/08.webp",
+     "bytes": 3598,
+     "numbers": {
+      "water_ha": {
+       "value": 173.6,
+       "unit": "ha",
+       "what": "water on NISAR's map (v1 at 0.3), sea left out",
+       "source": [
+        "data/stack/pego_oliva_066_D_069.nc",
+        "data/interim/cv_prob/v1/pego_oliva_066_D_069_2026-10-04.npz",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "exported_water_ha": {
+       "value": 172.2,
+       "unit": "ha",
+       "what": "the same layer as exported (data/cv), a check",
+       "source": [
+        {
+         "file": "data/manifest.json",
+         "path": "[model=cv, site=pego_oliva, stack=066_D_069, layer=water, date=2026-10-04].open_water_ha"
+        }
+       ]
+      },
+      "radar_saw": {
+       "value": 0.997,
+       "unit": "share",
+       "what": "of the land the radar saw",
+       "source": [
+        "data/stack/pego_oliva_066_D_069.nc",
+        "data/interim/cv_prob/v1/pego_oliva_066_D_069_2026-10-04.npz",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "optical_clear": {
+       "value": 0.012,
+       "unit": "share",
+       "what": "of the land an optical map saw clear within a day (OPERA DSWx-HLS; 0 when there is no image)",
+       "source": [
+        "data/optical/pego_oliva_066_D_069/2026-10-04.tif",
+        "web/scripts/bake_views.py"
+       ]
+      }
+     }
+    },
+    {
+     "date": "2026-10-16",
+     "time_utc": "2026-10-16T18:53:18Z",
+     "granule": "NISAR_L2_PR_GCOV_033_066_D_069_2005_DHDH_M_20261016T185318_20261016T185353_P05023_N_F_J_001",
+     "file": "views/timeline/09.webp",
+     "bytes": 3978,
+     "numbers": {
+      "water_ha": {
+       "value": 246.3,
+       "unit": "ha",
+       "what": "water on NISAR's map (v1 at 0.3), sea left out",
+       "source": [
+        "data/stack/pego_oliva_066_D_069.nc",
+        "data/interim/cv_prob/v1/pego_oliva_066_D_069_2026-10-16.npz",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "exported_water_ha": {
+       "value": 244.2,
+       "unit": "ha",
+       "what": "the same layer as exported (data/cv), a check",
+       "source": [
+        {
+         "file": "data/manifest.json",
+         "path": "[model=cv, site=pego_oliva, stack=066_D_069, layer=water, date=2026-10-16].open_water_ha"
+        }
+       ]
+      },
+      "radar_saw": {
+       "value": 0.997,
+       "unit": "share",
+       "what": "of the land the radar saw",
+       "source": [
+        "data/stack/pego_oliva_066_D_069.nc",
+        "data/interim/cv_prob/v1/pego_oliva_066_D_069_2026-10-16.npz",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "optical_clear": {
+       "value": 0.997,
+       "unit": "share",
+       "what": "of the land an optical map saw clear within a day (OPERA DSWx-HLS; 0 when there is no image)",
+       "source": [
+        "data/optical/pego_oliva_066_D_069/2026-10-16.tif",
+        "web/scripts/bake_views.py"
+       ]
+      }
+     }
+    },
+    {
+     "date": "2026-10-28",
+     "time_utc": "2026-10-28T18:53:18Z",
+     "granule": "NISAR_L2_PR_GCOV_034_066_D_069_2005_DHDH_M_20261028T185318_20261028T185353_P05036_N_F_J_001",
+     "file": "views/timeline/10.webp",
+     "bytes": 4190,
+     "numbers": {
+      "water_ha": {
+       "value": 578.2,
+       "unit": "ha",
+       "what": "water on NISAR's map (v1 at 0.3), sea left out",
+       "source": [
+        "data/stack/pego_oliva_066_D_069.nc",
+        "data/interim/cv_prob/v1/pego_oliva_066_D_069_2026-10-28.npz",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "exported_water_ha": {
+       "value": 576.9,
+       "unit": "ha",
+       "what": "the same layer as exported (data/cv), a check",
+       "source": [
+        {
+         "file": "data/manifest.json",
+         "path": "[model=cv, site=pego_oliva, stack=066_D_069, layer=water, date=2026-10-28].open_water_ha"
+        }
+       ]
+      },
+      "radar_saw": {
+       "value": 0.997,
+       "unit": "share",
+       "what": "of the land the radar saw",
+       "source": [
+        "data/stack/pego_oliva_066_D_069.nc",
+        "data/interim/cv_prob/v1/pego_oliva_066_D_069_2026-10-28.npz",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "optical_clear": {
+       "value": 0.878,
+       "unit": "share",
+       "what": "of the land an optical map saw clear within a day (OPERA DSWx-HLS; 0 when there is no image)",
+       "source": [
+        "data/optical/pego_oliva_066_D_069/2026-10-28.tif",
+        "web/scripts/bake_views.py"
+       ]
+      }
+     }
+    }
+   ],
+   "caption": [
+    "11 NISAR passes from 18 Jun to 28 Oct on a 12-day repeat (1 pass missed), each at 18:53 UTC. The radar needs no daylight and sees through cloud.",
+    "Water goes from 74 ha on 29 Aug to 578 ha on 28 Oct.",
+    "On 4 of the 11 passes an optical satellite saw less than half of the land clear within a day."
+   ],
+   "context": [],
+   "numbers": {
+    "passes": {
+     "value": 11,
+     "unit": "passes",
+     "what": "NISAR passes of track 066 D with HH and HV",
+     "source": [
+      "data/stack/pego_oliva_066_D_069.nc",
+      "web/scripts/bake_views.py"
+     ]
+    },
+    "cloudy_passes": {
+     "value": 4,
+     "unit": "passes",
+     "what": "with less than half of the land clear to optical within a day",
+     "source": [
+      "data/optical/index.json",
+      "web/scripts/bake_views.py"
+     ]
+    }
+   }
+  }
+ },
+ "site": "pego_oliva",
+ "title": "Pego-Oliva marsh",
+ "zoom": 13,
+ "width": 1807,
+ "height": 1798,
+ "bounds": [
+  -0.2501106,
+  38.7799152,
+  0.0600815,
+  39.0201173
+ ],
+ "pixel_m": 14.87,
+ "note": "Every image covers bounds (west, south, east, north). Ask for files with ?v=baked_utc. Numbers carry the files they come from.",
+ "written_with": "Written with SI assistance (Claude Code), reviewed by the team.",
+ "ground": {
+  "file": "views/ground.webp",
+  "bytes": 82606,
+  "width": 904,
+  "height": 899,
+  "source": "EOX Sentinel-2 cloudless 2017 (web/public/tiles/base/12)",
+  "credit": "EOxCloudless 2017, https://cloudless.eox.at, by EOX IT Services GmbH (contains modified Copernicus Sentinel data 2017), CC BY 4.0"
+ },
+ "baked_utc": "2026-11-15T01:09:21Z",
+ "bytes_total": 274996,
+ "focus": {
+  "box": [
+   0.3835,
+   0.4014,
+   0.895,
+   0.8015
+  ],
+  "from": "data/labels/pego_oliva_emsr935_flood.geojson",
+  "rule": "flooded areas of at least 1 ha, with 50% of the box added on each side"
+ }
+}

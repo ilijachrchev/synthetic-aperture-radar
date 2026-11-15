@@ -1,0 +1,317 @@
+[
+ {
+  "pass_id": "NISAR_058_A_021_2026-06-18",
+  "date": "2026-06-18",
+  "begin_utc": "2026-06-18T05:06:55Z",
+  "platform": "NISAR",
+  "track": "058",
+  "direction": "A",
+  "stack": "058_A_021",
+  "granules": [
+   "NISAR_L2_PR_GCOV_023_058_A_021_2005_DHDH_A_20260618T050655_20260618T050722_P05023_N_F_J_001"
+  ],
+  "split": "train",
+  "class_file": "data/labels_nisar/albufera_058_A_021/2026-06-18_class.tif",
+  "confidence_file": "data/labels_nisar/albufera_058_A_021/2026-06-18_confidence.tif"
+ },
+ {
+  "pass_id": "NISAR_066_D_069_2026-06-18",
+  "date": "2026-06-18",
+  "begin_utc": "2026-06-18T18:53:21Z",
+  "platform": "NISAR",
+  "track": "066",
+  "direction": "D",
+  "stack": "066_D_069",
+  "granules": [
+   "NISAR_L2_PR_GCOV_023_066_D_069_2005_DHDH_M_20260618T185321_20260618T185356_P05023_N_F_J_001"
+  ],
+  "split": "train",
+  "class_file": "data/labels_nisar/albufera_066_D_069/2026-06-18_class.tif",
+  "confidence_file": "data/labels_nisar/albufera_066_D_069/2026-06-18_confidence.tif"
+ },
+ {
+  "pass_id": "NISAR_058_A_021_2026-06-30",
+  "date": "2026-06-30",
+  "begin_utc": "2026-06-30T05:06:50Z",
+  "platform": "NISAR",
+  "track": "058",
+  "direction": "A",
+  "stack": "058_A_021",
+  "granules": [
+   "NISAR_L2_PR_GCOV_024_058_A_021_2005_DHDH_A_20260630T050650_20260630T050721_P05023_N_F_J_001"
+  ],
+  "split": "train",
+  "class_file": "data/labels_nisar/albufera_058_A_021/2026-06-30_class.tif",
+  "confidence_file": "data/labels_nisar/albufera_058_A_021/2026-06-30_confidence.tif"
+ },
+ {
+  "pass_id": "NISAR_066_D_069_2026-06-30",
+  "date": "2026-06-30",
+  "begin_utc": "2026-06-30T18:53:21Z",
+  "platform": "NISAR",
+  "track": "066",
+  "direction": "D",
+  "stack": "066_D_069",
+  "granules": [
+   "NISAR_L2_PR_GCOV_024_066_D_069_2005_DHDH_M_20260630T185321_20260630T185356_P05023_N_F_J_001"
+  ],
+  "split": "train",
+  "class_file": "data/labels_nisar/albufera_066_D_069/2026-06-30_class.tif",
+  "confidence_file": "data/labels_nisar/albufera_066_D_069/2026-06-30_confidence.tif"
+ },
+ {
+  "pass_id": "NISAR_058_A_021_2026-07-12",
+  "date": "2026-07-12",
+  "begin_utc": "2026-07-12T05:06:53Z",
+  "platform": "NISAR",
+  "track": "058",
+  "direction": "A",
+  "stack": "058_A_021",
+  "granules": [
+   "NISAR_L2_PR_GCOV_025_058_A_021_2005_DHDH_A_20260712T050653_20260712T050721_P05023_N_F_J_001"
+  ],
+  "split": "train",
+  "class_file": "data/labels_nisar/albufera_058_A_021/2026-07-12_class.tif",
+  "confidence_file": "data/labels_nisar/albufera_058_A_021/2026-07-12_confidence.tif"
+ },
+ {
+  "pass_id": "NISAR_066_D_069_2026-07-12",
+  "date": "2026-07-12",
+  "begin_utc": "2026-07-12T18:53:20Z",
+  "platform": "NISAR",
+  "track": "066",
+  "direction": "D",
+  "stack": "066_D_069",
+  "granules": [
+   "NISAR_L2_PR_GCOV_025_066_D_069_2005_DHDH_M_20260712T185320_20260712T185355_P05023_N_F_J_001"
+  ],
+  "split": "train",
+  "class_file": "data/labels_nisar/albufera_066_D_069/2026-07-12_class.tif",
+  "confidence_file": "data/labels_nisar/albufera_066_D_069/2026-07-12_confidence.tif"
+ },
+ {
+  "pass_id": "NISAR_058_A_021_2026-07-24",
+  "date": "2026-07-24",
+  "begin_utc": "2026-07-24T05:06:53Z",
+  "platform": "NISAR",
+  "track": "058",
+  "direction": "A",
+  "stack": "058_A_021",
+  "granules": [
+   "NISAR_L2_PR_GCOV_026_058_A_021_2005_DHDH_A_20260724T050653_20260724T050720_P05023_N_F_J_001"
+  ],
+  "split": "train",
+  "class_file": "data/labels_nisar/albufera_058_A_021/2026-07-24_class.tif",
+  "confidence_file": "data/labels_nisar/albufera_058_A_021/2026-07-24_confidence.tif"
+ },
+ {
+  "pass_id": "NISAR_066_D_069_2026-07-24",
+  "date": "2026-07-24",
+  "begin_utc": "2026-07-24T18:53:19Z",
+  "platform": "NISAR",
+  "track": "066",
+  "direction": "D",
+  "stack": "066_D_069",
+  "granules": [
+   "NISAR_L2_PR_GCOV_026_066_D_069_2005_DHDH_M_20260724T185319_20260724T185354_P05023_N_F_J_001"
+  ],
+  "split": "train",
+  "class_file": "data/labels_nisar/albufera_066_D_069/2026-07-24_class.tif",
+  "confidence_file": "data/labels_nisar/albufera_066_D_069/2026-07-24_confidence.tif"
+ },
+ {
+  "pass_id": "NISAR_058_A_021_2026-08-17",
+  "date": "2026-08-17",
+  "begin_utc": "2026-08-17T05:06:52Z",
+  "platform": "NISAR",
+  "track": "058",
+  "direction": "A",
+  "stack": "058_A_021",
+  "granules": [
+   "NISAR_L2_PR_GCOV_028_058_A_021_2005_DHDH_A_20260817T050652_20260817T050719_P05023_N_F_J_001"
+  ],
+  "split": "train",
+  "class_file": "data/labels_nisar/albufera_058_A_021/2026-08-17_class.tif",
+  "confidence_file": "data/labels_nisar/albufera_058_A_021/2026-08-17_confidence.tif"
+ },
+ {
+  "pass_id": "NISAR_066_D_069_2026-08-17",
+  "date": "2026-08-17",
+  "begin_utc": "2026-08-17T18:53:18Z",
+  "platform": "NISAR",
+  "track": "066",
+  "direction": "D",
+  "stack": "066_D_069",
+  "granules": [
+   "NISAR_L2_PR_GCOV_028_066_D_069_2005_DHDH_M_20260817T185318_20260817T185353_P05023_N_F_J_001"
+  ],
+  "split": "train",
+  "class_file": "data/labels_nisar/albufera_066_D_069/2026-08-17_class.tif",
+  "confidence_file": "data/labels_nisar/albufera_066_D_069/2026-08-17_confidence.tif"
+ },
+ {
+  "pass_id": "NISAR_058_A_021_2026-08-29",
+  "date": "2026-08-29",
+  "begin_utc": "2026-08-29T05:06:52Z",
+  "platform": "NISAR",
+  "track": "058",
+  "direction": "A",
+  "stack": "058_A_021",
+  "granules": [
+   "NISAR_L2_PR_GCOV_029_058_A_021_2005_DHDH_A_20260829T050652_20260829T050719_P05023_N_F_J_001"
+  ],
+  "split": "train",
+  "class_file": "data/labels_nisar/albufera_058_A_021/2026-08-29_class.tif",
+  "confidence_file": "data/labels_nisar/albufera_058_A_021/2026-08-29_confidence.tif"
+ },
+ {
+  "pass_id": "NISAR_066_D_069_2026-08-29",
+  "date": "2026-08-29",
+  "begin_utc": "2026-08-29T18:53:18Z",
+  "platform": "NISAR",
+  "track": "066",
+  "direction": "D",
+  "stack": "066_D_069",
+  "granules": [
+   "NISAR_L2_PR_GCOV_029_066_D_069_2005_DHDH_M_20260829T185318_20260829T185353_P05023_N_F_J_001"
+  ],
+  "split": "train",
+  "class_file": "data/labels_nisar/albufera_066_D_069/2026-08-29_class.tif",
+  "confidence_file": "data/labels_nisar/albufera_066_D_069/2026-08-29_confidence.tif"
+ },
+ {
+  "pass_id": "NISAR_058_A_021_2026-09-10",
+  "date": "2026-09-10",
+  "begin_utc": "2026-09-10T05:06:51Z",
+  "platform": "NISAR",
+  "track": "058",
+  "direction": "A",
+  "stack": "058_A_021",
+  "granules": [
+   "NISAR_L2_PR_GCOV_030_058_A_021_2005_DHDH_A_20260910T050651_20260910T050718_P05023_N_F_J_001"
+  ],
+  "split": "train",
+  "class_file": "data/labels_nisar/albufera_058_A_021/2026-09-10_class.tif",
+  "confidence_file": "data/labels_nisar/albufera_058_A_021/2026-09-10_confidence.tif"
+ },
+ {
+  "pass_id": "NISAR_066_D_069_2026-09-10",
+  "date": "2026-09-10",
+  "begin_utc": "2026-09-10T18:53:18Z",
+  "platform": "NISAR",
+  "track": "066",
+  "direction": "D",
+  "stack": "066_D_069",
+  "granules": [
+   "NISAR_L2_PR_GCOV_030_066_D_069_2005_DHDH_M_20260910T185318_20260910T185353_P05023_N_F_J_001"
+  ],
+  "split": "train",
+  "class_file": "data/labels_nisar/albufera_066_D_069/2026-09-10_class.tif",
+  "confidence_file": "data/labels_nisar/albufera_066_D_069/2026-09-10_confidence.tif"
+ },
+ {
+  "pass_id": "NISAR_066_D_069_2026-09-22",
+  "date": "2026-09-22",
+  "begin_utc": "2026-09-22T18:53:18Z",
+  "platform": "NISAR",
+  "track": "066",
+  "direction": "D",
+  "stack": "066_D_069",
+  "granules": [
+   "NISAR_L2_PR_GCOV_031_066_D_069_2005_DHDH_M_20260922T185318_20260922T185353_P05023_N_F_J_001"
+  ],
+  "split": "train",
+  "class_file": "data/labels_nisar/albufera_066_D_069/2026-09-22_class.tif",
+  "confidence_file": "data/labels_nisar/albufera_066_D_069/2026-09-22_confidence.tif"
+ },
+ {
+  "pass_id": "NISAR_058_A_021_2026-10-04",
+  "date": "2026-10-04",
+  "begin_utc": "2026-10-04T05:06:52Z",
+  "platform": "NISAR",
+  "track": "058",
+  "direction": "A",
+  "stack": "058_A_021",
+  "granules": [
+   "NISAR_L2_PR_GCOV_032_058_A_021_2005_DHDH_A_20261004T050652_20261004T050719_P05023_N_F_J_001"
+  ],
+  "split": "train",
+  "class_file": "data/labels_nisar/albufera_058_A_021/2026-10-04_class.tif",
+  "confidence_file": "data/labels_nisar/albufera_058_A_021/2026-10-04_confidence.tif"
+ },
+ {
+  "pass_id": "NISAR_066_D_069_2026-10-04",
+  "date": "2026-10-04",
+  "begin_utc": "2026-10-04T18:53:18Z",
+  "platform": "NISAR",
+  "track": "066",
+  "direction": "D",
+  "stack": "066_D_069",
+  "granules": [
+   "NISAR_L2_PR_GCOV_032_066_D_069_2005_DHDH_M_20261004T185318_20261004T185353_P05023_N_F_J_001"
+  ],
+  "split": "train",
+  "class_file": "data/labels_nisar/albufera_066_D_069/2026-10-04_class.tif",
+  "confidence_file": "data/labels_nisar/albufera_066_D_069/2026-10-04_confidence.tif"
+ },
+ {
+  "pass_id": "NISAR_058_A_021_2026-10-16",
+  "date": "2026-10-16",
+  "begin_utc": "2026-10-16T05:06:52Z",
+  "platform": "NISAR",
+  "track": "058",
+  "direction": "A",
+  "stack": "058_A_021",
+  "granules": [
+   "NISAR_L2_PR_GCOV_033_058_A_021_2005_DHDH_A_20261016T050652_20261016T050719_P05023_N_F_J_001"
+  ],
+  "split": "test",
+  "class_file": "data/labels_nisar/albufera_058_A_021/2026-10-16_class.tif",
+  "confidence_file": "data/labels_nisar/albufera_058_A_021/2026-10-16_confidence.tif"
+ },
+ {
+  "pass_id": "NISAR_066_D_069_2026-10-16",
+  "date": "2026-10-16",
+  "begin_utc": "2026-10-16T18:53:18Z",
+  "platform": "NISAR",
+  "track": "066",
+  "direction": "D",
+  "stack": "066_D_069",
+  "granules": [
+   "NISAR_L2_PR_GCOV_033_066_D_069_2005_DHDH_M_20261016T185318_20261016T185353_P05023_N_F_J_001"
+  ],
+  "split": "test",
+  "class_file": "data/labels_nisar/albufera_066_D_069/2026-10-16_class.tif",
+  "confidence_file": "data/labels_nisar/albufera_066_D_069/2026-10-16_confidence.tif"
+ },
+ {
+  "pass_id": "NISAR_058_A_021_2026-10-28",
+  "date": "2026-10-28",
+  "begin_utc": "2026-10-28T05:06:52Z",
+  "platform": "NISAR",
+  "track": "058",
+  "direction": "A",
+  "stack": "058_A_021",
+  "granules": [
+   "NISAR_L2_PR_GCOV_034_058_A_021_2005_DHDH_A_20261028T050652_20261028T050719_P05036_N_F_J_001"
+  ],
+  "split": "test",
+  "class_file": "data/labels_nisar/albufera_058_A_021/2026-10-28_class.tif",
+  "confidence_file": "data/labels_nisar/albufera_058_A_021/2026-10-28_confidence.tif"
+ },
+ {
+  "pass_id": "NISAR_066_D_069_2026-10-28",
+  "date": "2026-10-28",
+  "begin_utc": "2026-10-28T18:53:18Z",
+  "platform": "NISAR",
+  "track": "066",
+  "direction": "D",
+  "stack": "066_D_069",
+  "granules": [
+   "NISAR_L2_PR_GCOV_034_066_D_069_2005_DHDH_M_20261028T185318_20261028T185353_P05036_N_F_J_001"
+  ],
+  "split": "test",
+  "class_file": "data/labels_nisar/albufera_066_D_069/2026-10-28_class.tif",
+  "confidence_file": "data/labels_nisar/albufera_066_D_069/2026-10-28_confidence.tif"
+ }
+]
