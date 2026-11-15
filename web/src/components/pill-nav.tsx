@@ -35,9 +35,9 @@ export function PillNav({ stories }: { stories: { key: string; tab: string }[] }
 
 	return (
 		<header className="pnav">
-			<Link href="/" className="pnav-brand" aria-label="Dancing with the SARs, back to the top">
+			<Link href="/" className="pnav-brand" aria-label="Through the Clouds, back to the top">
 				<Mark size={22} />
-				<span className="display">Dancing with the SARs</span>
+				<span className="display">Through the Clouds</span>
 			</Link>
 			<div ref={list} className="pnav-list" role="navigation" aria-label="Sections">
 				<button type="button" data-i={-1} aria-current={active === -1 || undefined} onClick={() => storyNav.go(-1)}>

@@ -112,6 +112,6 @@ export const CREDITS = [
 ]
 
 export const META = {
-	title: 'Flood explorer · Dancing with the SARs',
+	title: 'Flood explorer · Through the Clouds',
 	description: 'A street map of the official flood zones of Valencia, what really flooded in 2024 and 2026, NISAR radar water and our model of where the water would go.',
 }

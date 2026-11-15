@@ -8,6 +8,7 @@
 import { ChevronDown, Menu, X } from 'lucide-react'
 import Link from 'next/link'
 import { type ReactNode, useEffect, useRef, useState } from 'react'
+import { SITE } from '@/content/site'
 import { STORIES } from '@/content/stories'
 import { Mark } from './brand'
 import './site-nav.css'
@@ -90,9 +91,9 @@ export function SiteNav({
 
 	return (
 		<nav ref={root} className="snav" data-variant={variant} aria-label="Site">
-			<Link href="/" className="snav-brand" aria-label="Dancing with the SARs, home">
+			<Link href="/" className="snav-brand" aria-label={`${SITE.name}, home`}>
 				{variant !== 'map' && <Mark size={variant === 'pill' ? 22 : 20} />}
-				<span className={variant === 'pill' ? 'display' : undefined}>Dancing with the SARs</span>
+				<span className={variant === 'pill' ? 'display' : undefined}>{SITE.name}</span>
 			</Link>
 			<div className="snav-items">
 				{items}
