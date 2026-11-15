@@ -1006,3 +1006,30 @@
 		animation: none;
 	}
 }
+
+/* the way back to the guided tour (components/guided), above the places */
+.ex-guide {
+	display: inline-flex;
+	padding: 8px 14px;
+	border-radius: 999px;
+}
+.ex-guide b {
+	font-size: 13px;
+	font-weight: 700;
+}
+
+/* the marsh model screens of the guide, opened from here (components/guided) */
+.ex-screens {
+	display: inline-flex;
+	flex-wrap: wrap;
+	gap: 6px;
+}
+.ex-screens b {
+	font-size: 13px;
+	font-weight: 700;
+}
+.ex-screens small {
+	font-size: 11px;
+	font-weight: 600;
+	color: rgb(244 249 255 / 0.68);
+}

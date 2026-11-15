@@ -3,9 +3,12 @@
 import type { SiteKey } from '@/lib/radar'
 
 export const HERO = {
-	eyebrow: 'NASA-ISRO NISAR · L-band radar · Valencia, Spain',
-	lines: ['Flood, grow,', 'burn and sink.'],
-	lead: 'One web app that shows how the land around Valencia changes, seen by NISAR radar, and what is likely to come next.',
+	eyebrow: 'NASA-ISRO NISAR · Valencia',
+	lines: ['The alert says rain.', 'Not where the water goes.'],
+	/** the two numbers come from src/data/dana_2024_toll.json, with their sources */
+	toll: { lives: 'lives lost', damage: 'of damage', caption: 'Valencia flood' },
+	primary: { label: 'See what the map missed', href: '/explore' },
+	stories: 'More NISAR stories',
 }
 
 export type StoryKey = 'water' | 'fire' | 'sink' | 'quake'
