@@ -94,6 +94,17 @@ export function Monitor({ films, track }: { films: Film[]; track: HTMLElement | 
 	const seek = useRef<{ shown: number; next: number | null; busy: boolean }>({ shown: 0, next: null, busy: false })
 	const N = films.length
 
+	// on another page Next keeps the landing mounted for Back, hidden (display: none on its main): React cleans up the
+	// landing's effects and detaches its refs, but a playing <video> plays on through the whole tour. So the films are
+	// paused here, held by this effect itself (the refs are already empty when it cleans up); back on the landing the
+	// effects run again and the effect below plays the film on screen.
+	useEffect(() => {
+		const held = videos.current.filter((v): v is HTMLVideoElement => !!v)
+		return () => {
+			for (const v of held) v.pause()
+		}
+	}, [])
+
 	useEffect(() => {
 		setCalm(window.matchMedia('(prefers-reduced-motion: reduce)').matches)
 		const el = glass.current
