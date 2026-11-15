@@ -669,6 +669,14 @@
 	.gd-swipe-knob {
 		top: 30%;
 	}
+	/* the line near an edge: the label of the sliver it leaves fades out, so the two never sit on each other */
+	.gd-swipe-label {
+		transition: opacity 0.2s var(--ease);
+	}
+	.gd-swipe[data-edge="left"] .gd-swipe-label[data-side="left"],
+	.gd-swipe[data-edge="right"] .gd-swipe-label[data-side="right"] {
+		opacity: 0;
+	}
 	/* a tapped street or the last step makes the card scroll: Back, Sources and Next stay at its foot */
 	.gd-nav {
 		position: sticky;
