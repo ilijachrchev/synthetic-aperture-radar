@@ -21,6 +21,7 @@ import { maxZoomOf, tileCount, tilesOf, transformTile } from '@/lib/tiles'
 import { warmStory, whenIdle } from '@/lib/warm'
 import { WaterLayer, type WaterMeta, type WaterSeries } from '@/lib/water-layer'
 import { ThemeSwitch } from '../theme-switch'
+import { SiteNav } from '../site-nav'
 import './story.css'
 
 /** MapLibre is the largest file of the page: fetch it as soon as this code runs in the browser, while the story's
@@ -986,9 +987,7 @@ export function StoryApp({ story }: { story: Story }) {
 			{story.storm && <div ref={set('rain')} className="st-rain" aria-hidden />}
 
 			<header className="st-top">
-				<Link href="/" className="st-brand">
-					Dancing with the SARs
-				</Link>
+				<SiteNav active="stories" />
 				<nav className="st-tabs" aria-label="Stories">
 					{STORIES.map((s) => (
 						<Link key={s.key} href={s.path} aria-current={s.key === story.key ? 'page' : undefined}>

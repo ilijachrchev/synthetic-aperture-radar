@@ -355,3 +355,142 @@
 		padding: 0 18px;
 	}
 }
+
+/* ---------- under the monitor: the 3D stories, then how it works ---------- */
+.mr,
+.hw {
+	max-width: 1180px;
+	margin: 0 auto;
+	padding: clamp(40px, 7vw, 88px) 24px 0;
+}
+.mr-head {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 8px 24px;
+	margin-bottom: 22px;
+}
+.mr-title,
+.hw-title {
+	margin: 0;
+	font-size: clamp(30px, 3.4vw, 48px);
+	line-height: 0.95;
+	text-transform: uppercase;
+	color: var(--ink);
+}
+.mr-head p {
+	margin: 0;
+	font-size: 15px;
+	color: var(--ink-2);
+}
+.mr-list {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 16px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.mr-card {
+	display: grid;
+	overflow: hidden;
+	border-radius: 20px;
+	background: var(--card);
+	border: 1px solid var(--line);
+	box-shadow: var(--shadow);
+	color: var(--ink);
+	text-decoration: none;
+	transition: transform 0.4s var(--ease), box-shadow 0.4s var(--ease);
+}
+.mr-card:hover {
+	transform: translateY(-3px);
+}
+.mr-card img {
+	display: block;
+	width: 100%;
+	height: auto;
+	aspect-ratio: 16 / 9;
+	object-fit: cover;
+	background: var(--stage);
+}
+.mr-text {
+	display: grid;
+	gap: 2px;
+	padding: 14px 16px 4px;
+}
+.mr-text b {
+	font-size: 17px;
+	font-weight: 750;
+}
+.mr-text small {
+	font-size: 13px;
+	color: var(--muted);
+}
+.mr-go {
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+	padding: 6px 16px 16px;
+	font-size: 13.5px;
+	font-weight: 700;
+	color: var(--accent-ink);
+}
+.hw-list {
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	gap: 16px;
+	margin: 22px 0 0;
+	padding: 0;
+	list-style: none;
+}
+.hw-list li {
+	display: grid;
+	align-content: start;
+	gap: 6px;
+	padding: 18px 18px 20px;
+	border-radius: 18px;
+	background: var(--bg-2);
+	border: 1px solid var(--line);
+}
+.hw-n {
+	font-size: 12px;
+	color: var(--accent-ink);
+}
+.hw-list b {
+	font-size: 16px;
+	font-weight: 750;
+	color: var(--ink);
+}
+.hw-list p {
+	margin: 0;
+	font-size: 14px;
+	line-height: 1.45;
+	color: var(--ink-2);
+}
+.hw-repo {
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+	margin-top: 18px;
+	font-size: 14px;
+	font-weight: 700;
+	color: var(--accent-ink);
+	text-decoration: none;
+}
+.hw {
+	padding-bottom: clamp(48px, 8vw, 104px);
+}
+@media (max-width: 900px) {
+	.mr-list {
+		grid-template-columns: 1fr;
+	}
+	.hw-list {
+		grid-template-columns: 1fr 1fr;
+	}
+}
+@media (max-width: 560px) {
+	.hw-list {
+		grid-template-columns: 1fr;
+	}
+}

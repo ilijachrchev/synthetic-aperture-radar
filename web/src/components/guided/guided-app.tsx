@@ -11,15 +11,19 @@
 //
 // Out of the flow, opened from "All layers" (?screen=exam, ?screen=rain): the marsh model's test against EMSR935 (drag
 // the line between our prediction and what happened) and its rain slider (one outline).
+//
+// ?film plays steps 2 and 3 by themselves, for the landing's film (scripts/landing_films.py records it frame by frame
+// on the page's own clock): the streets appear, the card holds on step 2's number, step 3 opens on the official map
+// and switches to our simulation. FILM below is its timing.
 
 import 'maplibre-gl/dist/maplibre-gl.css'
 import { ArrowLeft, ArrowRight, Layers, RotateCcw, X } from 'lucide-react'
 import type { GeoJSONSource, Map as MapLibreMap, MapMouseEvent } from 'maplibre-gl'
-import Link from 'next/link'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ICV, PNOA } from '@/content/explore'
 import { COLORS, REVEAL_FADE_MS, REVEAL_MS, SCREENS, STEP3_METHODS, STEPS, type StepKey, SWIPE_WATER } from '@/content/guided'
 import { RainSlider } from '../explore/rain-slider'
+import { SiteNav } from '../site-nav'
 import { MapSwipe } from './map-swipe'
 import './guided.css'
 
@@ -110,6 +114,9 @@ type Pick = { name: string; town: string; zone: string; zoneCode: number; water:
 type Extra = 'exam' | 'rain'
 type At = { step: number; extra: Extra | null }
 
+/** ?film: when each move of the film happens, in ms from the moment the map and the streets are in */
+const FILM = { step3: 7600, simulation: 11800, done: 17800 }
+
 /** the 16 groups of the reveal, each its own layer, so a group fades in with one paint value */
 const BINS = 16
 const binLayer = (i: number) => `g-flood-${i}`
@@ -187,6 +194,7 @@ function snap(p: [number, number], line: number[][]): [number, number] {
 function firstAt(): At {
 	if (typeof window === 'undefined') return { step: 0, extra: null }
 	const q = new URLSearchParams(window.location.search)
+	if (q.has('film')) return { step: 0, extra: null }
 	const screen = q.get('screen')
 	if (screen === 'exam' || screen === 'rain') return { step: 0, extra: screen }
 	const n = Number(q.get('step'))
@@ -205,6 +213,9 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 	const [map, setMap] = useState<MapLibreMap | null>(null)
 	const [ready, setReady] = useState(false)
 	const [at, setAt] = useState<At>(firstAt)
+	/** ?film: steps 2 and 3 play by themselves (the landing's film) */
+	const [film] = useState(() => typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('film'))
+	const [filmReady, setFilmReady] = useState(false)
 	const step = at.step
 	const [error, setError] = useState<string | null>(null)
 	const [sources, setSources] = useState(false)
@@ -523,6 +534,36 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 		return () => window.removeEventListener('keydown', onKey)
 	}, [step, at.extra, lastNext, next, back])
 
+	// ?film: the page tells the recorder when it is ready, what is still loading, and when the film has ended
+	useEffect(() => {
+		if (!film || !map || !ready) return
+		const host = window as unknown as { __film?: { map: () => MapLibreMap; complete: () => boolean }; __filmDone?: boolean }
+		const complete = () => !!map.getSource('g-streets') && map.isSourceLoaded('g-streets') && map.areTilesLoaded() && !map.isMoving()
+		host.__film = { map: () => map, complete }
+		host.__filmDone = false
+		let gone = false
+		const check = () => {
+			if (gone) return
+			if (complete()) setFilmReady(true)
+			else window.setTimeout(check, 50)
+		}
+		check()
+		return () => {
+			gone = true
+			delete host.__film
+		}
+	}, [film, map, ready, streets])
+	useEffect(() => {
+		if (!film || !filmReady) return
+		const host = window as unknown as { __filmDone?: boolean }
+		const timers = [
+			window.setTimeout(() => go(1), FILM.step3),
+			window.setTimeout(() => setMethod('sim'), FILM.simulation),
+			window.setTimeout(() => (host.__filmDone = true), FILM.done),
+		]
+		return () => timers.forEach((t) => window.clearTimeout(t))
+	}, [film, filmReady, go])
+
 	// a small handle for scripted checks
 	useEffect(() => {
 		const api = {
@@ -834,7 +875,7 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 	const swipeOn = map && (key === 'nisar' || key === 'exam')
 
 	return (
-		<div className="gd" data-step={key} data-ready={ready || undefined}>
+		<div className="gd" data-step={key} data-ready={ready || undefined} data-film={film || undefined} data-film-ready={filmReady || undefined}>
 			<div ref={mapEl} className="gd-map" />
 
 			{swipeOn && key === 'nisar' && swipe28 && (
@@ -859,12 +900,14 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 			)}
 
 			<header className="gd-top">
-				<Link href="/" className="gd-brand">
-					Dancing with the SARs
-				</Link>
-				<button type="button" className="gd-all" onClick={onAllLayers}>
-					<Layers size={15} strokeWidth={2.4} /> All layers
-				</button>
+				<SiteNav
+					active="map"
+					onGo={(k) => {
+						if (k === 'explore') onAllLayers()
+						else go(0)
+						return true
+					}}
+				/>
 			</header>
 
 			<section ref={cardRef} className="gd-card" aria-live="polite">

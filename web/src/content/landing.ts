@@ -11,6 +11,35 @@ export const HERO = {
 	stories: 'More NISAR stories',
 }
 
+/** The one film of the monitor: steps 2 and 3 of the guided tour as they run (/explore?film), recorded frame by frame
+ *  by scripts/landing_films.py. The numbers in it are the tour's own, read from its data files when it was recorded. */
+export const TOUR_FILM = {
+	key: 'tour',
+	tab: 'The flood map',
+	title: 'The official map said safe',
+	place: "L'Horta Sud, 29 Oct 2024",
+	path: '/explore',
+	src: '/films/tour.mp4',
+	poster: '/films/tour.jpg',
+	still: '/films/tour-still.jpg',
+	cta: 'Open the flood map',
+}
+
+/** under the monitor: the 3D story pages, each a film of how the land changed over time */
+export const MORE = { title: 'More NISAR stories', line: 'How the land changes over time, seen by NISAR every 12 days.', open: 'Open the 3D story' }
+
+/** how it works, in four short lines (the methods: docs/STREETS.md, docs/CV_BENCHMARK.md, the repository README) */
+export const HOW = {
+	title: 'How it works',
+	items: [
+		{ title: 'Radar that sees through cloud', text: 'NASA-ISRO NISAR passes every 12 days, day and night. Our model reads open water from its L-band radar, checked against same-day photos.' },
+		{ title: 'Street by street', text: 'The streets of 10 towns are cut into pieces of 25 m. Each one is checked against the Copernicus EMS flood map and the water heights measured after the flood.' },
+		{ title: 'A simulation of the water', text: 'The rain that fell runs over the terrain on a 25 m grid. Nothing soaks in, so it is an upper bound.' },
+		{ title: 'Written down first', text: 'Every test was written down before its answer was seen. The code and the data are open.' },
+	],
+	repo: 'The code on GitHub',
+}
+
 export type StoryKey = 'water' | 'fire' | 'sink' | 'quake'
 export type Story = {
 	key: StoryKey
