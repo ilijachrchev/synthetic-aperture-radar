@@ -1,0 +1,2514 @@
+{
+ "created_utc": "2026-11-15T01:06:58+00:00",
+ "note": "Written with SI assistance (Claude Code), reviewed by the team.",
+ "what": "Official flood zones (SNCZI) against the observed flood (Copernicus EMS) per municipality.",
+ "method": [
+  "Municipalities: IGN INSPIRE administrative units, fetched by id.",
+  "Official zones: SNCZI fluvial T10, T100, T500 and marine T100, T500 from the MITECO WFS, clipped to the municipalities. Each spot gets the most frequent zone it lies in: frequent (T10), occasional (T100), rare (T500 only), none (outside every zone).",
+  "Observed flood: flooded area plus flood traces of Copernicus EMS, as the maximum observed extent (a spot counts if any product saw water or a trace there). 2024: EMSR773, the three first-response products that map these towns (AOI03 grading v2, AOI03 delineation v1, AOI01 delineation v1); the priority mosaic (sharpest map first, where it looked) is given as the lower bound under sensitivity. 2026: EMSR935 as in data/labels.",
+  "Graded buildings (2024): the building points of the AOI03 grading map, each with the zone class of its point.",
+  "Areas: exact geometries in UTM 30N (EPSG:32630), GEOS overlay (snapped to a 1 cm grid only where GEOS reports a topology error). Shares are of the observed flood inside each municipality. Web layers are simplified copies for display only; their area_ha comes from the exact geometries.",
+  "No estimate without a label: a share is null where nothing was observed."
+ ],
+ "classes": {
+  "frequent": "frequent: T10 zone (high probability, 1 in 10 each year)",
+  "occasional": "occasional: T100 zone, not T10 (medium probability, 1 in 100 each year)",
+  "rare": "rare: only the T500 zone (low probability, 1 in 500 each year)",
+  "none": "outside every official zone"
+ },
+ "events": {
+  "dana_2024_horta_sud": {
+   "title": "DANA of 29 Oct 2024, L'Horta Sud and Chiva",
+   "nisar": "Before NISAR had any data (first public NISAR data 20 Jul 2026): context only, never a NISAR result.",
+   "observed_flood": "flooded area (water on the image) plus flood traces (water gone, mud and debris left): where the water went. Maximum observed extent: a spot counts if any of the products saw water or a trace there",
+   "observed_source": {
+    "activation": "EMSR773, Flood in Valencia Region, Spain (event 29 Oct 2024 14:30 UTC, activated 29 Oct 2024 16:40 UTC)",
+    "api": "https://rapidmapping.emergency.copernicus.eu/backend/dashboard-api/public-activations/?code=EMSR773",
+    "products_in_priority_order": [
+     {
+      "product": "EMSR773_AOI03_GRA_PRODUCT_v2",
+      "aoi": "AOI03 Horta Sud",
+      "imagery": "GeoEye-1, 31 Oct 2024 10:22 UTC; version 2: correction of the observed event, not all flood traces were delineated in version 1",
+      "images_api": [
+       "GeoEye-1 2024-10-31T10:22:00"
+      ],
+      "delivered_utc": "2024-11-06T03:36:46",
+      "download": "https://rapidmapping.emergency.copernicus.eu/backend/EMSR773/AOI03/GRA_PRODUCT/EMSR773_AOI03_GRA_PRODUCT_v2.zip",
+      "credit": "Copernicus Emergency Management Service (© 2024 European Union), [EMSR773] Horta Sud (AOI03): Grading Map"
+     },
+     {
+      "product": "EMSR773_AOI03_DEL_PRODUCT_v1",
+      "aoi": "AOI03 Horta Sud",
+      "imagery": "WorldView-2 and GeoEye-1, 31 Oct 2024 10:22 UTC",
+      "images_api": [
+       "WorldView-2 2024-10-31T10:22:00",
+       "GeoEye-1 2024-10-31T10:22:00"
+      ],
+      "delivered_utc": "2024-11-02T02:43:07",
+      "download": "https://rapidmapping.emergency.copernicus.eu/backend/EMSR773/AOI03/DEL_PRODUCT/EMSR773_AOI03_DEL_PRODUCT_v1.zip",
+      "credit": "Copernicus Emergency Management Service (© 2024 European Union), [EMSR773] Horta Sud (AOI03): Delineation Map"
+     },
+     {
+      "product": "EMSR773_AOI01_DEL_PRODUCT_v1",
+      "aoi": "AOI01 Valencia province",
+      "imagery": "Landsat-8 30 Oct 2024 10:37 UTC, Sentinel-2 31 Oct 10:51 UTC, Sentinel-1 31 Oct 18:02 UTC",
+      "images_api": [
+       "Sentinel-2 2024-10-31T10:51:00",
+       "Landsat-8 2024-10-30T10:37:00",
+       "Sentinel-1 2024-10-31T18:02:00"
+      ],
+      "delivered_utc": "2024-11-02T03:02:32",
+      "download": "https://rapidmapping.emergency.copernicus.eu/backend/EMSR773/AOI01/DEL_PRODUCT/EMSR773_AOI01_DEL_PRODUCT_v1.zip",
+      "credit": "Copernicus Emergency Management Service (© 2024 European Union), [EMSR773] Valencia province (AOI01): Delineation Map"
+     }
+    ],
+    "other_aois_touching_the_area_not_used": [
+     {
+      "aoi": "AOI10",
+      "name": "Cheste",
+      "overlap_ha": 3028.1,
+      "products": [
+       "GRA"
+      ],
+      "first_image_utc": "2024-11-10T10:39:00"
+     },
+     {
+      "aoi": "AOI12",
+      "name": "Godelleta",
+      "overlap_ha": 35.8,
+      "products": [
+       "GRA"
+      ],
+      "first_image_utc": "2024-11-10T10:39:00"
+     },
+     {
+      "aoi": "AOI22",
+      "name": "Bunol",
+      "overlap_ha": 77.5,
+      "products": [
+       "GRA"
+      ],
+      "first_image_utc": "2024-11-11T11:20:00"
+     }
+    ]
+   },
+   "zones_in_study_area_ha": {
+    "frequent": 1045.3,
+    "occasional": 816.5,
+    "rare": 1551.2,
+    "none": 27195.9
+   },
+   "marine_zones_overlap_with_observed_flood_ha": {
+    "marine_t100": 504.2,
+    "marine_t500": 529.4
+   },
+   "municipalities": [
+    {
+     "name": "Paiporta",
+     "ine": "46186",
+     "municipality_ha": 401.5,
+     "zone_cover_pct": 44.2,
+     "analysed_pct": 100.0,
+     "flooded_ha": 398.2,
+     "ha_by_class": {
+      "frequent": 13.3,
+      "occasional": 1.9,
+      "rare": 162.1,
+      "none": 220.8
+     },
+     "outside_every_zone_pct": 55.5,
+     "only_rare_t500_pct": 40.7,
+     "frequent_or_occasional_pct": 3.8,
+     "frequent_t10_pct": 3.3,
+     "by_observed_class": {
+      "flooded_area": {
+       "flooded_ha": 9.0,
+       "ha_by_class": {
+        "frequent": 2.0,
+        "occasional": 0.1,
+        "rare": 2.9,
+        "none": 4.0
+       },
+       "outside_every_zone_pct": 44.6,
+       "only_rare_t500_pct": 32.2,
+       "frequent_or_occasional_pct": 23.2,
+       "frequent_t10_pct": 22.5
+      },
+      "flood_trace": {
+       "flooded_ha": 389.2,
+       "ha_by_class": {
+        "frequent": 11.3,
+        "occasional": 1.8,
+        "rare": 159.2,
+        "none": 216.8
+       },
+       "outside_every_zone_pct": 55.7,
+       "only_rare_t500_pct": 40.9,
+       "frequent_or_occasional_pct": 3.4,
+       "frequent_t10_pct": 2.9
+      }
+     },
+     "analysed_by_product_pct": {
+      "EMSR773_AOI03_GRA_PRODUCT_v2": 100.0,
+      "EMSR773_AOI03_DEL_PRODUCT_v1": 100.0,
+      "EMSR773_AOI01_DEL_PRODUCT_v1": 100.0
+     },
+     "observed_by_product_ha": {
+      "EMSR773_AOI03_GRA_PRODUCT_v2": 220.7,
+      "EMSR773_AOI03_DEL_PRODUCT_v1": 172.0,
+      "EMSR773_AOI01_DEL_PRODUCT_v1": 397.8
+     }
+    },
+    {
+     "name": "Massanassa",
+     "ine": "46165",
+     "municipality_ha": 559.8,
+     "zone_cover_pct": 94.8,
+     "analysed_pct": 100.0,
+     "flooded_ha": 502.6,
+     "ha_by_class": {
+      "frequent": 192.9,
+      "occasional": 32.0,
+      "rare": 249.8,
+      "none": 27.9
+     },
+     "outside_every_zone_pct": 5.5,
+     "only_rare_t500_pct": 49.7,
+     "frequent_or_occasional_pct": 44.8,
+     "frequent_t10_pct": 38.4,
+     "by_observed_class": {
+      "flooded_area": {
+       "flooded_ha": 263.2,
+       "ha_by_class": {
+        "frequent": 176.1,
+        "occasional": 25.0,
+        "rare": 59.1,
+        "none": 3.1
+       },
+       "outside_every_zone_pct": 1.2,
+       "only_rare_t500_pct": 22.4,
+       "frequent_or_occasional_pct": 76.4,
+       "frequent_t10_pct": 66.9
+      },
+      "flood_trace": {
+       "flooded_ha": 239.3,
+       "ha_by_class": {
+        "frequent": 16.9,
+        "occasional": 7.0,
+        "rare": 190.7,
+        "none": 24.8
+       },
+       "outside_every_zone_pct": 10.3,
+       "only_rare_t500_pct": 79.7,
+       "frequent_or_occasional_pct": 10.0,
+       "frequent_t10_pct": 7.1
+      }
+     },
+     "analysed_by_product_pct": {
+      "EMSR773_AOI03_GRA_PRODUCT_v2": 62.7,
+      "EMSR773_AOI03_DEL_PRODUCT_v1": 21.6,
+      "EMSR773_AOI01_DEL_PRODUCT_v1": 100.0
+     },
+     "observed_by_product_ha": {
+      "EMSR773_AOI03_GRA_PRODUCT_v2": 177.3,
+      "EMSR773_AOI03_DEL_PRODUCT_v1": 25.6,
+      "EMSR773_AOI01_DEL_PRODUCT_v1": 492.8
+     }
+    },
+    {
+     "name": "Sedaví",
+     "ine": "46223",
+     "municipality_ha": 182.5,
+     "zone_cover_pct": 7.2,
+     "analysed_pct": 100.0,
+     "flooded_ha": 152.1,
+     "ha_by_class": {
+      "frequent": 0.0,
+      "occasional": 1.4,
+      "rare": 11.7,
+      "none": 139.0
+     },
+     "outside_every_zone_pct": 91.4,
+     "only_rare_t500_pct": 7.7,
+     "frequent_or_occasional_pct": 0.9,
+     "frequent_t10_pct": 0.0,
+     "by_observed_class": {
+      "flooded_area": {
+       "flooded_ha": 25.2,
+       "ha_by_class": {
+        "frequent": 0.0,
+        "occasional": 1.4,
+        "rare": 6.6,
+        "none": 17.2
+       },
+       "outside_every_zone_pct": 68.2,
+       "only_rare_t500_pct": 26.3,
+       "frequent_or_occasional_pct": 5.5,
+       "frequent_t10_pct": 0.0
+      },
+      "flood_trace": {
+       "flooded_ha": 126.9,
+       "ha_by_class": {
+        "frequent": 0.0,
+        "occasional": 0.0,
+        "rare": 5.0,
+        "none": 121.9
+       },
+       "outside_every_zone_pct": 96.0,
+       "only_rare_t500_pct": 4.0,
+       "frequent_or_occasional_pct": 0.0,
+       "frequent_t10_pct": 0.0
+      }
+     },
+     "analysed_by_product_pct": {
+      "EMSR773_AOI03_GRA_PRODUCT_v2": 84.5,
+      "EMSR773_AOI03_DEL_PRODUCT_v1": 7.0,
+      "EMSR773_AOI01_DEL_PRODUCT_v1": 100.0
+     },
+     "observed_by_product_ha": {
+      "EMSR773_AOI03_GRA_PRODUCT_v2": 87.1,
+      "EMSR773_AOI03_DEL_PRODUCT_v1": 6.3,
+      "EMSR773_AOI01_DEL_PRODUCT_v1": 151.9
+     }
+    },
+    {
+     "name": "Catarroja",
+     "ine": "46094",
+     "municipality_ha": 1307.1,
+     "zone_cover_pct": 66.1,
+     "analysed_pct": 100.0,
+     "flooded_ha": 912.3,
+     "ha_by_class": {
+      "frequent": 331.7,
+      "occasional": 96.0,
+      "rare": 335.7,
+      "none": 148.9
+     },
+     "outside_every_zone_pct": 16.3,
+     "only_rare_t500_pct": 36.8,
+     "frequent_or_occasional_pct": 46.9,
+     "frequent_t10_pct": 36.4,
+     "by_observed_class": {
+      "flooded_area": {
+       "flooded_ha": 425.0,
+       "ha_by_class": {
+        "frequent": 316.1,
+        "occasional": 86.8,
+        "rare": 21.2,
+        "none": 1.0
+       },
+       "outside_every_zone_pct": 0.2,
+       "only_rare_t500_pct": 5.0,
+       "frequent_or_occasional_pct": 94.8,
+       "frequent_t10_pct": 74.4
+      },
+      "flood_trace": {
+       "flooded_ha": 487.3,
+       "ha_by_class": {
+        "frequent": 15.6,
+        "occasional": 9.2,
+        "rare": 314.6,
+        "none": 147.9
+       },
+       "outside_every_zone_pct": 30.4,
+       "only_rare_t500_pct": 64.6,
+       "frequent_or_occasional_pct": 5.1,
+       "frequent_t10_pct": 3.2
+      }
+     },
+     "analysed_by_product_pct": {
+      "EMSR773_AOI03_GRA_PRODUCT_v2": 62.7,
+      "EMSR773_AOI03_DEL_PRODUCT_v1": 50.8,
+      "EMSR773_AOI01_DEL_PRODUCT_v1": 100.0
+     },
+     "observed_by_product_ha": {
+      "EMSR773_AOI03_GRA_PRODUCT_v2": 345.7,
+      "EMSR773_AOI03_DEL_PRODUCT_v1": 62.0,
+      "EMSR773_AOI01_DEL_PRODUCT_v1": 866.6
+     }
+    },
+    {
+     "name": "Alfafar",
+     "ine": "46022",
+     "municipality_ha": 1009.3,
+     "zone_cover_pct": 80.0,
+     "analysed_pct": 100.0,
+     "flooded_ha": 944.9,
+     "ha_by_class": {
+      "frequent": 266.7,
+      "occasional": 280.5,
+      "rare": 240.7,
+      "none": 157.1
+     },
+     "outside_every_zone_pct": 16.6,
+     "only_rare_t500_pct": 25.5,
+     "frequent_or_occasional_pct": 57.9,
+     "frequent_t10_pct": 28.2,
+     "by_observed_class": {
+      "flooded_area": {
+       "flooded_ha": 645.5,
+       "ha_by_class": {
+        "frequent": 264.1,
+        "occasional": 279.5,
+        "rare": 66.2,
+        "none": 35.6
+       },
+       "outside_every_zone_pct": 5.5,
+       "only_rare_t500_pct": 10.2,
+       "frequent_or_occasional_pct": 84.2,
+       "frequent_t10_pct": 40.9
+      },
+      "flood_trace": {
+       "flooded_ha": 299.5,
+       "ha_by_class": {
+        "frequent": 2.5,
+        "occasional": 0.9,
+        "rare": 174.6,
+        "none": 121.4
+       },
+       "outside_every_zone_pct": 40.6,
+       "only_rare_t500_pct": 58.3,
+       "frequent_or_occasional_pct": 1.2,
+       "frequent_t10_pct": 0.8
+      }
+     },
+     "analysed_by_product_pct": {
+      "EMSR773_AOI03_GRA_PRODUCT_v2": 38.2,
+      "EMSR773_AOI03_DEL_PRODUCT_v1": 9.3,
+      "EMSR773_AOI01_DEL_PRODUCT_v1": 100.0
+     },
+     "observed_by_product_ha": {
+      "EMSR773_AOI03_GRA_PRODUCT_v2": 210.5,
+      "EMSR773_AOI03_DEL_PRODUCT_v1": 20.6,
+      "EMSR773_AOI01_DEL_PRODUCT_v1": 938.8
+     }
+    },
+    {
+     "name": "Benetússer",
+     "ine": "46054",
+     "municipality_ha": 78.0,
+     "zone_cover_pct": 27.9,
+     "analysed_pct": 100.0,
+     "flooded_ha": 17.1,
+     "ha_by_class": {
+      "frequent": 0.0,
+      "occasional": 0.0,
+      "rare": 8.9,
+      "none": 8.2
+     },
+     "outside_every_zone_pct": 47.9,
+     "only_rare_t500_pct": 52.1,
+     "frequent_or_occasional_pct": 0.0,
+     "frequent_t10_pct": 0.0,
+     "by_observed_class": {
+      "flooded_area": {
+       "flooded_ha": 0.1,
+       "ha_by_class": {
+        "frequent": 0.0,
+        "occasional": 0.0,
+        "rare": 0.1,
+        "none": 0.0
+       },
+       "outside_every_zone_pct": 2.6,
+       "only_rare_t500_pct": 97.4,
+       "frequent_or_occasional_pct": 0.0,
+       "frequent_t10_pct": 0.0
+      },
+      "flood_trace": {
+       "flooded_ha": 17.0,
+       "ha_by_class": {
+        "frequent": 0.0,
+        "occasional": 0.0,
+        "rare": 8.8,
+        "none": 8.2
+       },
+       "outside_every_zone_pct": 48.2,
+       "only_rare_t500_pct": 51.8,
+       "frequent_or_occasional_pct": 0.0,
+       "frequent_t10_pct": 0.0
+      }
+     },
+     "analysed_by_product_pct": {
+      "EMSR773_AOI03_GRA_PRODUCT_v2": 100.0,
+      "EMSR773_AOI03_DEL_PRODUCT_v1": 100.0,
+      "EMSR773_AOI01_DEL_PRODUCT_v1": 100.0
+     },
+     "observed_by_product_ha": {
+      "EMSR773_AOI03_GRA_PRODUCT_v2": 11.9,
+      "EMSR773_AOI03_DEL_PRODUCT_v1": 6.2,
+      "EMSR773_AOI01_DEL_PRODUCT_v1": 12.8
+     }
+    },
+    {
+     "name": "Picanya",
+     "ine": "46193",
+     "municipality_ha": 722.0,
+     "zone_cover_pct": 2.8,
+     "analysed_pct": 100.0,
+     "flooded_ha": 563.3,
+     "ha_by_class": {
+      "frequent": 12.3,
+      "occasional": 1.9,
+      "rare": 5.2,
+      "none": 543.9
+     },
+     "outside_every_zone_pct": 96.6,
+     "only_rare_t500_pct": 0.9,
+     "frequent_or_occasional_pct": 2.5,
+     "frequent_t10_pct": 2.2,
+     "by_observed_class": {
+      "flooded_area": {
+       "flooded_ha": 4.0,
+       "ha_by_class": {
+        "frequent": 2.3,
+        "occasional": 0.2,
+        "rare": 0.2,
+        "none": 1.3
+       },
+       "outside_every_zone_pct": 33.3,
+       "only_rare_t500_pct": 5.4,
+       "frequent_or_occasional_pct": 61.3,
+       "frequent_t10_pct": 57.1
+      },
+      "flood_trace": {
+       "flooded_ha": 559.3,
+       "ha_by_class": {
+        "frequent": 10.0,
+        "occasional": 1.8,
+        "rare": 4.9,
+        "none": 542.6
+       },
+       "outside_every_zone_pct": 97.0,
+       "only_rare_t500_pct": 0.9,
+       "frequent_or_occasional_pct": 2.1,
+       "frequent_t10_pct": 1.8
+      }
+     },
+     "analysed_by_product_pct": {
+      "EMSR773_AOI03_GRA_PRODUCT_v2": 71.9,
+      "EMSR773_AOI03_DEL_PRODUCT_v1": 100.0,
+      "EMSR773_AOI01_DEL_PRODUCT_v1": 100.0
+     },
+     "observed_by_product_ha": {
+      "EMSR773_AOI03_GRA_PRODUCT_v2": 61.0,
+      "EMSR773_AOI03_DEL_PRODUCT_v1": 38.3,
+      "EMSR773_AOI01_DEL_PRODUCT_v1": 561.8
+     }
+    },
+    {
+     "name": "Aldaia",
+     "ine": "46021",
+     "municipality_ha": 1613.6,
+     "zone_cover_pct": 23.8,
+     "analysed_pct": 100.0,
+     "flooded_ha": 842.8,
+     "ha_by_class": {
+      "frequent": 36.2,
+      "occasional": 127.1,
+      "rare": 152.4,
+      "none": 527.2
+     },
+     "outside_every_zone_pct": 62.5,
+     "only_rare_t500_pct": 18.1,
+     "frequent_or_occasional_pct": 19.4,
+     "frequent_t10_pct": 4.3,
+     "by_observed_class": {
+      "flooded_area": {
+       "flooded_ha": 16.7,
+       "ha_by_class": {
+        "frequent": 3.6,
+        "occasional": 4.4,
+        "rare": 5.3,
+        "none": 3.4
+       },
+       "outside_every_zone_pct": 20.4,
+       "only_rare_t500_pct": 31.7,
+       "frequent_or_occasional_pct": 47.9,
+       "frequent_t10_pct": 21.7
+      },
+      "flood_trace": {
+       "flooded_ha": 826.1,
+       "ha_by_class": {
+        "frequent": 32.6,
+        "occasional": 122.7,
+        "rare": 147.1,
+        "none": 523.7
+       },
+       "outside_every_zone_pct": 63.4,
+       "only_rare_t500_pct": 17.8,
+       "frequent_or_occasional_pct": 18.8,
+       "frequent_t10_pct": 3.9
+      }
+     },
+     "analysed_by_product_pct": {
+      "EMSR773_AOI03_GRA_PRODUCT_v2": 100.0,
+      "EMSR773_AOI03_DEL_PRODUCT_v1": 100.0,
+      "EMSR773_AOI01_DEL_PRODUCT_v1": 100.0
+     },
+     "observed_by_product_ha": {
+      "EMSR773_AOI03_GRA_PRODUCT_v2": 386.5,
+      "EMSR773_AOI03_DEL_PRODUCT_v1": 281.8,
+      "EMSR773_AOI01_DEL_PRODUCT_v1": 702.1
+     }
+    },
+    {
+     "name": "Chiva",
+     "ine": "46111",
+     "municipality_ha": 17804.2,
+     "zone_cover_pct": 2.5,
+     "analysed_pct": 100.0,
+     "flooded_ha": 281.4,
+     "ha_by_class": {
+      "frequent": 33.2,
+      "occasional": 87.1,
+      "rare": 46.4,
+      "none": 114.8
+     },
+     "outside_every_zone_pct": 40.8,
+     "only_rare_t500_pct": 16.5,
+     "frequent_or_occasional_pct": 42.7,
+     "frequent_t10_pct": 11.8,
+     "by_observed_class": {
+      "flooded_area": {
+       "flooded_ha": 12.2,
+       "ha_by_class": {
+        "frequent": 2.9,
+        "occasional": 4.6,
+        "rare": 0.8,
+        "none": 4.0
+       },
+       "outside_every_zone_pct": 32.4,
+       "only_rare_t500_pct": 6.4,
+       "frequent_or_occasional_pct": 61.2,
+       "frequent_t10_pct": 23.8
+      },
+      "flood_trace": {
+       "flooded_ha": 269.2,
+       "ha_by_class": {
+        "frequent": 30.3,
+        "occasional": 82.5,
+        "rare": 45.6,
+        "none": 110.8
+       },
+       "outside_every_zone_pct": 41.2,
+       "only_rare_t500_pct": 16.9,
+       "frequent_or_occasional_pct": 41.9,
+       "frequent_t10_pct": 11.2
+      }
+     },
+     "analysed_by_product_pct": {
+      "EMSR773_AOI03_GRA_PRODUCT_v2": 6.0,
+      "EMSR773_AOI03_DEL_PRODUCT_v1": 7.8,
+      "EMSR773_AOI01_DEL_PRODUCT_v1": 100.0
+     },
+     "observed_by_product_ha": {
+      "EMSR773_AOI03_GRA_PRODUCT_v2": 213.6,
+      "EMSR773_AOI03_DEL_PRODUCT_v1": 184.2,
+      "EMSR773_AOI01_DEL_PRODUCT_v1": 82.3
+     }
+    },
+    {
+     "name": "Torrent",
+     "ine": "46244",
+     "municipality_ha": 6930.8,
+     "zone_cover_pct": 2.1,
+     "analysed_pct": 100.0,
+     "flooded_ha": 639.2,
+     "ha_by_class": {
+      "frequent": 46.4,
+      "occasional": 21.7,
+      "rare": 40.8,
+      "none": 530.2
+     },
+     "outside_every_zone_pct": 82.9,
+     "only_rare_t500_pct": 6.4,
+     "frequent_or_occasional_pct": 10.7,
+     "frequent_t10_pct": 7.3,
+     "by_observed_class": {
+      "flooded_area": {
+       "flooded_ha": 24.0,
+       "ha_by_class": {
+        "frequent": 4.5,
+        "occasional": 0.4,
+        "rare": 0.4,
+        "none": 18.7
+       },
+       "outside_every_zone_pct": 78.1,
+       "only_rare_t500_pct": 1.5,
+       "frequent_or_occasional_pct": 20.4,
+       "frequent_t10_pct": 18.6
+      },
+      "flood_trace": {
+       "flooded_ha": 615.2,
+       "ha_by_class": {
+        "frequent": 42.0,
+        "occasional": 21.3,
+        "rare": 40.5,
+        "none": 511.5
+       },
+       "outside_every_zone_pct": 83.1,
+       "only_rare_t500_pct": 6.6,
+       "frequent_or_occasional_pct": 10.3,
+       "frequent_t10_pct": 6.8
+      }
+     },
+     "analysed_by_product_pct": {
+      "EMSR773_AOI03_GRA_PRODUCT_v2": 41.7,
+      "EMSR773_AOI03_DEL_PRODUCT_v1": 85.3,
+      "EMSR773_AOI01_DEL_PRODUCT_v1": 100.0
+     },
+     "observed_by_product_ha": {
+      "EMSR773_AOI03_GRA_PRODUCT_v2": 382.8,
+      "EMSR773_AOI03_DEL_PRODUCT_v1": 287.4,
+      "EMSR773_AOI01_DEL_PRODUCT_v1": 310.5
+     }
+    }
+   ],
+   "total": {
+    "flooded_ha": 5253.9,
+    "ha_by_class": {
+     "frequent": 932.7,
+     "occasional": 649.6,
+     "rare": 1253.6,
+     "none": 2418.0
+    },
+    "outside_every_zone_pct": 46.0,
+    "only_rare_t500_pct": 23.9,
+    "frequent_or_occasional_pct": 30.1,
+    "frequent_t10_pct": 17.8,
+    "by_observed_class": {
+     "flooded_area": {
+      "flooded_ha": 1424.9,
+      "ha_by_class": {
+       "frequent": 771.6,
+       "occasional": 402.3,
+       "rare": 162.7,
+       "none": 88.3
+      },
+      "outside_every_zone_pct": 6.2,
+      "only_rare_t500_pct": 11.4,
+      "frequent_or_occasional_pct": 82.4,
+      "frequent_t10_pct": 54.1
+     },
+     "flood_trace": {
+      "flooded_ha": 3829.0,
+      "ha_by_class": {
+       "frequent": 161.1,
+       "occasional": 247.2,
+       "rare": 1091.0,
+       "none": 2329.7
+      },
+      "outside_every_zone_pct": 60.8,
+      "only_rare_t500_pct": 28.5,
+      "frequent_or_occasional_pct": 10.7,
+      "frequent_t10_pct": 4.2
+     }
+    },
+    "sum_of_municipalities_ha": 5253.9,
+    "zone_cover_pct": 11.2
+   },
+   "sensitivity": {
+    "sharpest_map_first": {
+     "what": "priority mosaic: each spot from the first product that analysed it (AOI03 grading v2, then AOI03 delineation v1, then AOI01 delineation v1); the lower bound, as the sharp maps may miss water in fields",
+     "total": {
+      "flooded_ha": 3232.6,
+      "outside_every_zone_pct": 31.8,
+      "only_rare_t500_pct": 24.7,
+      "frequent_or_occasional_pct": 43.5
+     },
+     "municipalities": {
+      "Paiporta": {
+       "flooded_ha": 220.7,
+       "outside_every_zone_pct": 50.3,
+       "only_rare_t500_pct": 49.0,
+       "frequent_or_occasional_pct": 0.7
+      },
+      "Massanassa": {
+       "flooded_ha": 373.5,
+       "outside_every_zone_pct": 2.4,
+       "only_rare_t500_pct": 40.5,
+       "frequent_or_occasional_pct": 57.1
+      },
+      "Sedaví": {
+       "flooded_ha": 115.3,
+       "outside_every_zone_pct": 89.9,
+       "only_rare_t500_pct": 8.9,
+       "frequent_or_occasional_pct": 1.2
+      },
+      "Catarroja": {
+       "flooded_ha": 630.4,
+       "outside_every_zone_pct": 3.9,
+       "only_rare_t500_pct": 29.7,
+       "frequent_or_occasional_pct": 66.4
+      },
+      "Alfafar": {
+       "flooded_ha": 833.2,
+       "outside_every_zone_pct": 12.7,
+       "only_rare_t500_pct": 21.6,
+       "frequent_or_occasional_pct": 65.7
+      },
+      "Benetússer": {
+       "flooded_ha": 11.9,
+       "outside_every_zone_pct": 49.8,
+       "only_rare_t500_pct": 50.2,
+       "frequent_or_occasional_pct": 0.0
+      },
+      "Picanya": {
+       "flooded_ha": 61.0,
+       "outside_every_zone_pct": 95.8,
+       "only_rare_t500_pct": 2.9,
+       "frequent_or_occasional_pct": 1.4
+      },
+      "Aldaia": {
+       "flooded_ha": 386.5,
+       "outside_every_zone_pct": 55.2,
+       "only_rare_t500_pct": 23.5,
+       "frequent_or_occasional_pct": 21.3
+      },
+      "Chiva": {
+       "flooded_ha": 214.0,
+       "outside_every_zone_pct": 42.9,
+       "only_rare_t500_pct": 14.7,
+       "frequent_or_occasional_pct": 42.3
+      },
+      "Torrent": {
+       "flooded_ha": 386.0,
+       "outside_every_zone_pct": 78.6,
+       "only_rare_t500_pct": 8.2,
+       "frequent_or_occasional_pct": 13.1
+      }
+     }
+    },
+    "only_EMSR773_AOI03_GRA_PRODUCT_v2": {
+     "what": "only the product EMSR773_AOI03_GRA_PRODUCT_v2, inside the area it analysed",
+     "total": {
+      "flooded_ha": 2097.2,
+      "outside_every_zone_pct": 44.8,
+      "only_rare_t500_pct": 36.5,
+      "frequent_or_occasional_pct": 18.7
+     },
+     "municipalities": {
+      "Paiporta": {
+       "flooded_ha": 220.7,
+       "outside_every_zone_pct": 50.3,
+       "only_rare_t500_pct": 49.0,
+       "frequent_or_occasional_pct": 0.7
+      },
+      "Massanassa": {
+       "flooded_ha": 177.3,
+       "outside_every_zone_pct": 4.3,
+       "only_rare_t500_pct": 85.2,
+       "frequent_or_occasional_pct": 10.6
+      },
+      "Sedaví": {
+       "flooded_ha": 87.1,
+       "outside_every_zone_pct": 95.6,
+       "only_rare_t500_pct": 4.4,
+       "frequent_or_occasional_pct": 0.0
+      },
+      "Catarroja": {
+       "flooded_ha": 345.7,
+       "outside_every_zone_pct": 7.0,
+       "only_rare_t500_pct": 54.1,
+       "frequent_or_occasional_pct": 39.0
+      },
+      "Alfafar": {
+       "flooded_ha": 210.5,
+       "outside_every_zone_pct": 20.5,
+       "only_rare_t500_pct": 73.2,
+       "frequent_or_occasional_pct": 6.3
+      },
+      "Benetússer": {
+       "flooded_ha": 11.9,
+       "outside_every_zone_pct": 49.8,
+       "only_rare_t500_pct": 50.2,
+       "frequent_or_occasional_pct": 0.0
+      },
+      "Picanya": {
+       "flooded_ha": 61.0,
+       "outside_every_zone_pct": 95.8,
+       "only_rare_t500_pct": 2.9,
+       "frequent_or_occasional_pct": 1.4
+      },
+      "Aldaia": {
+       "flooded_ha": 386.5,
+       "outside_every_zone_pct": 55.2,
+       "only_rare_t500_pct": 23.5,
+       "frequent_or_occasional_pct": 21.3
+      },
+      "Chiva": {
+       "flooded_ha": 213.6,
+       "outside_every_zone_pct": 42.9,
+       "only_rare_t500_pct": 14.8,
+       "frequent_or_occasional_pct": 42.4
+      },
+      "Torrent": {
+       "flooded_ha": 382.8,
+       "outside_every_zone_pct": 78.4,
+       "only_rare_t500_pct": 8.3,
+       "frequent_or_occasional_pct": 13.2
+      }
+     }
+    },
+    "only_EMSR773_AOI03_DEL_PRODUCT_v1": {
+     "what": "only the product EMSR773_AOI03_DEL_PRODUCT_v1, inside the area it analysed",
+     "total": {
+      "flooded_ha": 1084.4,
+      "outside_every_zone_pct": 52.7,
+      "only_rare_t500_pct": 28.1,
+      "frequent_or_occasional_pct": 19.3
+     },
+     "municipalities": {
+      "Paiporta": {
+       "flooded_ha": 172.0,
+       "outside_every_zone_pct": 50.3,
+       "only_rare_t500_pct": 48.8,
+       "frequent_or_occasional_pct": 0.9
+      },
+      "Massanassa": {
+       "flooded_ha": 25.6,
+       "outside_every_zone_pct": 11.2,
+       "only_rare_t500_pct": 87.7,
+       "frequent_or_occasional_pct": 1.1
+      },
+      "Sedaví": {
+       "flooded_ha": 6.3,
+       "outside_every_zone_pct": 86.2,
+       "only_rare_t500_pct": 13.8,
+       "frequent_or_occasional_pct": 0.0
+      },
+      "Catarroja": {
+       "flooded_ha": 62.0,
+       "outside_every_zone_pct": 11.8,
+       "only_rare_t500_pct": 83.8,
+       "frequent_or_occasional_pct": 4.5
+      },
+      "Alfafar": {
+       "flooded_ha": 20.6,
+       "outside_every_zone_pct": 21.8,
+       "only_rare_t500_pct": 78.2,
+       "frequent_or_occasional_pct": 0.0
+      },
+      "Benetússer": {
+       "flooded_ha": 6.2,
+       "outside_every_zone_pct": 36.3,
+       "only_rare_t500_pct": 63.7,
+       "frequent_or_occasional_pct": 0.0
+      },
+      "Picanya": {
+       "flooded_ha": 38.3,
+       "outside_every_zone_pct": 93.8,
+       "only_rare_t500_pct": 4.0,
+       "frequent_or_occasional_pct": 2.2
+      },
+      "Aldaia": {
+       "flooded_ha": 281.8,
+       "outside_every_zone_pct": 50.6,
+       "only_rare_t500_pct": 25.1,
+       "frequent_or_occasional_pct": 24.3
+      },
+      "Chiva": {
+       "flooded_ha": 184.2,
+       "outside_every_zone_pct": 34.9,
+       "only_rare_t500_pct": 15.5,
+       "frequent_or_occasional_pct": 49.6
+      },
+      "Torrent": {
+       "flooded_ha": 287.4,
+       "outside_every_zone_pct": 76.3,
+       "only_rare_t500_pct": 8.5,
+       "frequent_or_occasional_pct": 15.2
+      }
+     }
+    },
+    "only_EMSR773_AOI01_DEL_PRODUCT_v1": {
+     "what": "only the product EMSR773_AOI01_DEL_PRODUCT_v1, inside the area it analysed",
+     "total": {
+      "flooded_ha": 4517.5,
+      "outside_every_zone_pct": 43.7,
+      "only_rare_t500_pct": 24.4,
+      "frequent_or_occasional_pct": 31.9
+     },
+     "municipalities": {
+      "Paiporta": {
+       "flooded_ha": 397.8,
+       "outside_every_zone_pct": 55.4,
+       "only_rare_t500_pct": 40.7,
+       "frequent_or_occasional_pct": 3.8
+      },
+      "Massanassa": {
+       "flooded_ha": 492.8,
+       "outside_every_zone_pct": 5.5,
+       "only_rare_t500_pct": 48.9,
+       "frequent_or_occasional_pct": 45.6
+      },
+      "Sedaví": {
+       "flooded_ha": 151.9,
+       "outside_every_zone_pct": 91.4,
+       "only_rare_t500_pct": 7.7,
+       "frequent_or_occasional_pct": 0.9
+      },
+      "Catarroja": {
+       "flooded_ha": 866.6,
+       "outside_every_zone_pct": 17.1,
+       "only_rare_t500_pct": 33.6,
+       "frequent_or_occasional_pct": 49.3
+      },
+      "Alfafar": {
+       "flooded_ha": 938.8,
+       "outside_every_zone_pct": 16.5,
+       "only_rare_t500_pct": 25.2,
+       "frequent_or_occasional_pct": 58.3
+      },
+      "Benetússer": {
+       "flooded_ha": 12.8,
+       "outside_every_zone_pct": 45.9,
+       "only_rare_t500_pct": 54.1,
+       "frequent_or_occasional_pct": 0.0
+      },
+      "Picanya": {
+       "flooded_ha": 561.8,
+       "outside_every_zone_pct": 96.6,
+       "only_rare_t500_pct": 0.9,
+       "frequent_or_occasional_pct": 2.5
+      },
+      "Aldaia": {
+       "flooded_ha": 702.1,
+       "outside_every_zone_pct": 64.9,
+       "only_rare_t500_pct": 15.3,
+       "frequent_or_occasional_pct": 19.8
+      },
+      "Chiva": {
+       "flooded_ha": 82.3,
+       "outside_every_zone_pct": 34.9,
+       "only_rare_t500_pct": 23.6,
+       "frequent_or_occasional_pct": 41.5
+      },
+      "Torrent": {
+       "flooded_ha": 310.5,
+       "outside_every_zone_pct": 81.6,
+       "only_rare_t500_pct": 6.6,
+       "frequent_or_occasional_pct": 11.8
+      }
+     }
+    },
+    "flooded_area_only": {
+     "what": "headline extent, flooded area only (water still on the image, no traces)",
+     "total": {
+      "flooded_ha": 1424.9,
+      "outside_every_zone_pct": 6.2,
+      "only_rare_t500_pct": 11.4,
+      "frequent_or_occasional_pct": 82.4
+     },
+     "municipalities": {
+      "Paiporta": {
+       "flooded_ha": 9.0,
+       "outside_every_zone_pct": 44.6,
+       "only_rare_t500_pct": 32.2,
+       "frequent_or_occasional_pct": 23.2
+      },
+      "Massanassa": {
+       "flooded_ha": 263.2,
+       "outside_every_zone_pct": 1.2,
+       "only_rare_t500_pct": 22.4,
+       "frequent_or_occasional_pct": 76.4
+      },
+      "Sedaví": {
+       "flooded_ha": 25.2,
+       "outside_every_zone_pct": 68.2,
+       "only_rare_t500_pct": 26.3,
+       "frequent_or_occasional_pct": 5.5
+      },
+      "Catarroja": {
+       "flooded_ha": 425.0,
+       "outside_every_zone_pct": 0.2,
+       "only_rare_t500_pct": 5.0,
+       "frequent_or_occasional_pct": 94.8
+      },
+      "Alfafar": {
+       "flooded_ha": 645.5,
+       "outside_every_zone_pct": 5.5,
+       "only_rare_t500_pct": 10.2,
+       "frequent_or_occasional_pct": 84.2
+      },
+      "Benetússer": {
+       "flooded_ha": 0.1,
+       "outside_every_zone_pct": 2.6,
+       "only_rare_t500_pct": 97.4,
+       "frequent_or_occasional_pct": 0.0
+      },
+      "Picanya": {
+       "flooded_ha": 4.0,
+       "outside_every_zone_pct": 33.3,
+       "only_rare_t500_pct": 5.4,
+       "frequent_or_occasional_pct": 61.3
+      },
+      "Aldaia": {
+       "flooded_ha": 16.7,
+       "outside_every_zone_pct": 20.4,
+       "only_rare_t500_pct": 31.7,
+       "frequent_or_occasional_pct": 47.9
+      },
+      "Chiva": {
+       "flooded_ha": 12.2,
+       "outside_every_zone_pct": 32.4,
+       "only_rare_t500_pct": 6.4,
+       "frequent_or_occasional_pct": 61.2
+      },
+      "Torrent": {
+       "flooded_ha": 24.0,
+       "outside_every_zone_pct": 78.1,
+       "only_rare_t500_pct": 1.5,
+       "frequent_or_occasional_pct": 20.4
+      }
+     }
+    },
+    "flood_trace_only": {
+     "what": "headline extent, flood traces only (the water had gone; mostly streets)",
+     "total": {
+      "flooded_ha": 3829.0,
+      "outside_every_zone_pct": 60.8,
+      "only_rare_t500_pct": 28.5,
+      "frequent_or_occasional_pct": 10.7
+     },
+     "municipalities": {
+      "Paiporta": {
+       "flooded_ha": 389.2,
+       "outside_every_zone_pct": 55.7,
+       "only_rare_t500_pct": 40.9,
+       "frequent_or_occasional_pct": 3.4
+      },
+      "Massanassa": {
+       "flooded_ha": 239.3,
+       "outside_every_zone_pct": 10.3,
+       "only_rare_t500_pct": 79.7,
+       "frequent_or_occasional_pct": 10.0
+      },
+      "Sedaví": {
+       "flooded_ha": 126.9,
+       "outside_every_zone_pct": 96.0,
+       "only_rare_t500_pct": 4.0,
+       "frequent_or_occasional_pct": 0.0
+      },
+      "Catarroja": {
+       "flooded_ha": 487.3,
+       "outside_every_zone_pct": 30.4,
+       "only_rare_t500_pct": 64.6,
+       "frequent_or_occasional_pct": 5.1
+      },
+      "Alfafar": {
+       "flooded_ha": 299.5,
+       "outside_every_zone_pct": 40.6,
+       "only_rare_t500_pct": 58.3,
+       "frequent_or_occasional_pct": 1.2
+      },
+      "Benetússer": {
+       "flooded_ha": 17.0,
+       "outside_every_zone_pct": 48.2,
+       "only_rare_t500_pct": 51.8,
+       "frequent_or_occasional_pct": 0.0
+      },
+      "Picanya": {
+       "flooded_ha": 559.3,
+       "outside_every_zone_pct": 97.0,
+       "only_rare_t500_pct": 0.9,
+       "frequent_or_occasional_pct": 2.1
+      },
+      "Aldaia": {
+       "flooded_ha": 826.1,
+       "outside_every_zone_pct": 63.4,
+       "only_rare_t500_pct": 17.8,
+       "frequent_or_occasional_pct": 18.8
+      },
+      "Chiva": {
+       "flooded_ha": 269.2,
+       "outside_every_zone_pct": 41.2,
+       "only_rare_t500_pct": 16.9,
+       "frequent_or_occasional_pct": 41.9
+      },
+      "Torrent": {
+       "flooded_ha": 615.2,
+       "outside_every_zone_pct": 83.1,
+       "only_rare_t500_pct": 6.6,
+       "frequent_or_occasional_pct": 10.3
+      }
+     }
+    },
+    "fluvial_zones_only": {
+     "what": "headline extent, marine zones left out (SNCZI fluvial only)",
+     "total": {
+      "flooded_ha": 5253.9,
+      "outside_every_zone_pct": 46.0,
+      "only_rare_t500_pct": 23.9,
+      "frequent_or_occasional_pct": 30.1
+     },
+     "municipalities": {
+      "Paiporta": {
+       "flooded_ha": 398.2,
+       "outside_every_zone_pct": 55.5,
+       "only_rare_t500_pct": 40.7,
+       "frequent_or_occasional_pct": 3.8
+      },
+      "Massanassa": {
+       "flooded_ha": 502.6,
+       "outside_every_zone_pct": 5.5,
+       "only_rare_t500_pct": 49.7,
+       "frequent_or_occasional_pct": 44.8
+      },
+      "Sedaví": {
+       "flooded_ha": 152.1,
+       "outside_every_zone_pct": 91.4,
+       "only_rare_t500_pct": 7.7,
+       "frequent_or_occasional_pct": 0.9
+      },
+      "Catarroja": {
+       "flooded_ha": 912.3,
+       "outside_every_zone_pct": 16.3,
+       "only_rare_t500_pct": 36.8,
+       "frequent_or_occasional_pct": 46.9
+      },
+      "Alfafar": {
+       "flooded_ha": 944.9,
+       "outside_every_zone_pct": 16.6,
+       "only_rare_t500_pct": 25.5,
+       "frequent_or_occasional_pct": 57.9
+      },
+      "Benetússer": {
+       "flooded_ha": 17.1,
+       "outside_every_zone_pct": 47.9,
+       "only_rare_t500_pct": 52.1,
+       "frequent_or_occasional_pct": 0.0
+      },
+      "Picanya": {
+       "flooded_ha": 563.3,
+       "outside_every_zone_pct": 96.6,
+       "only_rare_t500_pct": 0.9,
+       "frequent_or_occasional_pct": 2.5
+      },
+      "Aldaia": {
+       "flooded_ha": 842.8,
+       "outside_every_zone_pct": 62.5,
+       "only_rare_t500_pct": 18.1,
+       "frequent_or_occasional_pct": 19.4
+      },
+      "Chiva": {
+       "flooded_ha": 281.4,
+       "outside_every_zone_pct": 40.8,
+       "only_rare_t500_pct": 16.5,
+       "frequent_or_occasional_pct": 42.7
+      },
+      "Torrent": {
+       "flooded_ha": 639.2,
+       "outside_every_zone_pct": 82.9,
+       "only_rare_t500_pct": 6.4,
+       "frequent_or_occasional_pct": 10.7
+      }
+     }
+    }
+   },
+   "official_studies": [
+    {
+     "layer": "fluvial_t10",
+     "ha_in_study_area": 960.5,
+     "id_zona": "ES080_T010_232",
+     "zona": "ES080_ARPS_0022-03, ES080_ARPS_0022-04, ES080_ARPS_0022-05, ES080_ARPS_0022-07, ES080_ARPS_0022-08",
+     "tipo_zona": "Q Periodo de retorno T10",
+     "rio": "Barrancos de Poyo y Saleta",
+     "estudio": "SNCZI",
+     "fecha_apro": "2020-02-14",
+     "zi_directiva": "ES080_ARPS_0022"
+    },
+    {
+     "layer": "fluvial_t10",
+     "ha_in_study_area": 84.8,
+     "id_zona": "ES080_T010_232B",
+     "zona": "ES080_ARPS_0014_15, ES080_ARPS_0014_15-01, ES080_ARPS_0014_15-02",
+     "tipo_zona": "Q Periodo de retorno T10",
+     "rio": "Barrancos de Picassent, Realón y Garroferal",
+     "estudio": "SNCZI",
+     "fecha_apro": "2020-02-14",
+     "zi_directiva": "ES080_ARPS_0014"
+    },
+    {
+     "layer": "fluvial_t100",
+     "ha_in_study_area": 1757.2,
+     "id_zona": "ES080_T010_232",
+     "zona": "ES080_ARPS_0022-03, ES080_ARPS_0022-04, ES080_ARPS_0022-05, ES080_ARPS_0022-07, ES080_ARPS_0022-08",
+     "tipo_zona": "Q Periodo de retorno T100",
+     "rio": "Barrancos de Poyo y Saleta",
+     "estudio": "SNCZI",
+     "fecha_apro": "2020-02-14",
+     "zi_directiva": "ES080_ARPS_0022"
+    },
+    {
+     "layer": "fluvial_t100",
+     "ha_in_study_area": 103.4,
+     "id_zona": "ES080_T010_232B",
+     "zona": "ES080_ARPS_0014_15, ES080_ARPS_0014_15-01, ES080_ARPS_0014_15-02",
+     "tipo_zona": "Q Periodo de retorno T100",
+     "rio": "Barrancos de Picassent, Realón y Garroferal",
+     "estudio": "SNCZI",
+     "fecha_apro": "2020-02-14",
+     "zi_directiva": "ES080_ARPS_0014"
+    },
+    {
+     "layer": "fluvial_t500",
+     "ha_in_study_area": 3253.7,
+     "id_zona": "ES080_T010_232",
+     "zona": "ES080_ARPS_0022-03, ES080_ARPS_0022-04, ES080_ARPS_0022-05, ES080_ARPS_0022-07, ES080_ARPS_0022-08",
+     "tipo_zona": "Q Periodo de retorno T500",
+     "rio": "Barrancos de Poyo y Saleta",
+     "estudio": "SNCZI",
+     "fecha_apro": "2020-02-14",
+     "zi_directiva": "ES080_ARPS_0022"
+    },
+    {
+     "layer": "fluvial_t500",
+     "ha_in_study_area": 156.9,
+     "id_zona": "ES080_T010_232B",
+     "zona": "ES080_ARPS_0014_15, ES080_ARPS_0014_15-01, ES080_ARPS_0014_15-02",
+     "tipo_zona": "Q Periodo de retorno T500",
+     "rio": "Barrancos de Picassent, Realón y Garroferal",
+     "estudio": "SNCZI",
+     "fecha_apro": "2020-02-14",
+     "zi_directiva": "ES080_ARPS_0014"
+    },
+    {
+     "layer": "marine_t100",
+     "ha_in_study_area": 504.5,
+     "id_zona": "ES080_ARPS_0022-06_T100",
+     "zona": "Bajo Turia",
+     "tipo_zona": "Z.I. PROBABILIDAD MEDIA (100 AÑOS)",
+     "estudio": "SNCZI. MAPAS DE PELIGROSIDAD Y RIESGO DE INUNDACIÓN DEL LITORAL DE LA DEMARCACIÓN HIDROGRÁFICA DEL JÚCAR",
+     "fecha": "2014-03-22",
+     "zi_directi": "ES080_ARPS_0022-06"
+    },
+    {
+     "layer": "marine_t500",
+     "ha_in_study_area": 529.8,
+     "id_zona": "ES080_ARPS_0022-06_T500",
+     "zona": "Bajo Turia",
+     "tipo_zona": "Z.I. PROBABILIDAD BAJA (500 AÑOS)",
+     "estudio": "SNCZI. MAPAS DE PELIGROSIDAD Y RIESGO DE INUNDACIÓN DEL LITORAL DE LA DEMARCACIÓN HIDROGRÁFICA DEL JÚCAR",
+     "fecha": "2014-03-22",
+     "zi_directi": "ES080_ARPS_0022-06"
+    }
+   ],
+   "graded_buildings": {
+    "source": "EMSR773_AOI03_GRA_PRODUCT_v2 builtUpP: building points graded by photo-interpretation of GeoEye-1 imagery of 31 Oct 2024 (Possibly damaged, Damaged, Destroyed)",
+    "credit": "Copernicus Emergency Management Service (© 2024 European Union), [EMSR773] Horta Sud (AOI03): Grading Map",
+    "what": "buildings graded as affected, by the zone class of their point",
+    "coverage": "only inside the grading map's area of interest: all of L'Horta Sud here, 6 % of Chiva",
+    "total": {
+     "buildings": 2238,
+     "by_class": {
+      "frequent": 10,
+      "occasional": 24,
+      "rare": 906,
+      "none": 1298
+     },
+     "outside_every_zone_pct": 58.0,
+     "only_rare_t500_pct": 40.5,
+     "frequent_or_occasional_pct": 1.5,
+     "by_damage": {
+      "Damaged": 1764,
+      "Destroyed": 36,
+      "Possibly damaged": 438
+     }
+    },
+    "municipalities": {
+     "Paiporta": {
+      "buildings": 327,
+      "by_class": {
+       "frequent": 0,
+       "occasional": 0,
+       "rare": 148,
+       "none": 179
+      },
+      "outside_every_zone_pct": 54.7,
+      "only_rare_t500_pct": 45.3,
+      "frequent_or_occasional_pct": 0.0,
+      "by_damage": {
+       "Damaged": 295,
+       "Destroyed": 1,
+       "Possibly damaged": 31
+      }
+     },
+     "Massanassa": {
+      "buildings": 199,
+      "by_class": {
+       "frequent": 0,
+       "occasional": 0,
+       "rare": 191,
+       "none": 8
+      },
+      "outside_every_zone_pct": 4.0,
+      "only_rare_t500_pct": 96.0,
+      "frequent_or_occasional_pct": 0.0,
+      "by_damage": {
+       "Damaged": 165,
+       "Possibly damaged": 34
+      }
+     },
+     "Sedaví": {
+      "buildings": 196,
+      "by_class": {
+       "frequent": 0,
+       "occasional": 0,
+       "rare": 1,
+       "none": 195
+      },
+      "outside_every_zone_pct": 99.5,
+      "only_rare_t500_pct": 0.5,
+      "frequent_or_occasional_pct": 0.0,
+      "by_damage": {
+       "Damaged": 196
+      }
+     },
+     "Catarroja": {
+      "buildings": 391,
+      "by_class": {
+       "frequent": 0,
+       "occasional": 2,
+       "rare": 386,
+       "none": 3
+      },
+      "outside_every_zone_pct": 0.8,
+      "only_rare_t500_pct": 98.7,
+      "frequent_or_occasional_pct": 0.5,
+      "by_damage": {
+       "Damaged": 337,
+       "Possibly damaged": 54
+      }
+     },
+     "Alfafar": {
+      "buildings": 232,
+      "by_class": {
+       "frequent": 0,
+       "occasional": 0,
+       "rare": 135,
+       "none": 97
+      },
+      "outside_every_zone_pct": 41.8,
+      "only_rare_t500_pct": 58.2,
+      "frequent_or_occasional_pct": 0.0,
+      "by_damage": {
+       "Damaged": 209,
+       "Possibly damaged": 23
+      }
+     },
+     "Benetússer": {
+      "buildings": 28,
+      "by_class": {
+       "frequent": 0,
+       "occasional": 0,
+       "rare": 10,
+       "none": 18
+      },
+      "outside_every_zone_pct": 64.3,
+      "only_rare_t500_pct": 35.7,
+      "frequent_or_occasional_pct": 0.0,
+      "by_damage": {
+       "Damaged": 17,
+       "Possibly damaged": 11
+      }
+     },
+     "Picanya": {
+      "buildings": 80,
+      "by_class": {
+       "frequent": 0,
+       "occasional": 0,
+       "rare": 0,
+       "none": 80
+      },
+      "outside_every_zone_pct": 100.0,
+      "only_rare_t500_pct": 0.0,
+      "frequent_or_occasional_pct": 0.0,
+      "by_damage": {
+       "Damaged": 14,
+       "Destroyed": 1,
+       "Possibly damaged": 65
+      }
+     },
+     "Aldaia": {
+      "buildings": 33,
+      "by_class": {
+       "frequent": 1,
+       "occasional": 6,
+       "rare": 6,
+       "none": 20
+      },
+      "outside_every_zone_pct": 60.6,
+      "only_rare_t500_pct": 18.2,
+      "frequent_or_occasional_pct": 21.2,
+      "by_damage": {
+       "Damaged": 13,
+       "Possibly damaged": 20
+      }
+     },
+     "Chiva": {
+      "buildings": 3,
+      "by_class": {
+       "frequent": 0,
+       "occasional": 0,
+       "rare": 2,
+       "none": 1
+      },
+      "outside_every_zone_pct": 33.3,
+      "only_rare_t500_pct": 66.7,
+      "frequent_or_occasional_pct": 0.0,
+      "by_damage": {
+       "Damaged": 3
+      }
+     },
+     "Torrent": {
+      "buildings": 749,
+      "by_class": {
+       "frequent": 9,
+       "occasional": 16,
+       "rare": 27,
+       "none": 697
+      },
+      "outside_every_zone_pct": 93.1,
+      "only_rare_t500_pct": 3.6,
+      "frequent_or_occasional_pct": 3.3,
+      "by_damage": {
+       "Damaged": 515,
+       "Destroyed": 34,
+       "Possibly damaged": 200
+      }
+     }
+    }
+   },
+   "land_cover_of_observed_flood": {
+    "source": "ESA WorldCover 2021 v200 (CC BY 4.0) on the Albufera 20 m grid, data/context/albufera_worldcover_2021_20m.tif (pipeline.context); share of the pixels whose centre lies in the observed flood",
+    "municipalities": {
+     "Paiporta": {
+      "flooded_area": {
+       "tree": 18.4,
+       "grass": 40.8,
+       "cropland": 28.5,
+       "built": 11.0,
+       "bare": 1.3
+      },
+      "flood_trace": {
+       "tree": 7.3,
+       "grass": 21.3,
+       "cropland": 16.2,
+       "built": 53.8,
+       "bare": 1.2
+      }
+     },
+     "Massanassa": {
+      "flooded_area": {
+       "grass": 2.7,
+       "cropland": 74.2,
+       "water": 0.9,
+       "wetland": 21.6
+      },
+      "flood_trace": {
+       "tree": 10.1,
+       "grass": 20.8,
+       "cropland": 23.2,
+       "built": 43.8,
+       "bare": 1.1,
+       "water": 0.7
+      }
+     },
+     "Sedaví": {
+      "flooded_area": {
+       "grass": 15.7,
+       "cropland": 79.8,
+       "built": 1.9,
+       "bare": 2.2
+      },
+      "flood_trace": {
+       "tree": 6.7,
+       "grass": 29.0,
+       "cropland": 8.2,
+       "built": 54.0,
+       "bare": 2.0
+      }
+     },
+     "Catarroja": {
+      "flooded_area": {
+       "tree": 0.6,
+       "grass": 3.9,
+       "cropland": 58.4,
+       "wetland": 36.1
+      },
+      "flood_trace": {
+       "tree": 6.8,
+       "grass": 28.4,
+       "cropland": 32.4,
+       "built": 31.1,
+       "bare": 1.1
+      }
+     },
+     "Alfafar": {
+      "flooded_area": {
+       "grass": 4.2,
+       "cropland": 72.5,
+       "built": 1.7,
+       "wetland": 21.1
+      },
+      "flood_trace": {
+       "tree": 2.4,
+       "grass": 37.4,
+       "cropland": 12.9,
+       "built": 43.8,
+       "bare": 2.6
+      }
+     },
+     "Benetússer": {
+      "flooded_area": {
+       "grass": 33.3,
+       "built": 33.3,
+       "bare": 33.3
+      },
+      "flood_trace": {
+       "tree": 6.1,
+       "grass": 9.6,
+       "cropland": 2.3,
+       "built": 81.3,
+       "bare": 0.7
+      }
+     }
+    }
+   }
+  },
+  "dana_adam_2026_pego_oliva": {
+   "title": "DANA Adam, 18 to 19 Oct 2026, Pego and Oliva",
+   "nisar": "NISAR saw this event (see pipeline/cv/evaluate.py, flood_vs_emsr935).",
+   "observed_flood": "flooded area (water on the image) plus flood traces (water gone, mud and debris left): where the water went. Maximum observed extent: a spot counts if any of the products saw water or a trace there",
+   "observed_source": {
+    "activation": "EMSR935, DANA Adam (imagery 20 to 21 Oct 2026)",
+    "files": [
+     "data/labels/pego_oliva_emsr935_flood.geojson",
+     "data/labels/pego_oliva_emsr935_aoi.geojson"
+    ],
+    "built_by": "python -m pipeline.labels (Copernicus EMS EMSR935 as republished by the Institut Cartogràfic Valencià, WFS https://terramapas.icv.gva.es/2702_DANAAdam2026; mapped areas from the rapid mapping API)",
+    "credit": "Copernicus Emergency Management Service (© 2026 European Union), [EMSR935] Moraira (AOI01): Delineation Map; Gandia (AOI02): Grading Map"
+   },
+   "zones_in_study_area_ha": {
+    "frequent": 1876.1,
+    "occasional": 1015.0,
+    "rare": 595.9,
+    "none": 7831.8
+   },
+   "marine_zones_overlap_with_observed_flood_ha": {
+    "marine_t100": 0.6,
+    "marine_t500": 0.8
+   },
+   "municipalities": [
+    {
+     "name": "Pego",
+     "ine": "03102",
+     "municipality_ha": 5291.0,
+     "zone_cover_pct": 15.3,
+     "analysed_pct": 100.0,
+     "flooded_ha": 461.1,
+     "ha_by_class": {
+      "frequent": 296.2,
+      "occasional": 161.1,
+      "rare": 2.2,
+      "none": 1.5
+     },
+     "outside_every_zone_pct": 0.3,
+     "only_rare_t500_pct": 0.5,
+     "frequent_or_occasional_pct": 99.2,
+     "frequent_t10_pct": 64.2,
+     "by_observed_class": {
+      "flooded_area": {
+       "flooded_ha": 381.9,
+       "ha_by_class": {
+        "frequent": 247.7,
+        "occasional": 133.8,
+        "rare": 0.4,
+        "none": 0.0
+       },
+       "outside_every_zone_pct": 0.0,
+       "only_rare_t500_pct": 0.1,
+       "frequent_or_occasional_pct": 99.9,
+       "frequent_t10_pct": 64.9
+      },
+      "flood_trace": {
+       "flooded_ha": 79.2,
+       "ha_by_class": {
+        "frequent": 48.5,
+        "occasional": 27.3,
+        "rare": 1.8,
+        "none": 1.5
+       },
+       "outside_every_zone_pct": 1.9,
+       "only_rare_t500_pct": 2.3,
+       "frequent_or_occasional_pct": 95.8,
+       "frequent_t10_pct": 61.3
+      }
+     },
+     "analysed_by_product_pct": {
+      "EMSR935_AOI01_AOI02 (data/labels)": 100.0
+     },
+     "observed_by_product_ha": {
+      "EMSR935_AOI01_AOI02 (data/labels)": 461.1
+     }
+    },
+    {
+     "name": "Oliva",
+     "ine": "46181",
+     "municipality_ha": 6027.8,
+     "zone_cover_pct": 44.4,
+     "analysed_pct": 100.0,
+     "flooded_ha": 502.1,
+     "ha_by_class": {
+      "frequent": 333.9,
+      "occasional": 127.0,
+      "rare": 40.5,
+      "none": 0.7
+     },
+     "outside_every_zone_pct": 0.1,
+     "only_rare_t500_pct": 8.1,
+     "frequent_or_occasional_pct": 91.8,
+     "frequent_t10_pct": 66.5,
+     "by_observed_class": {
+      "flooded_area": {
+       "flooded_ha": 367.9,
+       "ha_by_class": {
+        "frequent": 205.0,
+        "occasional": 122.7,
+        "rare": 39.9,
+        "none": 0.3
+       },
+       "outside_every_zone_pct": 0.1,
+       "only_rare_t500_pct": 10.9,
+       "frequent_or_occasional_pct": 89.1,
+       "frequent_t10_pct": 55.7
+      },
+      "flood_trace": {
+       "flooded_ha": 134.2,
+       "ha_by_class": {
+        "frequent": 128.9,
+        "occasional": 4.3,
+        "rare": 0.6,
+        "none": 0.4
+       },
+       "outside_every_zone_pct": 0.3,
+       "only_rare_t500_pct": 0.4,
+       "frequent_or_occasional_pct": 99.3,
+       "frequent_t10_pct": 96.1
+      }
+     },
+     "analysed_by_product_pct": {
+      "EMSR935_AOI01_AOI02 (data/labels)": 100.0
+     },
+     "observed_by_product_ha": {
+      "EMSR935_AOI01_AOI02 (data/labels)": 502.1
+     }
+    }
+   ],
+   "total": {
+    "flooded_ha": 963.2,
+    "ha_by_class": {
+     "frequent": 630.1,
+     "occasional": 288.2,
+     "rare": 42.7,
+     "none": 2.3
+    },
+    "outside_every_zone_pct": 0.2,
+    "only_rare_t500_pct": 4.4,
+    "frequent_or_occasional_pct": 95.3,
+    "frequent_t10_pct": 65.4,
+    "by_observed_class": {
+     "flooded_area": {
+      "flooded_ha": 749.8,
+      "ha_by_class": {
+       "frequent": 452.7,
+       "occasional": 256.5,
+       "rare": 40.3,
+       "none": 0.3
+      },
+      "outside_every_zone_pct": 0.0,
+      "only_rare_t500_pct": 5.4,
+      "frequent_or_occasional_pct": 94.6,
+      "frequent_t10_pct": 60.4
+     },
+     "flood_trace": {
+      "flooded_ha": 213.4,
+      "ha_by_class": {
+       "frequent": 177.4,
+       "occasional": 31.7,
+       "rare": 2.4,
+       "none": 1.9
+      },
+      "outside_every_zone_pct": 0.9,
+      "only_rare_t500_pct": 1.1,
+      "frequent_or_occasional_pct": 98.0,
+      "frequent_t10_pct": 83.1
+     }
+    },
+    "sum_of_municipalities_ha": 963.2,
+    "zone_cover_pct": 30.8
+   },
+   "sensitivity": {
+    "generalitat_footprint": {
+     "what": "official DANA Adam river-flood footprint of the Generalitat Valenciana (surveyed flood marks), data/labels/pego_oliva_generalitat_footprint.geojson, instead of EMSR935",
+     "total": {
+      "flooded_ha": 847.1,
+      "outside_every_zone_pct": 6.0,
+      "only_rare_t500_pct": 3.3,
+      "frequent_or_occasional_pct": 90.6
+     },
+     "municipalities": {
+      "Pego": {
+       "flooded_ha": 23.3,
+       "outside_every_zone_pct": 72.5,
+       "only_rare_t500_pct": 1.2,
+       "frequent_or_occasional_pct": 26.4
+      },
+      "Oliva": {
+       "flooded_ha": 823.8,
+       "outside_every_zone_pct": 4.1,
+       "only_rare_t500_pct": 3.4,
+       "frequent_or_occasional_pct": 92.5
+      }
+     }
+    },
+    "flooded_area_only": {
+     "what": "EMSR935 flooded area only (water still on the image, no traces)",
+     "total": {
+      "flooded_ha": 749.8,
+      "outside_every_zone_pct": 0.0,
+      "only_rare_t500_pct": 5.4,
+      "frequent_or_occasional_pct": 94.6
+     },
+     "municipalities": {
+      "Pego": {
+       "flooded_ha": 381.9,
+       "outside_every_zone_pct": 0.0,
+       "only_rare_t500_pct": 0.1,
+       "frequent_or_occasional_pct": 99.9
+      },
+      "Oliva": {
+       "flooded_ha": 367.9,
+       "outside_every_zone_pct": 0.1,
+       "only_rare_t500_pct": 10.9,
+       "frequent_or_occasional_pct": 89.1
+      }
+     }
+    },
+    "flood_trace_only": {
+     "what": "EMSR935 flood traces only (the water had gone)",
+     "total": {
+      "flooded_ha": 213.4,
+      "outside_every_zone_pct": 0.9,
+      "only_rare_t500_pct": 1.1,
+      "frequent_or_occasional_pct": 98.0
+     },
+     "municipalities": {
+      "Pego": {
+       "flooded_ha": 79.2,
+       "outside_every_zone_pct": 1.9,
+       "only_rare_t500_pct": 2.3,
+       "frequent_or_occasional_pct": 95.8
+      },
+      "Oliva": {
+       "flooded_ha": 134.2,
+       "outside_every_zone_pct": 0.3,
+       "only_rare_t500_pct": 0.4,
+       "frequent_or_occasional_pct": 99.3
+      }
+     }
+    },
+    "fluvial_zones_only": {
+     "what": "EMSR935, marine zones left out (SNCZI fluvial only)",
+     "total": {
+      "flooded_ha": 963.2,
+      "outside_every_zone_pct": 0.2,
+      "only_rare_t500_pct": 4.4,
+      "frequent_or_occasional_pct": 95.3
+     },
+     "municipalities": {
+      "Pego": {
+       "flooded_ha": 461.1,
+       "outside_every_zone_pct": 0.3,
+       "only_rare_t500_pct": 0.5,
+       "frequent_or_occasional_pct": 99.2
+      },
+      "Oliva": {
+       "flooded_ha": 502.1,
+       "outside_every_zone_pct": 0.1,
+       "only_rare_t500_pct": 8.1,
+       "frequent_or_occasional_pct": 91.8
+      }
+     }
+    }
+   },
+   "official_studies": [
+    {
+     "layer": "fluvial_t10",
+     "ha_in_study_area": 1874.9,
+     "id_zona": "ES080_T010_288",
+     "zona": "ES080_ARPS_0011-02, ES080_ARPS_0011-03, ES080_ARPS_0011-04, ES080_ARPS_0011-05, ES080_ARPS_0011-06",
+     "tipo_zona": "Q Periodo de retorno T10",
+     "rio": "Barrancos de les Fonts, Algepsar y Frares, Río Alfadalí, Rambla Gallinera, Ríos Benirrama, Vedat y Molinell",
+     "estudio": "SNCZI",
+     "fecha_apro": "2020-02-14",
+     "zi_directiva": "ES080_ARPS_0011"
+    },
+    {
+     "layer": "fluvial_t10",
+     "ha_in_study_area": 1.1,
+     "id_zona": "ES080_T010_287",
+     "zona": "70.05 BARRANCO DE MIXEL",
+     "tipo_zona": "Q Periodo de retorno T10",
+     "rio": "Barranco de Mixel",
+     "estudio": "SNCZI. Zonas Inundables del Sistema Marina Alta",
+     "fecha_apro": "2011-11-01",
+     "zi_directiva": "NO"
+    },
+    {
+     "layer": "fluvial_t100",
+     "ha_in_study_area": 2839.6,
+     "id_zona": "ES080_T010_288",
+     "zona": "ES080_ARPS_0011-02, ES080_ARPS_0011-03, ES080_ARPS_0011-04, ES080_ARPS_0011-05, ES080_ARPS_0011-06",
+     "tipo_zona": "Q Periodo de retorno T100",
+     "rio": "Barrancos de les Fonts, Algepsar y Frares, Río Alfadalí, Rambla Gallinera, Ríos Benirrama, Vedat y Molinell",
+     "estudio": "SNCZI",
+     "fecha_apro": "2020-02-14",
+     "zi_directiva": "ES080_ARPS_0011"
+    },
+    {
+     "layer": "fluvial_t100",
+     "ha_in_study_area": 1.8,
+     "id_zona": "ES080_T100_287",
+     "zona": "70.05 BARRANCO DE MIXEL",
+     "tipo_zona": "Q Periodo de retorno T100",
+     "rio": "Barranco de Mixel",
+     "estudio": "SNCZI. Zonas Inundables del Sistema Marina Alta",
+     "fecha_apro": "2011-11-01",
+     "zi_directiva": "NO"
+    },
+    {
+     "layer": "fluvial_t500",
+     "ha_in_study_area": 3437.1,
+     "id_zona": "ES080_T010_288",
+     "zona": "ES080_ARPS_0011-02, ES080_ARPS_0011-03, ES080_ARPS_0011-04, ES080_ARPS_0011-05, ES080_ARPS_0011-06",
+     "tipo_zona": "Q Periodo de retorno T500",
+     "rio": "Barrancos de les Fonts, Algepsar y Frares, Río Alfadalí, Rambla Gallinera, Ríos Benirrama, Vedat y Molinell",
+     "estudio": "SNCZI",
+     "fecha_apro": "2020-02-14",
+     "zi_directiva": "ES080_ARPS_0011"
+    },
+    {
+     "layer": "fluvial_t500",
+     "ha_in_study_area": 2.9,
+     "id_zona": "ES080_T010_282",
+     "zona": "ES080_ARPS_0011-01, ES080_ARPS_0012-01, ES080_ARPS_0012-02, ES080_ARPS_0012-03",
+     "tipo_zona": "Q Periodo de retorno T500",
+     "rio": "Ríos Vernissa, Palma, Serpis y Beniopa. Barrancos Camí Vell, Coves y Piles o Palmera",
+     "estudio": "SNCZI",
+     "fecha_apro": "2020-02-14",
+     "zi_directiva": "ES080_ARPS_0012"
+    },
+    {
+     "layer": "fluvial_t500",
+     "ha_in_study_area": 2.0,
+     "id_zona": "ES080_T500_287",
+     "zona": "70.05 BARRANCO DE MIXEL",
+     "tipo_zona": "Q Periodo de retorno T500",
+     "rio": "Barranco de Mixel",
+     "estudio": "SNCZI. Zonas Inundables del Sistema Marina Alta",
+     "fecha_apro": "2011-11-01",
+     "zi_directiva": "NO"
+    },
+    {
+     "layer": "marine_t100",
+     "ha_in_study_area": 59.7,
+     "id_zona": "ES080_ARPS_0040_T100",
+     "zona": "Rambla Gallinera - Marjal de Pego",
+     "tipo_zona": "Z.I. PROBABILIDAD MEDIA (100 AÑOS)",
+     "estudio": "SNCZI. MAPAS DE PELIGROSIDAD Y RIESGO DE INUNDACIÓN DEL LITORAL DE LA DEMARCACIÓN HIDROGRÁFICA DEL JÚCAR",
+     "fecha": "2014-03-22",
+     "zi_directi": "ES080_ARPS_0040"
+    },
+    {
+     "layer": "marine_t500",
+     "ha_in_study_area": 63.3,
+     "id_zona": "ES080_ARPS_0040_T500",
+     "zona": "Rambla Gallinera - Marjal de Pego",
+     "tipo_zona": "Z.I. PROBABILIDAD BAJA (500 AÑOS)",
+     "estudio": "SNCZI. MAPAS DE PELIGROSIDAD Y RIESGO DE INUNDACIÓN DEL LITORAL DE LA DEMARCACIÓN HIDROGRÁFICA DEL JÚCAR",
+     "fecha": "2014-03-22",
+     "zi_directi": "ES080_ARPS_0040"
+    }
+   ]
+  }
+ },
+ "sources": {
+  "municipalities_horta_sud": {
+   "url": "https://www.ign.es/wfs-inspire/unidades-administrativas",
+   "params": {
+    "service": "WFS",
+    "version": "2.0.0",
+    "request": "GetFeature",
+    "typeNames": "au:AdministrativeUnit",
+    "outputFormat": "application/geo+json",
+    "resourceId": "AU_ADMINISTRATIVEUNIT_34104646186,AU_ADMINISTRATIVEUNIT_34104646165,AU_ADMINISTRATIVEUNIT_34104646223,AU_ADMINISTRATIVEUNIT_34104646094,AU_ADMINISTRATIVEUNIT_34104646022,AU_ADMINISTRATIVEUNIT_34104646054,AU_ADMINISTRATIVEUNIT_34104646193,AU_ADMINISTRATIVEUNIT_34104646021,AU_ADMINISTRATIVEUNIT_34104646111,AU_ADMINISTRATIVEUNIT_34104646244"
+   },
+   "file": "data/interim/flood-zones/ign_horta_sud.geojson",
+   "bytes": 407645,
+   "sha256": "c7276108ec168b97468621997e77b8795f825a3d96f9b3ad8acb44f5b890d7e5",
+   "retrieved_utc": "2026-11-15T00:16:14+00:00"
+  },
+  "snczi_horta_sud_fluvial_t10": {
+   "layer": "agua:Zi_laminas_q10",
+   "title": "Z.I. con alta probabilidad (T=10 años) de origen fluvial",
+   "metadata": "https://catalogo.datosabiertos.miteco.gob.es/catalogo#/metadata/813bd9ed-a458-438e-af96-b9cbca568007",
+   "url": "https://gis.miteco.gob.es/geoserver/agua/wfs",
+   "params": {
+    "service": "WFS",
+    "version": "2.0.0",
+    "request": "GetFeature",
+    "typeNames": "agua:Zi_laminas_q10",
+    "outputFormat": "application/json",
+    "srsName": "EPSG:25830",
+    "bbox": "677746,4359607,731012,4381667,EPSG:25830"
+   },
+   "file": "data/interim/flood-zones/snczi_horta_sud_fluvial_t10.geojson",
+   "bytes": 6110444,
+   "sha256": "82c5bd06738372cb7975112c25ff7633fd078f9819618bf47c8b9120fc6d5e36",
+   "retrieved_utc": "2026-11-15T00:16:16+00:00"
+  },
+  "snczi_horta_sud_fluvial_t100": {
+   "layer": "agua:Zi_laminas_q100",
+   "title": "Z.I. con probabilidad media u ocasional (T=100 años) de origen fluvial",
+   "metadata": "https://catalogo.datosabiertos.miteco.gob.es/catalogo#/metadata/cc381566-d971-4dea-9938-84ad8c0d3ff3",
+   "url": "https://gis.miteco.gob.es/geoserver/agua/wfs",
+   "params": {
+    "service": "WFS",
+    "version": "2.0.0",
+    "request": "GetFeature",
+    "typeNames": "agua:Zi_laminas_q100",
+    "outputFormat": "application/json",
+    "srsName": "EPSG:25830",
+    "bbox": "677746,4359607,731012,4381667,EPSG:25830"
+   },
+   "file": "data/interim/flood-zones/snczi_horta_sud_fluvial_t100.geojson",
+   "bytes": 7109279,
+   "sha256": "756350cdaec452506e8e429e517ad89776a66a0755b98b4b0a3be0c425ac90c5",
+   "retrieved_utc": "2026-11-15T00:16:17+00:00"
+  },
+  "snczi_horta_sud_fluvial_t500": {
+   "layer": "agua:Zi_laminas_q500",
+   "title": "Z.I. con probabilidad baja o excepcional (T=500 años) de origen fluvial",
+   "metadata": "https://catalogo.datosabiertos.miteco.gob.es/catalogo#/metadata/b3c330f1-ef8d-4e62-a940-1040083dabff",
+   "url": "https://gis.miteco.gob.es/geoserver/agua/wfs",
+   "params": {
+    "service": "WFS",
+    "version": "2.0.0",
+    "request": "GetFeature",
+    "typeNames": "agua:Zi_laminas_q500",
+    "outputFormat": "application/json",
+    "srsName": "EPSG:25830",
+    "bbox": "677746,4359607,731012,4381667,EPSG:25830"
+   },
+   "file": "data/interim/flood-zones/snczi_horta_sud_fluvial_t500.geojson",
+   "bytes": 40603753,
+   "sha256": "769b90bfc0b4b552300503457395210ed59feb864600dfb6e681b3b46a0194dc",
+   "retrieved_utc": "2026-11-15T00:16:23+00:00"
+  },
+  "snczi_horta_sud_marine_t100": {
+   "layer": "costas:zim_laminas_q100",
+   "title": "Z.I. con probabilidad media u ocasional (T=100 años) de origen marino",
+   "metadata": "",
+   "url": "https://gis.miteco.gob.es/geoserver/costas/wfs",
+   "params": {
+    "service": "WFS",
+    "version": "2.0.0",
+    "request": "GetFeature",
+    "typeNames": "costas:zim_laminas_q100",
+    "outputFormat": "application/json",
+    "srsName": "EPSG:25830",
+    "bbox": "677746,4359607,731012,4381667,EPSG:25830"
+   },
+   "file": "data/interim/flood-zones/snczi_horta_sud_marine_t100.geojson",
+   "bytes": 783601,
+   "sha256": "2721e9f53e2d5ab8ee0d6603de1ad2bc63361814f8a997df4858f8b40d7d3dc6",
+   "retrieved_utc": "2026-11-15T00:16:24+00:00"
+  },
+  "snczi_horta_sud_marine_t500": {
+   "layer": "costas:zim_laminas_q500",
+   "title": "Z.I. con probabilidad baja o excepcional (T=500 años) de origen marino",
+   "metadata": "",
+   "url": "https://gis.miteco.gob.es/geoserver/costas/wfs",
+   "params": {
+    "service": "WFS",
+    "version": "2.0.0",
+    "request": "GetFeature",
+    "typeNames": "costas:zim_laminas_q500",
+    "outputFormat": "application/json",
+    "srsName": "EPSG:25830",
+    "bbox": "677746,4359607,731012,4381667,EPSG:25830"
+   },
+   "file": "data/interim/flood-zones/snczi_horta_sud_marine_t500.geojson",
+   "bytes": 943341,
+   "sha256": "3b8ff9f4254f6b7edbe3f1681ca13f261a16849b02c3cefb26e059ebfafede02",
+   "retrieved_utc": "2026-11-15T00:16:25+00:00"
+  },
+  "municipalities_pego_oliva": {
+   "url": "https://www.ign.es/wfs-inspire/unidades-administrativas",
+   "params": {
+    "service": "WFS",
+    "version": "2.0.0",
+    "request": "GetFeature",
+    "typeNames": "au:AdministrativeUnit",
+    "outputFormat": "application/geo+json",
+    "resourceId": "AU_ADMINISTRATIVEUNIT_34100303102,AU_ADMINISTRATIVEUNIT_34104646181"
+   },
+   "file": "data/interim/flood-zones/ign_pego_oliva.geojson",
+   "bytes": 122297,
+   "sha256": "52c9a2977516187852bdb3953b4e95145e549717addca7b929ca431fca29080f",
+   "retrieved_utc": "2026-11-15T00:16:14+00:00"
+  },
+  "snczi_pego_oliva_fluvial_t10": {
+   "layer": "agua:Zi_laminas_q10",
+   "title": "Z.I. con alta probabilidad (T=10 años) de origen fluvial",
+   "metadata": "https://catalogo.datosabiertos.miteco.gob.es/catalogo#/metadata/813bd9ed-a458-438e-af96-b9cbca568007",
+   "url": "https://gis.miteco.gob.es/geoserver/agua/wfs",
+   "params": {
+    "service": "WFS",
+    "version": "2.0.0",
+    "request": "GetFeature",
+    "typeNames": "agua:Zi_laminas_q10",
+    "outputFormat": "application/json",
+    "srsName": "EPSG:25830",
+    "bbox": "745037,4297379,759124,4315468,EPSG:25830"
+   },
+   "file": "data/interim/flood-zones/snczi_pego_oliva_fluvial_t10.geojson",
+   "bytes": 3262760,
+   "sha256": "2ace9b675a036162e9ab4ae99dac2a6e7c9089b3ed8b4658f6488b6753299388",
+   "retrieved_utc": "2026-11-15T00:16:26+00:00"
+  },
+  "snczi_pego_oliva_fluvial_t100": {
+   "layer": "agua:Zi_laminas_q100",
+   "title": "Z.I. con probabilidad media u ocasional (T=100 años) de origen fluvial",
+   "metadata": "https://catalogo.datosabiertos.miteco.gob.es/catalogo#/metadata/cc381566-d971-4dea-9938-84ad8c0d3ff3",
+   "url": "https://gis.miteco.gob.es/geoserver/agua/wfs",
+   "params": {
+    "service": "WFS",
+    "version": "2.0.0",
+    "request": "GetFeature",
+    "typeNames": "agua:Zi_laminas_q100",
+    "outputFormat": "application/json",
+    "srsName": "EPSG:25830",
+    "bbox": "745037,4297379,759124,4315468,EPSG:25830"
+   },
+   "file": "data/interim/flood-zones/snczi_pego_oliva_fluvial_t100.geojson",
+   "bytes": 3443367,
+   "sha256": "e1f0d4680eb474fb227462f876c6b65d169447bf930779471fd7eccebe7ca421",
+   "retrieved_utc": "2026-11-15T00:16:27+00:00"
+  },
+  "snczi_pego_oliva_fluvial_t500": {
+   "layer": "agua:Zi_laminas_q500",
+   "title": "Z.I. con probabilidad baja o excepcional (T=500 años) de origen fluvial",
+   "metadata": "https://catalogo.datosabiertos.miteco.gob.es/catalogo#/metadata/b3c330f1-ef8d-4e62-a940-1040083dabff",
+   "url": "https://gis.miteco.gob.es/geoserver/agua/wfs",
+   "params": {
+    "service": "WFS",
+    "version": "2.0.0",
+    "request": "GetFeature",
+    "typeNames": "agua:Zi_laminas_q500",
+    "outputFormat": "application/json",
+    "srsName": "EPSG:25830",
+    "bbox": "745037,4297379,759124,4315468,EPSG:25830"
+   },
+   "file": "data/interim/flood-zones/snczi_pego_oliva_fluvial_t500.geojson",
+   "bytes": 21241805,
+   "sha256": "9c1a0ed1370d774619bfc732a642e072656d873142107866978428af187cc4b5",
+   "retrieved_utc": "2026-11-15T00:16:32+00:00"
+  },
+  "snczi_pego_oliva_marine_t100": {
+   "layer": "costas:zim_laminas_q100",
+   "title": "Z.I. con probabilidad media u ocasional (T=100 años) de origen marino",
+   "metadata": "",
+   "url": "https://gis.miteco.gob.es/geoserver/costas/wfs",
+   "params": {
+    "service": "WFS",
+    "version": "2.0.0",
+    "request": "GetFeature",
+    "typeNames": "costas:zim_laminas_q100",
+    "outputFormat": "application/json",
+    "srsName": "EPSG:25830",
+    "bbox": "745037,4297379,759124,4315468,EPSG:25830"
+   },
+   "file": "data/interim/flood-zones/snczi_pego_oliva_marine_t100.geojson",
+   "bytes": 77579,
+   "sha256": "9a916b80636228e7c0063cf8f61addc8ed30033a6b418258f1341e2a5be7230b",
+   "retrieved_utc": "2026-11-15T00:16:32+00:00"
+  },
+  "snczi_pego_oliva_marine_t500": {
+   "layer": "costas:zim_laminas_q500",
+   "title": "Z.I. con probabilidad baja o excepcional (T=500 años) de origen marino",
+   "metadata": "",
+   "url": "https://gis.miteco.gob.es/geoserver/costas/wfs",
+   "params": {
+    "service": "WFS",
+    "version": "2.0.0",
+    "request": "GetFeature",
+    "typeNames": "costas:zim_laminas_q500",
+    "outputFormat": "application/json",
+    "srsName": "EPSG:25830",
+    "bbox": "745037,4297379,759124,4315468,EPSG:25830"
+   },
+   "file": "data/interim/flood-zones/snczi_pego_oliva_marine_t500.geojson",
+   "bytes": 79065,
+   "sha256": "0c6b057616d737b1ec667ea7d87d15c8f9826c24c36ba4948882b4bb08c47003",
+   "retrieved_utc": "2026-11-15T00:16:33+00:00"
+  },
+  "emsr773_EMSR773_AOI03_GRA_PRODUCT_v2": {
+   "url": "https://rapidmapping.emergency.copernicus.eu/backend/EMSR773/AOI03/GRA_PRODUCT/EMSR773_AOI03_GRA_PRODUCT_v2.zip",
+   "params": {},
+   "file": "data/interim/flood-zones/raw/emsr773/EMSR773_AOI03_GRA_PRODUCT_v2.zip",
+   "bytes": 70968988,
+   "sha256": "8248feef4f0a9938dfaff103a6e3d6960294f4572d193df919eda55ad79880ba",
+   "retrieved_utc": "2026-11-15T00:17:03+00:00",
+   "credit": "Copernicus Emergency Management Service (© 2024 European Union), [EMSR773] Horta Sud (AOI03): Grading Map"
+  },
+  "emsr773_EMSR773_AOI03_DEL_PRODUCT_v1": {
+   "url": "https://rapidmapping.emergency.copernicus.eu/backend/EMSR773/AOI03/DEL_PRODUCT/EMSR773_AOI03_DEL_PRODUCT_v1.zip",
+   "params": {},
+   "file": "data/interim/flood-zones/raw/emsr773/EMSR773_AOI03_DEL_PRODUCT_v1.zip",
+   "bytes": 17494094,
+   "sha256": "9a756cafde913034bbeffc1ac5a53582cffa28034d7173c78a5988ac2c40cd3b",
+   "retrieved_utc": "2026-11-15T00:17:11+00:00",
+   "credit": "Copernicus Emergency Management Service (© 2024 European Union), [EMSR773] Horta Sud (AOI03): Delineation Map"
+  },
+  "emsr773_EMSR773_AOI01_DEL_PRODUCT_v1": {
+   "url": "https://rapidmapping.emergency.copernicus.eu/backend/EMSR773/AOI01/DEL_PRODUCT/EMSR773_AOI01_DEL_PRODUCT_v1.zip",
+   "params": {},
+   "file": "data/interim/flood-zones/raw/emsr773/EMSR773_AOI01_DEL_PRODUCT_v1.zip",
+   "bytes": 23112708,
+   "sha256": "5f7286fb4d6bd879dc135c2d5e002b2f8acf597f52b315b6ef07e9ee92018cee",
+   "retrieved_utc": "2026-11-15T00:17:22+00:00",
+   "credit": "Copernicus Emergency Management Service (© 2024 European Union), [EMSR773] Valencia province (AOI01): Delineation Map"
+  },
+  "emsr773_activation": {
+   "url": "https://rapidmapping.emergency.copernicus.eu/backend/dashboard-api/public-activations/",
+   "params": {
+    "code": "EMSR773"
+   },
+   "file": "data/interim/flood-zones/emsr773_activation.json",
+   "bytes": 234192,
+   "sha256": "5041c86b0fe6fec6e14dfd279eaad055292686bfba10402447aceb23a6f9c730",
+   "retrieved_utc": "2026-11-15T00:16:34+00:00"
+  },
+  "snczi": {
+   "name": "Sistema Nacional de Cartografía de Zonas Inundables (SNCZI), zonas inundables asociadas a periodos de retorno",
+   "publisher": "Ministerio para la Transición Ecológica y el Reto Demográfico (MITECO)",
+   "download_page": "https://www.miteco.gob.es/en/cartografia-y-sig/ide/descargas/agua/zi-lamina.html",
+   "data_updated": "2026-06-01 (date listed for every layer on the download page, read 2026-11-15)",
+   "service_sheets": "https://gis.miteco.gob.es/descargas/info/ZI_T10.pdf, ZI_T100.pdf, ZI_T500.pdf",
+   "licence": "Free use, crediting the ministry as author and owner (MITECO download page)",
+   "credit": "© Ministerio para la Transición Ecológica y el Reto Demográfico"
+  },
+  "ign": {
+   "name": "Unidades administrativas (INSPIRE AU), municipios",
+   "publisher": "Instituto Geográfico Nacional (IGN), Base de Datos de Delimitaciones Territoriales",
+   "service": "https://www.ign.es/wfs-inspire/unidades-administrativas",
+   "licence": "CC BY 4.0 (WFS capabilities: AccessConstraints 'CC BY 4.0 ign.es')",
+   "credit": "© Instituto Geográfico Nacional, CC BY 4.0 ign.es"
+  },
+  "copernicus_ems": {
+   "citation_guidelines": "https://mapping.emergency.copernicus.eu/about/citation-guidelines/",
+   "terms": "https://mapping.emergency.copernicus.eu/terms-and-conditions/"
+  }
+ },
+ "claims": [
+  {
+   "claim": "the 2024 DANA flooded 14 % outside every zone",
+   "our_number": "SNCZI, 10 municipalities: 46.0 % of the observed flood outside every zone (2418.0 of 5253.9 ha); 31.8 % with the sharpest map first (3232.6 ha); 60.8 % of the flood traces (streets); 58.0 % of the 2238 graded buildings",
+   "cited_number": "14.1 % outside MIPICOVA (PATRICOVA plus SNCZI) in three whole basins (Camarasa-Belmonte et al. 2025)",
+   "threshold": "holds if our numbers are within 3 points of 14 %",
+   "verdict": "does not hold",
+   "say": "With the national flood map (SNCZI), 32 to 46 % of the land the 2024 DANA flooded in these 10 towns was outside every official flood zone. The 14 % figure is real but belongs to a different map and area: 14.1 % of the area flooded in the Poyo, Magro and Albufera ravine basins was outside the Valencian integrated hazard map MIPICOVA (Camarasa-Belmonte et al. 2025).",
+   "sources": [
+    {
+     "citation": "Camarasa-Belmonte, A., Zornoza-Gallego, C., Sanchis-Ibor, C., Serrano-Lara, J.J. (2025). ¿Cómo de efectiva es la cartografía de peligro de inundación para la gestión de la emergencia? Evaluación a partir del mapa de las inundaciones de Valencia de octubre de 2024. Ingeniería del Agua 29(4), 229-244",
+     "doi": "https://doi.org/10.4995/ia.2025.24007",
+     "pdf": "https://riunet.upv.es/bitstreams/81252377-dfac-44de-b2bf-35d52521b831/download",
+     "retrieved": "2026-11-15",
+     "numbers": "Table 1: 37,972.1 ha flooded in the Poyo-Poçalet-Saleta, Magro and Albufera ravine basins; 5,353.5 ha (14.1 %) outside the hazard map MIPICOVA (PATRICOVA plus SNCZI, with the geomorphological level); Poyo-Poçalet-Saleta 20.5 %, Magro 20.8 %, Albufera ravines 5.4 %",
+     "outside_pct": 14.1
+    },
+    "data/zones/zones_vs_floods.json events.dana_2024_horta_sud.total, .sensitivity, .graded_buildings"
+   ]
+  },
+  {
+   "claim": "Paiporta and Massanassa were almost all rare",
+   "our_number": "Paiporta: land 40.7 % only rare, 55.5 % outside every zone, 3.8 % frequent or occasional; flood traces 40.9 % only rare; graded buildings 45.3 % only rare, 54.7 % outside (of 327); Massanassa: land 49.7 % only rare, 5.5 % outside every zone, 44.8 % frequent or occasional; flood traces 79.7 % only rare; graded buildings 96.0 % only rare, 4.0 % outside (of 199)",
+   "threshold": "almost all = at least 90 % of the graded (affected) buildings only in the rare (T500) zone; the elDiario.es source of the claim counted buildings",
+   "verdict": "partly holds",
+   "say": "Massanassa, yes: 96 % of its affected buildings were in the rare zone. Paiporta, no: 45 % of its affected buildings were in the rare zone and 55 % outside every zone; of its flooded land 41 % was rare and 56 % outside. Massanassa's standing water (263 ha, 76 % in the frequent or occasional zones) lay on cropland and wetland of the Albufera (74 % and 22 % in ESA WorldCover), not in the town.",
+   "sources": [
+    {
+     "citation": "Miguel Giménez, 'El riesgo de inundación en los municipios de la zona cero de la DANA en Valencia era muy bajo', elDiario.es, 8 Jan 2025",
+     "url": "https://www.eldiario.es/comunitat-valenciana/riesgo-inundacion-municipios-zona-cero-dana-valencia_1_11945779.html",
+     "retrieved": "2026-11-15",
+     "numbers": "Dwellings (Catastro) in SNCZI zones, not flooded area: Massanassa 100 % of buildings in the 500-year zone and 0.1 % in the 100-year zone; Paiporta about 3,500 dwellings in the 500-year zone and 3 in the 100-year zone; Sedaví with no risk in the 500-year map"
+    },
+    "data/zones/zones_vs_floods.json events.dana_2024_horta_sud.municipalities, .graded_buildings, .land_cover_of_observed_flood"
+   ]
+  },
+  {
+   "claim": "Sedaví in none (no official zone)",
+   "our_number": "Sedaví: 91.4 % of its flooded land outside every zone (96.0 % of its flood traces), 99.5 % of its 196 graded buildings; official zones cover 7.2 % of the municipality",
+   "threshold": "holds if at least 95 % of the affected buildings and of the flood traces were outside every zone; partly if at least 80 %",
+   "verdict": "holds",
+   "say": "Sedaví: 99.5 % of its affected buildings and 91 % of the land that flooded were outside every official flood zone (zones cover only 7 % of the town's area, so not literally none).",
+   "sources": [
+    {
+     "citation": "Miguel Giménez, 'El riesgo de inundación en los municipios de la zona cero de la DANA en Valencia era muy bajo', elDiario.es, 8 Jan 2025",
+     "url": "https://www.eldiario.es/comunitat-valenciana/riesgo-inundacion-municipios-zona-cero-dana-valencia_1_11945779.html",
+     "retrieved": "2026-11-15",
+     "numbers": "Dwellings (Catastro) in SNCZI zones, not flooded area: Massanassa 100 % of buildings in the 500-year zone and 0.1 % in the 100-year zone; Paiporta about 3,500 dwellings in the 500-year zone and 3 in the 100-year zone; Sedaví with no risk in the 500-year map"
+    },
+    "data/zones/zones_vs_floods.json events.dana_2024_horta_sud.municipalities, .graded_buildings"
+   ]
+  },
+  {
+   "claim": "red warning 07:30",
+   "verdict": "holds with other wording",
+   "say": "07:36, first AEMET red warning of the day, for the Litoral sur de Valencia zone. The zone of L'Horta Sud and Chiva (Litoral norte de Valencia) went red at 09:41.",
+   "sources": [
+    {
+     "title": "Informe sobre el episodio meteorológico de precipitaciones torrenciales y persistentes ocasionadas por una DANA el día 29 de octubre de 2024 (information up to 8 Nov 2024)",
+     "publisher": "AEMET",
+     "url": "https://repositorio.aemet.es/bitstream/20.500.11765/16360/1/informe_episodio_dana_29_oct_2024_.pdf",
+     "where": "section 3.4 Secuencia de avisos, pages 8 to 9 (times in official peninsular time, CET that day)",
+     "retrieved": "2026-11-15"
+    },
+    {
+     "title": "AEMET municipal forecast pages, field 'Zona de avisos' (one page per municipality, id = INE code)",
+     "publisher": "AEMET warning zones",
+     "url": "https://www.aemet.es/es/eltiempo/prediccion/municipios/paiporta-id46186",
+     "numbers": "Litoral norte de Valencia: Paiporta, Massanassa, Sedaví, Catarroja, Alfafar, Benetússer, Picanya, Aldaia, Chiva, Torrent. Litoral sur de Valencia: Oliva. Litoral norte de Alicante: Pego. Zone as listed today; assumed unchanged since Oct 2024",
+     "retrieved": "2026-11-15"
+    }
+   ]
+  },
+  {
+   "claim": "Chiva 11:30",
+   "verdict": "holds with other wording",
+   "say": "11:30, first flash flood on the Poyo below Chiva (208 m3/s at 11:30). Chiva's streets flooded later (17:47); do not say Chiva was destroyed at 11:30.",
+   "sources": [
+    {
+     "title": "Cronología de la crecida del río Magro, la rambla del Poyo y los avisos de la AEMET, de la CHJ y la alerta de la Comunidad Valenciana",
+     "publisher": "Maldita.es",
+     "date": "2024-11-08",
+     "url": "https://maldita.es/clima/20241108/cronologia-avisos-rio-magro-rambla-poyo/",
+     "where": "entries 11:25, 11:30, 12:07, 12:20, 17:47, 18:25, 18:28, 18:35, 18:55 (gauge values from the CHJ SAIH, rambla del Poyo at the A-3, Riba-roja)",
+     "retrieved": "2026-11-15"
+    },
+    {
+     "title": "Cronología de una alerta que llegó tarde",
+     "publisher": "elDiario.es (Sergi Pitarch)",
+     "date": "2024-10-30, updated 2024-10-31",
+     "url": "https://www.eldiario.es/comunitat-valenciana/cronologia-alerta-llego-tarde-utiel-requena-inundan-pasar-despues-rio-abajo_1_11779079.html",
+     "where": "timeline entries 11:30 (the barranco del Poyo overflows in Chiva), 12:20, 18:30 (Torrent), 20:12",
+     "retrieved": "2026-11-15"
+    }
+   ]
+  },
+  {
+   "claim": "Torrent 18:30",
+   "verdict": "holds",
+   "say": "About 18:30, the Poyo floods Torrent and l'Horta Sud; its gauge reads 2,282.9 m3/s at 18:55 and is then destroyed.",
+   "sources": [
+    {
+     "title": "Cronología de una alerta que llegó tarde",
+     "publisher": "elDiario.es (Sergi Pitarch)",
+     "date": "2024-10-30, updated 2024-10-31",
+     "url": "https://www.eldiario.es/comunitat-valenciana/cronologia-alerta-llego-tarde-utiel-requena-inundan-pasar-despues-rio-abajo_1_11779079.html",
+     "where": "timeline entries 11:30 (the barranco del Poyo overflows in Chiva), 12:20, 18:30 (Torrent), 20:12",
+     "retrieved": "2026-11-15"
+    },
+    {
+     "title": "Cronología de la crecida del río Magro, la rambla del Poyo y los avisos de la AEMET, de la CHJ y la alerta de la Comunidad Valenciana",
+     "publisher": "Maldita.es",
+     "date": "2024-11-08",
+     "url": "https://maldita.es/clima/20241108/cronologia-avisos-rio-magro-rambla-poyo/",
+     "where": "entries 11:25, 11:30, 12:07, 12:20, 17:47, 18:25, 18:28, 18:35, 18:55 (gauge values from the CHJ SAIH, rambla del Poyo at the A-3, Riba-roja)",
+     "retrieved": "2026-11-15"
+    },
+    {
+     "title": "Nota informativa. Episodio de lluvias y avenidas del 28 de octubre al 4 de noviembre de 2024, version 2",
+     "publisher": "Confederación Hidrográfica del Júcar (CHJ)",
+     "date": "2025-01-15",
+     "url": "https://saih.chj.es/docs/20241029-1104Informe-Episodio-C-version2.pdf",
+     "where": "section 2.1 table, row 'Rambla Del Poyo - NIII' (page 14); section 2.3 (page 16)",
+     "retrieved": "2026-11-15"
+    }
+   ]
+  },
+  {
+   "claim": "phone alert 20:11",
+   "verdict": "holds",
+   "say": "20:11, ES-Alert to every phone in Valencia province.",
+   "sources": [
+    {
+     "title": "El juzgado vuelve a requerir a la Generalitat para que informe sobre quién decidió enviar el SMS de alerta por la Dana ...",
+     "publisher": "Tribunal Superior de Justicia de la Comunitat Valenciana, press office (poderjudicial.es)",
+     "date": "2025-02-06",
+     "url": "https://www.poderjudicial.es/cgpj/es/Poder-Judicial/Tribunales-Superiores-de-Justicia/TSJ-Comunidad-Valenciana/Oficina-de-Comunicacion/Archivo-de-notas-de-prensa/El-juzgado-vuelve-a-requerir-a-la-Generalitat-para-que-informe-sobre-quien-decidio-enviar-el-SMS-de-alerta-por-la-Dana-y-pide-a-la-CHJ-datos-del-caudal-del-Poyo-entre-las-16-13-y-las-18-42-horas-del-29-de-octubre",
+     "where": "body: the alert was sent to mobile phones at 20.11",
+     "retrieved": "2026-11-15"
+    }
+   ]
+  }
+ ],
+ "timeline_2024": [
+  {
+   "time_local": "07:36",
+   "what": "First AEMET red warning of the day in Valencia province, for the Litoral sur de Valencia zone (observed 90 mm in one hour, forecast 180 mm in 12 hours), valid to 12:00. Not the zone of L'Horta Sud or Chiva.",
+   "sources": [
+    {
+     "title": "Informe sobre el episodio meteorológico de precipitaciones torrenciales y persistentes ocasionadas por una DANA el día 29 de octubre de 2024 (information up to 8 Nov 2024)",
+     "publisher": "AEMET",
+     "url": "https://repositorio.aemet.es/bitstream/20.500.11765/16360/1/informe_episodio_dana_29_oct_2024_.pdf",
+     "where": "section 3.4 Secuencia de avisos, pages 8 to 9 (times in official peninsular time, CET that day)",
+     "retrieved": "2026-11-15"
+    }
+   ]
+  },
+  {
+   "time_local": "09:41",
+   "what": "AEMET red warning for the Litoral norte de Valencia zone, the warning zone of every 2024 municipality here (Paiporta, Chiva, Torrent and the rest): 90 mm in one hour and 180 mm in 12 hours, to 18:00; extended at 17:49 to 20:00.",
+   "sources": [
+    {
+     "title": "Informe sobre el episodio meteorológico de precipitaciones torrenciales y persistentes ocasionadas por una DANA el día 29 de octubre de 2024 (information up to 8 Nov 2024)",
+     "publisher": "AEMET",
+     "url": "https://repositorio.aemet.es/bitstream/20.500.11765/16360/1/informe_episodio_dana_29_oct_2024_.pdf",
+     "where": "section 3.4 Secuencia de avisos, pages 8 to 9 (times in official peninsular time, CET that day)",
+     "retrieved": "2026-11-15"
+    },
+    {
+     "title": "AEMET municipal forecast pages, field 'Zona de avisos' (one page per municipality, id = INE code)",
+     "publisher": "AEMET warning zones",
+     "url": "https://www.aemet.es/es/eltiempo/prediccion/municipios/paiporta-id46186",
+     "numbers": "Litoral norte de Valencia: Paiporta, Massanassa, Sedaví, Catarroja, Alfafar, Benetússer, Picanya, Aldaia, Chiva, Torrent. Litoral sur de Valencia: Oliva. Litoral norte de Alicante: Pego. Zone as listed today; assumed unchanged since Oct 2024",
+     "retrieved": "2026-11-15"
+    }
+   ]
+  },
+  {
+   "time_local": "11:30",
+   "what": "First flash flood on the rambla del Poyo below Chiva: the CHJ gauge at the A-3 (Riba-roja) jumps from 57.6 m3/s at 11:25 to 208.2 m3/s at 11:30 (264 m3/s at 11:40). elDiario.es puts the Poyo overflowing in Chiva at 11:30; the flooding of Chiva's streets is documented later, at 17:47.",
+   "sources": [
+    {
+     "title": "Cronología de la crecida del río Magro, la rambla del Poyo y los avisos de la AEMET, de la CHJ y la alerta de la Comunidad Valenciana",
+     "publisher": "Maldita.es",
+     "date": "2024-11-08",
+     "url": "https://maldita.es/clima/20241108/cronologia-avisos-rio-magro-rambla-poyo/",
+     "where": "entries 11:25, 11:30, 12:07, 12:20, 17:47, 18:25, 18:28, 18:35, 18:55 (gauge values from the CHJ SAIH, rambla del Poyo at the A-3, Riba-roja)",
+     "retrieved": "2026-11-15"
+    },
+    {
+     "title": "Cronología de una alerta que llegó tarde",
+     "publisher": "elDiario.es (Sergi Pitarch)",
+     "date": "2024-10-30, updated 2024-10-31",
+     "url": "https://www.eldiario.es/comunitat-valenciana/cronologia-alerta-llego-tarde-utiel-requena-inundan-pasar-despues-rio-abajo_1_11779079.html",
+     "where": "timeline entries 11:30 (the barranco del Poyo overflows in Chiva), 12:20, 18:30 (Torrent), 20:12",
+     "retrieved": "2026-11-15"
+    }
+   ]
+  },
+  {
+   "time_local": "12:20",
+   "what": "Special hydrological alert of the Generalitat's emergency centre for the Poyo towns (Torrent, Picanya, Paiporta, Benetússer, Sedaví, Alfafar, Massanassa, Catarroja). Not sent to phones.",
+   "sources": [
+    {
+     "title": "Cronología de la crecida del río Magro, la rambla del Poyo y los avisos de la AEMET, de la CHJ y la alerta de la Comunidad Valenciana",
+     "publisher": "Maldita.es",
+     "date": "2024-11-08",
+     "url": "https://maldita.es/clima/20241108/cronologia-avisos-rio-magro-rambla-poyo/",
+     "where": "entries 11:25, 11:30, 12:07, 12:20, 17:47, 18:25, 18:28, 18:35, 18:55 (gauge values from the CHJ SAIH, rambla del Poyo at the A-3, Riba-roja)",
+     "retrieved": "2026-11-15"
+    },
+    {
+     "title": "Cronología de una alerta que llegó tarde",
+     "publisher": "elDiario.es (Sergi Pitarch)",
+     "date": "2024-10-30, updated 2024-10-31",
+     "url": "https://www.eldiario.es/comunitat-valenciana/cronologia-alerta-llego-tarde-utiel-requena-inundan-pasar-despues-rio-abajo_1_11779079.html",
+     "where": "timeline entries 11:30 (the barranco del Poyo overflows in Chiva), 12:20, 18:30 (Torrent), 20:12",
+     "retrieved": "2026-11-15"
+    }
+   ]
+  },
+  {
+   "time_local": "about 18:30",
+   "what": "The Poyo floods Torrent and l'Horta Sud: a video at 18:28 shows Picanya starting to flood; the gauge reads 1,686.7 m3/s at 18:25 and 1,756.9 m3/s at 18:35; elDiario.es gives 18:30 for Torrent.",
+   "sources": [
+    {
+     "title": "Cronología de la crecida del río Magro, la rambla del Poyo y los avisos de la AEMET, de la CHJ y la alerta de la Comunidad Valenciana",
+     "publisher": "Maldita.es",
+     "date": "2024-11-08",
+     "url": "https://maldita.es/clima/20241108/cronologia-avisos-rio-magro-rambla-poyo/",
+     "where": "entries 11:25, 11:30, 12:07, 12:20, 17:47, 18:25, 18:28, 18:35, 18:55 (gauge values from the CHJ SAIH, rambla del Poyo at the A-3, Riba-roja)",
+     "retrieved": "2026-11-15"
+    },
+    {
+     "title": "Cronología de una alerta que llegó tarde",
+     "publisher": "elDiario.es (Sergi Pitarch)",
+     "date": "2024-10-30, updated 2024-10-31",
+     "url": "https://www.eldiario.es/comunitat-valenciana/cronologia-alerta-llego-tarde-utiel-requena-inundan-pasar-despues-rio-abajo_1_11779079.html",
+     "where": "timeline entries 11:30 (the barranco del Poyo overflows in Chiva), 12:20, 18:30 (Torrent), 20:12",
+     "retrieved": "2026-11-15"
+    }
+   ]
+  },
+  {
+   "time_local": "18:55",
+   "what": "Last reading of the Poyo gauge before the flood destroyed it: 2,282.90 m3/s (water level 4.899 m).",
+   "sources": [
+    {
+     "title": "Nota informativa. Episodio de lluvias y avenidas del 28 de octubre al 4 de noviembre de 2024, version 2",
+     "publisher": "Confederación Hidrográfica del Júcar (CHJ)",
+     "date": "2025-01-15",
+     "url": "https://saih.chj.es/docs/20241029-1104Informe-Episodio-C-version2.pdf",
+     "where": "section 2.1 table, row 'Rambla Del Poyo - NIII' (page 14); section 2.3 (page 16)",
+     "retrieved": "2026-11-15"
+    },
+    {
+     "title": "Cronología de la crecida del río Magro, la rambla del Poyo y los avisos de la AEMET, de la CHJ y la alerta de la Comunidad Valenciana",
+     "publisher": "Maldita.es",
+     "date": "2024-11-08",
+     "url": "https://maldita.es/clima/20241108/cronologia-avisos-rio-magro-rambla-poyo/",
+     "where": "entries 11:25, 11:30, 12:07, 12:20, 17:47, 18:25, 18:28, 18:35, 18:55 (gauge values from the CHJ SAIH, rambla del Poyo at the A-3, Riba-roja)",
+     "retrieved": "2026-11-15"
+    }
+   ]
+  },
+  {
+   "time_local": "20:11",
+   "what": "ES-Alert to every mobile phone in Valencia province, asking people to avoid any travel (elDiario.es's first timeline said 20:12).",
+   "sources": [
+    {
+     "title": "El juzgado vuelve a requerir a la Generalitat para que informe sobre quién decidió enviar el SMS de alerta por la Dana ...",
+     "publisher": "Tribunal Superior de Justicia de la Comunitat Valenciana, press office (poderjudicial.es)",
+     "date": "2025-02-06",
+     "url": "https://www.poderjudicial.es/cgpj/es/Poder-Judicial/Tribunales-Superiores-de-Justicia/TSJ-Comunidad-Valenciana/Oficina-de-Comunicacion/Archivo-de-notas-de-prensa/El-juzgado-vuelve-a-requerir-a-la-Generalitat-para-que-informe-sobre-quien-decidio-enviar-el-SMS-de-alerta-por-la-Dana-y-pide-a-la-CHJ-datos-del-caudal-del-Poyo-entre-las-16-13-y-las-18-42-horas-del-29-de-octubre",
+     "where": "body: the alert was sent to mobile phones at 20.11",
+     "retrieved": "2026-11-15"
+    },
+    {
+     "title": "Cronología de una alerta que llegó tarde",
+     "publisher": "elDiario.es (Sergi Pitarch)",
+     "date": "2024-10-30, updated 2024-10-31",
+     "url": "https://www.eldiario.es/comunitat-valenciana/cronologia-alerta-llego-tarde-utiel-requena-inundan-pasar-despues-rio-abajo_1_11779079.html",
+     "where": "timeline entries 11:30 (the barranco del Poyo overflows in Chiva), 12:20, 18:30 (Torrent), 20:12",
+     "retrieved": "2026-11-15"
+    }
+   ]
+  }
+ ]
+}
