@@ -107,6 +107,7 @@ Not in git: they are large (an estimated 100 to 200 MB each) and can be rebuilt.
 | `data/catalog/<site>.json` | Every NISAR file over the site | all |
 | `data/context/lorca_gnss_LOR1_up.csv` | GNSS station LOR1 daily height | Prediction |
 | `data/zones/` | Official flood zones (SNCZI) against the observed flood (Copernicus EMS EMSR773 for 2024, EMSR935 for 2026) per municipality, with the web layers: [ZONES.md](ZONES.md) | app |
+| `data/streets/results.json`, `data/streets/*.geojson` | Terrain flow (HAND, no training) against the official flood zones in the 10 towns of the 2024 DANA: every number with its inputs, the flow paths, the terrain map at the zones' area, the SIMULATED maximum depth; rules, results and limits in `docs/STREETS.md`. Rebuild: `python -m pipeline.streets` steps | App, pitch |
 
 Put an outline on a stack grid with `pipeline.cv.data.rasterize_on(ds, geodataframe)`.
 
