@@ -3338,5 +3338,119 @@
     ],
     "model_file": "cv_e2_aec_s0+cv_e2_aec_s1+cv_e2_aec_s2+cv_e4_aec_current_s0+cv_e5_aec_gap13_s0",
     "threshold": 0.3
+  },
+  {
+    "model": "prediction",
+    "site": "albufera",
+    "stack": "dswx-s1+open-meteo-ifs",
+    "layer": "water_likelihood",
+    "date": "2026-11-15",
+    "id": "prediction-water-likelihood-albufera",
+    "file": "data/prediction/spatial/index.json",
+    "metrics": "data/prediction/spatial/holdout_s1_metrics.json",
+    "schema": "data/prediction/spatial/feature_schema.json",
+    "source_type": "dswx-s1 + open-meteo + terrain",
+    "units": "relative water likelihood 0-1 (web copies 0-100, 255 no data)",
+    "model_sha256_16": "e241d10cd9290a75",
+    "scenarios": [
+      {
+        "scenario_id": "replay_2026-10-22",
+        "mode": "reconstruction",
+        "dir": "data/prediction/spatial/albufera/replay_2026-10-22"
+      },
+      {
+        "scenario_id": "replay_2026-10-28",
+        "mode": "reconstruction",
+        "dir": "data/prediction/spatial/albufera/replay_2026-10-28"
+      },
+      {
+        "scenario_id": "forecast_2026-10-22",
+        "mode": "forecast",
+        "dir": "data/prediction/spatial/albufera/forecast_2026-10-22"
+      },
+      {
+        "scenario_id": "scenario_000mm",
+        "mode": "scenario",
+        "dir": "data/prediction/spatial/albufera/scenario_000mm"
+      },
+      {
+        "scenario_id": "scenario_050mm",
+        "mode": "scenario",
+        "dir": "data/prediction/spatial/albufera/scenario_050mm"
+      },
+      {
+        "scenario_id": "scenario_100mm",
+        "mode": "scenario",
+        "dir": "data/prediction/spatial/albufera/scenario_100mm"
+      },
+      {
+        "scenario_id": "scenario_200mm",
+        "mode": "scenario",
+        "dir": "data/prediction/spatial/albufera/scenario_200mm"
+      },
+      {
+        "scenario_id": "replay_2026-10-28_prestorm",
+        "mode": "reconstruction",
+        "dir": "data/prediction/spatial/albufera/replay_2026-10-28_prestorm"
+      }
+    ],
+    "issued_at_utc": "2026-11-15T02:01:17+00:00"
+  },
+  {
+    "model": "prediction",
+    "site": "pego_oliva",
+    "stack": "dswx-s1+open-meteo-ifs",
+    "layer": "water_likelihood",
+    "date": "2026-11-15",
+    "id": "prediction-water-likelihood-pego_oliva",
+    "file": "data/prediction/spatial/index.json",
+    "metrics": "data/prediction/spatial/holdout_s1_metrics.json",
+    "schema": "data/prediction/spatial/feature_schema.json",
+    "source_type": "dswx-s1 + open-meteo + terrain",
+    "units": "relative water likelihood 0-1 (web copies 0-100, 255 no data)",
+    "model_sha256_16": "e241d10cd9290a75",
+    "scenarios": [
+      {
+        "scenario_id": "replay_2026-10-22",
+        "mode": "reconstruction",
+        "dir": "data/prediction/spatial/pego_oliva/replay_2026-10-22"
+      },
+      {
+        "scenario_id": "replay_2026-10-28",
+        "mode": "reconstruction",
+        "dir": "data/prediction/spatial/pego_oliva/replay_2026-10-28"
+      },
+      {
+        "scenario_id": "forecast_2026-10-22",
+        "mode": "forecast",
+        "dir": "data/prediction/spatial/pego_oliva/forecast_2026-10-22"
+      },
+      {
+        "scenario_id": "scenario_000mm",
+        "mode": "scenario",
+        "dir": "data/prediction/spatial/pego_oliva/scenario_000mm"
+      },
+      {
+        "scenario_id": "scenario_050mm",
+        "mode": "scenario",
+        "dir": "data/prediction/spatial/pego_oliva/scenario_050mm"
+      },
+      {
+        "scenario_id": "scenario_100mm",
+        "mode": "scenario",
+        "dir": "data/prediction/spatial/pego_oliva/scenario_100mm"
+      },
+      {
+        "scenario_id": "scenario_200mm",
+        "mode": "scenario",
+        "dir": "data/prediction/spatial/pego_oliva/scenario_200mm"
+      },
+      {
+        "scenario_id": "replay_2026-10-28_prestorm",
+        "mode": "reconstruction",
+        "dir": "data/prediction/spatial/pego_oliva/replay_2026-10-28_prestorm"
+      }
+    ],
+    "issued_at_utc": "2026-11-15T02:01:17+00:00"
   }
 ]

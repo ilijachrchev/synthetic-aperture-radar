@@ -1,0 +1,197 @@
+{
+  "model_sha256_16": "e241d10cd9290a75",
+  "scenarios": [
+    {
+      "site": "albufera",
+      "scenario_id": "replay_2026-10-22",
+      "mode": "reconstruction",
+      "target_date": "2026-10-22",
+      "dir": "data/prediction/spatial/albufera/replay_2026-10-22",
+      "area_ha": {
+        "likely_water": 5557.9,
+        "likely_new_water": 5533.9,
+        "counted_on": "evidence 0 pixels only"
+      }
+    },
+    {
+      "site": "albufera",
+      "scenario_id": "replay_2026-10-28",
+      "mode": "reconstruction",
+      "target_date": "2026-10-28",
+      "dir": "data/prediction/spatial/albufera/replay_2026-10-28",
+      "area_ha": {
+        "likely_water": 4818.6,
+        "likely_new_water": 712.6,
+        "counted_on": "evidence 0 pixels only"
+      }
+    },
+    {
+      "site": "albufera",
+      "scenario_id": "forecast_2026-10-22",
+      "mode": "forecast",
+      "target_date": "2026-10-22",
+      "dir": "data/prediction/spatial/albufera/forecast_2026-10-22",
+      "area_ha": {
+        "likely_water": 2903.0,
+        "likely_new_water": 1626.8,
+        "counted_on": "evidence 0 pixels only"
+      }
+    },
+    {
+      "site": "albufera",
+      "scenario_id": "scenario_000mm",
+      "mode": "scenario",
+      "rain_mm": 0,
+      "dir": "data/prediction/spatial/albufera/scenario_000mm",
+      "area_ha": {
+        "likely_water": 4414.5,
+        "likely_new_water": 1009.9,
+        "counted_on": "evidence 0 pixels only"
+      }
+    },
+    {
+      "site": "albufera",
+      "scenario_id": "scenario_050mm",
+      "mode": "scenario",
+      "rain_mm": 50,
+      "dir": "data/prediction/spatial/albufera/scenario_050mm",
+      "area_ha": {
+        "likely_water": 5015.4,
+        "likely_new_water": 1657.4,
+        "counted_on": "evidence 0 pixels only"
+      }
+    },
+    {
+      "site": "albufera",
+      "scenario_id": "scenario_100mm",
+      "mode": "scenario",
+      "rain_mm": 100,
+      "dir": "data/prediction/spatial/albufera/scenario_100mm",
+      "area_ha": {
+        "likely_water": 4958.4,
+        "likely_new_water": 1660.4,
+        "counted_on": "evidence 0 pixels only"
+      }
+    },
+    {
+      "site": "albufera",
+      "scenario_id": "scenario_200mm",
+      "mode": "scenario",
+      "rain_mm": 200,
+      "dir": "data/prediction/spatial/albufera/scenario_200mm",
+      "area_ha": {
+        "likely_water": 5982.0,
+        "likely_new_water": 3557.4,
+        "counted_on": "evidence 0 pixels only"
+      }
+    },
+    {
+      "site": "pego_oliva",
+      "scenario_id": "replay_2026-10-22",
+      "mode": "reconstruction",
+      "target_date": "2026-10-22",
+      "dir": "data/prediction/spatial/pego_oliva/replay_2026-10-22",
+      "area_ha": {
+        "likely_water": 613.3,
+        "likely_new_water": 505.4,
+        "counted_on": "evidence 0 pixels only"
+      }
+    },
+    {
+      "site": "pego_oliva",
+      "scenario_id": "replay_2026-10-28",
+      "mode": "reconstruction",
+      "target_date": "2026-10-28",
+      "dir": "data/prediction/spatial/pego_oliva/replay_2026-10-28",
+      "area_ha": {
+        "likely_water": 687.1,
+        "likely_new_water": 372.0,
+        "counted_on": "evidence 0 pixels only"
+      }
+    },
+    {
+      "site": "pego_oliva",
+      "scenario_id": "forecast_2026-10-22",
+      "mode": "forecast",
+      "target_date": "2026-10-22",
+      "dir": "data/prediction/spatial/pego_oliva/forecast_2026-10-22",
+      "area_ha": {
+        "likely_water": 515.8,
+        "likely_new_water": 412.4,
+        "counted_on": "evidence 0 pixels only"
+      }
+    },
+    {
+      "site": "pego_oliva",
+      "scenario_id": "scenario_000mm",
+      "mode": "scenario",
+      "rain_mm": 0,
+      "dir": "data/prediction/spatial/pego_oliva/scenario_000mm",
+      "area_ha": {
+        "likely_water": 621.9,
+        "likely_new_water": 405.1,
+        "counted_on": "evidence 0 pixels only"
+      }
+    },
+    {
+      "site": "pego_oliva",
+      "scenario_id": "scenario_050mm",
+      "mode": "scenario",
+      "rain_mm": 50,
+      "dir": "data/prediction/spatial/pego_oliva/scenario_050mm",
+      "area_ha": {
+        "likely_water": 681.2,
+        "likely_new_water": 470.6,
+        "counted_on": "evidence 0 pixels only"
+      }
+    },
+    {
+      "site": "pego_oliva",
+      "scenario_id": "scenario_100mm",
+      "mode": "scenario",
+      "rain_mm": 100,
+      "dir": "data/prediction/spatial/pego_oliva/scenario_100mm",
+      "area_ha": {
+        "likely_water": 626.9,
+        "likely_new_water": 430.3,
+        "counted_on": "evidence 0 pixels only"
+      }
+    },
+    {
+      "site": "pego_oliva",
+      "scenario_id": "scenario_200mm",
+      "mode": "scenario",
+      "rain_mm": 200,
+      "dir": "data/prediction/spatial/pego_oliva/scenario_200mm",
+      "area_ha": {
+        "likely_water": 671.1,
+        "likely_new_water": 513.3,
+        "counted_on": "evidence 0 pixels only"
+      }
+    },
+    {
+      "site": "albufera",
+      "scenario_id": "replay_2026-10-28_prestorm",
+      "mode": "reconstruction",
+      "target_date": "2026-10-28",
+      "dir": "data/prediction/spatial/albufera/replay_2026-10-28_prestorm",
+      "area_ha": {
+        "likely_water": 4617.6,
+        "likely_new_water": 3439.7,
+        "counted_on": "evidence 0 pixels only"
+      }
+    },
+    {
+      "site": "pego_oliva",
+      "scenario_id": "replay_2026-10-28_prestorm",
+      "mode": "reconstruction",
+      "target_date": "2026-10-28",
+      "dir": "data/prediction/spatial/pego_oliva/replay_2026-10-28_prestorm",
+      "area_ha": {
+        "likely_water": 607.2,
+        "likely_new_water": 463.8,
+        "counted_on": "evidence 0 pixels only"
+      }
+    }
+  ]
+}

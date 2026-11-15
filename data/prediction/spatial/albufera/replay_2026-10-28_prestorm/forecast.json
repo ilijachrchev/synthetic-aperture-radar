@@ -1,0 +1,56 @@
+{
+  "site": "albufera",
+  "model": "spatial water likelihood (LightGBM)",
+  "scenario_id": "replay_2026-10-28_prestorm",
+  "mode": "reconstruction",
+  "mode_note": "issued from the last Sentinel-1 map before the rain of 18 and 19 Oct, for the NISAR pass of 28 Oct; the rain in between is the rain that fell (IFS archive), not a forecast",
+  "issued_from_pass": "20261017T175337_S1C",
+  "issue_time_utc": "2026-10-17T17:53:37.000Z",
+  "target_time_utc": "2026-10-28T18:53:18Z",
+  "target_nisar_granule": "NISAR_L2_PR_GCOV_034_066_D_069_2005_DHDH_M_20261028T185318_20261028T185353_P05036_N_F_J_001",
+  "lead_days": 11.04,
+  "rain": {
+    "rain_prior_7d_mm": 1.0,
+    "rain_prior_30d_mm": 190.7,
+    "rain_between_mm": 258.1,
+    "rain_between_max1d_mm": 135.1,
+    "days_since_rain_peak": 10.0
+  },
+  "rain_source": "Open-Meteo, ECMWF IFS 9 km, wettest lattice point of the site per day",
+  "holdout": {
+    "start": "2026-10-15",
+    "end": "2026-11-15"
+  },
+  "validation_status": "checked against the NISAR water map of the target pass, see nisar_check.json",
+  "score": "relative water likelihood 0-1 learned from Sentinel-1 water maps; not a calibrated flood probability",
+  "files": {
+    "water_likelihood_utm.tif": "float32 0-1, NaN outside land, EPSG:32630 20 m",
+    "new_water_likelihood_utm.tif": "the same, only where the previous water map says dry",
+    "evidence_utm.tif": "uint8 flags, see evidence",
+    "water_likelihood_web.tif": "uint8 0-100, 255 no data, Web Mercator COG",
+    "new_water_likelihood_web.tif": "uint8 0-100, 255 no data, Web Mercator COG"
+  },
+  "evidence": {
+    "0": "prediction from terrain, rain and the previous water map",
+    "1": "permanent water (JRC occurrence >= 90 %): context, not flooding",
+    "2": "built-up land: radar water maps are unreliable here, so nothing was learned from towns; the value is extrapolated from fields",
+    "3": "no water map before the issue time: new water cannot be told from old",
+    "4": "rarely or never mapped by Sentinel-1 (terrain mask, shadow): extrapolated",
+    "255": "sea or outside the land grid"
+  },
+  "thresholds": {
+    "water": 0.28405811008713044,
+    "new_water": 0.17041007967415503
+  },
+  "area_ha": {
+    "likely_water": 4617.6,
+    "likely_new_water": 3439.7,
+    "counted_on": "evidence 0 pixels only"
+  },
+  "native_resolution": {
+    "rain": "ECMWF IFS 9 km, one value per site and day",
+    "terrain": "30 m",
+    "water_maps": "30 m"
+  },
+  "attribution": "OPERA DSWx-S1 (NASA JPL), Open-Meteo / ECMWF IFS (CC BY 4.0), ASF GLO-30 HAND, Copernicus DEM GLO-30, ESA WorldCover 2021, JRC Global Surface Water"
+}

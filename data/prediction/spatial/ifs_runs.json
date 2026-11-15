@@ -1,0 +1,38 @@
+{
+  "albufera/2026-10-17/5": {
+    "run": "2026-10-17T00:00Z",
+    "dates": [
+      "2026-10-17",
+      "2026-10-18",
+      "2026-10-19",
+      "2026-10-20",
+      "2026-10-21"
+    ],
+    "max_mm": [
+      null,
+      114.8,
+      6.0,
+      0.1,
+      0.0
+    ],
+    "source": "Open-Meteo Single Runs API, ECMWF IFS 9 km, wettest lattice point of the site"
+  },
+  "pego_oliva/2026-10-17/5": {
+    "run": "2026-10-17T00:00Z",
+    "dates": [
+      "2026-10-17",
+      "2026-10-18",
+      "2026-10-19",
+      "2026-10-20",
+      "2026-10-21"
+    ],
+    "max_mm": [
+      null,
+      41.2,
+      21.3,
+      2.1,
+      0.0
+    ],
+    "source": "Open-Meteo Single Runs API, ECMWF IFS 9 km, wettest lattice point of the site"
+  }
+}
