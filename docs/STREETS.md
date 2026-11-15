@@ -415,6 +415,47 @@ Local time (CET). Each zone's rain comes from 12 of the 24 grid points found (th
 
 The forecasts put heavy rain on the right ravines, but a third to two fifths of what fell on the Poyo, with their heaviest hour two to five hours early and about a fifth as intense as the gauged one. On the small Possalet-Saleta catchment they gave as much as fell, or slightly more.
 
+**The rebuilt PR #39 run** (rerun on 15 Nov 2026 from the rebuilt inputs, to check them) reproduces PR #39 exactly: 95,092 time steps, 157.38 hm³ of rain, 110.63 hm³ left at the sinks and 46.74 hm³ on the ground at the end, 3,052.5 m³/s at the CHJ gauge at 18:55 and a peak of 3,291.7 m³/s at 20:40. Street by street it reproduces PR #43 exactly too: the same 64,174 pieces, the same keys (513.7 km flooded under key A, 519.1 km under key B), the same official zones, and for the SIMULATED run the same 531.65 km at its own extent with 76.0 % found and 73.4 % really flooded, and the same ranking at equal length (`streets_more_runs` → `same_as_pr43`). One PR #39 method is left out of the new block: the equal-area pixel cut of the SIMULATED run breaks its ties (the 25 cells of 5 m in each 25 m cell share one depth) by the bare terrain's upstream area, and that routing was not rebuilt.
+
+**Short answer: with the rain the forecast gave before the storm, the model did not point to more of the flooded streets than the official map; the 76 % of the hindcast came from the rain that really fell.** At its own extent (maximum depth above 0.3 m), the run fed the IFS forecast of 29 Oct 00 UTC flags 188.9 km of street and finds **26.1 %** of the flooded street length (key A), with **70.9 %** of what it flags really flooded; the run fed the forecast of 28 Oct 12 UTC flags 194.7 km and finds **26.8 %**, with **70.6 %** really flooded. The official zones find 41.0 % at 75.2 %, the hindcast with the gauged rain 76.0 % at 73.4 %. Cut to the zones' street length, the forecast runs tie the zones (40.6 and 40.6 % against 41.0 %), as the hindcast and the terrain did. The forecasts put a third to two fifths of the Poyo's rain on its catchment, at their heaviest hour about a fifth of the gauged intensity, so the Poyo they make peaks at the CHJ gauge at 549 m³/s (17:25, the 29 Oct 00 UTC run) and 636 m³/s (17:50, the 28 Oct 12 UTC run), against 2,282.9 m³/s measured at 18:55 before the gauge was lost. The water stays in the ravines and the low plain: Picanya, Paiporta and Sedaví, where the hindcast found 78 to 91 % of the flooded streets, get almost nothing. Fed by this deterministic forecast, the model could not have pointed to the streets that flooded.
+
+| Run | Rain on the Poyo up to the gauge | Flagged (km) | Key A: found | Key A: really flooded | Key B: found | Key B: really flooded | Key A, cut to the zones' length: found / really flooded | Flow at the CHJ gauge, 18:55 |
+|---|---|---|---|---|---|---|---|---|
+| Official zones (any zone) |  | 280.0 | 41.0 % | 75.2 % | 50.8 % | 96.6 % | 41.0 / 75.2 % |  |
+| SIMULATED, gauged rain (PR #39; rebuilt, identical) | 431.7 mm | 531.6 | 76.0 % | 73.4 % | 81.9 % | 88.7 % | 41.3 / 75.7 % | 3,052.5 m³/s |
+| Run A, forecast of 29 Oct 00 UTC | 149.8 mm | 188.9 | 26.1 % | 70.9 % | 31.0 % | 94.6 % | 40.6 / 74.4 % | 529.7 m³/s |
+| Run A, forecast of 28 Oct 12 UTC | 170.0 mm | 194.7 | 26.8 % | 70.6 % | 31.9 % | 94.5 % | 40.6 / 74.5 % | 615.8 m³/s |
+| Ceiling (two records of the same flood): the UPV map against key A, inside the UPV outlines | | 519.1 | 84.2 % | 78.9 % | | | | |
+| Ceiling (two records of the same flood): key A against the UPV map | | 486.1 | | | 78.9 % | 84.2 % | | |
+
+Own extent except the cut column; key B inside the UPV outlines only (801.5 km of street, the flagged length inside them: zones 272.7 km, hindcast 479.5 km, run A 170.2 km (29 Oct 00 UTC), run A 175.1 km (28 Oct 12 UTC)). A random pick of the same length has a precision of 32.3 % (key A) and 64.8 % (key B). The CHJ gauge measured 2,282.9 m³/s at 18:55. The forecast runs are also scored with tracks and against the keys' parts (`streets_more_runs` → `with_tracks`, `key_sensitivity`), and nothing there changes the picture: at their own extent the zones stay ahead (tracks included: 43.4 % found against 30.3 and 31.0 %), and at the zones' length the forecast runs tie them (key A from EMSR773 alone: 40.7 against 40.8 and 40.8 %) or trail them (key A from the marks alone: 47.5 against 36.1 and 36.6 %).
+
+**The ceiling (two records of the same flood).** On the 801.5 km of street inside the UPV outlines, where both keys exist, the UPV map scored as a method against key A finds 84.2 % of the flooded street length with 78.9 % of what it flags flooded; key A against the UPV map finds 78.9 % at 84.2 %. On the same streets, against key A, the official zones find 42.9 % at 76.4 %, the hindcast 78.6 % at 79.7 %, the forecast runs 26.7 % at 76.3 % (29 Oct 00 UTC) and 27.4 % at 76.2 % (28 Oct 12 UTC). Two records of the same flood, both made after it, agree on about four fifths of each other; the hindcast comes close to that, the forecast runs reach about a third of it.
+
+Own extent, key A, by town: found / really flooded (flagged km).
+
+| Town | Flooded (km) | Zones | Gauged rain | A, 29 Oct 00 UTC | A, 28 Oct 12 UTC |
+|---|---|---|---|---|---|
+| Paiporta | 75.3 | 36.5 / 100.0 % (27.5) | 77.5 / 99.5 % (58.6) | 9.5 / 100.0 % (7.2) | 9.3 / 100.0 % (7.0) |
+| Massanassa | 24.8 | 89.3 / 68.4 % (32.4) | 82.3 / 74.4 % (27.4) | 64.0 / 78.0 % (20.3) | 63.9 / 78.1 % (20.3) |
+| Sedaví | 23.5 | 3.0 / 100.0 % (0.7) | 82.8 / 80.8 % (24.1) | 3.3 / 100.0 % (0.8) | 3.3 / 100.0 % (0.8) |
+| Catarroja | 64.2 | 83.4 / 68.9 % (77.7) | 61.5 / 67.9 % (58.1) | 21.6 / 58.2 % (23.9) | 21.6 / 58.1 % (23.9) |
+| Alfafar | 67.9 | 77.0 / 87.1 % (60.0) | 92.6 / 85.1 % (73.9) | 72.2 / 88.6 % (55.3) | 72.3 / 88.7 % (55.3) |
+| Benetússer | 5.9 | 44.3 / 43.0 % (6.0) | 62.5 / 30.7 % (11.9) | 37.9 / 39.7 % (5.6) | 37.9 / 40.4 % (5.5) |
+| Picanya | 83.4 | 3.6 / 98.4 % (3.0) | 90.8 / 97.1 % (78.0) | 4.5 / 98.1 % (3.8) | 4.6 / 98.2 % (3.9) |
+| Aldaia | 92.0 | 42.8 / 69.8 % (56.4) | 66.8 / 74.3 % (82.8) | 29.2 / 71.7 % (37.5) | 32.8 / 71.8 % (42.0) |
+| Chiva | 11.0 | 15.8 / 26.5 % (6.5) | 55.1 / 14.5 % (41.8) | 18.5 / 14.4 % (14.2) | 19.9 / 14.6 % (15.0) |
+| Torrent | 65.7 | 11.8 / 80.7 % (9.6) | 65.2 / 57.1 % (75.0) | 18.7 / 60.4 % (20.3) | 19.1 / 59.4 % (21.1) |
+| **Total** | 513.7 | 41.0 / 75.2 % (280.0) | 76.0 / 73.4 % (531.6) | 26.1 / 70.9 % (188.9) | 26.8 / 70.6 % (194.7) |
+
+**Run A3 (the forecast of 29 Oct 06 UTC, amendment) and run B (buildings)** were still running when this was written (10:10 UTC); their numbers are added here when they are scored.
+
+**What this means, and what it does not.**
+
+- The hindcast's 76 % needs the rain that fell. The ECMWF forecasts before the storm had heavy rain over the right ravines, but a third to two fifths of what fell there, and that was not enough for this model to reach the streets of Picanya, Paiporta and Sedaví. A "before the storm" version of this model would need a better rain forecast, for example the ensemble's wettest members or a convection-permitting model, and that was not tested here.
+- One deterministic forecast per run, one event: nothing here says how often a forecast-driven run would miss or find a flood.
+- Rain only on the three upstream zones, as in the hindcast; the forecast's rain on the plain is not simulated.
+
 <!-- street results: filled in as the runs are scored -->
 
 ## Limits
