@@ -386,6 +386,7 @@ Written down on 15 Nov 2026 and committed before either run was simulated or sco
 - `pipeline/street_scores.py` exactly as in "Street by street" above: the same pieces, the same keys (key A everywhere, key B only inside the UPV outlines), the same majority rule. Each new run is scored as the SIMULATED run is: (1) its own extent, maximum depth above 0.3 m; (2) its ranking (median maximum depth of a piece's sample points, deepest first) cut, town by town, to the street length the official zones flag.
 - Reported for each run, in total and per town, against key A and key B: flagged street length (km), hit rate (share of the flooded street length flagged) and precision (share of the flagged length that really flooded), always together, next to the official zones (any zone) and the SIMULATED run above. Descriptive, after these: the street length each run flags outside every official zone, and the share of it that flooded.
 - **The two forecasts are reported side by side and neither is chosen.** A "before the storm" number is quoted with its run's initial time, its hit rate and its precision.
+- **Ceiling (two records of the same flood)**, added on request before any score of these runs: on the streets both keys cover (pieces inside the UPV outlines), key B (the UPV map) is scored as if it were a method against key A, and key A against key B, with the same hit rate and precision. It shows how well one record of this flood matches the other, so how far any method could get against them; the two records are not independent (the UPV marks are part of key A). So that the ceiling can be read on the same streets, every method's key A numbers are also given inside the UPV outlines. It is reported in the same table, labelled "ceiling (two records of the same flood)".
 - **The rebuild is checked.** The terrain and the run above were rebuilt on 15 Nov 2026 from the same sources (the earlier intermediate files were deleted with their working copy). The rebuilt run must reproduce PR #39 (time steps, volumes, gauge flow) and PR #43 (its street scores); any difference is reported.
 - No threshold or setting (0.3 m, the majority, 10 m, the hours, the zones, the averaging) changes after a score is seen. If a run does not finish in time, this page says so.
 
@@ -420,6 +421,7 @@ Written down on 15 Nov 2026 and committed before either run was simulated or sco
 | `tests/test_streets.py`, `tests/test_streets_inertial.py` | the terrain flow, the equal-area cut and the scheme on tiny synthetic grids |
 | `pipeline/street_scores.py` | street by street: `fetch` (OSM streets of 28 Oct 2024 by Overpass, the UPV depth map by WCS), `score`, `report` |
 | `tests/test_street_scores.py` | the street pieces, sample points, the 10 m rule, the majority rule, the equal-length cut and the UPV cell pick on tiny cases |
+| `data/streets/forecast_rain_ifs_2024.json` | the input of run A: hourly precipitation of the two ECMWF IFS HRES runs (28 Oct 2024 12 UTC, 29 Oct 2024 00 UTC) at the 24 grid points around the catchment, FORECAST, from Open-Meteo's Single Runs API (CC BY 4.0: weather data by Open-Meteo.com, ECMWF IFS HRES) |
 
 Needs the downloads of `pipeline.zones` (PR #36) in `data/interim/flood-zones/` (`python -m pipeline.zones fetch`), or `--zones-interim` pointing at them. Downloads go to `data/interim/streets/` (not in git). The terrain sheets are about 2 GB each and are deleted once averaged to 5 m; the terrain step needs about 4 GB of RAM.
 
@@ -473,6 +475,44 @@ python -m pipeline.street_scores score
 
 ```bash
 python -m pipeline.street_scores report
+```
+
+The two more simulations (after `terrain`; the forecast comes from Open-Meteo, about 1.4 MB). `terrain --only buildings` burns the building footprints without the buildings routing. `sim-prepare` writes one `inputs.npz` per run into `data/interim/streets/simulation_<run>/`; the kernel then runs once per run (they can run side by side, `NUMBA_NUM_THREADS` sets the threads of each); `sim-collect` writes `results.json` → `simulation_runs`; `score-runs` writes `results.json` → `streets_more_runs` and leaves `streets` (PR #43) as it was.
+
+```bash
+python -m pipeline.streets fetch-forecast
+```
+
+```bash
+python -m pipeline.streets terrain --only buildings
+```
+
+```bash
+python -m pipeline.streets sim-prepare
+```
+
+```bash
+python -I pipeline/inertial_kernel.py data/interim/streets/simulation_ifs_20241028T12/inputs.npz data/interim/streets/simulation_ifs_20241028T12/outputs.npz
+```
+
+```bash
+python -I pipeline/inertial_kernel.py data/interim/streets/simulation_ifs_20241029T00/inputs.npz data/interim/streets/simulation_ifs_20241029T00/outputs.npz
+```
+
+```bash
+python -I pipeline/inertial_kernel.py data/interim/streets/simulation_buildings/inputs.npz data/interim/streets/simulation_buildings/outputs.npz
+```
+
+```bash
+python -m pipeline.streets sim-collect
+```
+
+```bash
+python -m pipeline.street_scores score-runs
+```
+
+```bash
+python -m pipeline.street_scores report-runs
 ```
 
 ## Changes to the rules

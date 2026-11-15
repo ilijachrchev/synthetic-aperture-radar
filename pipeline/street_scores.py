@@ -764,6 +764,22 @@ def evaluate(b: dict, lay: dict, marks_xy: np.ndarray, outline, surveyed=None) -
     equal = {"official_union": {k: by_town(official, kv, length, town, dom) for k, (kv, dom) in keys.items()}}
     for r, sel in eq_sel.items():
         equal[r] = {k: by_town(sel, kv, length, town, dom) for k, (kv, dom) in keys.items()}
+    # the ceiling (docs/STREETS.md, "Two more simulations": added before any score of those runs): the two answer
+    # keys scored against each other on the streets both cover (inside the UPV outlines), as if each were a method;
+    # and every method's key A numbers on those same streets, so they can be read against it
+    ceiling = {
+        "what": "ceiling (two records of the same flood): on the pieces inside the UPV outlines, key B (the UPV map) "
+                "scored as a method against key A, and key A against key B; not independent (the UPV marks are part "
+                "of key A)",
+        "key_b_against_key_a": by_town(key_b, key_a, length, town, dom_b),
+        "key_a_against_key_b": by_town(key_a, key_b, length, town, dom_b),
+    }
+    key_a_inside_upv = {
+        "what": "key A, on the pieces inside the UPV outlines only (the streets of the ceiling)",
+        "own_length": {name: by_town(fl, key_a, length, town, dom_b) for name, fl in flags.items()},
+        "equal_length": {r: by_town(sel, key_a, length, town, dom_b)
+                         for r, sel in {"official_union": official, **eq_sel}.items()},
+    }
     town_km = {t: _km(length[town == i + 1].sum()) for i, t in enumerate(TOWNS)}
     # descriptive, after the headline: the streets the SIMULATED extent flags outside every official zone
     sim_ext = flags["simulated_depth_above_0p3m"]
@@ -834,7 +850,8 @@ def evaluate(b: dict, lay: dict, marks_xy: np.ndarray, outline, surveyed=None) -
              **{f"flag_{k}": v for k, v in flags.items()},
              **{f"equal_{k}": v for k, v in eq_sel.items()}}
     return {"summary": summary, "methods": methods, "equal_length": equal, "key_sensitivity": sens,
-            "descriptive": descriptive, "key_b_surveyed_area_only_post_hoc": post_hoc, "_table": table}
+            "descriptive": descriptive, "key_b_surveyed_area_only_post_hoc": post_hoc, "ceiling": ceiling,
+            "key_a_inside_upv_outlines": key_a_inside_upv, "_table": table}
 
 
 METHOD_WHAT = {
@@ -884,6 +901,10 @@ def _filtered(block: dict, available: dict) -> dict:
     if ph is not None:
         out["key_b_surveyed_area_only_post_hoc"] = {**ph, "equal_length": keep(ph["equal_length"]),
                                                     "own_length": keep(ph["own_length"])}
+    out["ceiling"] = block["ceiling"]
+    ka = block["key_a_inside_upv_outlines"]
+    out["key_a_inside_upv_outlines"] = {**ka, "own_length": keep(ka["own_length"]),
+                                        "equal_length": keep(ka["equal_length"])}
     return out
 
 
@@ -899,10 +920,11 @@ def _same_as_pr43(new: dict, old: dict) -> dict:
                                     for k in ("pieces", "street_km", "key_a", "key_b", "equal_length_budget_km")}
         for name in a["methods"]:
             if name in b["methods"]:
-                rows[f"{label}_{name}"] = {"same": a["methods"][name] == b["methods"][name]}
+                rows[f"{label}_{name}"] = {"same": all(a["methods"][name][k] == b["methods"][name][k] for k in "AB")}
         for name in a["equal_length"]:
             if name in b["equal_length"]:
-                rows[f"{label}_equal_length_{name}"] = {"same": a["equal_length"][name] == b["equal_length"][name]}
+                rows[f"{label}_equal_length_{name}"] = {
+                    "same": all(a["equal_length"][name][k] == b["equal_length"][name][k] for k in "AB")}
     return {"all_same": all(v["same"] if "same" in v else all(x["same"] for x in v.values()) for v in rows.values()),
             "rows": rows}
 
