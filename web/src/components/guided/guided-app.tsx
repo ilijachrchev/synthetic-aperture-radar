@@ -251,6 +251,11 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 	const step = at.step
 	const [error, setError] = useState<string | null>(null)
 	const [sources, setSources] = useState(false)
+	// a phone: the card is a bottom sheet, open or lowered to its title row (peek); the choice holds across steps
+	const [peek, setPeek] = useState(false)
+	const titleRef = useRef<HTMLHeadingElement>(null)
+	const sheetDrag = useRef<{ y0: number; base: number; max: number; moved: boolean; last: number; lastT: number; vy: number } | null>(null)
+	const justDragged = useRef(false)
 
 	const [streets, setStreets] = useState<StreetsIndex | null>(null)
 	const [views, setViews] = useState<ViewsDoc | null>(null)
@@ -534,6 +539,7 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 					water = depth
 				}
 			}
+			setPeek(false)
 			setPick({
 				name: streets.names[props.n] ?? 'Street',
 				town: streets.towns[props.t] ?? '',
@@ -689,6 +695,65 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 	const n = streets?.numbers
 
 	// a tapped street: what the official map, our simulation and the records of the flood say there
+	// the sheet (phones): how far it lowers is the card's height less its title row (--peek, measured below)
+	useEffect(() => {
+		const card = cardRef.current
+		const title = titleRef.current
+		if (!card || !title) return
+		const measure = () => card.style.setProperty('--peek', `${title.offsetTop + title.offsetHeight + 12}px`)
+		measure()
+		const ro = new ResizeObserver(measure)
+		ro.observe(card)
+		ro.observe(title)
+		return () => ro.disconnect()
+	}, [key, at.extra])
+	useEffect(() => {
+		if (peek && cardRef.current) cardRef.current.scrollTop = 0
+	}, [peek])
+	const grabDown = (e: React.PointerEvent<HTMLButtonElement>) => {
+		const card = cardRef.current
+		if (!card) return
+		const max = Math.max(0, card.offsetHeight - (Number.parseFloat(card.style.getPropertyValue('--peek')) || 0))
+		e.currentTarget.setPointerCapture(e.pointerId)
+		sheetDrag.current = { y0: e.clientY, base: peek ? max : 0, max, moved: false, last: e.clientY, lastT: performance.now(), vy: 0 }
+		card.dataset.dragging = ''
+	}
+	const grabMove = (e: React.PointerEvent<HTMLButtonElement>) => {
+		const d = sheetDrag.current
+		const card = cardRef.current
+		if (!d || !card) return
+		const dy = e.clientY - d.y0
+		if (Math.abs(dy) > 5) d.moved = true
+		if (!d.moved) return
+		card.style.transform = `translateY(${Math.min(d.max, Math.max(0, d.base + dy))}px)`
+		const now = performance.now()
+		d.vy = (e.clientY - d.last) / Math.max(1, now - d.lastT)
+		d.last = e.clientY
+		d.lastT = now
+	}
+	const grabUp = (e: React.PointerEvent<HTMLButtonElement>) => {
+		const d = sheetDrag.current
+		const card = cardRef.current
+		sheetDrag.current = null
+		if (!d || !card) return
+		delete card.dataset.dragging
+		if (!d.moved) return
+		// a fast swipe goes its way; a slow drag settles on the nearer end
+		const down = Math.abs(d.vy) > 0.45 ? d.vy > 0 : d.base + (e.clientY - d.y0) > d.max / 2
+		justDragged.current = true
+		if (down) card.dataset.peek = ''
+		else delete card.dataset.peek
+		card.style.transform = ''
+		setPeek(down)
+	}
+	const grabClick = () => {
+		if (justDragged.current) {
+			justDragged.current = false
+			return
+		}
+		setPeek((v) => !v)
+	}
+
 	const card = pick ? (
 		<div className="gd-pick" aria-live="polite">
 			<div className="gd-pick-head">
@@ -1006,7 +1071,18 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 				/>
 			</header>
 
-			<section ref={cardRef} className="gd-card" aria-live="polite">
+			<section ref={cardRef} className="gd-card" aria-live="polite" data-peek={peek || undefined}>
+				<button
+					type="button"
+					className="gd-grab"
+					aria-label={peek ? 'Show the card' : 'Lower the card'}
+					aria-expanded={!peek}
+					onPointerDown={grabDown}
+					onPointerMove={grabMove}
+					onPointerUp={grabUp}
+					onPointerCancel={grabUp}
+					onClick={grabClick}
+				/>
 				{at.extra ? (
 					<p className="gd-aside">Marsh model, out of the guided tour</p>
 				) : (
@@ -1021,7 +1097,7 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 				<p className="gd-when">
 					{s.when} · {s.where}
 				</p>
-				<h1 className="display gd-title">{key === 'streets' ? (STREET_TITLES[method?.key ?? 'zones'] ?? s.title) : s.title}</h1>
+				<h1 ref={titleRef} className="display gd-title">{key === 'streets' ? (STREET_TITLES[method?.key ?? 'zones'] ?? s.title) : s.title}</h1>
 				<div className="gd-body" key={key}>
 					{body}
 				</div>
@@ -1045,6 +1121,26 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 				)}
 				{error && <p className="gd-error">Some layers did not load: {error}</p>}
 			</section>
+			{/* a phone: Back, Sources and Next on a bar under the sheet, seen whether it is open or lowered */}
+			<nav className="gd-bar" aria-label="Steps">
+				<button type="button" onClick={back} disabled={!at.extra && step === 0}>
+					<ArrowLeft size={15} strokeWidth={2.4} /> {at.extra === 'exam' ? 'All layers' : 'Back'}
+				</button>
+				<button
+					type="button"
+					className="gd-src"
+					aria-expanded={sources}
+					onClick={() => {
+						setPeek(false)
+						setSources((v) => !v)
+					}}
+				>
+					Sources
+				</button>
+				<button type="button" onClick={next} disabled={lastNext}>
+					Next <ArrowRight size={15} strokeWidth={2.4} />
+				</button>
+			</nav>
 		</div>
 	)
 }
