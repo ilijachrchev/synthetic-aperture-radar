@@ -197,6 +197,57 @@ All numbers are in `results.json` → `flood_depth`; the layers are `data/street
 
 **Use.** The surveyed marks are measurements; this estimate is not, and the check shows it does not tell one street from another. If the app shows depth for 2024, the marks themselves are the honest layer (`data/streets/water_marks_2024.geojson`); this estimate can at most say "shallow on the plain's edges, deep in the ravine beds".
 
+## Street by street: which method pointed to the streets that flooded
+
+The same test as above, counted in street length instead of land: of the streets that really flooded on 29 Oct 2024 in the 10 towns, how much did each method point to, and how much of what it pointed to really flooded. Code: `pipeline/street_scores.py`; numbers: `results.json` → `streets`.
+
+### Rules (written before any street score)
+
+Written down on 15 Nov 2026 and committed before any street was scored (see the git history of this file). The downloads (streets, UPV map) were made before; nothing was scored with them. The methods are those of PR #39, unchanged; no threshold below was chosen by looking at a result. Any later change goes under "Changes to the rules" with its reason, and the result under the original rule is kept.
+
+**Streets.**
+
+- **Source**: OpenStreetMap as it was on 28 Oct 2024 at 00:00 UTC, the day before the flood (Overpass API, attic query `[date:"2024-10-28T00:00:00Z"]`): every way tagged `highway` in a box around each of the 10 municipalities (the IGN polygons of PR #36 plus about 200 m), read 15 Nov 2026. © OpenStreetMap contributors, ODbL 1.0. Coordinates to EPSG:25830 with pyproj; a way that appears in two boxes counts once.
+- **Kept**: roads (`highway` = `motorway`, `trunk`, `primary`, `secondary`, `tertiary`, the `_link` of each, `unclassified`, `residential`, `living_street`, `service`, `road`, `busway`) and pedestrian ways (`pedestrian`, `footway`, `path`, `steps`, `cycleway`).
+- **Left out**: farm and forest tracks (`track`, kept in one sensitivity run below), sidewalks and crossings drawn as their own ways (`footway`, `path` or `cycleway` tagged `sidewalk` or `crossing`: they repeat a street that is already counted), ways in a tunnel (`tunnel` present and not `no`: the maps describe the ground above them), areas (`area=yes`, squares drawn as outlines), and every other `highway` value (construction, proposed, platforms, corridors and the like).
+- **Pieces**: each way is cut into n pieces of equal length, n being its length divided by 25 m, rounded, at least 1. Pieces are therefore 12.5 to 37.5 m long, except ways shorter than 12.5 m, which stay whole. Lengths are planar metres in EPSG:25830.
+- **Sample points**: each piece of length l gets m = ceil(l / 2.5 m) points, at the centres of m equal parts (at most 2.5 m apart).
+- **Scored pieces**: a piece counts when its midpoint lies on a scored pixel of PR #39 (inside one of the 10 municipalities, inside the area an EMSR773 product analysed, not permanent water, with terrain). Its town is the town of that pixel. Everything below is read on the 5 m grid of PR #39 (the cell holding the point), over the piece's sample points that lie on scored pixels (if none does, its midpoint alone).
+- **A piece is in a layer** when at least half of those sample points lie on cells of that layer.
+
+**What counts as a flooded street (the answer keys; never used to build or tune a method).**
+
+- **Key A, observed**: a piece is flooded if it is in the EMSR773 observed flood (maximum observed extent, flooded area or flood traces, exactly the raster of PR #39), or if any part of it lies within 10 m (planar distance from the piece's line) of a surveyed water mark above 0 m (the ICV layers `DANA2024.ZonasInundadas.AlturaAgua.UPV`, `.IVE`, `.SGRT`, `.AyuntamientosOtros`, as in PR #39). Otherwise it is dry. Sensitivity only: EMSR773 alone, and the marks alone.
+- **Key B, the UPV street depth map** (CGAT, Universitat Politècnica de València; Roch Talens et al. 2025): the maximum water depth, interpolated from flood marks the CGAT measured on walls (6,483 points) on the 2023 LiDAR terrain. WCS coverage `dana2024__H_lamina` of `https://dana2024.gisserver.car.upv.es/geoserver/dana2024/wcs` (depth with buildings not masked; the viewer's default layer is the same surface with the building footprints removed, so on streets the two agree), 0.5 m pixels in EPSG:25830, version "result updated 05/11/2026", read 15 Nov 2026. Each 5 m cell takes the depth of the 0.5 m pixel that holds its centre. A piece is flooded if at least half of its sample points have a depth above 0.1 m. Key B is scored only on the pieces whose midpoint lies inside the map's outlines (the surveyed area and the extra zones, WFS layers `dana2024:Delimitació CGAT` and `dana2024:delimitació zona extra`); outside them the map says nothing, and the street length it covers is reported per town. For a piece inside the outlines, a sample point without a value counts as dry, 0 m (the map holds values above 0 m only; see the check below). Key B is never merged with key A.
+- **Licence of the UPV map**: none is named. The viewer says "The data are freely available through the WMS server" and asks to cite the article; the GeoServer capabilities (WMS, WCS, WFS) give Fees NONE and AccessConstraints NONE. It is used here for derived numbers only, with the citation; the raster stays in `data/interim/` and is not redistributed.
+- **Not independent**: the UPV map is built from wall marks, and the UPV marks in the ICV service (part of key A) come from the same survey. Key B is a second view of the same kind of evidence, not an independent one.
+
+**Methods** (each flags the pieces that are in its layer; layers exactly as in PR #39).
+
+1. **Official zones** (SNCZI): T10, T100 and T500 apart, and any zone (their union).
+2. **Terrain, HAND below 15 m** (PR #39 method 2: bare terrain, drainage above 0.5 km²).
+3. **Terrain, equal-area cut** (PR #39 method 3 at the union area: in each town the scored pixels of lowest HAND, as many as the town's pixels in any official zone).
+4. **SIMULATED run, its own extent**: maximum simulated depth above 0.3 m (PR #39 method 4, the 25 m cell holding the 5 m cell).
+5. **SIMULATED run, equal-area cut** (PR #39: in each town the deepest scored pixels, as many as the town's pixels in any official zone).
+
+**Equal street length.** In each town, any official zone flags some street length L. Each ranking is cut to the same length: its pieces in order, taken until their summed length first reaches L (so it exceeds L by less than one piece). Terrain ranks pieces by the median HAND of their sample points, lowest first; the SIMULATED run by the median of their maximum simulated depth, deepest first; ties by way id and position along the way; pieces without a value come last. Both terrain methods (2, 3) share the one terrain ranking, and both simulated methods (4, 5) the one simulated ranking. The official zones at equal length are any zone itself (T10, then T100, then T500 would rank to the same set).
+
+**Metrics**, for every method, per town and for the 10 towns together, for each key:
+
+- **Street length flagged** (km) and its share of the scored street length.
+- **Hit rate**: the share of the flooded street length that the method flagged.
+- **Precision**: the share of the method's flagged street length that really flooded.
+- **Chance**: a random choice of pieces of the same length has, on average, a hit rate equal to its share of the street length and a precision equal to the flooded share of the street length. Every result is read against it.
+- **At equal street length**: hit rate and precision of each ranking (with the same length they move together), and the official zones' for comparison.
+- **Key B** is computed on the pieces inside the UPV outlines only: the same metrics, with the flagged length inside the outlines.
+
+**What is fixed and what is only sensitivity.**
+
+- **Headline** (fixed now): at equal street length, per town and in total, the hit rate against key A of the terrain ranking and of the SIMULATED ranking against the official zones (any zone). Second headline: the same against key B. The methods at their own length are reported in full, but a method that flags more street catches more, so they are not the headline.
+- **Sensitivity only, never used to pick a version**: tracks included; key A from EMSR773 alone; key A from the marks alone.
+- **Checks**: pieces and kilometres per town and per `highway` value; the share of sample points on scored pixels; the equal-area cuts of PR #39 rebuilt with the same cell count per town as `results.json`; for key B, what the UPV map holds at the surveyed marks of 0 m (dry spots) and above 0 m.
+- Whatever the numbers show is written here, including where the official zones do better.
+
 ## Limits
 
 - **One event.** The 2024 DANA is one test. A method that ranks well here may rank worse in a flood of another shape; nothing here is a validation across events.
