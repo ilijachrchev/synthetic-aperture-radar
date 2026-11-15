@@ -17,6 +17,7 @@ import { type ModelGame, loadModelGame, modelPicks } from '@/lib/model-answer'
 import { TERRAIN } from '@/lib/scene3d'
 import { maxZoomOf, tilesOf, transformTile } from '@/lib/tiles'
 import { WaterLayer, type WaterMeta } from '@/lib/water-layer'
+import { SiteNav } from '../site-nav'
 import './game.css'
 
 const maplibre =
@@ -387,9 +388,7 @@ export function GameApp() {
 			)}
 
 			<header className="gm-top">
-				<Link href="/flood" className="gm-back">
-					Stories
-				</Link>
+				<SiteNav />
 				<div className="gm-title">
 					<span className="display">{GAME.title}</span>
 					<span className="gm-place mono">{GAME.place}</span>

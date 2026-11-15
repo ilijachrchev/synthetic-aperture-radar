@@ -180,9 +180,13 @@ def assemble(raw, times, mp4, skip, fps):
 
 
 PUMP = "() => window.__clock.pump()"
+# where a film starts: a story page out of its veil, or a page that says it is ready to be filmed (the guided tour's
+# ?film); and where it ends
+STARTED = ".st[data-cinema]:not([data-veil]), [data-film-ready]"
+ENDED = "() => window.__waterStoryDone === true || window.__filmDone === true"
 # everything this moment shows has arrived; a build from before 14 Nov 21:30 has no complete(): its tiles at least
 COMPLETE = """() => {
-	const f = window.__flood
+	const f = window.__flood || window.__film
 	if (!f) return false
 	if (f.complete) return f.complete()
 	const m = f.map()
@@ -190,7 +194,8 @@ COMPLETE = """() => {
 }"""
 # what a frame still waits for, when it waits too long: the tiles still on their way, by source
 MISSING = """() => {
-	const m = window.__flood && window.__flood.map()
+	const f = window.__flood || window.__film
+	const m = f && f.map()
 	if (!m) return 'no map'
 	const out = [`zoom ${m.getZoom().toFixed(2)}`]
 	for (const [id, tm] of Object.entries(m.style.tileManagers)) {
@@ -208,7 +213,7 @@ def record_steady(page, cdp, raw, fps, seconds, tail):
     # the way in, behind the veil: the clock runs a frame a step, a few milliseconds of real time apart, so the data
     # and the tiles can arrive meanwhile
     give_up = time.time() + 180
-    while not page.evaluate("() => !!document.querySelector('.st[data-cinema]:not([data-veil])')"):
+    while not page.evaluate(f"() => !!document.querySelector('{STARTED}')"):
         if time.time() > give_up:
             raise RuntimeError("the film did not start within 3 minutes")
         page.evaluate(step)
@@ -237,7 +242,7 @@ def record_steady(page, cdp, raw, fps, seconds, tail):
             f.write(base64.b64decode(shot["data"]))
         if n % (fps * 5) == 0:
             print(f"  {n / fps:.0f} s of film", flush=True)
-        if done_at is None and page.evaluate("() => window.__waterStoryDone === true"):
+        if done_at is None and page.evaluate(ENDED):
             done_at = n
         if done_at is not None and n - done_at >= tail * fps:
             break
@@ -323,7 +328,7 @@ def main():
         page.on("pageerror", lambda e: errors.append(str(e)))
         page.add_init_script(f"try {{ localStorage.setItem('theme', '{args.theme}') }} catch (e) {{}}")
         page.goto(args.url, wait_until="domcontentloaded")
-        page.wait_for_selector(".st[data-cinema]:not([data-veil])", timeout=180000)
+        page.wait_for_selector(STARTED, timeout=180000)
         start = time.time()
         lead = start - opened  # the film file also holds the loading of the page: cut it off below
         n = 0
@@ -332,7 +337,7 @@ def main():
             shutil.rmtree(raw, ignore_errors=True)
             os.makedirs(raw)
             cdp, times = start_screencast(page, raw, w, h, args.quality)
-        while time.time() - start < args.seconds and not page.evaluate("window.__waterStoryDone === true"):
+        while time.time() - start < args.seconds and not page.evaluate(ENDED):
             t = time.time() - start
             if cast:
                 # no screenshots here: each one would hold the picture for a moment and show in the film

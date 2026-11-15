@@ -26,6 +26,8 @@ export type Film = {
 	poster: string
 	/** a frame from late in the film, for people who ask for less motion */
 	still: string
+	/** the words of the button that opens the page (by default "Open this story") */
+	cta?: string
 }
 
 /** the share of the track before the first story takes the navbar, and the hold after the last */
@@ -165,7 +167,7 @@ export function Monitor({ films, track }: { films: Film[]; track: HTMLElement | 
 							{String(cur + 1).padStart(2, '0')} / {String(N).padStart(2, '0')}
 						</span>
 						<Link href={film.path} className="mon-go">
-							Open this story <ArrowUpRight size={16} strokeWidth={2.4} />
+							{film.cta ?? 'Open this story'} <ArrowUpRight size={16} strokeWidth={2.4} />
 						</Link>
 					</div>
 					<span ref={bar} className="mon-progress" aria-hidden />
@@ -181,7 +183,7 @@ export function Monitor({ films, track }: { films: Film[]; track: HTMLElement | 
 				<p className="display mon-note-title">{film.title}</p>
 				<p>{film.place}</p>
 				<Link href={film.path} className="mon-go">
-					Open this story <ArrowUpRight size={16} strokeWidth={2.4} />
+					{film.cta ?? 'Open this story'} <ArrowUpRight size={16} strokeWidth={2.4} />
 				</Link>
 			</div>
 		</div>

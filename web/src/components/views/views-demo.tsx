@@ -1,9 +1,8 @@
 'use client'
 
 import { Cloud, Pause, Play } from 'lucide-react'
-import Link from 'next/link'
 import { type CSSProperties, type ReactNode, useEffect, useMemo, useRef, useState } from 'react'
-import { Mark } from '@/components/brand'
+import { SiteNav } from '../site-nav'
 import './views.css'
 
 // The four NISAR views, read from public/layers/<site>/views.json (web/scripts/bake_views.py writes them). This page
@@ -608,10 +607,7 @@ export function ViewsDemo() {
 	return (
 		<main className="vw">
 			<header className="vw-head">
-				<Link href="/" className="vw-brand">
-					<Mark size={20} />
-					Dancing with the SARs
-				</Link>
+				<SiteNav variant="page" />
 				<h1 className="display vw-title">Where is NISAR?</h1>
 				<p className="vw-lead">
 					Four views of what only NISAR gives, baked from the radar data. A demo of the pictures and numbers for the final screens, not the screens

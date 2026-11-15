@@ -13,7 +13,6 @@
 import 'maplibre-gl/dist/maplibre-gl.css'
 import { Layers, Pause, Play, X } from 'lucide-react'
 import type { MapGeoJSONFeature, Map as MapLibreMap, MapLayerMouseEvent, MapMouseEvent, Marker as MapLibreMarker, PointLike, Popup as MapLibrePopup } from 'maplibre-gl'
-import Link from 'next/link'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { CREDITS, DEFAULT_LAYERS, ICV, LEGEND, type LayerKey, MARK_CLASSES, MODEL_AREAS, PLACES, PNOA, SIM_CLASSES, START, STREET_FADE, ZONES } from '@/content/explore'
 import { DANA } from '@/content/stories'
@@ -22,6 +21,7 @@ import type { Bounds } from '@/lib/gl-quad'
 import { LikelihoodLayer } from '@/lib/likelihood-layer'
 import { PREDICTION_SITES, type Prediction, fileUrl, inBounds, inspectAt, loadPrediction, pixelAt, readPixel } from '@/lib/prediction'
 import { emptyLayer } from '@/lib/scene3d'
+import { SiteNav } from '../site-nav'
 import { ExploreSpot, type ExploreSpotInfo, type ExploreSpotResult } from './explore-spot'
 import { RainSlider } from './rain-slider'
 import './explore.css'
@@ -738,16 +738,18 @@ export function ExploreApp({ onGuide, onScreen }: { onGuide?: () => void; onScre
 			<div ref={mapEl} className="ex-map" />
 
 			<header className="ex-top">
-				<Link href="/" className="ex-brand">
-					Dancing with the SARs
-				</Link>
+				<SiteNav
+					active="explore"
+					onGo={(k) => {
+						if (k === 'map' && onGuide) {
+							onGuide()
+							return true
+						}
+						return k === 'explore'
+					}}
+				/>
 				<h1 className="display ex-title">Flood explorer</h1>
 				<p className="ex-sub">Official flood zones, what really flooded, and where our model says the water would go.</p>
-				{onGuide && (
-					<button type="button" className="ex-pill ex-guide" onClick={onGuide}>
-						<b>Back to the guided tour</b>
-					</button>
-				)}
 				{onScreen && (
 					<nav className="ex-screens" aria-label="Marsh model">
 						<button type="button" className="ex-pill" onClick={() => onScreen('exam')}>
