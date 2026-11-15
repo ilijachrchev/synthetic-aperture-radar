@@ -356,6 +356,108 @@ At equal street length, hit rate of the zones / terrain / SIMULATED:
 - Only a method that points beyond the zones can reach those streets, and only one of ours did so with few false alarms (about one flagged street in four stayed dry): the simulated run fed with the rain that was measured. Its value for a warning would depend on a rain forecast as good as that measurement; it was not tested with a forecast here.
 - One event, one town network: as above, nothing here is a validation across floods.
 
+## Two more simulations: the forecast of the night before, and buildings
+
+The SIMULATED run above was fed the rain measured on the day, so it shows what terrain and rain together point to, not what anyone could have known before the storm. Two more runs of the same model test that, each scored street by street exactly like it. Code: `pipeline/streets.py` (steps `fetch-forecast`, `sim-prepare`, `sim-collect`) and `pipeline/street_scores.py`; numbers: `results.json` → `simulation_runs` and `streets`.
+
+### Rules (written before any score of these runs)
+
+Written down on 15 Nov 2026 and committed before either run was simulated or scored (see the git history of this file). The forecast was downloaded, and its rain at the grid points looked at, before this was written. Nothing below was chosen by looking at a 2024 score. Any later change goes under "Changes to the rules" with its reason, and the result under the original rule is kept.
+
+**Run A, "the night before": the same model, driven by the rain of the forecast.**
+
+- **Forecast**: ECMWF IFS HRES, the deterministic high resolution forecast at its native 9 km (O1280 grid), from Open-Meteo's Single Runs API (`https://single-runs-api.open-meteo.com/v1/forecast`, `models=ecmwf_ifs`, `run=` the initial time), which returns one model run as it was issued. Open-Meteo's Historical Forecast API is not used: it joins the first hours of successive runs, so for 29 Oct it would take rain from runs started during the storm.
+- **Two runs, fixed now, both reported, neither chosen**: initial time 28 Oct 2024 12:00 UTC (available to forecasters in the evening of 28 Oct) and 29 Oct 2024 00:00 UTC (available on the morning of 29 Oct, hours before the flood).
+- **Variable**: hourly precipitation (`precipitation`: rain, showers and snow of the preceding hour, mm), `cell_selection=nearest`, `timezone=GMT`, 3 forecast days. The value at a run's initial hour has no preceding hour and counts as 0.
+- **Grid points**: Open-Meteo is asked at the points of a 2 km lattice over the Poyo, Pozalet and Saleta catchment (ICV `DANA2024.AVSRE.Cuencas`, code 29) and 6 km around it (339 points); it answers each with the grid point it used. The distinct grid points are the forecast's grid points here; their coordinates and elevations are recorded.
+- **Rain on the zones**: the three rain zones of the run above, unchanged. Each 25 m cell of a zone takes the rain of its nearest grid point (great-circle distance); a zone's hourly rain is the mean over its area, spread evenly over the zone, as the gauged rain was. As in the run above, no rain falls outside the three zones: the forecast's rain on the plain is reported, not simulated.
+- **Hours**: the same 25 hours, 29 Oct 05:00 to 30 Oct 06:00 local time (CET; 04:00 UTC to 05:00 UTC the next day). Open-Meteo's value at 05:00 UTC is the rain of 04:00 to 05:00 UTC, the run's first hour (PH06 in Pérez Cueva et al.). The gauged rain fell in the first 19 of these hours (PH06 to PH24); the forecast's rain in all 25 is used. Forecast rain before 29 Oct 05:00 local is not simulated, as for the gauged run, whose table starts at PH06; it is reported.
+- **Everything else as the run above**: the same 25 m terrain, Manning's n 0.05, no infiltration, the same sinks, time steps and gauge record.
+- **Recorded**: the grid points and their share of each zone, the run times, each zone's hourly rain and its total in the 25 hours and since the initial time, against the gauged totals (Poyo up to the gauge 79.0 hm³, 431.7 mm; gauge to fan apex 68.4 hm³, 405.9 mm; Possalet-Saleta 9.9 hm³, 132.7 mm), and the modelled flow at the CHJ gauge (a check, not a calibration).
+
+**Run B, "better physics": the gauged rain, buildings as obstacles.**
+
+- The run above with one change: buildings stand in the water's way. The Catastro INSPIRE footprints of PR #39 (data of 21 Aug 2026, the same files: their checksums match) in the 5 m raster of PR #39 (a 5 m cell is a building when its centre lies inside a footprint) are raised by 10 m, as in PR #39's buildings variant. On the 25 m grid, a cell is raised by 10 m when at least half of its 25 cells of 5 m are building cells; every other cell keeps the bare terrain. Sink cells are never raised. Rain falls on raised cells too and runs off them, as roof water reaches the street.
+- Why a majority and not a mean: a 25 m cell holds street and building; raising every cell by its building share would put a step of a few metres in most street cells. The majority rule keeps a cell open unless it is mostly building. At 25 m many narrow streets lie in cells that are mostly building, so this blocks more than reality does; it is a coarse picture of the buildings and is labelled as such.
+- Only the buildings of the 10 municipalities are in the data (Catastro was read for them alone); buildings of the other municipalities on the grid are not raised.
+
+**Scoring (both runs).**
+
+- `pipeline/street_scores.py` exactly as in "Street by street" above: the same pieces, the same keys (key A everywhere, key B only inside the UPV outlines), the same majority rule. Each new run is scored as the SIMULATED run is: (1) its own extent, maximum depth above 0.3 m; (2) its ranking (median maximum depth of a piece's sample points, deepest first) cut, town by town, to the street length the official zones flag.
+- Reported for each run, in total and per town, against key A and key B: flagged street length (km), hit rate (share of the flooded street length flagged) and precision (share of the flagged length that really flooded), always together, next to the official zones (any zone) and the SIMULATED run above. Descriptive, after these: the street length each run flags outside every official zone, and the share of it that flooded.
+- **The two forecasts are reported side by side and neither is chosen.** A "before the storm" number is quoted with its run's initial time, its hit rate and its precision.
+- **Ceiling (two records of the same flood)**, added on request before any score of these runs: on the streets both keys cover (pieces inside the UPV outlines), key B (the UPV map) is scored as if it were a method against key A, and key A against key B, with the same hit rate and precision. It shows how well one record of this flood matches the other, so how far any method could get against them; the two records are not independent (the UPV marks are part of key A). So that the ceiling can be read on the same streets, every method's key A numbers are also given inside the UPV outlines. It is reported in the same table, labelled "ceiling (two records of the same flood)".
+- **The rebuild is checked.** The terrain and the run above were rebuilt on 15 Nov 2026 from the same sources (the earlier intermediate files were deleted with their working copy). The rebuilt run must reproduce PR #39 (time steps, volumes, gauge flow) and PR #43 (its street scores); any difference is reported.
+- No threshold or setting (0.3 m, the majority, 10 m, the hours, the zones, the averaging) changes after a score is seen. If a run does not finish in time, this page says so.
+
+**Amendment: run A3, "the same morning"** (added on 15 Nov 2026 at about 10:00 UTC, at the team's request, *after* run A with the forecast of 29 Oct 00 UTC had been scored; committed before run A3 was simulated or scored; see "Changes to the rules", item 5).
+
+- **The run**: the same model and settings as run A, driven by the ECMWF IFS HRES run with initial time 29 Oct 2024 06:00 UTC, fetched in the same way (the same 339 query points; it answers with the same 24 grid points).
+- **Why**: a forecast closer to the storm. ECMWF's dissemination schedule (`https://confluence.ecmwf.int/display/DAC/Dissemination+schedule`, read 15 Nov 2026, page last updated 7 Oct 2026) sends the 06 UTC run's hourly steps 0 to 90 between 11:45 and 12:12 UTC, so about 12:45 to 13:12 local time; the page does not give the schedule of October 2024, which may differ by some minutes. That is about five hours before the streets of Chiva flooded (17:47 local) and about six before the Poyo's last gauge reading (2,282.9 m³/s at 18:55; both in the timeline of `docs/ZONES.md`).
+- **Its first hours**: the run starts two hours after the window opens (04:00 UTC). The window's hours up to its initial time (04:00 to 06:00 UTC, 05:00 to 07:00 local) take the rain of the 29 Oct 00 UTC run, the newest forecast for those hours at 06 UTC; every later hour is the 06 UTC run's.
+- **Scored and reported exactly like run A**: own extent and the zones' street length, keys A and B, the streets outside every official zone, next to the zones, the gauged run and the other forecast runs. All three forecast runs are reported; none is chosen.
+
+### Results
+
+Every number below is in `results.json`: the runs in `simulation_runs` (rain, volumes, gauge flow), their street scores in `streets_more_runs` (written by `python -m pipeline.street_scores score-runs`; the tables are printed from it by `report-runs`). The PR #39 run and its PR #43 street scores stay in `simulation` and `streets`.
+
+**The rebuild.** The intermediate files of PR #39 had been deleted with the working copy that held them, so on 15 Nov 2026 they were rebuilt from the same sources. The two 1 m terrain sheets downloaded whole (0722, 0721) have PR #39's SHA-256. The other four were averaged to 5 m while being read over HTTP, because disk space was short; they have PR #39's byte sizes and dimensions. Catastro, WorldCover and the rain papers have PR #39's checksums. The ICV, SNCZI and OSM files differ from PR #39's only in their download time stamps (same sizes, or 1 or 2 bytes apart where the time stamp is written with fewer digits). The rebuilt grid matches PR #39 cell for cell in every count: 52,653,524 cells with terrain, 1,621,421 of permanent water, 1,510,811 lake cells, 479,941 building cells, and in the lake routing 4,420,130 flat cells drained in 989 rounds. The three rain zones cover 183.0, 168.7 and 74.6 km², again as in PR #39.
+
+**The forecast rain against the gauged rain** (`results.json` → `simulation_runs` → `rain_forecast`). On the three zones, over the 25 hours of the run (29 Oct 05:00 to 30 Oct 06:00 local):
+
+| Zone | Area | Gauged (Pérez Cueva et al. 2025) | IFS run of 28 Oct 12 UTC | IFS run of 29 Oct 00 UTC |
+|---|---|---|---|---|
+| Poyo up to the CHJ gauge | 183.0 km² | 431.7 mm (79.0 hm³); heaviest hour 71 mm, 19:00 to 20:00 | 170.0 mm (39 %); heaviest hour 15.8 mm, 15:00 to 16:00 | 149.8 mm (35 %); heaviest hour 14.2 mm, 14:00 to 15:00 |
+| Poyo, gauge to fan apex | 168.7 km² | 405.9 mm (68.4 hm³); heaviest hour 98 mm, 17:00 to 18:00 | 165.0 mm (41 %); heaviest hour 17.9 mm, 13:00 to 14:00 | 170.2 mm (42 %); heaviest hour 14.3 mm, 15:00 to 16:00 |
+| Possalet-Saleta | 74.6 km² | 132.7 mm (9.9 hm³); heaviest hour 43 mm, 17:00 to 18:00 | 156.9 mm (118 %); heaviest hour 15.4 mm, 12:00 to 13:00 | 135.3 mm (102 %); heaviest hour 11.9 mm, 15:00 to 16:00 |
+
+Local time (CET). Each zone's rain comes from 12 of the 24 grid points found (the nearest grid point of each 25 m cell); Open-Meteo's own choice of grid point was the great-circle nearest at all 339 query points. From each run's initial time to the end of the window the totals are hardly larger (Poyo up to the gauge: 174.3 and 150.6 mm), so cutting the window at 29 Oct 05:00 local loses little.
+
+The forecasts put heavy rain on the right ravines, but a third to two fifths of what fell on the Poyo, with their heaviest hour two to five hours early and about a fifth as intense as the gauged one. On the small Possalet-Saleta catchment they gave as much as fell, or slightly more.
+
+**The rebuilt PR #39 run** (rerun on 15 Nov 2026 from the rebuilt inputs, to check them) reproduces PR #39 exactly: 95,092 time steps, 157.38 hm³ of rain, 110.63 hm³ left at the sinks and 46.74 hm³ on the ground at the end, 3,052.5 m³/s at the CHJ gauge at 18:55 and a peak of 3,291.7 m³/s at 20:40. Street by street it reproduces PR #43 exactly too: the same 64,174 pieces, the same keys (513.7 km flooded under key A, 519.1 km under key B), the same official zones, and for the SIMULATED run the same 531.65 km at its own extent with 76.0 % found and 73.4 % really flooded, and the same ranking at equal length (`streets_more_runs` → `same_as_pr43`). One PR #39 method is left out of the new block: the equal-area pixel cut of the SIMULATED run breaks its ties (the 25 cells of 5 m in each 25 m cell share one depth) by the bare terrain's upstream area, and that routing was not rebuilt.
+
+**Short answer: with the rain the forecast gave before the storm, the model did not point to more of the flooded streets than the official map; the 76 % of the hindcast came from the rain that really fell.** At its own extent (maximum depth above 0.3 m), the run fed the IFS forecast of 29 Oct 00 UTC flags 188.9 km of street and finds **26.1 %** of the flooded street length (key A), with **70.9 %** of what it flags really flooded; the run fed the forecast of 28 Oct 12 UTC flags 194.7 km and finds **26.8 %**, with **70.6 %** really flooded. The official zones find 41.0 % at 75.2 %, the hindcast with the gauged rain 76.0 % at 73.4 %. Cut to the zones' street length, the forecast runs tie the zones (40.6 and 40.6 % against 41.0 %), as the hindcast and the terrain did. The forecasts put a third to two fifths of the Poyo's rain on its catchment, at their heaviest hour about a fifth of the gauged intensity, so the Poyo they make peaks at the CHJ gauge at 549 m³/s (17:25, the 29 Oct 00 UTC run) and 636 m³/s (17:50, the 28 Oct 12 UTC run), against 2,282.9 m³/s measured at 18:55 before the gauge was lost. The water stays in the ravines and the low plain: Picanya, Paiporta and Sedaví, where the hindcast found 78 to 91 % of the flooded streets, get almost nothing. Fed by this deterministic forecast, the model could not have pointed to the streets that flooded.
+
+| Run | Rain on the Poyo up to the gauge | Flagged (km) | Key A: found | Key A: really flooded | Key B: found | Key B: really flooded | Key A, cut to the zones' length: found / really flooded | Flow at the CHJ gauge, 18:55 |
+|---|---|---|---|---|---|---|---|---|
+| Official zones (any zone) |  | 280.0 | 41.0 % | 75.2 % | 50.8 % | 96.6 % | 41.0 / 75.2 % |  |
+| SIMULATED, gauged rain (PR #39; rebuilt, identical) | 431.7 mm | 531.6 | 76.0 % | 73.4 % | 81.9 % | 88.7 % | 41.3 / 75.7 % | 3,052.5 m³/s |
+| Run A, forecast of 29 Oct 00 UTC | 149.8 mm | 188.9 | 26.1 % | 70.9 % | 31.0 % | 94.6 % | 40.6 / 74.4 % | 529.7 m³/s |
+| Run A, forecast of 28 Oct 12 UTC | 170.0 mm | 194.7 | 26.8 % | 70.6 % | 31.9 % | 94.5 % | 40.6 / 74.5 % | 615.8 m³/s |
+| Ceiling (two records of the same flood): the UPV map against key A, inside the UPV outlines | | 519.1 | 84.2 % | 78.9 % | | | | |
+| Ceiling (two records of the same flood): key A against the UPV map | | 486.1 | | | 78.9 % | 84.2 % | | |
+
+Own extent except the cut column; key B inside the UPV outlines only (801.5 km of street, the flagged length inside them: zones 272.7 km, hindcast 479.5 km, run A 170.2 km (29 Oct 00 UTC), run A 175.1 km (28 Oct 12 UTC)). A random pick of the same length has a precision of 32.3 % (key A) and 64.8 % (key B). The CHJ gauge measured 2,282.9 m³/s at 18:55. The forecast runs are also scored with tracks and against the keys' parts (`streets_more_runs` → `with_tracks`, `key_sensitivity`), and nothing there changes the picture: at their own extent the zones stay ahead (tracks included: 43.4 % found against 30.3 and 31.0 %), and at the zones' length the forecast runs tie them (key A from EMSR773 alone: 40.7 against 40.8 and 40.8 %) or trail them (key A from the marks alone: 47.5 against 36.1 and 36.6 %).
+
+**The ceiling (two records of the same flood).** On the 801.5 km of street inside the UPV outlines, where both keys exist, the UPV map scored as a method against key A finds 84.2 % of the flooded street length with 78.9 % of what it flags flooded; key A against the UPV map finds 78.9 % at 84.2 %. On the same streets, against key A, the official zones find 42.9 % at 76.4 %, the hindcast 78.6 % at 79.7 %, the forecast runs 26.7 % at 76.3 % (29 Oct 00 UTC) and 27.4 % at 76.2 % (28 Oct 12 UTC). Two records of the same flood, both made after it, agree on about four fifths of each other; the hindcast comes close to that, the forecast runs reach about a third of it.
+
+Own extent, key A, by town: found / really flooded (flagged km).
+
+| Town | Flooded (km) | Zones | Gauged rain | A, 29 Oct 00 UTC | A, 28 Oct 12 UTC |
+|---|---|---|---|---|---|
+| Paiporta | 75.3 | 36.5 / 100.0 % (27.5) | 77.5 / 99.5 % (58.6) | 9.5 / 100.0 % (7.2) | 9.3 / 100.0 % (7.0) |
+| Massanassa | 24.8 | 89.3 / 68.4 % (32.4) | 82.3 / 74.4 % (27.4) | 64.0 / 78.0 % (20.3) | 63.9 / 78.1 % (20.3) |
+| Sedaví | 23.5 | 3.0 / 100.0 % (0.7) | 82.8 / 80.8 % (24.1) | 3.3 / 100.0 % (0.8) | 3.3 / 100.0 % (0.8) |
+| Catarroja | 64.2 | 83.4 / 68.9 % (77.7) | 61.5 / 67.9 % (58.1) | 21.6 / 58.2 % (23.9) | 21.6 / 58.1 % (23.9) |
+| Alfafar | 67.9 | 77.0 / 87.1 % (60.0) | 92.6 / 85.1 % (73.9) | 72.2 / 88.6 % (55.3) | 72.3 / 88.7 % (55.3) |
+| Benetússer | 5.9 | 44.3 / 43.0 % (6.0) | 62.5 / 30.7 % (11.9) | 37.9 / 39.7 % (5.6) | 37.9 / 40.4 % (5.5) |
+| Picanya | 83.4 | 3.6 / 98.4 % (3.0) | 90.8 / 97.1 % (78.0) | 4.5 / 98.1 % (3.8) | 4.6 / 98.2 % (3.9) |
+| Aldaia | 92.0 | 42.8 / 69.8 % (56.4) | 66.8 / 74.3 % (82.8) | 29.2 / 71.7 % (37.5) | 32.8 / 71.8 % (42.0) |
+| Chiva | 11.0 | 15.8 / 26.5 % (6.5) | 55.1 / 14.5 % (41.8) | 18.5 / 14.4 % (14.2) | 19.9 / 14.6 % (15.0) |
+| Torrent | 65.7 | 11.8 / 80.7 % (9.6) | 65.2 / 57.1 % (75.0) | 18.7 / 60.4 % (20.3) | 19.1 / 59.4 % (21.1) |
+| **Total** | 513.7 | 41.0 / 75.2 % (280.0) | 76.0 / 73.4 % (531.6) | 26.1 / 70.9 % (188.9) | 26.8 / 70.6 % (194.7) |
+
+**Run A3 (the forecast of 29 Oct 06 UTC, amendment) and run B (buildings)** were still running when this was written (10:10 UTC); their numbers are added here when they are scored.
+
+**What this means, and what it does not.**
+
+- The hindcast's 76 % needs the rain that fell. The ECMWF forecasts before the storm had heavy rain over the right ravines, but a third to two fifths of what fell there, and that was not enough for this model to reach the streets of Picanya, Paiporta and Sedaví. A "before the storm" version of this model would need a better rain forecast, for example the ensemble's wettest members or a convection-permitting model, and that was not tested here.
+- One deterministic forecast per run, one event: nothing here says how often a forecast-driven run would miss or find a flood.
+- Rain only on the three upstream zones, as in the hindcast; the forecast's rain on the plain is not simulated.
+
+<!-- street results: filled in as the runs are scored -->
+
 ## Limits
 
 - **One event.** The 2024 DANA is one test. A method that ranks well here may rank worse in a flood of another shape; nothing here is a validation across events.
@@ -387,6 +489,7 @@ At equal street length, hit rate of the zones / terrain / SIMULATED:
 | `tests/test_streets.py`, `tests/test_streets_inertial.py` | the terrain flow, the equal-area cut and the scheme on tiny synthetic grids |
 | `pipeline/street_scores.py` | street by street: `fetch` (OSM streets of 28 Oct 2024 by Overpass, the UPV depth map by WCS), `score`, `report` |
 | `tests/test_street_scores.py` | the street pieces, sample points, the 10 m rule, the majority rule, the equal-length cut and the UPV cell pick on tiny cases |
+| `data/streets/forecast_rain_ifs_2024.json` | the input of run A: hourly precipitation of the two ECMWF IFS HRES runs (28 Oct 2024 12 UTC, 29 Oct 2024 00 UTC) at the 24 grid points around the catchment, FORECAST, from Open-Meteo's Single Runs API (CC BY 4.0: weather data by Open-Meteo.com, ECMWF IFS HRES) |
 
 Needs the downloads of `pipeline.zones` (PR #36) in `data/interim/flood-zones/` (`python -m pipeline.zones fetch`), or `--zones-interim` pointing at them. Downloads go to `data/interim/streets/` (not in git). The terrain sheets are about 2 GB each and are deleted once averaged to 5 m; the terrain step needs about 4 GB of RAM.
 
@@ -442,12 +545,51 @@ python -m pipeline.street_scores score
 python -m pipeline.street_scores report
 ```
 
+The two more simulations (after `terrain`; the forecast comes from Open-Meteo, about 1.4 MB). `terrain --only buildings` burns the building footprints without the buildings routing. `sim-prepare` writes one `inputs.npz` per run into `data/interim/streets/simulation_<run>/`; the kernel then runs once per run (they can run side by side, `NUMBA_NUM_THREADS` sets the threads of each); `sim-collect` writes `results.json` → `simulation_runs`; `score-runs` writes `results.json` → `streets_more_runs` and leaves `streets` (PR #43) as it was.
+
+```bash
+python -m pipeline.streets fetch-forecast
+```
+
+```bash
+python -m pipeline.streets terrain --only buildings
+```
+
+```bash
+python -m pipeline.streets sim-prepare
+```
+
+```bash
+python -I pipeline/inertial_kernel.py data/interim/streets/simulation_ifs_20241028T12/inputs.npz data/interim/streets/simulation_ifs_20241028T12/outputs.npz
+```
+
+```bash
+python -I pipeline/inertial_kernel.py data/interim/streets/simulation_ifs_20241029T00/inputs.npz data/interim/streets/simulation_ifs_20241029T00/outputs.npz
+```
+
+```bash
+python -I pipeline/inertial_kernel.py data/interim/streets/simulation_buildings/inputs.npz data/interim/streets/simulation_buildings/outputs.npz
+```
+
+```bash
+python -m pipeline.streets sim-collect
+```
+
+```bash
+python -m pipeline.street_scores score-runs
+```
+
+```bash
+python -m pipeline.street_scores report-runs
+```
+
 ## Changes to the rules
 
 1. **Permanent water also counts as drainage for HAND** (decided while writing the code, before any score). The rules make permanent water an outlet of the depression filling, so water that reaches the Albufera leaves the grid there; without this clarification a cell that drains straight into the lake would have no drainage cell on its path. HAND is then measured from the lake surface, as for a river. The lake itself is not a scored pixel.
 2. **In the simulation, only water bodies of at least 1 km² are sinks** (decided before any simulation result existed). "Permanent water" in the rules meant the Albufera and the sea, but ESA WorldCover's class 80 also marks 942 small patches inside the catchment (ponds, a quarry lake; 2.7 km² of its 40.5 km² in the grid). One of them lies on the Poyo near Cheste, and with every patch as a sink the D8 routing ended the Poyo there, with 157.6 km² upstream; in the simulation it would have swallowed the flood. The three bodies of 1 km² or more are the sea, the port and the Albufera (37.8 km²). The rain zones are delineated on this routing: the gauge cell drains 183.0 km² (Pérez Cueva et al.: 183.0), the apex 351.7 km² (351.5), the Saleta 74.6 km² (74.6).
 3. **A post-hoc check of HAND with the same lake-only sinks** (added after the first scores, because of item 2). The pre-registered HAND, with every WorldCover patch as a sink, stays the headline; the lake-only HAND is reported beside it, labelled post-hoc, so a reader can see whether the ponds change the answer.
 4. **Street by street: a post-hoc variant of key B on the UPV surveyed area alone** (added after the first street scores, because of the check of the UPV map at the water marks). The rules count a point without a value inside the UPV outlines as dry; the check showed that in the extra zones the map has no value at 52 % of the wet marks (in the surveyed area at 8 %), so there "no value" is often not dry. Key B as written stays the second headline; the variant limited to the surveyed area (CGAT outline) is reported beside it, labelled post-hoc. It does not change the order (zones 53.0, terrain 47.7, SIMULATED 51.6 % at equal street length).
+5. **Two more simulations: a third forecast run, A3 (29 Oct 2024 06 UTC)**, added on 15 Nov 2026 at the team's request after run A with the forecast of 29 Oct 00 UTC had been scored (it found fewer flooded streets than the official zones), and committed before run A3 was simulated or scored. The two forecast runs fixed in advance stay as they are and are reported whatever run A3 shows; the reason for the third is a forecast available closer to the storm (see the amendment in "Two more simulations"). Being added after a score was seen, run A3 is reported beside the others and is not a replacement for them.
 
 ## Sources
 

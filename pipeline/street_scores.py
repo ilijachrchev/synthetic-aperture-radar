@@ -318,6 +318,14 @@ MARK_RADIUS_M = 10.0    # key A: a surveyed water mark above 0 m within 10 m
 UPV_DEPTH_M = 0.1       # key B: UPV depth above 0.1 m
 SIM_EXTENT_M = 0.3      # the SIMULATED run's own extent: maximum depth above 0.3 m
 MAJORITY = 0.5          # a piece is in a layer when at least half of its sample points are
+# The two newer runs (docs/STREETS.md, "Two more simulations"), scored exactly like the PR #39 run: own extent
+# (maximum depth above 0.3 m) and the ranking by median maximum depth cut to the official zones' street length.
+EXTRA_SIM_RUNS = {
+    "ifs_20241028T12": "simulation_ifs_20241028T12",   # run A, forecast issued 28 Oct 2024 12 UTC
+    "ifs_20241029T00": "simulation_ifs_20241029T00",   # run A, forecast issued 29 Oct 2024 00 UTC
+    "buildings": "simulation_buildings",               # run B, gauged rain, buildings as obstacles
+    "ifs_20241029T06": "simulation_ifs_20241029T06",   # run A3 (amendment), forecast issued 29 Oct 2024 06 UTC
+}
 
 ROADS = ("motorway", "motorway_link", "trunk", "trunk_link", "primary", "primary_link", "secondary",
          "secondary_link", "tertiary", "tertiary_link", "unclassified", "residential", "living_street", "service",
@@ -589,13 +597,23 @@ def pixel_layers(zones_dir: Path, sample_cells: np.ndarray) -> dict:
     town_pos = {t: np.flatnonzero(town_s == i + 1) for i, t in enumerate(TOWNS)}
     k_town = {t: int(union_s[p].sum()) for t, p in town_pos.items()}
 
-    hand = st.load_grid("hand_bare_d0p5km2").ravel()
-    out["hand"] = np.where(on_grid, hand[cells], np.nan).astype(np.float32)
-    hand_s = hand[idx]
-    del hand
-    gc.collect()
-    upa_s = st.load_grid("upa_bare").ravel()[idx]
-    gc.collect()
+    # the terrain layers and the PR #39 run are optional for `score-runs` (rebuilt later, or not at all)
+    has_hand = (st.TERRAIN_DIR / "hand_bare_d0p5km2.tif").exists() and (st.TERRAIN_DIR / "upa_bare.tif").exists()
+    has_sim = (INTERIM_DIR / "simulation" / "sim_hmax_25m.tif").exists()
+    out["available"] = {"terrain": has_hand, "simulated_pr39": has_sim}
+    cuts = {}
+    if has_hand:
+        hand = st.load_grid("hand_bare_d0p5km2").ravel()
+        out["hand"] = np.where(on_grid, hand[cells], np.nan).astype(np.float32)
+        hand_s = hand[idx]
+        del hand
+        gc.collect()
+        upa_s = st.load_grid("upa_bare").ravel()[idx]
+        gc.collect()
+    else:
+        out["hand"] = np.full(cells.size, np.nan, dtype=np.float32)
+        hand_s = None
+        upa_s = np.zeros(idx.size, dtype=np.float32)
 
     def cut(score_s: np.ndarray) -> np.ndarray:
         sel = np.zeros(idx.size, dtype=bool)
@@ -603,26 +621,39 @@ def pixel_layers(zones_dir: Path, sample_cells: np.ndarray) -> dict:
             sel[st.ranked(score_s, upa_s, p)[:k_town[t]]] = True
         return sel
 
-    eq_terrain = cut(hand_s)
-    out["terrain_equal_area"] = np.where(spos >= 0, eq_terrain[np.maximum(spos, 0)], False)
-    del hand_s
-    hm = st.load_grid("sim_hmax_25m", folder=INTERIM_DIR / "simulation")
+    if has_hand:
+        cuts["terrain_bare_equal_area_union"] = cut(hand_s)
+        out["terrain_equal_area"] = np.where(spos >= 0, cuts["terrain_bare_equal_area_union"][np.maximum(spos, 0)],
+                                             False)
+        del hand_s
+    else:
+        out["terrain_equal_area"] = np.zeros(cells.size, dtype=bool)
     f = int(st.SIM_CELL_M // CELL_M)
     cols = grid_shape()[1]
-
-    def sim_at(flat: np.ndarray) -> np.ndarray:
-        r, c = np.divmod(flat, cols)
-        return hm[r // f, c // f]
-
-    out["sim_depth"] = np.where(on_grid, sim_at(cells), np.nan).astype(np.float32)
-    eq_sim = cut(-sim_at(idx).astype(np.float64))
-    out["sim_equal_area"] = np.where(spos >= 0, eq_sim[np.maximum(spos, 0)], False)
+    rr, cc = np.divmod(cells, cols)
+    if has_sim:
+        hm = st.load_grid("sim_hmax_25m", folder=INTERIM_DIR / "simulation")
+        out["sim_depth"] = np.where(on_grid, hm[rr // f, cc // f], np.nan).astype(np.float32)
+        ri, ci = np.divmod(idx, cols)
+        cuts["simulated_rain_equal_area_union"] = cut(-hm[ri // f, ci // f].astype(np.float64))
+        del ri, ci, hm
+        out["sim_equal_area"] = np.where(spos >= 0, cuts["simulated_rain_equal_area_union"][np.maximum(spos, 0)],
+                                         False)
+    else:
+        out["sim_depth"] = np.full(cells.size, np.nan, dtype=np.float32)
+        out["sim_equal_area"] = np.zeros(cells.size, dtype=bool)
+    for run, folder in EXTRA_SIM_RUNS.items():
+        if (INTERIM_DIR / folder / "sim_hmax_25m.tif").exists():
+            hm_run = st.load_grid("sim_hmax_25m", folder=INTERIM_DIR / folder)
+            out[f"simdepth_{run}"] = np.where(on_grid, hm_run[rr // f, cc // f], np.nan).astype(np.float32)
+            del hm_run
+    del rr, cc
     # checks: the rebuilt cuts against the land flooded per town in results.json (PR #39)
     from pipeline.streets import pct
 
     res = json.loads((STREETS_DIR / "results.json").read_text(encoding="utf-8"))["methods"]
     check = {}
-    for name, sel in (("terrain_bare_equal_area_union", eq_terrain), ("simulated_rain_equal_area_union", eq_sim)):
+    for name, sel in cuts.items():
         rows = {}
         for t, p in town_pos.items():
             mine = pct(int((sel[p] & obs_s[p]).sum()), int(sel[p].sum()))
@@ -631,7 +662,7 @@ def pixel_layers(zones_dir: Path, sample_cells: np.ndarray) -> dict:
                        "same": mine == theirs and round(int(sel[p].sum()) * 25 / 1e4, 1) == res[name]["towns"][t]["area_ha"]}
         check[name] = {"all_same": all(r["same"] for r in rows.values()), "towns": rows}
     out["checks_equal_area"] = check
-    del eq_terrain, eq_sim, upa_s, hm
+    del cuts, upa_s
     gc.collect()
     upv = load_grid_upv()
     out["upv_depth"] = np.where(on_grid, upv[cells], np.nan).astype(np.float32)
@@ -709,6 +740,12 @@ def evaluate(b: dict, lay: dict, marks_xy: np.ndarray, outline, surveyed=None) -
     flags["simulated_equal_area_union"] = frac("sim_equal_area") >= MAJORITY
     hand_med = group_median(lay["hand"][e_rows], e_piece, n)
     sim_med = group_median(lay["sim_depth"][e_rows], e_piece, n)
+    extra = [r for r in EXTRA_SIM_RUNS if f"simdepth_{r}" in lay]
+    extra_med = {}
+    for r in extra:
+        flags[f"simulated_{r}_depth_above_0p3m"] = frac(f"simdepth_{r}",
+                                                        lambda v: np.isfinite(v) & (v > SIM_EXTENT_M)) >= MAJORITY
+        extra_med[r] = group_median(lay[f"simdepth_{r}"][e_rows], e_piece, n)
 
     keys = {"A": (key_a, None), "B": (key_b, dom_b)}
     methods = {}
@@ -716,7 +753,8 @@ def evaluate(b: dict, lay: dict, marks_xy: np.ndarray, outline, surveyed=None) -
         methods[name] = {k: by_town(fl, kv, length, town, dom) for k, (kv, dom) in keys.items()}
     # equal street length: each ranking cut, town by town, to the official zones' street length
     official = flags["official_union"]
-    rankings = {"terrain_hand": hand_med, "simulated_depth": -sim_med}
+    rankings = {"terrain_hand": hand_med, "simulated_depth": -sim_med,
+                **{f"simulated_{r}_depth": -extra_med[r] for r in extra}}
     eq_sel = {r: np.zeros(n, dtype=bool) for r in rankings}
     budget = {}
     for i, t in enumerate(TOWNS):
@@ -727,6 +765,22 @@ def evaluate(b: dict, lay: dict, marks_xy: np.ndarray, outline, surveyed=None) -
     equal = {"official_union": {k: by_town(official, kv, length, town, dom) for k, (kv, dom) in keys.items()}}
     for r, sel in eq_sel.items():
         equal[r] = {k: by_town(sel, kv, length, town, dom) for k, (kv, dom) in keys.items()}
+    # the ceiling (docs/STREETS.md, "Two more simulations": added before any score of those runs): the two answer
+    # keys scored against each other on the streets both cover (inside the UPV outlines), as if each were a method;
+    # and every method's key A numbers on those same streets, so they can be read against it
+    ceiling = {
+        "what": "ceiling (two records of the same flood): on the pieces inside the UPV outlines, key B (the UPV map) "
+                "scored as a method against key A, and key A against key B; not independent (the UPV marks are part "
+                "of key A)",
+        "key_b_against_key_a": by_town(key_b, key_a, length, town, dom_b),
+        "key_a_against_key_b": by_town(key_a, key_b, length, town, dom_b),
+    }
+    key_a_inside_upv = {
+        "what": "key A, on the pieces inside the UPV outlines only (the streets of the ceiling)",
+        "own_length": {name: by_town(fl, key_a, length, town, dom_b) for name, fl in flags.items()},
+        "equal_length": {r: by_town(sel, key_a, length, town, dom_b)
+                         for r, sel in {"official_union": official, **eq_sel}.items()},
+    }
     town_km = {t: _km(length[town == i + 1].sum()) for i, t in enumerate(TOWNS)}
     # descriptive, after the headline: the streets the SIMULATED extent flags outside every official zone
     sim_ext = flags["simulated_depth_above_0p3m"]
@@ -746,6 +800,10 @@ def evaluate(b: dict, lay: dict, marks_xy: np.ndarray, outline, surveyed=None) -
             "A": street_metrics(outside, key_a, length, outside)["chance_precision_pct"],
             "B": street_metrics(outside, key_b, length, outside & dom_b)["chance_precision_pct"]},
     }
+    for r in extra:
+        ext = flags[f"simulated_{r}_depth_above_0p3m"]
+        descriptive[f"simulated_{r}_outside_zones"] = {"A": by_town(ext & outside, key_a, length, town),
+                                                       "B": by_town(ext & outside, key_b, length, town, dom_b)}
     post_hoc = None
     if surveyed is not None:
         shapely.prepare(surveyed)
@@ -788,10 +846,13 @@ def evaluate(b: dict, lay: dict, marks_xy: np.ndarray, outline, surveyed=None) -
     table = {"x": mxy[:, 0].astype(np.float32), "y": mxy[:, 1].astype(np.float32), "length": length.astype(np.float32),
              "town": town.astype(np.uint8), "highway": hw, "key_a": key_a, "in_observed": in_obs, "near_mark": near,
              "key_b": key_b, "inside_upv": dom_b, "hand_median": hand_med.astype(np.float32),
-             "sim_median": sim_med.astype(np.float32), **{f"flag_{k}": v for k, v in flags.items()},
+             "sim_median": sim_med.astype(np.float32),
+             **{f"sim_median_{r}": v.astype(np.float32) for r, v in extra_med.items()},
+             **{f"flag_{k}": v for k, v in flags.items()},
              **{f"equal_{k}": v for k, v in eq_sel.items()}}
     return {"summary": summary, "methods": methods, "equal_length": equal, "key_sensitivity": sens,
-            "descriptive": descriptive, "key_b_surveyed_area_only_post_hoc": post_hoc, "_table": table}
+            "descriptive": descriptive, "key_b_surveyed_area_only_post_hoc": post_hoc, "ceiling": ceiling,
+            "key_a_inside_upv_outlines": key_a_inside_upv, "_table": table}
 
 
 METHOD_WHAT = {
@@ -805,11 +866,81 @@ METHOD_WHAT = {
     "simulated_depth_above_0p3m": "SIMULATED rain on terrain (PR #39): its own extent, maximum depth above 0.3 m",
     "simulated_equal_area_union": "SIMULATED rain on terrain (PR #39): equal-area cut (deepest pixels of each town, "
                                   "as many as its pixels in any official zone)",
+    "simulated_ifs_20241028T12_depth_above_0p3m": "SIMULATED run A: rain of the ECMWF IFS HRES forecast issued "
+                                                  "28 Oct 2024 12 UTC; its own extent, maximum depth above 0.3 m",
+    "simulated_ifs_20241029T00_depth_above_0p3m": "SIMULATED run A: rain of the ECMWF IFS HRES forecast issued "
+                                                  "29 Oct 2024 00 UTC; its own extent, maximum depth above 0.3 m",
+    "simulated_buildings_depth_above_0p3m": "SIMULATED run B: gauged rain, buildings as obstacles (25 m cells at "
+                                            "least half Catastro footprint raised by 10 m); its own extent, maximum "
+                                            "depth above 0.3 m",
+    "simulated_ifs_20241029T06_depth_above_0p3m": "SIMULATED run A3 (amendment): rain of the ECMWF IFS HRES forecast "
+                                                  "issued 29 Oct 2024 06 UTC; its own extent, maximum depth above 0.3 m",
 }
 
 
-def score(zones_dir: Path) -> dict:
-    """Pieces, keys, methods and metrics (with and without tracks); written into results.json → streets."""
+def _keep_name(name: str, available: dict) -> bool:
+    """Entries of the `score-runs` block: the official zones, the newer runs, and what was rebuilt as a check."""
+    if name.startswith("official"):
+        return True
+    if any(name.startswith(f"simulated_{r}_") for r in EXTRA_SIM_RUNS):
+        return True
+    if name.startswith("terrain"):
+        return available["terrain"]
+    if name.startswith("simulated_equal_area"):
+        # the PR #39 pixel cut breaks its ties (25 cells of 5 m share each 25 m depth) by the bare upstream area
+        return available["terrain"] and available["simulated_pr39"]
+    if name.startswith("simulated"):
+        return available["simulated_pr39"]
+    return True
+
+
+def _filtered(block: dict, available: dict) -> dict:
+    """The evaluate() output without the methods whose layers were not rebuilt (their flags would be empty)."""
+    keep = lambda d: {k: v for k, v in d.items() if _keep_name(k, available)}  # noqa: E731
+    out = {"summary": block["summary"], "methods": keep(block["methods"]), "equal_length": keep(block["equal_length"]),
+           "key_sensitivity": {k: keep(v) for k, v in block["key_sensitivity"].items()}}
+    desc = dict(block["descriptive"])
+    if not available["simulated_pr39"]:
+        desc.pop("simulated_outside_zones", None)
+    out["descriptive"] = desc
+    ph = block.get("key_b_surveyed_area_only_post_hoc")
+    if ph is not None:
+        out["key_b_surveyed_area_only_post_hoc"] = {**ph, "equal_length": keep(ph["equal_length"]),
+                                                    "own_length": keep(ph["own_length"])}
+    out["ceiling"] = block["ceiling"]
+    ka = block["key_a_inside_upv_outlines"]
+    out["key_a_inside_upv_outlines"] = {**ka, "own_length": keep(ka["own_length"]),
+                                        "equal_length": keep(ka["equal_length"])}
+    return out
+
+
+def _same_as_pr43(new: dict, old: dict) -> dict:
+    """The rebuild against PR #43 (results.json → streets): keys, the official zones, and whatever was rebuilt."""
+    rows = {}
+    for label in ("main", "with_tracks"):
+        if label not in old:
+            continue
+        a, b = new[label], old[label]
+        rows[f"{label}_summary"] = {k: {"rebuilt": a["summary"][k], "pr43": b["summary"][k],
+                                        "same": a["summary"][k] == b["summary"][k]}
+                                    for k in ("pieces", "street_km", "key_a", "key_b", "equal_length_budget_km")}
+        for name in a["methods"]:
+            if name in b["methods"]:
+                rows[f"{label}_{name}"] = {"same": all(a["methods"][name][k] == b["methods"][name][k] for k in "AB")}
+        for name in a["equal_length"]:
+            if name in b["equal_length"]:
+                rows[f"{label}_equal_length_{name}"] = {
+                    "same": all(a["equal_length"][name][k] == b["equal_length"][name][k] for k in "AB")}
+    return {"all_same": all(v["same"] if "same" in v else all(x["same"] for x in v.values()) for v in rows.values()),
+            "rows": rows}
+
+
+def score(zones_dir: Path, block: str = "streets") -> dict:
+    """Pieces, keys, methods and metrics (with and without tracks); written into results.json → streets.
+
+    block="streets_more_runs" (step `score-runs`): the same scoring with the newer runs, written into its own
+    block so the PR #43 numbers in `streets` stay as they were; the rebuilt parts are compared with them.
+    """
     import gc
 
     from pipeline import streets as st
@@ -839,7 +970,8 @@ def score(zones_dir: Path) -> dict:
         lay = {k: v[lo:hi] for k, v in lay_all.items() if isinstance(v, np.ndarray)}
         results[label] = evaluate(b, lay, marks_xy, outline, surveyed)
         table = results[label].pop("_table")
-        np.savez_compressed(INTERIM_DIR / f"street_pieces_{label}.npz", **table)
+        suffix = "" if block == "streets" else "_more_runs"
+        np.savez_compressed(INTERIM_DIR / f"street_pieces_{label}{suffix}.npz", **table)
         results[label]["summary"]["ways"] = {"read": b["ways"]["ways_read"], "by_reason": b["ways"]["reasons"]}
         print(f"{label}: {results[label]['summary']['pieces']} scored pieces, "
               f"{results[label]['summary']['street_km']} km, {time.time() - t0:.0f} s", flush=True)
@@ -906,9 +1038,23 @@ def score(zones_dir: Path) -> dict:
     }
     path = STREETS_DIR / "results.json"
     res = json.loads(path.read_text(encoding="utf-8"))
-    res["streets"] = out
+    if block != "streets":
+        avail = lay_all["available"]
+        out["title"] = ("Street by street, two more SIMULATED runs (forecast rain, buildings) next to the official "
+                        "zones, DANA of 29 Oct 2024, 10 towns of L'Horta Sud and Chiva")
+        out["rules"] = ("docs/STREETS.md, section 'Two more simulations' (committed before either run was simulated "
+                        "or scored: commit 37c33ef); scoring as in 'Street by street'")
+        out["rebuilt_layers"] = avail
+        for label in ("main", "with_tracks"):
+            out[label] = _filtered(out[label], avail)
+        out["same_as_pr43"] = _same_as_pr43(out, res.get("streets", {}))
+        out["inputs"]["osm"] = {p.name: {"bytes": p.stat().st_size, "sha256": hashlib.sha256(p.read_bytes()).hexdigest()}
+                                for p in sorted(OSM_DIR.glob("highways_*.json"))}
+        out["inputs"]["pixel_layers"] = ("rebuilt 15 Nov 2026 from the PR #39 sources: data/interim/streets/terrain, "
+                                         "the simulation folders of pipeline.streets.SIM_RUNS, pipeline.zones downloads")
+    res[block] = out
     path.write_text(json.dumps(res, indent=1, ensure_ascii=False), encoding="utf-8")
-    print(f"wrote {path} ({time.time() - t0:.0f} s)")
+    print(f"wrote {path} → {block} ({time.time() - t0:.0f} s)")
     return out
 
 
@@ -973,7 +1119,73 @@ def report() -> str:
     return text
 
 
-STEPS = ("fetch", "fetch-osm", "fetch-upv", "score", "report")
+RUN_LABELS = {"ifs_20241028T12": "Run A, forecast of 28 Oct 12 UTC", "ifs_20241029T00": "Run A, forecast of 29 Oct 00 UTC",
+              "buildings": "Run B, gauged rain and buildings", "ifs_20241029T06": "Run A3, forecast of 29 Oct 06 UTC"}
+
+
+def report_runs() -> str:
+    """The tables of docs/STREETS.md, 'Two more simulations', printed from results.json (PR #43 run beside them)."""
+    res = json.loads((STREETS_DIR / "results.json").read_text(encoding="utf-8"))
+    old, new = res["streets"]["main"], res["streets_more_runs"]["main"]
+    runs = [r for r in EXTRA_SIM_RUNS if f"simulated_{r}_depth_above_0p3m" in new["methods"]]
+    own = [("Official, any zone", new["methods"]["official_union"]),
+           ("SIMULATED, gauged rain (PR #39, PR #43 numbers)", old["methods"]["simulated_depth_above_0p3m"])]
+    own += [(RUN_LABELS[r], new["methods"][f"simulated_{r}_depth_above_0p3m"]) for r in runs]
+    lines = ["Own extent (depth above 0.3 m), 10 towns:", "",
+             "| Method | Flagged (km) | Key A: hit rate | Key A: precision | Key B: flagged inside (km) | "
+             "Key B: hit rate | Key B: precision |", "|---|---|---|---|---|---|---|"]
+    for name, m in own:
+        a, b = m["A"]["total"], m["B"]["total"]
+        lines.append(f"| {name} | {a['flagged_km']:,.1f} | {_p(a['hit_rate_pct'])} | {_p(a['precision_pct'])} | "
+                     f"{b['flagged_km']:,.1f} | {_p(b['hit_rate_pct'])} | {_p(b['precision_pct'])} |")
+    eq = [("Official, any zone", new["equal_length"]["official_union"]),
+          ("SIMULATED, gauged rain (PR #39, PR #43 numbers)", old["equal_length"]["simulated_depth"])]
+    eq += [(RUN_LABELS[r], new["equal_length"][f"simulated_{r}_depth"]) for r in runs]
+    lines += ["", "Equal street length (each ranking cut to the zones' length, town by town), 10 towns:", "",
+              "| Method | Key A: hit rate | Key A: precision | Key B: hit rate | Key B: precision |",
+              "|---|---|---|---|---|"]
+    for name, m in eq:
+        a, b = m["A"]["total"], m["B"]["total"]
+        lines.append(f"| {name} | {_p(a['hit_rate_pct'])} | {_p(a['precision_pct'])} | {_p(b['hit_rate_pct'])} | "
+                     f"{_p(b['precision_pct'])} |")
+    lines += ["", "Own extent, key A, by town (hit rate / precision):", "",
+              "| Town | " + " | ".join(n for n, _ in own) + " |", "|---|" + "---|" * len(own)]
+    for t in TOWNS:
+        cells = [f"{_p(m['A']['towns'][t]['hit_rate_pct'])} / {_p(m['A']['towns'][t]['precision_pct'])}" for _, m in own]
+        lines.append(f"| {t} | " + " | ".join(cells) + " |")
+    lines += ["", "Outside every official zone (descriptive), key A:"]
+    d_old = res["streets"]["main"]["descriptive"]
+    lines.append(f"- PR #43 run: {d_old['simulated_outside_zones']['A']['total']['flagged_km']:.1f} km, "
+                 f"{_p(d_old['simulated_outside_zones']['A']['total']['precision_pct'])} flooded")
+    for r in runs:
+        blk = new["descriptive"][f"simulated_{r}_outside_zones"]["A"]["total"]
+        lines.append(f"- {RUN_LABELS[r]}: {blk['flagged_km']:.1f} km, {_p(blk['precision_pct'])} flooded, "
+                     f"catching {blk['flagged_and_flooded_km']:.1f} km of flooded street")
+    lines.append(f"- chance outside the zones: {_p(new['descriptive']['outside_zones_chance_precision']['A'])}")
+    # the ceiling, on the streets inside the UPV outlines
+    ka, ce = new["key_a_inside_upv_outlines"], new["ceiling"]
+    inside = ce["key_b_against_key_a"]["total"]["street_km"]
+    lines += ["", f"Inside the UPV outlines ({inside:,.1f} km of street), own extent:", "",
+              "| Method | Flagged (km) | Key A: found | Key A: really flooded |", "|---|---|---|---|"]
+    t = ce["key_b_against_key_a"]["total"]
+    lines.append(f"| Ceiling (two records of the same flood): the UPV map against key A | {t['flagged_km']:,.1f} | "
+                 f"{_p(t['hit_rate_pct'])} | {_p(t['precision_pct'])} |")
+    rows_in = [("Official, any zone", "official_union")]
+    if "simulated_depth_above_0p3m" in ka["own_length"]:
+        rows_in.append(("SIMULATED, gauged rain (rebuilt)", "simulated_depth_above_0p3m"))
+    rows_in += [(RUN_LABELS[r], f"simulated_{r}_depth_above_0p3m") for r in runs]
+    for name, key in rows_in:
+        t = ka["own_length"][key]["total"]
+        lines.append(f"| {name} | {t['flagged_km']:,.1f} | {_p(t['hit_rate_pct'])} | {_p(t['precision_pct'])} |")
+    t = ce["key_a_against_key_b"]["total"]
+    lines += ["", f"Ceiling the other way: key A against the UPV map (key B): flagged {t['flagged_km']:,.1f} km, "
+                  f"found {_p(t['hit_rate_pct'])}, really flooded {_p(t['precision_pct'])}"]
+    text = "\n".join(lines)
+    print(text)
+    return text
+
+
+STEPS = ("fetch", "fetch-osm", "fetch-upv", "score", "report", "score-runs", "report-runs")
 
 
 def main(argv: list[str] | None = None) -> None:
@@ -993,6 +1205,10 @@ def main(argv: list[str] | None = None) -> None:
         score(args.zones_interim)
     elif args.step == "report":
         report()
+    elif args.step == "score-runs":
+        score(args.zones_interim, block="streets_more_runs")
+    elif args.step == "report-runs":
+        report_runs()
 
 
 if __name__ == "__main__":

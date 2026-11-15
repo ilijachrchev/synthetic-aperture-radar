@@ -16,6 +16,13 @@ Steps (in this order):
     python -m pipeline.streets terrain    # 5 m terrain, depressions filled, flow, HAND (about 10 minutes, 4 GB RAM)
     python -m pipeline.streets simulate   # rain on terrain at 25 m, SIMULATED (numba venv: about 20 minutes)
     python -m pipeline.streets score      # every method on the same pixels: data/streets/results.json
+
+Two more runs (docs/STREETS.md, "Two more simulations"): run A with the rain of two ECMWF IFS HRES
+forecasts, run B with the gauged rain and buildings as obstacles:
+    python -m pipeline.streets fetch-forecast    # the two IFS runs from Open-Meteo's Single Runs API
+    python -m pipeline.streets sim-prepare       # inputs.npz of each run (after terrain and terrain --only buildings)
+    python pipeline/inertial_kernel.py <folder>/inputs.npz <folder>/outputs.npz   # one process per run (numba)
+    python -m pipeline.streets sim-collect       # maximum depth, gauge check: results.json -> simulation_runs
     python -m pipeline.streets layers     # small web layers in data/streets/
     python -m pipeline.streets depth      # flood depth ESTIMATED from the outlines and terrain (2024, 2026)
     python -m pipeline.streets marks      # the surveyed water marks of 2024 in the 10 towns as a web layer
@@ -487,6 +494,14 @@ def terrain(variants: bool = True, only: str | None = None) -> dict:
     the first scores showed that WorldCover ponds acting as sinks cut the Poyo's flow paths.
     """
     info_path = TERRAIN_DIR / "terrain_info.json"
+    if only == "buildings":
+        # the buildings5 raster of the variant below, without its flow routing (run B of the simulation needs it)
+        info = json.loads(info_path.read_text(encoding="utf-8"))
+        bld = burn(catastro_buildings().geometry) & (load_grid("dtm5") != DTM_NODATA)
+        save_grid("buildings5", bld)
+        info["buildings_cells"] = int(bld.sum())
+        info_path.write_text(json.dumps(info, indent=1), encoding="utf-8")
+        return info
     if only == "lake":
         info = json.loads(info_path.read_text(encoding="utf-8"))
         z = load_grid("dtm5")
@@ -1029,10 +1044,195 @@ def rain_zones(rec: np.ndarray, upa: np.ndarray) -> dict:
     return {"masks": zones, "info": info}
 
 
-def simulate(numba_python: Path | None = None) -> dict:
-    """Rain on terrain at 25 m (SIMULATED); scored at equal area like method 3; written into results.json."""
-    import subprocess
+# ---------------------------------------------------------------- two more runs (docs/STREETS.md, "Two more simulations")
 
+# Run A, "the night before": the same model and settings, driven by the rain the ECMWF IFS HRES forecast gave
+# before the flood. Open-Meteo's Single Runs API serves one model run as it was issued (the Historical Forecast
+# API stitches the first hours of successive runs, so for 29 Oct it would use runs started during the storm).
+# Two runs, fixed before any score; both are reported, neither is chosen.
+FORECAST_API = "https://single-runs-api.open-meteo.com/v1/forecast"
+FORECAST_MODEL = "ecmwf_ifs"   # IFS HRES at its native 9 km (O1280 grid); single runs from March 2024
+FORECAST_RUNS = {"ifs_20241028T12": "2024-10-28T12:00", "ifs_20241029T00": "2024-10-29T00:00",  # initial times, UTC
+                 "ifs_20241029T06": "2024-10-29T06:00"}  # run A3, added by amendment (docs/STREETS.md)
+# Run A3 starts after the window opens (04:00 UTC): its window hours up to its initial time take the rain of the
+# run of 29 Oct 00 UTC, the newest forecast for those hours at 06 UTC.
+FORECAST_EARLIER_RUN = {"ifs_20241029T06": "ifs_20241029T00"}
+FORECAST_LATTICE_M = 2000.0    # query points every 2 km over the Poyo-Pozalet-Saleta catchment and 6 km around it,
+FORECAST_BUFFER_M = 6000.0     # so every grid point whose area reaches a rain zone is found
+FORECAST_DAYS = 3
+# Open-Meteo's hourly precipitation is the sum of the preceding hour: the value at 05:00 UTC is the rain of 04:00
+# to 05:00 UTC, which is 05:00 to 06:00 local time (CET) on 29 Oct 2024, the first hour of the run (PH06).
+FORECAST_FIRST_UTC = "2024-10-29T05:00"
+FORECAST_LICENCE = "Open-Meteo (CC BY 4.0), ECMWF IFS HRES data (CC BY 4.0)"
+# Run B, "better physics": the gauged rain of the PR #39 run plus buildings as obstacles: a 25 m cell is raised
+# by BUILDING_RAISE_M (10 m, as PR #39's buildings variant) when at least half of its 25 cells of 5 m are
+# Catastro footprint cells (the buildings5 raster of PR #39: cell centre inside a footprint).
+BUILDING_SHARE_25M = 0.5
+SIM_RUNS = {
+    "gauged": {"folder": "simulation", "rain": "gauged", "buildings": False,
+               "what": "PR #39: gauged rain (Perez Cueva et al. 2025), bare terrain"},
+    "ifs_20241028T12": {"folder": "simulation_ifs_20241028T12", "rain": "ifs_20241028T12", "buildings": False,
+                        "what": "run A: ECMWF IFS HRES forecast of 28 Oct 2024 12 UTC, bare terrain"},
+    "ifs_20241029T00": {"folder": "simulation_ifs_20241029T00", "rain": "ifs_20241029T00", "buildings": False,
+                        "what": "run A: ECMWF IFS HRES forecast of 29 Oct 2024 00 UTC, bare terrain"},
+    "ifs_20241029T06": {"folder": "simulation_ifs_20241029T06", "rain": "ifs_20241029T06", "buildings": False,
+                        "what": "run A3 (amendment): ECMWF IFS HRES forecast of 29 Oct 2024 06 UTC, bare terrain"},
+    "buildings": {"folder": "simulation_buildings", "rain": "gauged", "buildings": True,
+                  "what": "run B: gauged rain (Perez Cueva et al. 2025), buildings raised by 10 m"},
+}
+
+
+def forecast_query_points() -> dict:
+    """A 2 km lattice over the Poyo-Pozalet-Saleta catchment (ICV code 29) and 6 km around it, in degrees."""
+    import shapely
+    from pyproj import Transformer
+
+    cat = icv_layer("catchments")
+    poly = shapely.union_all(cat.geometry[cat["cod_cuenca"].astype(str).str.strip() == "29"].to_numpy())
+    area = poly.buffer(FORECAST_BUFFER_M)
+    x0, y0, x1, y1 = area.bounds
+    step = FORECAST_LATTICE_M
+    xs = np.arange(np.floor(x0 / step) * step, x1 + step, step)
+    ys = np.arange(np.floor(y0 / step) * step, y1 + step, step)
+    gx, gy = np.meshgrid(xs, ys)
+    keep = shapely.contains_xy(area, gx.ravel(), gy.ravel())
+    x, y = gx.ravel()[keep], gy.ravel()[keep]
+    lon, lat = Transformer.from_crs(CRS, "EPSG:4326", always_xy=True).transform(x, y)
+    return {"x": x, "y": y, "lat": np.asarray(lat), "lon": np.asarray(lon)}
+
+
+def fetch_forecast(manifest: dict, keys: list[str] | None = None) -> None:
+    """Hourly precipitation of the IFS runs at every lattice point (Open-Meteo picks the nearest grid cell)."""
+    pts = forecast_query_points()
+    out_dir = INTERIM_DIR / "forecast"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    for key, run in FORECAST_RUNS.items():
+        if keys is not None and key not in keys:
+            continue
+        responses, urls = [], []
+        for i in range(0, pts["lat"].size, 100):
+            params = {"latitude": ",".join(f"{v:.5f}" for v in pts["lat"][i:i + 100]),
+                      "longitude": ",".join(f"{v:.5f}" for v in pts["lon"][i:i + 100]),
+                      "hourly": "precipitation", "models": FORECAST_MODEL, "run": run, "timezone": "GMT",
+                      "cell_selection": "nearest", "forecast_days": FORECAST_DAYS}
+            resp = requests.get(FORECAST_API, params=params, timeout=TIMEOUT_S, headers={"User-Agent": USER_AGENT})
+            resp.raise_for_status()
+            j = resp.json()
+            responses += j if isinstance(j, list) else [j]
+            urls.append(resp.url)
+        payload = {"api": FORECAST_API, "model": FORECAST_MODEL, "run_utc": run, "retrieved_utc": _now(),
+                   "licence": FORECAST_LICENCE,
+                   "query_points": {k: [round(float(v), 6) for v in pts[k]] for k in ("x", "y", "lat", "lon")},
+                   "responses": responses}
+        raw = json.dumps(payload).encode("utf-8")
+        path = out_dir / f"{key}.json"
+        path.write_bytes(raw)
+        record(manifest, f"forecast_{key}", FORECAST_API, path, len(raw), hashlib.sha256(raw).hexdigest(),
+               run_utc=run, model=FORECAST_MODEL, query_points=int(pts["lat"].size), requests=urls)
+        print(f"forecast {run}: {len(responses)} points", flush=True)
+
+
+def forecast_grid(key: str) -> dict:
+    """The distinct grid points of one run (Open-Meteo returns the grid cell it used for each query point)."""
+    d = json.loads((INTERIM_DIR / "forecast" / f"{key}.json").read_text(encoding="utf-8"))
+    times = d["responses"][0]["hourly"]["time"]
+    pts: dict = {}
+    for r in d["responses"]:
+        g = (round(float(r["latitude"]), 5), round(float(r["longitude"]), 5))
+        if r["hourly"]["time"] != times:
+            raise RuntimeError(f"{key}: grid point {g} has other hours")
+        p = list(r["hourly"]["precipitation"])
+        if times[0] == d["run_utc"] and p[0] is None:
+            p[0] = 0.0  # the initial time itself: no preceding hour of the run
+        if any(v is None for v in p):
+            raise RuntimeError(f"{key}: grid point {g} has hours without a value")
+        if g in pts and pts[g]["p"] != p:
+            raise RuntimeError(f"{key}: grid point {g} returned two different series")
+        pts.setdefault(g, {"p": p, "elevation_m": r.get("elevation")})
+    keys = sorted(pts)
+    qlat = np.array(d["query_points"]["lat"])
+    qlon = np.array(d["query_points"]["lon"])
+    chosen = np.array([keys.index((round(float(r["latitude"]), 5), round(float(r["longitude"]), 5)))
+                       for r in d["responses"]])
+    return {"lat": np.array([k[0] for k in keys]), "lon": np.array([k[1] for k in keys]),
+            "elevation_m": [pts[k]["elevation_m"] for k in keys], "times": times,
+            "p_mm": np.array([pts[k]["p"] for k in keys], dtype=np.float64),
+            "query_lat": qlat, "query_lon": qlon, "query_chosen": chosen, "run_utc": d["run_utc"],
+            "retrieved_utc": d["retrieved_utc"]}
+
+
+def nearest_point(lat: np.ndarray, lon: np.ndarray, plat: np.ndarray, plon: np.ndarray) -> np.ndarray:
+    """Index of the nearest of the points (plat, plon) for each (lat, lon), by great-circle distance."""
+    out = np.empty(lat.size, dtype=np.int64)
+    p1, l1 = np.radians(plat)[None, :], np.radians(plon)[None, :]
+    for i in range(0, lat.size, 200000):
+        p0, l0 = np.radians(lat[i:i + 200000])[:, None], np.radians(lon[i:i + 200000])[:, None]
+        a = np.sin((p1 - p0) / 2) ** 2 + np.cos(p0) * np.cos(p1) * np.sin((l1 - l0) / 2) ** 2
+        out[i:i + 200000] = np.argmin(a, axis=1)
+    return out
+
+
+def forecast_zone_rain(key: str, frac: np.ndarray, names: list[str]) -> dict:
+    """Hourly rain (mm) of each zone: each 25 m cell takes its nearest grid point, the zone the mean over its area."""
+    from pyproj import Transformer
+
+    g = forecast_grid(key)
+    early = None
+    if FORECAST_FIRST_UTC in g["times"]:
+        i0 = g["times"].index(FORECAST_FIRST_UTC)
+        p = g["p_mm"][:, i0:i0 + SIM_HOURS]
+    else:
+        # a run that starts after the window opens: hours ending at or before its initial time come from the
+        # earlier run named in FORECAST_EARLIER_RUN (the same grid points), the rest from this run
+        from datetime import datetime, timedelta
+
+        e = forecast_grid(FORECAST_EARLIER_RUN[key])
+        if not (np.array_equal(e["lat"], g["lat"]) and np.array_equal(e["lon"], g["lon"])):
+            raise RuntimeError(f"{key}: the earlier run has other grid points")
+        t0 = datetime.fromisoformat(FORECAST_FIRST_UTC)
+        hours = [(t0 + timedelta(hours=k)).strftime("%Y-%m-%dT%H:%M") for k in range(SIM_HOURS)]
+        cols = []
+        for h in hours:
+            src = g if h > g["run_utc"] else e
+            cols.append(src["p_mm"][:, src["times"].index(h)])
+        p = np.stack(cols, axis=1)
+        early = {"from_run_utc": e["run_utc"], "hours_utc_end_of_hour": [h for h in hours if h <= g["run_utc"]]}
+        i0 = 0
+        g = {**g, "times": hours + [t for t in g["times"] if t > hours[-1]],
+             "p_mm": np.concatenate([p, g["p_mm"][:, [i for i, t in enumerate(g["times"]) if t > hours[-1]]]], axis=1)}
+    if p.shape[1] != SIM_HOURS:
+        raise RuntimeError(f"{key}: the run does not cover the {SIM_HOURS} hours from {FORECAST_FIRST_UTC} UTC")
+    rr, cc = np.nonzero(frac.sum(axis=0) > 0)
+    x = GRID_BOUNDS[0] + (cc + 0.5) * SIM_CELL_M
+    y = GRID_BOUNDS[3] - (rr + 0.5) * SIM_CELL_M
+    lon, lat = Transformer.from_crs(CRS, "EPSG:4326", always_xy=True).transform(x, y)
+    near = nearest_point(np.asarray(lat), np.asarray(lon), g["lat"], g["lon"])
+    # check: Open-Meteo's own choice at the query points against the great-circle nearest grid point
+    agree = float(np.mean(nearest_point(g["query_lat"], g["query_lon"], g["lat"], g["lon"]) == g["query_chosen"]))
+    weights = np.stack([np.bincount(near, weights=frac[z][rr, cc], minlength=g["lat"].size) for z in range(len(names))])
+    weights /= weights.sum(axis=1, keepdims=True)
+    zone_mm = weights @ p                                   # (zones, hours)
+    after_issue = [i for i, t in enumerate(g["times"][:i0 + SIM_HOURS]) if t > g["run_utc"]]
+    since_issue = weights @ g["p_mm"][:, after_issue].sum(axis=1)
+    hours_utc = g["times"][i0:i0 + SIM_HOURS]
+    points = []
+    for j in np.flatnonzero(weights.sum(axis=0) > 0):
+        points.append({"lat": float(g["lat"][j]), "lon": float(g["lon"][j]), "elevation_m": g["elevation_m"][j],
+                       "share_of_zone_pct": {n: round(100 * float(weights[z, j]), 1) for z, n in enumerate(names)},
+                       "window_total_mm": round(float(p[j].sum()), 1)})
+    return {"zone_mm": zone_mm, "run_utc": g["run_utc"], "retrieved_utc": g["retrieved_utc"],
+            "hours_utc_end_of_hour": hours_utc, "grid_points_used": points,
+            "grid_points_found": int(g["lat"].size),
+            "open_meteo_choice_is_the_nearest_pct": round(100 * agree, 1),
+            "zone_total_mm_in_window": {n: round(float(zone_mm[z].sum()), 1) for z, n in enumerate(names)},
+            "zone_total_mm_from_initial_time_to_end_of_window": {n: round(float(since_issue[z]), 1)
+                                                                 for z, n in enumerate(names)},
+            "zone_hourly_mm": {n: [round(float(v), 2) for v in zone_mm[z]] for z, n in enumerate(names)},
+            "window_hours_from_an_earlier_run": early}
+
+
+def prepare_runs(runs: list[str]) -> dict:
+    """Write each run's inputs.npz (the PR #39 inputs; forecast rain for run A, raised buildings for run B)."""
     from pipeline import terrain_flow as tf
 
     # the lake-only routing: WorldCover ponds are not sinks (one on the Poyo near Cheste drains 157.6 km2)
@@ -1040,41 +1240,69 @@ def simulate(numba_python: Path | None = None) -> dict:
     upa = load_grid("upa_lake")
     zones = rain_zones(rec, upa)
     print(json.dumps(zones["info"], indent=1), flush=True)
-    del rec
+    del rec, upa
     f = int(SIM_CELL_M // CELL_M)
     z5 = load_grid("dtm5")
     z25 = block_mean(z5, f, DTM_NODATA)
     del z5
     water25 = block_mean(load_grid("lake5").astype(np.float32), f, -1.0, min_valid=1) >= 0.5
-    rows, cols = z25.shape
     sinks = (z25 == DTM_NODATA) | water25
     sinks[0, :] = sinks[-1, :] = sinks[:, 0] = sinks[:, -1] = True
     z25 = np.where(z25 == DTM_NODATA, 0.0, z25)  # the sea at 0 m
     names = list(RAIN_TABLE)
     frac = np.stack([block_mean(zones["masks"][k].reshape(grid_shape()).astype(np.float32), f, -1.0, min_valid=1)
                      for k in names]).astype(np.float32)
-    # 1 hm3 over 1 km2 is 1 m of water: depth (m) = hm3 / km2, spread over the hour
-    rates = np.array([[v / RAIN_TABLE[k]["area_km2"] / 3600.0 for v in RAIN_TABLE[k]["hm3"]] for k in names])
-    hours = len(RAIN_TABLE[names[0]]["hm3"])
-    inp = {"z": z25.astype(np.float64), "sinks": sinks, "zone_frac": frac, "zone_rates": rates,
-           "hour_edges_s": np.arange(hours + 1) * 3600.0, "t_end_s": SIM_HOURS * 3600.0, "dx": SIM_CELL_M,
-           "n_manning": SIM_N_MANNING, "alpha": 0.7, "dt_max": 10.0, "record_every_s": 300.0,
-           "gauge_mask": frac[0] >= 0.5}
-    sim_dir = INTERIM_DIR / "simulation"
-    sim_dir.mkdir(parents=True, exist_ok=True)
-    np.savez_compressed(sim_dir / "inputs.npz", **inp)
-    engine = "numpy (pipeline.inertial.run_numpy)"
-    if numba_python is not None and numba_python.exists():
-        kernel = Path(__file__).with_name("inertial_kernel.py")
-        subprocess.run([str(numba_python), "-I", str(kernel), str(sim_dir / "inputs.npz"), str(sim_dir / "outputs.npz")],
-                       check=True)
-        out = dict(np.load(sim_dir / "outputs.npz"))
-        engine = "numba (pipeline/inertial_kernel.py, same scheme as pipeline.inertial, checked in tests)"
-    else:
-        from pipeline.inertial import run_numpy
+    del zones["masks"]
+    zone_km2 = {k: round(float(frac[i].sum()) * SIM_CELL_M * SIM_CELL_M / 1e6, 2) for i, k in enumerate(names)}
+    out = {}
+    for run in runs:
+        cfg = SIM_RUNS[run]
+        prep = {"run": run, "what": cfg["what"], "rain_zones": zones["info"], "zone_km2_on_25m_grid": zone_km2}
+        z = z25
+        if cfg["buildings"]:
+            share = block_mean(load_grid("buildings5").astype(np.float32), f, -1.0, min_valid=1)
+            raised = (share >= BUILDING_SHARE_25M) & ~sinks
+            z = np.where(raised, z25 + BUILDING_RAISE_M, z25)
+            prep["buildings"] = {"rule": f"25 m cell raised by {BUILDING_RAISE_M:g} m when at least "
+                                         f"{BUILDING_SHARE_25M:g} of its 5 m cells are Catastro footprint cells",
+                                 "raised_cells": int(raised.sum()), "cells_with_any_building": int((share > 0).sum()),
+                                 "raised_km2": round(int(raised.sum()) * SIM_CELL_M * SIM_CELL_M / 1e6, 2)}
+        if cfg["rain"] == "gauged":
+            # 1 hm3 over 1 km2 is 1 m of water: depth (m) = hm3 / km2, spread over the hour
+            rates = np.array([[v / RAIN_TABLE[k]["area_km2"] / 3600.0 for v in RAIN_TABLE[k]["hm3"]] for k in names])
+            prep["rain"] = {"source": "gauged: Perez Cueva et al. (2025), Tables 5 and 6"}
+        else:
+            fr = forecast_zone_rain(cfg["rain"], frac, names)
+            rates = fr.pop("zone_mm") / 1000.0 / 3600.0
+            gauged_mm = {k: round(sum(RAIN_TABLE[k]["hm3"]) / RAIN_TABLE[k]["area_km2"] * 1000.0, 1) for k in names}
+            vol = {k: round(fr["zone_total_mm_in_window"][k] / 1000.0 * zone_km2[k], 2) for k in names}
+            prep["rain"] = {"source": f"forecast: {FORECAST_MODEL} run of {fr['run_utc']} UTC, {FORECAST_API}",
+                            "licence": FORECAST_LICENCE, **fr, "zone_volume_hm3_in_window": vol,
+                            "gauged_total_mm": gauged_mm,
+                            "gauged_total_hm3": {k: round(sum(RAIN_TABLE[k]["hm3"]), 1) for k in names},
+                            "forecast_share_of_gauged_pct": {k: round(100 * fr["zone_total_mm_in_window"][k]
+                                                                      / gauged_mm[k], 1) for k in names}}
+        hours = rates.shape[1]
+        inp = {"z": z.astype(np.float64), "sinks": sinks, "zone_frac": frac, "zone_rates": rates,
+               "hour_edges_s": np.arange(hours + 1) * 3600.0, "t_end_s": SIM_HOURS * 3600.0, "dx": SIM_CELL_M,
+               "n_manning": SIM_N_MANNING, "alpha": 0.7, "dt_max": 10.0, "record_every_s": 300.0,
+               "gauge_mask": frac[0] >= 0.5}
+        sim_dir = INTERIM_DIR / cfg["folder"]
+        sim_dir.mkdir(parents=True, exist_ok=True)
+        np.savez_compressed(sim_dir / "inputs.npz", **inp)
+        (sim_dir / "prepare_info.json").write_text(json.dumps(prep, indent=1), encoding="utf-8")
+        print(f"{run}: inputs written, {hours} rain hours, zone totals (mm) "
+              f"{[round(float(v), 1) for v in (rates * 3600 * 1000).sum(axis=1)]}", flush=True)
+        out[run] = prep
+    return out
 
-        out = run_numpy(inp)
-        np.savez_compressed(sim_dir / "outputs.npz", **out)
+
+def collect_run(run: str, engine: str) -> dict:
+    """Maximum depth grid, gauge check and volumes of one finished run (outputs.npz) into simulation_info.json."""
+    cfg = SIM_RUNS[run]
+    sim_dir = INTERIM_DIR / cfg["folder"]
+    out = dict(np.load(sim_dir / "outputs.npz"))
+    prep = json.loads((sim_dir / "prepare_info.json").read_text(encoding="utf-8"))
     save_grid("sim_hmax_25m", out["hmax"], nodata=None, cell=SIM_CELL_M, folder=sim_dir)
     t = out["gauge_t_s"]
     q = out["gauge_q_m3s"]
@@ -1082,14 +1310,12 @@ def simulate(numba_python: Path | None = None) -> dict:
     i_1855 = int(np.argmin(np.abs(t - (18 * 3600 + 55 * 60 - 5 * 3600))))
     info = {
         "label": "SIMULATED",
+        "run": run, "what": cfg["what"],
         "engine": engine,
         "cell_m": SIM_CELL_M, "manning_n": SIM_N_MANNING, "infiltration": "none (all rain runs off: an upper bound)",
         "start_local": SIM_START_LOCAL, "hours": SIM_HOURS, "steps": int(out["steps"]),
         "wall_s": round(float(out["wall_s"]), 1),
-        "rain_zones": zones["info"],
-        "rain_table": {k: {**v, "total_hm3_listed_hours": round(sum(v["hm3"]), 1)} for k, v in RAIN_TABLE.items()},
-        "rain_source": "Perez Cueva et al. (2025), Investigaciones Geograficas 84, 9-29, doi:10.14198/INGEO.30056, "
-                       "Tables 5 and 6",
+        "rain_zones": prep["rain_zones"],
         "volumes_hm3": {"rain": round(float(out["rain_volume_m3"]) / 1e6, 2),
                         "left_at_sinks": round(float(out["sink_volume_m3"]) / 1e6, 2),
                         "on_the_ground_at_end": round(float(out["stored_volume_m3"]) / 1e6, 2)},
@@ -1102,10 +1328,50 @@ def simulate(numba_python: Path | None = None) -> dict:
                                     if round(float(a)) % 900 == 0],
         },
     }
+    if cfg["rain"] == "gauged":
+        info["rain_table"] = {k: {**v, "total_hm3_listed_hours": round(sum(v["hm3"]), 1)} for k, v in RAIN_TABLE.items()}
+        info["rain_source"] = ("Perez Cueva et al. (2025), Investigaciones Geograficas 84, 9-29, "
+                               "doi:10.14198/INGEO.30056, Tables 5 and 6")
+    else:
+        info["rain_forecast"] = prep["rain"]
+    if cfg["buildings"]:
+        info["buildings"] = prep["buildings"]
     (sim_dir / "simulation_info.json").write_text(json.dumps(info, indent=1), encoding="utf-8")
-    print(json.dumps({k: info[k] for k in ("steps", "wall_s", "volumes_hm3", "rain_zones")}, indent=1))
+    print(json.dumps({k: info[k] for k in ("run", "steps", "wall_s", "volumes_hm3")}, indent=1))
     print(json.dumps({k: v for k, v in info["gauge_check"].items() if k != "series_every_15_min"}, indent=1))
     return info
+
+
+def write_runs(runs: list[str]) -> None:
+    """The new runs' simulation_info.json into results.json → simulation_runs (the PR #39 run stays in simulation)."""
+    path = STREETS_DIR / "results.json"
+    res = json.loads(path.read_text(encoding="utf-8"))
+    block = res.get("simulation_runs", {})
+    for run in runs:
+        info = json.loads((INTERIM_DIR / SIM_RUNS[run]["folder"] / "simulation_info.json").read_text(encoding="utf-8"))
+        block[run] = info
+    res["simulation_runs"] = block
+    path.write_text(json.dumps(res, indent=1, ensure_ascii=False), encoding="utf-8")
+
+
+def simulate(numba_python: Path | None = None) -> dict:
+    """Rain on terrain at 25 m (SIMULATED), the PR #39 run with the gauged rain; scored at equal area like method 3."""
+    import subprocess
+
+    prepare_runs(["gauged"])
+    sim_dir = INTERIM_DIR / SIM_RUNS["gauged"]["folder"]
+    engine = "numpy (pipeline.inertial.run_numpy)"
+    if numba_python is not None and numba_python.exists():
+        kernel = Path(__file__).with_name("inertial_kernel.py")
+        subprocess.run([str(numba_python), "-I", str(kernel), str(sim_dir / "inputs.npz"), str(sim_dir / "outputs.npz")],
+                       check=True)
+        engine = "numba (pipeline/inertial_kernel.py, same scheme as pipeline.inertial, checked in tests)"
+    else:
+        from pipeline.inertial import run_numpy
+
+        out = run_numpy(dict(np.load(sim_dir / "inputs.npz")))
+        np.savez_compressed(sim_dir / "outputs.npz", **out)
+    return collect_run("gauged", engine)
 
 
 # ---------------------------------------------------------------- web layers
@@ -1562,16 +1828,19 @@ def water_marks_layer(zones_dir: Path) -> dict:
     return info
 
 
-STEPS = ("fetch", "fetch-dtm", "fetch-other", "fetch-pego", "terrain", "simulate", "score", "layers", "depth",
-         "marks", "report")
+STEPS = ("fetch", "fetch-dtm", "fetch-other", "fetch-pego", "fetch-forecast", "terrain", "simulate", "sim-prepare",
+         "sim-collect", "score", "layers", "depth", "marks", "report")
 
 
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(prog="python -m pipeline.streets", description=__doc__.split("\n\n")[0])
     parser.add_argument("step", choices=STEPS)
     parser.add_argument("--no-variants", action="store_true", help="terrain: skip the buildings variant")
-    parser.add_argument("--only", choices=["lake"], default=None,
-                        help="terrain: run only the lake-only routing (after the main terrain step)")
+    parser.add_argument("--only", choices=["lake", "buildings"], default=None,
+                        help="terrain: run only the lake-only routing, or only burn the building footprints "
+                             "(after the main terrain step)")
+    parser.add_argument("--runs", nargs="+", choices=list(SIM_RUNS), default=[r for r in SIM_RUNS if r != "gauged"],
+                        help="sim-prepare, sim-collect: which runs (the kernel runs in between, one process per run)")
     parser.add_argument("--zones-interim", type=Path, default=ZONES_INTERIM_DIR,
                         help="downloads of pipeline.zones (PR #36): municipalities, SNCZI, EMSR773")
     parser.add_argument("--zones-json", type=Path, default=DATA_DIR / "zones" / "zones_vs_floods.json",
@@ -1594,6 +1863,15 @@ def main(argv: list[str] | None = None) -> None:
         score(args.zones_interim, args.zones_json)
     elif args.step == "simulate":
         simulate(args.numba_python)
+    elif args.step == "fetch-forecast":
+        fetch_forecast(manifest)
+        save_manifest(manifest)
+    elif args.step == "sim-prepare":
+        prepare_runs(args.runs)
+    elif args.step == "sim-collect":
+        for run in args.runs:
+            collect_run(run, "numba (pipeline/inertial_kernel.py, same scheme as pipeline.inertial, checked in tests)")
+        write_runs([r for r in args.runs if r != "gauged"])
     elif args.step == "layers":
         layers(args.zones_interim)
     elif args.step == "fetch-pego":
