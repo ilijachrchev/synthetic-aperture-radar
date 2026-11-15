@@ -12,7 +12,7 @@ import lightgbm as lgb
 import numpy as np
 from sklearn.metrics import average_precision_score, precision_recall_curve
 
-from .features import CATEGORICAL, FEATURES
+from .features import ALL as FEATURES, CATEGORICAL
 
 DEV_SPLIT = "2025-09-01"
 SEED = 0

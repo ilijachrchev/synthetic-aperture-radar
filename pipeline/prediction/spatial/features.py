@@ -43,6 +43,8 @@ RAIN = ("rain_prior_7d_mm", "rain_prior_30d_mm", "rain_between_mm", "rain_betwee
         "days_since_rain_peak", "lead_days")
 STATE = ("prev_water", "prev_water_age_d", "prev_water_missing")
 FEATURES = STATIC + CONTEXT + RAIN + STATE
+SOIL = ("soil_moisture", "soil_moisture_age_d", "soil_moisture_missing")   # NISAR SME2, optional
+ALL = FEATURES + SOIL                    # column order of every feature matrix
 TERRAIN_ONLY = STATIC + CONTEXT          # the comparison model: no rain, no previous water
 CATEGORICAL = ("worldcover_class",)
 
@@ -50,7 +52,9 @@ UNITS = {
     "hand_m": "m above the nearest drainage (ASF GLO-30 HAND, 30 m)", "elevation_m": "m (Copernicus GLO-30)",
     "slope_deg": "degrees, from the elevation on the 20 m grid", "jrc_occurrence_pct": "% of 1984-2021 months with water (JRC)",
     "worldcover_class": "ESA WorldCover 2021 class code", "rice_flag": "1 inside the Albufera rice mask",
-    "s1_wet_freq": "share of earlier Sentinel-1 passes (before the held-out window) that saw water here",
+    "s1_wet_freq": "share of the passes up to the issue pass (never one from the held-out window) that saw water here",
+    "soil_moisture": "m3/m3, newest NISAR SME2 map before the issue day (200 m, provisional)",
+    "soil_moisture_age_d": "days from that map to the target", "soil_moisture_missing": "1 where there is no such map",
     "doy_sin": "season", "doy_cos": "season",
     "rain_prior_7d_mm": "mm in the 7 days before the issue day", "rain_prior_30d_mm": "mm in the 30 days before the issue day",
     "rain_between_mm": "mm from the issue day to the day before the target",
@@ -168,26 +172,30 @@ def prev_state(get, times: np.ndarray, j: int, target_time, n: int,
     return state, age
 
 
-def wet_frequency(wet_count: np.ndarray, obs_count: np.ndarray, minus_wet=0, minus_obs=0) -> np.ndarray:
-    """Share of earlier passes that saw water; the optional terms leave the sample's own pass out."""
-    n = obs_count.astype("float32") - minus_obs
+def wet_frequency(wet_count: np.ndarray, obs_count: np.ndarray) -> np.ndarray:
+    """Share of the counted passes that saw water; NaN with fewer than MIN_FREQ_OBS observations."""
+    n = obs_count.astype("float32")
     with np.errstate(invalid="ignore", divide="ignore"):
-        f = (wet_count.astype("float32") - minus_wet) / n
+        f = wet_count.astype("float32") / n
     return np.where(n >= MIN_FREQ_OBS, f, np.nan).astype("float32")
 
 
 def assemble(static_cols: np.ndarray, freq: np.ndarray, target_day: int, lead_days: float,
-             rain: dict[str, float], state: np.ndarray, age: np.ndarray) -> np.ndarray:
-    """(n, len(FEATURES)) float32 in FEATURES order."""
+             rain: dict[str, float], state: np.ndarray, age: np.ndarray,
+             soil: np.ndarray | None = None, soil_age: float | None = None) -> np.ndarray:
+    """(n, len(ALL)) float32 in ALL order; the soil columns are missing unless a soil map is given."""
     n = static_cols.shape[0]
+    soil = np.full(n, np.nan, "float32") if soil is None else soil
     doy = date.fromordinal(int(target_day)).timetuple().tm_yday
     ang = 2 * np.pi * doy / 365.25
     cols = {
         "s1_wet_freq": freq, "doy_sin": np.full(n, np.sin(ang)), "doy_cos": np.full(n, np.cos(ang)),
         **{k: np.full(n, rain[k]) for k in RAIN if k != "lead_days"}, "lead_days": np.full(n, lead_days),
         "prev_water": state, "prev_water_age_d": age, "prev_water_missing": np.isnan(state).astype("float32"),
+        "soil_moisture": soil, "soil_moisture_missing": np.isnan(soil).astype("float32"),
+        "soil_moisture_age_d": np.where(np.isnan(soil), np.nan, np.nan if soil_age is None else soil_age),
     }
-    dyn = np.stack([np.asarray(cols[name], dtype="float32") for name in FEATURES[len(STATIC):]], axis=1)
+    dyn = np.stack([np.asarray(cols[name], dtype="float32") for name in ALL[len(STATIC):]], axis=1)
     return np.concatenate([static_cols.astype("float32"), dyn], axis=1)
 
 
@@ -229,15 +237,17 @@ def pick_pool(domain: np.ndarray, wet: np.ndarray, obs: np.ndarray, size: int, r
 
 def build_table(pool_water: np.ndarray, times: np.ndarray, days: list[str], static_cols: np.ndarray,
                 pool_weight: np.ndarray, rain: dict[int, float], rng: np.random.Generator,
-                dry_keep: float = 0.1) -> dict[str, np.ndarray]:
+                dry_keep: float = 0.1, soil=None) -> dict[str, np.ndarray]:
     """Samples of every target pass outside the held-out window.
 
     pool_water: (passes, pixels) 0 / 1 / 255. Dry samples are thinned to dry_keep
-    and weighted back up. The past wet share of a sample leaves its own pass out.
+    and weighted back up. The past wet share of a sample counts only passes up to
+    its issue pass, so nothing later than the issue time enters it.
+    soil(issue_day, target_day) returns (values per pool pixel or None, age in days).
     """
     fit = np.array([not in_holdout(d) for d in days])
-    wet_n = (pool_water[fit] == 1).sum(axis=0)
-    obs_n = (pool_water[fit] != UNKNOWN).sum(axis=0)
+    cum_wet = np.cumsum((pool_water == 1) & fit[:, None], axis=0, dtype="int16")
+    cum_obs = np.cumsum((pool_water != UNKNOWN) & fit[:, None], axis=0, dtype="int16")
     X, y, w, tt, pp = [], [], [], [], []
     for t in range(len(days)):
         if not fit[t]:
@@ -253,11 +263,35 @@ def build_table(pool_water: np.ndarray, times: np.ndarray, days: list[str], stat
         target_day = date.fromisoformat(days[t]).toordinal()
         issue_day = date.fromisoformat(days[j]).toordinal()
         state, age = prev_state(lambda k: pool_water[k], times, j, times[t], lab.size)
-        freq = wet_frequency(wet_n, obs_n, minus_wet=(lab == 1), minus_obs=valid)
+        freq = wet_frequency(cum_wet[j], cum_obs[j])
         lead = float((times[t] - times[j]) / np.timedelta64(1, "D"))
-        feats = assemble(static_cols, freq, target_day, lead, rain_features(rain, issue_day, target_day), state, age)
+        sm, sm_age = soil(days[j], days[t]) if soil is not None else (None, None)
+        feats = assemble(static_cols, freq, target_day, lead, rain_features(rain, issue_day, target_day), state, age,
+                         sm, sm_age)
         X.append(feats[keep]); y.append(lab[keep]); tt.append(np.full(int(keep.sum()), t, "int32"))
         pp.append(np.flatnonzero(keep).astype("int32"))
         w.append(pool_weight[keep] * np.where(lab[keep] == 1, 1.0, 1.0 / dry_keep))
     return {"X": np.concatenate(X), "y": np.concatenate(y).astype("uint8"), "w": np.concatenate(w).astype("float32"),
             "t": np.concatenate(tt), "p": np.concatenate(pp)}
+
+
+# ---------------------------------------------------------------- soil moisture (NISAR SME2)
+
+def soil_reader(site: str, idx: np.ndarray):
+    """soil(issue_day, target_day) -> (soil moisture at the idx pixels or None, days from that map to the target).
+
+    Uses the newest SME2 map at least one day before the issue day (pipeline.soil_moisture). The 72 hour
+    product latency is not modelled, so in a replay the map may be up to two days too fresh.
+    """
+    from pipeline import soil_moisture as sm
+    days_available = sm.dates_of(site)
+    cache: dict[str, np.ndarray] = {}
+
+    def soil(issue_day: str, target_day: str):
+        pick = sm.latest_day_before(days_available, issue_day)
+        if pick is None:
+            return None, None
+        if pick not in cache:
+            cache[pick] = sm.load_day(site, pick).ravel()[idx]
+        return cache[pick], float((date.fromisoformat(target_day) - date.fromisoformat(pick)).days)
+    return soil

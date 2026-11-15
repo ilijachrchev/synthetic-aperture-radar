@@ -39,12 +39,12 @@
     "255": "sea or outside the land grid"
   },
   "thresholds": {
-    "water": 0.3129008966120227,
-    "new_water": 0.20000887192001116
+    "water": 0.28405811008713044,
+    "new_water": 0.17041007967415503
   },
   "area_ha": {
-    "likely_water": 5633.4,
-    "likely_new_water": 4909.2,
+    "likely_water": 4617.6,
+    "likely_new_water": 3439.7,
     "counted_on": "evidence 0 pixels only"
   },
   "native_resolution": {
