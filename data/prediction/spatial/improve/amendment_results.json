@@ -1,0 +1,272 @@
+{
+  "reading": "amend_table: (AP 20 m, hit 20 m, false alarms 20 m, AP 250 m, hit 250 m, false alarms 250 m)",
+  "mmu_selection": "min0px",
+  "mmu_albufera_whole window": {
+    "without": [
+      0.4828,
+      0.6835,
+      0.6033,
+      0.4113,
+      0.7555,
+      0.5622
+    ],
+    "with": [
+      0.4782,
+      0.6573,
+      0.601,
+      0.4112,
+      0.7315,
+      0.5565
+    ]
+  },
+  "mmu_albufera_DANA passes, 22 and 23 Oct": {
+    "without": [
+      0.6759,
+      0.7298,
+      0.4133,
+      0.6268,
+      0.791,
+      0.3672
+    ],
+    "with": [
+      0.6753,
+      0.7185,
+      0.4092,
+      0.6267,
+      0.7789,
+      0.3622
+    ]
+  },
+  "mmu_albufera_22 Oct, forecast rain of 17 Oct": {
+    "without": [
+      0.6766,
+      0.6918,
+      0.3601,
+      0.6198,
+      0.7479,
+      0.3082
+    ],
+    "with": [
+      0.6753,
+      0.6778,
+      0.3566,
+      0.6199,
+      0.7341,
+      0.3032
+    ]
+  },
+  "mmu_pego_oliva_whole window": {
+    "without": [
+      0.3431,
+      0.6153,
+      0.724,
+      0.2516,
+      0.6756,
+      0.6922
+    ],
+    "with": [
+      0.3362,
+      0.5907,
+      0.7269,
+      0.2512,
+      0.6541,
+      0.6933
+    ]
+  },
+  "mmu_pego_oliva_DANA passes, 22 and 23 Oct": {
+    "without": [
+      0.4158,
+      0.4779,
+      0.5522,
+      0.3702,
+      0.5305,
+      0.491
+    ],
+    "with": [
+      0.4127,
+      0.4661,
+      0.5525,
+      0.3705,
+      0.5169,
+      0.4918
+    ]
+  },
+  "mmu_pego_oliva_22 Oct, forecast rain of 17 Oct": {
+    "without": [
+      0.3426,
+      0.3909,
+      0.6238,
+      0.311,
+      0.4501,
+      0.5667
+    ],
+    "with": [
+      0.3405,
+      0.3773,
+      0.6274,
+      0.3108,
+      0.4349,
+      0.5705
+    ]
+  },
+  "fit_(a) Albufera, DANA passes, fitted_fit version": [
+    0.7359,
+    0.8408,
+    0.4502,
+    0.6687,
+    0.8909,
+    0.4183
+  ],
+  "fit_(a) Albufera, DANA passes, fitted_terrain only": [
+    0.7063,
+    0.7436,
+    0.4013,
+    0.6448,
+    0.8014,
+    0.3593
+  ],
+  "fit_(a) Albufera, DANA passes, fitted_past wet share": [
+    0.5366,
+    0.0359,
+    0.6033,
+    0.5064,
+    0.0539,
+    0.4099
+  ],
+  "fit_(a) Albufera, DANA passes, fitted_frozen, no October": [
+    0.6759,
+    0.7298,
+    0.4133,
+    0.6268,
+    0.791,
+    0.3672
+  ],
+  "fit_(a) Albufera, whole window, fitted_fit version": [
+    0.5894,
+    0.7761,
+    0.6077,
+    0.4966,
+    0.8446,
+    0.5737
+  ],
+  "fit_(a) Albufera, whole window, fitted_terrain only": [
+    0.5304,
+    0.7017,
+    0.6161,
+    0.4456,
+    0.7717,
+    0.5798
+  ],
+  "fit_(a) Albufera, whole window, fitted_past wet share": [
+    0.3293,
+    0.08,
+    0.6472,
+    0.2613,
+    0.1159,
+    0.4876
+  ],
+  "fit_(a) Albufera, whole window, fitted_frozen, no October": [
+    0.4828,
+    0.6835,
+    0.6033,
+    0.4113,
+    0.7555,
+    0.5622
+  ],
+  "fit_(b) Pego-Oliva, DANA passes, test_fit version": [
+    0.4435,
+    0.5541,
+    0.563,
+    0.3896,
+    0.6195,
+    0.5037
+  ],
+  "fit_(b) Pego-Oliva, DANA passes, test_terrain only": [
+    0.4254,
+    0.4919,
+    0.5527,
+    0.3718,
+    0.546,
+    0.4894
+  ],
+  "fit_(b) Pego-Oliva, DANA passes, test_past wet share": [
+    0.3879,
+    0.2038,
+    0.6162,
+    0.3558,
+    0.2514,
+    0.5117
+  ],
+  "fit_(b) Pego-Oliva, DANA passes, test_frozen, no October": [
+    0.4158,
+    0.4779,
+    0.5522,
+    0.3702,
+    0.5305,
+    0.491
+  ],
+  "fit_(b) Pego-Oliva, whole window, test_fit version": [
+    0.3641,
+    0.6504,
+    0.7252,
+    0.2667,
+    0.7161,
+    0.6926
+  ],
+  "fit_(b) Pego-Oliva, whole window, test_terrain only": [
+    0.3227,
+    0.6137,
+    0.7274,
+    0.2367,
+    0.6705,
+    0.6948
+  ],
+  "fit_(b) Pego-Oliva, whole window, test_past wet share": [
+    0.3154,
+    0.4129,
+    0.6851,
+    0.2319,
+    0.4735,
+    0.6299
+  ],
+  "fit_(b) Pego-Oliva, whole window, test_frozen, no October": [
+    0.3431,
+    0.6153,
+    0.724,
+    0.2516,
+    0.6756,
+    0.6922
+  ],
+  "fit_(c) Pego-Oliva, 22 Oct, forecast rain, test_fit version": [
+    0.3737,
+    0.4787,
+    0.6162,
+    0.3295,
+    0.5477,
+    0.5609
+  ],
+  "fit_(c) Pego-Oliva, 22 Oct, forecast rain, test_terrain only": [
+    0.3589,
+    0.4274,
+    0.6157,
+    0.3145,
+    0.4907,
+    0.5588
+  ],
+  "fit_(c) Pego-Oliva, 22 Oct, forecast rain, test_past wet share": [
+    0.3257,
+    0.1515,
+    0.7178,
+    0.3068,
+    0.1961,
+    0.6347
+  ],
+  "fit_(c) Pego-Oliva, 22 Oct, forecast rain, test_frozen, no October": [
+    0.3426,
+    0.3909,
+    0.6238,
+    0.311,
+    0.4501,
+    0.5667
+  ]
+}

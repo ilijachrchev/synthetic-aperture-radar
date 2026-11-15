@@ -71,6 +71,16 @@ Scenarios: `replay_2026-10-22`, `replay_2026-10-28` (DANA, reconstruction) and `
     python -m pipeline.prediction.spatial.improve export mono_neigh+blend   # the chosen maps, in this folder's layout
     python -m pipeline.prediction.spatial.improve nisar mono_neigh+blend    # NISAR 28 Oct check, chosen candidate only
 
+    # amendment (docs/MODEL_IMPROVE.md): minimum mapping unit, fit then test, two more exports
+    python -m pipeline.prediction.spatial.improve mmu_dev mono_neigh+blend:albufera   # and :pego_oliva, development maps
+    python -m pipeline.prediction.spatial.improve mmu_select mono_neigh+blend          # chose no filter
+    python -m pipeline.prediction.spatial.improve fit_train mono_neigh                  # + Albufera's held-out passes
+    python -m pipeline.prediction.spatial.improve fit_test mono_neigh+blend             # (a) fitted, (b) test, (c) forecast
+    python -m pipeline.prediction.spatial.improve mmu_holdout mono_neigh+blend
+    python -m pipeline.prediction.spatial.improve export_extra nisar                    # improve/exports/nisar_labels
+    python -m pipeline.prediction.spatial.improve export_extra fit                      # improve/exports/fit_albufera_oct
+    python -m pipeline.prediction.spatial.improve amend_table
+
 - `mono`: the rain amounts only push the likelihood up (LightGBM monotone constraints). `neigh`: two more inputs,
   the share of water around each pixel (100 m and 500 m squares) in the issue-time water map. `storm`: passes after
   more rain count more in the fit. `+blend`: the rank of the model averaged with the terrain-only rank (0.5 each),

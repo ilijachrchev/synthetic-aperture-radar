@@ -333,4 +333,108 @@ only motivated the idea; it is not used to pick anything.
 - `fit_albufera_oct`: the fit version above. At Pego-Oliva it is out of sample.
 - The same post-processing (variant 6, if it wins) for all three.
 
+## Amendment results
+
+Computed after the amendment was committed (`680cd92`); the filter setting was chosen and committed (`e9ec956`) before
+any held-out score of a filter. The tables are written by `python -m pipeline.prediction.spatial.improve amend_table`
+(`improve/amendment_results.md` and `.json`; the numbers behind them are in `improve/mmu_dev_<site>.json`,
+`improve/mmu_selection.json`, `improve/mmu_holdout_mono_neigh_blend.json` and
+`improve/fit_albufera_oct/holdout_s1_metrics.json`).
+
+**Variant 6 is not adopted.** On the full maps of all 238 development check targets per site, every setting lowered the
+new-water F1 (mean 0.413 with no filter, 0.404 dropping patches under 3 pixels, 0.312 at 25 pixels with the majority
+test): against the Sentinel-1 maps, the small patches hold more real new water than false alarms, so dropping them
+lowers the hit rate and does not lower the false alarm share. The exported maps keep no filter; they are the maps of
+`39c633f`. Scored once on the held-out window for information, the best real filter (3 pixels) is slightly worse there
+as well. The DANA check that motivated the idea measured the distance to a real flood outline, which this rule does not
+see; this result says only that, against Sentinel-1, the small patches are not mostly noise.
+
+**Fit, then test.** The fit version learned from Albufera's 18 held-out passes (150,601 more samples; Pego-Oliva's
+table is the same 2,891,109 samples as before). (a) Fitted, in sample: on Albufera's DANA passes it reaches AP 0.736,
+hit 84 %, false alarms 45 % (the frozen model 0.676, terrain only 0.706). (b) Test, on Pego-Oliva's DANA passes, which
+no fit and no choice ever saw: AP 0.444, hit 55 %, false alarms 56 %, against 0.416 for the frozen model, 0.425 for
+terrain only (fitted the same way) and 0.388 for the past wet share; over Pego-Oliva's whole held-out window 0.364
+(frozen 0.343, PR #33 0.376). (c) The same test for 22 Oct with the rain the IFS run of 17 Oct forecast instead of the
+rain that fell: AP 0.374, hit 48 %, false alarms 62 % (frozen 0.343, PR #33 0.358, terrain only 0.359). Learning the
+storm at one site helps at the other, but it is the same storm, so this tests new ground, not a new storm.
+
+**Variant 6, development check** (new-water F1 at 20 m on the held-back blocks of every development target, frozen threshold; the setting is chosen on the mean of the two sites)
+
+| setting | mean F1 | Albufera F1 | hit | false alarms | Pego-Oliva F1 | hit | false alarms |
+|---|---|---|---|---|---|---|---|
+| min0px (chosen) | 0.4133 | 0.3747 | 46 % | 68 % | 0.4519 | 64 % | 65 % |
+| min3px | 0.4037 | 0.3641 | 43 % | 69 % | 0.4433 | 61 % | 65 % |
+| min5px | 0.3923 | 0.3520 | 40 % | 69 % | 0.4327 | 58 % | 66 % |
+| min10px | 0.3742 | 0.3326 | 36 % | 69 % | 0.4159 | 53 % | 66 % |
+| min0px_majority | 0.3518 | 0.3094 | 31 % | 69 % | 0.3942 | 47 % | 66 % |
+| min3px_majority | 0.3484 | 0.3057 | 30 % | 69 % | 0.3910 | 46 % | 66 % |
+| min25px | 0.3468 | 0.3027 | 30 % | 69 % | 0.3909 | 47 % | 66 % |
+| min5px_majority | 0.3438 | 0.3007 | 29 % | 69 % | 0.3868 | 45 % | 66 % |
+| min10px_majority | 0.3320 | 0.2881 | 27 % | 69 % | 0.3759 | 42 % | 66 % |
+| min25px_majority | 0.3122 | 0.2663 | 24 % | 70 % | 0.3581 | 39 % | 67 % |
+
+**Variant 6 on the held-out window** (`mono_neigh+blend`; with min3px (not chosen, information only); scored once)
+
+*Albufera*
+
+| | AP 20 m | hit | false alarms | AP 250 m | hit | false alarms |
+|---|---|---|---|---|---|---|
+| whole window: without the filter | 0.483 | 68 % | 60 % | 0.411 | 76 % | 56 % |
+| whole window: with min3px (not chosen, information only) | 0.478 | 66 % | 60 % | 0.411 | 73 % | 56 % |
+| DANA passes, 22 and 23 Oct: without the filter | 0.676 | 73 % | 41 % | 0.627 | 79 % | 37 % |
+| DANA passes, 22 and 23 Oct: with min3px (not chosen, information only) | 0.675 | 72 % | 41 % | 0.627 | 78 % | 36 % |
+| 22 Oct, forecast rain of 17 Oct: without the filter | 0.677 | 69 % | 36 % | 0.620 | 75 % | 31 % |
+| 22 Oct, forecast rain of 17 Oct: with min3px (not chosen, information only) | 0.675 | 68 % | 36 % | 0.620 | 73 % | 30 % |
+
+*Pego-Oliva*
+
+| | AP 20 m | hit | false alarms | AP 250 m | hit | false alarms |
+|---|---|---|---|---|---|---|
+| whole window: without the filter | 0.343 | 62 % | 72 % | 0.252 | 68 % | 69 % |
+| whole window: with min3px (not chosen, information only) | 0.336 | 59 % | 73 % | 0.251 | 65 % | 69 % |
+| DANA passes, 22 and 23 Oct: without the filter | 0.416 | 48 % | 55 % | 0.370 | 53 % | 49 % |
+| DANA passes, 22 and 23 Oct: with min3px (not chosen, information only) | 0.413 | 47 % | 55 % | 0.370 | 52 % | 49 % |
+| 22 Oct, forecast rain of 17 Oct: without the filter | 0.343 | 39 % | 62 % | 0.311 | 45 % | 57 % |
+| 22 Oct, forecast rain of 17 Oct: with min3px (not chosen, information only) | 0.341 | 38 % | 63 % | 0.311 | 43 % | 57 % |
+
+**Fit, then test** (the fit version learned from Albufera's held-out passes; Pego-Oliva never entered a fit or a choice; terrain only is the fit version's own terrain half; frozen = the chosen `mono_neigh+blend` without the October passes)
+
+| | AP 20 m | hit | false alarms | AP 250 m | hit | false alarms |
+|---|---|---|---|---|---|---|
+| (a) Albufera, DANA passes, fitted fit version | 0.736 | 84 % | 45 % | 0.669 | 89 % | 42 % |
+| terrain only | 0.706 | 74 % | 40 % | 0.645 | 80 % | 36 % |
+| past wet share | 0.537 | 4 % | 60 % | 0.506 | 5 % | 41 % |
+| frozen, no October | 0.676 | 73 % | 41 % | 0.627 | 79 % | 37 % |
+| (a) Albufera, whole window, fitted fit version | 0.589 | 78 % | 61 % | 0.497 | 84 % | 57 % |
+| terrain only | 0.530 | 70 % | 62 % | 0.446 | 77 % | 58 % |
+| past wet share | 0.329 | 8 % | 65 % | 0.261 | 12 % | 49 % |
+| frozen, no October | 0.483 | 68 % | 60 % | 0.411 | 76 % | 56 % |
+| (b) Pego-Oliva, DANA passes, test fit version | 0.444 | 55 % | 56 % | 0.390 | 62 % | 50 % |
+| terrain only | 0.425 | 49 % | 55 % | 0.372 | 55 % | 49 % |
+| past wet share | 0.388 | 20 % | 62 % | 0.356 | 25 % | 51 % |
+| frozen, no October | 0.416 | 48 % | 55 % | 0.370 | 53 % | 49 % |
+| (b) Pego-Oliva, whole window, test fit version | 0.364 | 65 % | 73 % | 0.267 | 72 % | 69 % |
+| terrain only | 0.323 | 61 % | 73 % | 0.237 | 67 % | 69 % |
+| past wet share | 0.315 | 41 % | 69 % | 0.232 | 47 % | 63 % |
+| frozen, no October | 0.343 | 62 % | 72 % | 0.252 | 68 % | 69 % |
+| (c) Pego-Oliva, 22 Oct, forecast rain, test fit version | 0.374 | 48 % | 62 % | 0.330 | 55 % | 56 % |
+| terrain only | 0.359 | 43 % | 62 % | 0.315 | 49 % | 56 % |
+| past wet share | 0.326 | 15 % | 72 % | 0.307 | 20 % | 63 % |
+| frozen, no October | 0.343 | 39 % | 62 % | 0.311 | 45 % | 57 % |
+
+
+**The three versions for the EMSR935 test** (each folder in the PR #33 layout; nothing in them was chosen on
+Pego-Oliva, EMSR935 or NISAR; all without a filter):
+
+| version | what it learned from | `--model-dir` |
+|---|---|---|
+| chosen `mono_neigh+blend` | Sentinel-1 maps before 15 Oct 2026 | `.` (the repository root: `data/prediction/spatial`) |
+| `nisar_flag+blend` | Sentinel-1 and the team's NISAR water labels before 15 Oct 2026 | `data/prediction/spatial/improve/exports/nisar_labels` |
+| fit version | as the chosen one, plus Albufera's passes of 15 Oct to 15 Nov 2026 | `data/prediction/spatial/improve/exports/fit_albufera_oct` |
+
+The two extra folders hold Pego-Oliva only (8 maps each, with `index.json` and `development_metrics.json`, whose
+`thresholds.rain_and_state` are the thresholds of the exported score). `nisar_flag+blend` is the best NISAR-label
+candidate by the development rule (0.3815, against 0.3804 for `nisar_flag` alone); its held-out scores are in the tables
+above. Each map's `forecast.json` says which version it is.
+
 Written with SI assistance (Claude Code), reviewed by the team.
