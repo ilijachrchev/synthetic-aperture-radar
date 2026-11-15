@@ -1,0 +1,4599 @@
+{
+ "created_utc": "2026-11-15T00:39:04+00:00",
+ "module": "pipeline/cv/labels.py",
+ "grid": "pipeline.stack.site_grid, EPSG:32630, 20 m (0.04 ha)",
+ "classes": "0 not water, 1 open water, 2 water under plants (possible, not validated), 3 not assessed (built-up), 255 no data or sea",
+ "rules": {
+  "open_water": "v1 U-Net ensemble p(open water) >= 0.3 (pre-registered, docs/CV_RESULTS.md)",
+  "water_under_plants": "candidate rule, not validated: vegetated WorldCover land, 5x5 filtered HH at least 3.0 dB above its stack median and HV within 1.5 dB of its median",
+  "not_assessed": "ESA WorldCover 50 built-up: the radar cannot see water between buildings at 20 m",
+  "confidence": "share of agreeing checks, steps of 5: model margin to 0.3; HH below -15.0 dB; coherence below 0.25; clear optical DSWx-HLS within 1 day. Class 2: the model's p(any water) only, capped at 50",
+  "dana": "0 dry on both dates, 1 open water on both dates, 2 new open water, 3 open water gone, 4 permanent water, 255 not compared (no data or sea on either date, or built-up)"
+ },
+ "test_window": [
+  "2026-10-15",
+  "2026-11-15"
+ ],
+ "v1_probability_cache": {
+  "created_utc": "2026-11-14T20:27:22+00:00",
+  "models": [
+   {
+    "path": "cv_e2_aec_s0.pt",
+    "sha256": "a25fa7523bad9ceb79381c6de56e00ac270265b3eed12fb6744943171b50bdce",
+    "epoch": 21
+   },
+   {
+    "path": "cv_e2_aec_s1.pt",
+    "sha256": "1b06a7f726fb95a8b4ad23985c6195bd2ae7bd96b82216a84428ea5bcee3ae0a",
+    "epoch": 20
+   },
+   {
+    "path": "cv_e2_aec_s2.pt",
+    "sha256": "2d42dc055463a61049554c7ff7014dfa2e6d408003ca79fd8adb7b0e959c44d9",
+    "epoch": 18
+   },
+   {
+    "path": "cv_e4_aec_current_s0.pt",
+    "sha256": "5bd2726c815ecbd87a099bc9ae2e5d1cf0629c546d99b9943829fcbd580689b4",
+    "epoch": 24
+   },
+   {
+    "path": "cv_e5_aec_gap13_s0.pt",
+    "sha256": "7f6434434e6c8a3f2ab8f307f7c9a64a9c72a04cf9d2a5659a878d8437660d19",
+    "epoch": 20
+   }
+  ]
+ },
+ "note": "Written with SI assistance (Claude Code), reviewed by the team.",
+ "sites": {
+  "albufera": {
+   "stacks": [
+    "066_D_069",
+    "058_A_021"
+   ],
+   "pass_count": 21,
+   "pass_list": "data/labels_nisar/albufera_passes.json",
+   "land_ha": 50805.56,
+   "permanent_water_ha": 2816.4,
+   "built_up_ha": 6917.28,
+   "passes": [
+    {
+     "site": "albufera",
+     "stack": "066_D_069",
+     "date": "2026-06-18",
+     "split": "train",
+     "maturity": "PROVISIONAL",
+     "crid": "P05023",
+     "coherence_pair": "2026-06-18_2026-06-30",
+     "hectares": {
+      "not_water": 38808.76,
+      "open_water": 2775.64,
+      "water_under_plants": 20.0,
+      "not_assessed_built": 6483.32,
+      "open_water_on_permanent_water": 2373.96,
+      "no_data_on_land": 2717.84,
+      "not_water_where_the_model_sees_inundated_vegetation": 202.68
+     },
+     "mean_confidence": {
+      "not_water": 91.4,
+      "open_water": 61.8,
+      "water_under_plants": 0.0
+     },
+     "checks": {
+      "share_with_optical": 0.0,
+      "share_with_coherence": 1.0,
+      "share_with_optical_or_coherence": 1.0,
+      "changing_open_water_confirmed_by_optical": null,
+      "not_water_where_optical_sees_open_water": null,
+      "changing_open_water_with_low_coherence": 0.257
+     }
+    },
+    {
+     "site": "albufera",
+     "stack": "066_D_069",
+     "date": "2026-06-30",
+     "split": "train",
+     "maturity": "PROVISIONAL",
+     "crid": "P05023",
+     "coherence_pair": "2026-06-18_2026-06-30",
+     "hectares": {
+      "not_water": 39137.16,
+      "open_water": 2453.96,
+      "water_under_plants": 13.28,
+      "not_assessed_built": 6483.32,
+      "open_water_on_permanent_water": 2365.16,
+      "no_data_on_land": 2717.84,
+      "not_water_where_the_model_sees_inundated_vegetation": 145.32
+     },
+     "mean_confidence": {
+      "not_water": 96.4,
+      "open_water": 72.5,
+      "water_under_plants": 0.0
+     },
+     "checks": {
+      "share_with_optical": 0.9563,
+      "share_with_coherence": 1.0,
+      "share_with_optical_or_coherence": 1.0,
+      "changing_open_water_confirmed_by_optical": 0.3453,
+      "not_water_where_optical_sees_open_water": 0.006,
+      "changing_open_water_with_low_coherence": 0.318
+     }
+    },
+    {
+     "site": "albufera",
+     "stack": "066_D_069",
+     "date": "2026-07-12",
+     "split": "train",
+     "maturity": "PROVISIONAL",
+     "crid": "P05023",
+     "coherence_pair": "2026-06-30_2026-07-12",
+     "hectares": {
+      "not_water": 39133.84,
+      "open_water": 2441.48,
+      "water_under_plants": 29.08,
+      "not_assessed_built": 6483.32,
+      "open_water_on_permanent_water": 2371.88,
+      "no_data_on_land": 2717.84,
+      "not_water_where_the_model_sees_inundated_vegetation": 197.0
+     },
+     "mean_confidence": {
+      "not_water": 97.7,
+      "open_water": 66.8,
+      "water_under_plants": 0.1
+     },
+     "checks": {
+      "share_with_optical": 0.0,
+      "share_with_coherence": 1.0,
+      "share_with_optical_or_coherence": 1.0,
+      "changing_open_water_confirmed_by_optical": null,
+      "not_water_where_optical_sees_open_water": null,
+      "changing_open_water_with_low_coherence": 0.2316
+     }
+    },
+    {
+     "site": "albufera",
+     "stack": "066_D_069",
+     "date": "2026-07-24",
+     "split": "train",
+     "maturity": "PROVISIONAL",
+     "crid": "P05023",
+     "coherence_pair": "2026-07-12_2026-07-24",
+     "hectares": {
+      "not_water": 38528.32,
+      "open_water": 2389.44,
+      "water_under_plants": 686.64,
+      "not_assessed_built": 6483.32,
+      "open_water_on_permanent_water": 2366.4,
+      "no_data_on_land": 2717.84,
+      "not_water_where_the_model_sees_inundated_vegetation": 154.4
+     },
+     "mean_confidence": {
+      "not_water": 99.5,
+      "open_water": 74.9,
+      "water_under_plants": 0.1
+     },
+     "checks": {
+      "share_with_optical": 0.9831,
+      "share_with_coherence": 1.0,
+      "share_with_optical_or_coherence": 1.0,
+      "changing_open_water_confirmed_by_optical": 0.0587,
+      "not_water_where_optical_sees_open_water": 0.0009,
+      "changing_open_water_with_low_coherence": 0.2431
+     }
+    },
+    {
+     "site": "albufera",
+     "stack": "066_D_069",
+     "date": "2026-08-17",
+     "split": "train",
+     "maturity": "PROVISIONAL",
+     "crid": "P05023",
+     "coherence_pair": "2026-07-24_2026-08-17",
+     "hectares": {
+      "not_water": 38595.36,
+      "open_water": 2378.68,
+      "water_under_plants": 630.36,
+      "not_assessed_built": 6483.32,
+      "open_water_on_permanent_water": 2359.44,
+      "no_data_on_land": 2717.84,
+      "not_water_where_the_model_sees_inundated_vegetation": 125.4
+     },
+     "mean_confidence": {
+      "not_water": 99.4,
+      "open_water": 71.5,
+      "water_under_plants": 0.1
+     },
+     "checks": {
+      "share_with_optical": 0.9766,
+      "share_with_coherence": 1.0,
+      "share_with_optical_or_coherence": 1.0,
+      "changing_open_water_confirmed_by_optical": 0.2282,
+      "not_water_where_optical_sees_open_water": 0.0038,
+      "changing_open_water_with_low_coherence": 0.2931
+     }
+    },
+    {
+     "site": "albufera",
+     "stack": "066_D_069",
+     "date": "2026-08-29",
+     "split": "train",
+     "maturity": "PROVISIONAL",
+     "crid": "P05023",
+     "coherence_pair": "2026-08-17_2026-08-29",
+     "hectares": {
+      "not_water": 39061.68,
+      "open_water": 2379.8,
+      "water_under_plants": 162.92,
+      "not_assessed_built": 6483.32,
+      "open_water_on_permanent_water": 2360.92,
+      "no_data_on_land": 2717.84,
+      "not_water_where_the_model_sees_inundated_vegetation": 122.76
+     },
+     "mean_confidence": {
+      "not_water": 99.4,
+      "open_water": 74.3,
+      "water_under_plants": 0.4
+     },
+     "checks": {
+      "share_with_optical": 0.9764,
+      "share_with_coherence": 1.0,
+      "share_with_optical_or_coherence": 1.0,
+      "changing_open_water_confirmed_by_optical": 0.1973,
+      "not_water_where_optical_sees_open_water": 0.0041,
+      "changing_open_water_with_low_coherence": 0.3686
+     }
+    },
+    {
+     "site": "albufera",
+     "stack": "066_D_069",
+     "date": "2026-09-10",
+     "split": "train",
+     "maturity": "PROVISIONAL",
+     "crid": "P05023",
+     "coherence_pair": "2026-08-29_2026-09-10",
+     "hectares": {
+      "not_water": 38992.88,
+      "open_water": 2381.72,
+      "water_under_plants": 229.8,
+      "not_assessed_built": 6483.32,
+      "open_water_on_permanent_water": 2363.68,
+      "no_data_on_land": 2717.84,
+      "not_water_where_the_model_sees_inundated_vegetation": 108.2
+     },
+     "mean_confidence": {
+      "not_water": 99.1,
+      "open_water": 69.1,
+      "water_under_plants": 0.1
+     },
+     "checks": {
+      "share_with_optical": 0.6758,
+      "share_with_coherence": 1.0,
+      "share_with_optical_or_coherence": 1.0,
+      "changing_open_water_confirmed_by_optical": 0.4123,
+      "not_water_where_optical_sees_open_water": 0.0073,
+      "changing_open_water_with_low_coherence": 0.2195
+     }
+    },
+    {
+     "site": "albufera",
+     "stack": "066_D_069",
+     "date": "2026-09-22",
+     "split": "train",
+     "maturity": "PROVISIONAL",
+     "crid": "P05023",
+     "coherence_pair": "2026-09-10_2026-09-22",
+     "hectares": {
+      "not_water": 39056.76,
+      "open_water": 2401.72,
+      "water_under_plants": 145.92,
+      "not_assessed_built": 6483.32,
+      "open_water_on_permanent_water": 2364.52,
+      "no_data_on_land": 2717.84,
+      "not_water_where_the_model_sees_inundated_vegetation": 93.6
+     },
+     "mean_confidence": {
+      "not_water": 98.1,
+      "open_water": 58.1,
+      "water_under_plants": 0.0
+     },
+     "checks": {
+      "share_with_optical": 0.2594,
+      "share_with_coherence": 1.0,
+      "share_with_optical_or_coherence": 1.0,
+      "changing_open_water_confirmed_by_optical": 1.0,
+      "not_water_where_optical_sees_open_water": 0.0004,
+      "changing_open_water_with_low_coherence": 0.428
+     }
+    },
+    {
+     "site": "albufera",
+     "stack": "066_D_069",
+     "date": "2026-10-04",
+     "split": "train",
+     "maturity": "PROVISIONAL",
+     "crid": "P05023",
+     "coherence_pair": "2026-09-22_2026-10-04",
+     "hectares": {
+      "not_water": 38509.08,
+      "open_water": 2874.24,
+      "water_under_plants": 221.08,
+      "not_assessed_built": 6483.32,
+      "open_water_on_permanent_water": 2360.84,
+      "no_data_on_land": 2717.84,
+      "not_water_where_the_model_sees_inundated_vegetation": 118.92
+     },
+     "mean_confidence": {
+      "not_water": 96.5,
+      "open_water": 70.2,
+      "water_under_plants": 0.0
+     },
+     "checks": {
+      "share_with_optical": 0.0071,
+      "share_with_coherence": 1.0,
+      "share_with_optical_or_coherence": 1.0,
+      "changing_open_water_confirmed_by_optical": 1.0,
+      "not_water_where_optical_sees_open_water": 0.0335,
+      "changing_open_water_with_low_coherence": 0.5787
+     }
+    },
+    {
+     "site": "albufera",
+     "stack": "066_D_069",
+     "date": "2026-10-16",
+     "split": "test",
+     "maturity": "PROVISIONAL",
+     "crid": "P05023",
+     "coherence_pair": "2026-10-04_2026-10-16",
+     "hectares": {
+      "not_water": 37100.04,
+      "open_water": 4367.8,
+      "water_under_plants": 136.56,
+      "not_assessed_built": 6483.32,
+      "open_water_on_permanent_water": 2361.52,
+      "no_data_on_land": 2717.84,
+      "not_water_where_the_model_sees_inundated_vegetation": 169.92
+     },
+     "mean_confidence": {
+      "not_water": 96.7,
+      "open_water": 72.0,
+      "water_under_plants": 0.3
+     },
+     "checks": {
+      "share_with_optical": 0.329,
+      "share_with_coherence": 1.0,
+      "share_with_optical_or_coherence": 1.0,
+      "changing_open_water_confirmed_by_optical": 0.9972,
+      "not_water_where_optical_sees_open_water": 0.091,
+      "changing_open_water_with_low_coherence": 0.5058
+     }
+    },
+    {
+     "site": "albufera",
+     "stack": "066_D_069",
+     "date": "2026-10-28",
+     "split": "test",
+     "maturity": "VALIDATED",
+     "crid": "P05036",
+     "coherence_pair": null,
+     "hectares": {
+      "not_water": 34050.2,
+      "open_water": 7426.6,
+      "water_under_plants": 127.6,
+      "not_assessed_built": 6483.32,
+      "open_water_on_permanent_water": 2373.04,
+      "no_data_on_land": 2717.84,
+      "not_water_where_the_model_sees_inundated_vegetation": 221.96
+     },
+     "mean_confidence": {
+      "not_water": 95.9,
+      "open_water": 82.8,
+      "water_under_plants": 0.6
+     },
+     "checks": {
+      "share_with_optical": 0.8592,
+      "share_with_coherence": 0.0,
+      "share_with_optical_or_coherence": 0.8592,
+      "changing_open_water_confirmed_by_optical": 0.9905,
+      "not_water_where_optical_sees_open_water": 0.0808,
+      "changing_open_water_with_low_coherence": null
+     }
+    },
+    {
+     "site": "albufera",
+     "stack": "058_A_021",
+     "date": "2026-06-18",
+     "split": "train",
+     "maturity": "PROVISIONAL",
+     "crid": "P05023",
+     "coherence_pair": "2026-06-18_2026-06-30",
+     "hectares": {
+      "not_water": 33083.28,
+      "open_water": 8496.76,
+      "water_under_plants": 23.72,
+      "not_assessed_built": 6483.32,
+      "open_water_on_permanent_water": 2377.76,
+      "no_data_on_land": 2718.48,
+      "not_water_where_the_model_sees_inundated_vegetation": 146.6
+     },
+     "mean_confidence": {
+      "not_water": 94.9,
+      "open_water": 60.9,
+      "water_under_plants": 0.2
+     },
+     "checks": {
+      "share_with_optical": 0.0,
+      "share_with_coherence": 1.0,
+      "share_with_optical_or_coherence": 1.0,
+      "changing_open_water_confirmed_by_optical": null,
+      "not_water_where_optical_sees_open_water": null,
+      "changing_open_water_with_low_coherence": 0.2445
+     }
+    },
+    {
+     "site": "albufera",
+     "stack": "058_A_021",
+     "date": "2026-06-30",
+     "split": "train",
+     "maturity": "PROVISIONAL",
+     "crid": "P05023",
+     "coherence_pair": "2026-06-18_2026-06-30",
+     "hectares": {
+      "not_water": 39149.36,
+      "open_water": 2412.96,
+      "water_under_plants": 41.36,
+      "not_assessed_built": 6483.32,
+      "open_water_on_permanent_water": 2366.8,
+      "no_data_on_land": 2718.56,
+      "not_water_where_the_model_sees_inundated_vegetation": 145.0
+     },
+     "mean_confidence": {
+      "not_water": 97.1,
+      "open_water": 77.1,
+      "water_under_plants": 0.0
+     },
+     "checks": {
+      "share_with_optical": 0.9563,
+      "share_with_coherence": 1.0,
+      "share_with_optical_or_coherence": 1.0,
+      "changing_open_water_confirmed_by_optical": 0.236,
+      "not_water_where_optical_sees_open_water": 0.0061,
+      "changing_open_water_with_low_coherence": 0.3172
+     }
+    },
+    {
+     "site": "albufera",
+     "stack": "058_A_021",
+     "date": "2026-07-12",
+     "split": "train",
+     "maturity": "PROVISIONAL",
+     "crid": "P05023",
+     "coherence_pair": "2026-06-30_2026-07-12",
+     "hectares": {
+      "not_water": 39146.36,
+      "open_water": 2432.6,
+      "water_under_plants": 24.88,
+      "not_assessed_built": 6483.32,
+      "open_water_on_permanent_water": 2372.08,
+      "no_data_on_land": 2718.4,
+      "not_water_where_the_model_sees_inundated_vegetation": 166.32
+     },
+     "mean_confidence": {
+      "not_water": 98.2,
+      "open_water": 69.5,
+      "water_under_plants": 0.0
+     },
+     "checks": {
+      "share_with_optical": 0.0,
+      "share_with_coherence": 1.0,
+      "share_with_optical_or_coherence": 1.0,
+      "changing_open_water_confirmed_by_optical": null,
+      "not_water_where_optical_sees_open_water": null,
+      "changing_open_water_with_low_coherence": 0.273
+     }
+    },
+    {
+     "site": "albufera",
+     "stack": "058_A_021",
+     "date": "2026-07-24",
+     "split": "train",
+     "maturity": "PROVISIONAL",
+     "crid": "P05023",
+     "coherence_pair": "2026-07-12_2026-07-24",
+     "hectares": {
+      "not_water": 38370.04,
+      "open_water": 2398.44,
+      "water_under_plants": 835.28,
+      "not_assessed_built": 6483.32,
+      "open_water_on_permanent_water": 2372.4,
+      "no_data_on_land": 2718.48,
+      "not_water_where_the_model_sees_inundated_vegetation": 132.56
+     },
+     "mean_confidence": {
+      "not_water": 99.6,
+      "open_water": 79.8,
+      "water_under_plants": 0.0
+     },
+     "checks": {
+      "share_with_optical": 0.9831,
+      "share_with_coherence": 1.0,
+      "share_with_optical_or_coherence": 1.0,
+      "changing_open_water_confirmed_by_optical": 0.0748,
+      "not_water_where_optical_sees_open_water": 0.0008,
+      "changing_open_water_with_low_coherence": 0.3057
+     }
+    },
+    {
+     "site": "albufera",
+     "stack": "058_A_021",
+     "date": "2026-08-17",
+     "split": "train",
+     "maturity": "PROVISIONAL",
+     "crid": "P05023",
+     "coherence_pair": "2026-07-24_2026-08-17",
+     "hectares": {
+      "not_water": 38105.6,
+      "open_water": 2394.36,
+      "water_under_plants": 1103.84,
+      "not_assessed_built": 6483.32,
+      "open_water_on_permanent_water": 2365.64,
+      "no_data_on_land": 2718.44,
+      "not_water_where_the_model_sees_inundated_vegetation": 114.32
+     },
+     "mean_confidence": {
+      "not_water": 99.4,
+      "open_water": 73.8,
+      "water_under_plants": 0.0
+     },
+     "checks": {
+      "share_with_optical": 0.9766,
+      "share_with_coherence": 1.0,
+      "share_with_optical_or_coherence": 1.0,
+      "changing_open_water_confirmed_by_optical": 0.1541,
+      "not_water_where_optical_sees_open_water": 0.0037,
+      "changing_open_water_with_low_coherence": 0.3189
+     }
+    },
+    {
+     "site": "albufera",
+     "stack": "058_A_021",
+     "date": "2026-08-29",
+     "split": "train",
+     "maturity": "PROVISIONAL",
+     "crid": "P05023",
+     "coherence_pair": "2026-08-17_2026-08-29",
+     "hectares": {
+      "not_water": 38934.6,
+      "open_water": 2398.08,
+      "water_under_plants": 271.16,
+      "not_assessed_built": 6483.32,
+      "open_water_on_permanent_water": 2363.64,
+      "no_data_on_land": 2718.4,
+      "not_water_where_the_model_sees_inundated_vegetation": 102.44
+     },
+     "mean_confidence": {
+      "not_water": 99.4,
+      "open_water": 75.1,
+      "water_under_plants": 0.1
+     },
+     "checks": {
+      "share_with_optical": 0.9764,
+      "share_with_coherence": 1.0,
+      "share_with_optical_or_coherence": 1.0,
+      "changing_open_water_confirmed_by_optical": 0.1233,
+      "not_water_where_optical_sees_open_water": 0.004,
+      "changing_open_water_with_low_coherence": 0.3159
+     }
+    },
+    {
+     "site": "albufera",
+     "stack": "058_A_021",
+     "date": "2026-09-10",
+     "split": "train",
+     "maturity": "PROVISIONAL",
+     "crid": "P05023",
+     "coherence_pair": "2026-08-29_2026-09-10",
+     "hectares": {
+      "not_water": 38932.6,
+      "open_water": 2394.52,
+      "water_under_plants": 276.56,
+      "not_assessed_built": 6483.32,
+      "open_water_on_permanent_water": 2366.96,
+      "no_data_on_land": 2718.56,
+      "not_water_where_the_model_sees_inundated_vegetation": 81.44
+     },
+     "mean_confidence": {
+      "not_water": 99.1,
+      "open_water": 71.9,
+      "water_under_plants": 0.1
+     },
+     "checks": {
+      "share_with_optical": 0.6758,
+      "share_with_coherence": 1.0,
+      "share_with_optical_or_coherence": 1.0,
+      "changing_open_water_confirmed_by_optical": 0.5,
+      "not_water_where_optical_sees_open_water": 0.0071,
+      "changing_open_water_with_low_coherence": 0.3527
+     }
+    },
+    {
+     "site": "albufera",
+     "stack": "058_A_021",
+     "date": "2026-10-04",
+     "split": "train",
+     "maturity": "PROVISIONAL",
+     "crid": "P05023",
+     "coherence_pair": "2026-09-22_2026-10-04",
+     "hectares": {
+      "not_water": 38424.36,
+      "open_water": 3003.08,
+      "water_under_plants": 176.24,
+      "not_assessed_built": 6483.32,
+      "open_water_on_permanent_water": 2367.96,
+      "no_data_on_land": 2718.56,
+      "not_water_where_the_model_sees_inundated_vegetation": 75.72
+     },
+     "mean_confidence": {
+      "not_water": 96.0,
+      "open_water": 68.2,
+      "water_under_plants": 0.1
+     },
+     "checks": {
+      "share_with_optical": 0.0071,
+      "share_with_coherence": 1.0,
+      "share_with_optical_or_coherence": 1.0,
+      "changing_open_water_confirmed_by_optical": 1.0,
+      "not_water_where_optical_sees_open_water": 0.0291,
+      "changing_open_water_with_low_coherence": 0.5283
+     }
+    },
+    {
+     "site": "albufera",
+     "stack": "058_A_021",
+     "date": "2026-10-16",
+     "split": "test",
+     "maturity": "PROVISIONAL",
+     "crid": "P05023",
+     "coherence_pair": "2026-10-04_2026-10-16",
+     "hectares": {
+      "not_water": 36681.52,
+      "open_water": 4846.48,
+      "water_under_plants": 75.84,
+      "not_assessed_built": 6483.32,
+      "open_water_on_permanent_water": 2371.76,
+      "no_data_on_land": 2718.4,
+      "not_water_where_the_model_sees_inundated_vegetation": 100.04
+     },
+     "mean_confidence": {
+      "not_water": 97.3,
+      "open_water": 66.3,
+      "water_under_plants": 0.3
+     },
+     "checks": {
+      "share_with_optical": 0.329,
+      "share_with_coherence": 1.0,
+      "share_with_optical_or_coherence": 1.0,
+      "changing_open_water_confirmed_by_optical": 0.996,
+      "not_water_where_optical_sees_open_water": 0.0659,
+      "changing_open_water_with_low_coherence": 0.4626
+     }
+    },
+    {
+     "site": "albufera",
+     "stack": "058_A_021",
+     "date": "2026-10-28",
+     "split": "test",
+     "maturity": "VALIDATED",
+     "crid": "P05036",
+     "coherence_pair": null,
+     "hectares": {
+      "not_water": 33258.92,
+      "open_water": 8295.48,
+      "water_under_plants": 49.36,
+      "not_assessed_built": 6483.32,
+      "open_water_on_permanent_water": 2397.76,
+      "no_data_on_land": 2718.48,
+      "not_water_where_the_model_sees_inundated_vegetation": 114.12
+     },
+     "mean_confidence": {
+      "not_water": 97.3,
+      "open_water": 85.4,
+      "water_under_plants": 0.4
+     },
+     "checks": {
+      "share_with_optical": 0.8592,
+      "share_with_coherence": 0.0,
+      "share_with_optical_or_coherence": 0.8592,
+      "changing_open_water_confirmed_by_optical": 0.9885,
+      "not_water_where_optical_sees_open_water": 0.0574,
+      "changing_open_water_with_low_coherence": null
+     }
+    }
+   ],
+   "dana": {
+    "rain": "DANA Adam, 18 to 19 Oct 2026 (pipeline/prediction/flood)",
+    "region": "land labelled on both dates (not sea, not built-up, not no data), not permanent water",
+    "layer_codes": {
+     "0": "dry on both dates",
+     "1": "open water on both dates",
+     "2": "new open water",
+     "3": "open water gone",
+     "4": "permanent water",
+     "255": "not compared (no data or sea on either date, or built-up)"
+    },
+    "stacks": {
+     "066_D_069": {
+      "before": "2026-10-16",
+      "after": "2026-10-28",
+      "layer": "data/labels_nisar/albufera_066_D_069/dana_2026-10-16_2026-10-28.tif",
+      "compared_ha": 38791.24,
+      "open_water": {
+       "before_ha": 2006.28,
+       "after_ha": 5053.56,
+       "new_ha": 3090.28,
+       "on_both_ha": 1963.28,
+       "gone_ha": 43.0
+      },
+      "open_water_or_under_plants": {
+       "before_ha": 2142.84,
+       "after_ha": 5181.16,
+       "new_ha": 3174.56,
+       "on_both_ha": 2006.6,
+       "gone_ha": 136.24
+      },
+      "per_municipality": [
+       {
+        "name": "Sueca",
+        "ine": "46235",
+        "compared_ha": 8597.72,
+        "open_water": {
+         "before_ha": 667.52,
+         "after_ha": 2337.16,
+         "new_ha": 1684.44
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 708.68,
+         "after_ha": 2376.48,
+         "new_ha": 1709.84
+        }
+       },
+       {
+        "name": "Cullera",
+        "ine": "46105",
+        "compared_ha": 3019.64,
+        "open_water": {
+         "before_ha": 8.6,
+         "after_ha": 434.88,
+         "new_ha": 427.2
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 24.04,
+         "after_ha": 443.72,
+         "new_ha": 432.08
+        }
+       },
+       {
+        "name": "Silla",
+        "ine": "46230",
+        "compared_ha": 2038.36,
+        "open_water": {
+         "before_ha": 195.16,
+         "after_ha": 511.12,
+         "new_ha": 317.44
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 198.12,
+         "after_ha": 515.0,
+         "new_ha": 320.64
+        }
+       },
+       {
+        "name": "Val\u00e8ncia",
+        "ine": "46250",
+        "compared_ha": 4116.36,
+        "open_water": {
+         "before_ha": 821.64,
+         "after_ha": 1007.32,
+         "new_ha": 203.88
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 829.48,
+         "after_ha": 1021.12,
+         "new_ha": 215.2
+        }
+       },
+       {
+        "name": "Catarroja",
+        "ine": "46094",
+        "compared_ha": 1036.72,
+        "open_water": {
+         "before_ha": 0.16,
+         "after_ha": 184.12,
+         "new_ha": 183.96
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 2.8,
+         "after_ha": 185.6,
+         "new_ha": 184.8
+        }
+       },
+       {
+        "name": "Alfafar",
+        "ine": "46022",
+        "compared_ha": 792.68,
+        "open_water": {
+         "before_ha": 32.8,
+         "after_ha": 179.6,
+         "new_ha": 146.84
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 33.24,
+         "after_ha": 180.12,
+         "new_ha": 147.32
+        }
+       },
+       {
+        "name": "Sollana",
+        "ine": "46233",
+        "compared_ha": 3719.64,
+        "open_water": {
+         "before_ha": 189.12,
+         "after_ha": 260.52,
+         "new_ha": 76.76
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 203.28,
+         "after_ha": 271.0,
+         "new_ha": 83.28
+        }
+       },
+       {
+        "name": "Albal",
+        "ine": "46007",
+        "compared_ha": 508.24,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 26.96,
+         "new_ha": 26.96
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.6,
+         "after_ha": 29.52,
+         "new_ha": 29.2
+        }
+       },
+       {
+        "name": "Massanassa",
+        "ine": "46165",
+        "compared_ha": 402.52,
+        "open_water": {
+         "before_ha": 89.64,
+         "after_ha": 108.0,
+         "new_ha": 20.2
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 91.8,
+         "after_ha": 111.08,
+         "new_ha": 22.52
+        }
+       },
+       {
+        "name": "Riola",
+        "ine": "46215",
+        "compared_ha": 517.36,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 1.0,
+         "new_ha": 1.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 4.96,
+         "after_ha": 2.16,
+         "new_ha": 1.64
+        }
+       },
+       {
+        "name": "Benicull de X\u00faquer",
+        "ine": "46904",
+        "compared_ha": 324.52,
+        "open_water": {
+         "before_ha": 0.36,
+         "after_ha": 0.92,
+         "new_ha": 0.8
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.76,
+         "after_ha": 2.76,
+         "new_ha": 2.32
+        }
+       },
+       {
+        "name": "Albalat de la Ribera",
+        "ine": "46008",
+        "compared_ha": 1374.72,
+        "open_water": {
+         "before_ha": 0.44,
+         "after_ha": 0.96,
+         "new_ha": 0.52
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 10.56,
+         "after_ha": 10.28,
+         "new_ha": 3.96
+        }
+       },
+       {
+        "name": "Corbera",
+        "ine": "46098",
+        "compared_ha": 1459.76,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.04,
+         "new_ha": 0.04
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 15.84,
+         "after_ha": 5.2,
+         "new_ha": 1.8
+        }
+       },
+       {
+        "name": "Alc\u00e0sser",
+        "ine": "46015",
+        "compared_ha": 342.28,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.2,
+         "after_ha": 1.16,
+         "new_ha": 1.16
+        }
+       },
+       {
+        "name": "Algemes\u00ed",
+        "ine": "46029",
+        "compared_ha": 2930.72,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 1.52,
+         "after_ha": 3.32,
+         "new_ha": 2.12
+        }
+       },
+       {
+        "name": "Alginet",
+        "ine": "46031",
+        "compared_ha": 642.4,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        }
+       },
+       {
+        "name": "Almussafes",
+        "ine": "46035",
+        "compared_ha": 638.24,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 2.16,
+         "after_ha": 3.72,
+         "new_ha": 3.0
+        }
+       },
+       {
+        "name": "Alzira",
+        "ine": "46017",
+        "compared_ha": 1500.84,
+        "open_water": {
+         "before_ha": 0.04,
+         "after_ha": 0.04,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 1.16,
+         "after_ha": 0.4,
+         "new_ha": 0.16
+        }
+       },
+       {
+        "name": "Benet\u00fasser",
+        "ine": "46054",
+        "compared_ha": 4.32,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        }
+       },
+       {
+        "name": "Benifai\u00f3",
+        "ine": "46060",
+        "compared_ha": 1053.6,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 3.48,
+         "after_ha": 2.24,
+         "new_ha": 0.88
+        }
+       },
+       {
+        "name": "Beniparrell",
+        "ine": "46065",
+        "compared_ha": 219.16,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.6,
+         "after_ha": 1.0,
+         "new_ha": 0.48
+        }
+       },
+       {
+        "name": "Fortaleny",
+        "ine": "46125",
+        "compared_ha": 424.64,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 4.64,
+         "after_ha": 7.28,
+         "new_ha": 6.2
+        }
+       },
+       {
+        "name": "Llaur\u00ed",
+        "ine": "46155",
+        "compared_ha": 186.44,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.4,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        }
+       },
+       {
+        "name": "Paiporta",
+        "ine": "46186",
+        "compared_ha": 186.12,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.0,
+         "after_ha": 0.68,
+         "new_ha": 0.68
+        }
+       },
+       {
+        "name": "Picanya",
+        "ine": "46193",
+        "compared_ha": 493.52,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 1.08,
+         "after_ha": 2.88,
+         "new_ha": 2.4
+        }
+       },
+       {
+        "name": "Picassent",
+        "ine": "46194",
+        "compared_ha": 1091.12,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.56,
+         "after_ha": 1.4,
+         "new_ha": 1.4
+        }
+       },
+       {
+        "name": "Poliny\u00e0 de X\u00faquer",
+        "ine": "46197",
+        "compared_ha": 831.8,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.84,
+         "after_ha": 2.04,
+         "new_ha": 1.2
+        }
+       },
+       {
+        "name": "Sedav\u00ed",
+        "ine": "46223",
+        "compared_ha": 83.2,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.64,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        }
+       },
+       {
+        "name": "Torrent",
+        "ine": "46244",
+        "compared_ha": 238.24,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.6,
+         "after_ha": 0.04,
+         "new_ha": 0.0
+        }
+       },
+       {
+        "name": "Xirivella",
+        "ine": "46110",
+        "compared_ha": 12.6,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.0,
+         "after_ha": 0.04,
+         "new_ha": 0.04
+        }
+       }
+      ]
+     },
+     "058_A_021": {
+      "before": "2026-10-16",
+      "after": "2026-10-28",
+      "layer": "data/labels_nisar/albufera_058_A_021/dana_2026-10-16_2026-10-28.tif",
+      "compared_ha": 38790.6,
+      "open_water": {
+       "before_ha": 2474.72,
+       "after_ha": 5897.72,
+       "new_ha": 3567.76,
+       "on_both_ha": 2329.96,
+       "gone_ha": 144.76
+      },
+      "open_water_or_under_plants": {
+       "before_ha": 2550.56,
+       "after_ha": 5947.08,
+       "new_ha": 3595.84,
+       "on_both_ha": 2351.24,
+       "gone_ha": 199.32
+      },
+      "per_municipality": [
+       {
+        "name": "Sueca",
+        "ine": "46235",
+        "compared_ha": 8597.72,
+        "open_water": {
+         "before_ha": 976.12,
+         "after_ha": 2904.68,
+         "new_ha": 1940.76
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 992.08,
+         "after_ha": 2914.6,
+         "new_ha": 1944.88
+        }
+       },
+       {
+        "name": "Cullera",
+        "ine": "46105",
+        "compared_ha": 3019.0,
+        "open_water": {
+         "before_ha": 19.24,
+         "after_ha": 579.64,
+         "new_ha": 561.96
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 23.44,
+         "after_ha": 585.64,
+         "new_ha": 565.2
+        }
+       },
+       {
+        "name": "Silla",
+        "ine": "46230",
+        "compared_ha": 2038.36,
+        "open_water": {
+         "before_ha": 273.76,
+         "after_ha": 650.08,
+         "new_ha": 378.28
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 276.08,
+         "after_ha": 651.12,
+         "new_ha": 379.32
+        }
+       },
+       {
+        "name": "Val\u00e8ncia",
+        "ine": "46250",
+        "compared_ha": 4116.36,
+        "open_water": {
+         "before_ha": 854.28,
+         "after_ha": 1030.28,
+         "new_ha": 250.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 863.04,
+         "after_ha": 1033.68,
+         "new_ha": 252.24
+        }
+       },
+       {
+        "name": "Catarroja",
+        "ine": "46094",
+        "compared_ha": 1036.72,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 192.32,
+         "new_ha": 192.32
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 1.64,
+         "after_ha": 193.24,
+         "new_ha": 192.4
+        }
+       },
+       {
+        "name": "Sollana",
+        "ine": "46233",
+        "compared_ha": 3719.64,
+        "open_water": {
+         "before_ha": 222.6,
+         "after_ha": 349.36,
+         "new_ha": 127.28
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 236.68,
+         "after_ha": 362.92,
+         "new_ha": 134.72
+        }
+       },
+       {
+        "name": "Alfafar",
+        "ine": "46022",
+        "compared_ha": 792.68,
+        "open_water": {
+         "before_ha": 30.52,
+         "after_ha": 49.0,
+         "new_ha": 46.28
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 32.8,
+         "after_ha": 51.2,
+         "new_ha": 47.68
+        }
+       },
+       {
+        "name": "Albal",
+        "ine": "46007",
+        "compared_ha": 508.24,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 29.48,
+         "new_ha": 29.48
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 3.76,
+         "after_ha": 31.0,
+         "new_ha": 30.08
+        }
+       },
+       {
+        "name": "Riola",
+        "ine": "46215",
+        "compared_ha": 517.36,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 22.0,
+         "new_ha": 22.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 1.08,
+         "after_ha": 22.12,
+         "new_ha": 22.12
+        }
+       },
+       {
+        "name": "Corbera",
+        "ine": "46098",
+        "compared_ha": 1459.76,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 16.28,
+         "new_ha": 16.28
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 3.88,
+         "after_ha": 17.2,
+         "new_ha": 16.44
+        }
+       },
+       {
+        "name": "Massanassa",
+        "ine": "46165",
+        "compared_ha": 402.52,
+        "open_water": {
+         "before_ha": 96.64,
+         "after_ha": 72.96,
+         "new_ha": 2.92
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 97.36,
+         "after_ha": 73.92,
+         "new_ha": 3.68
+        }
+       },
+       {
+        "name": "Benicull de X\u00faquer",
+        "ine": "46904",
+        "compared_ha": 324.52,
+        "open_water": {
+         "before_ha": 0.08,
+         "after_ha": 0.2,
+         "new_ha": 0.12
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.08,
+         "after_ha": 0.2,
+         "new_ha": 0.12
+        }
+       },
+       {
+        "name": "Albalat de la Ribera",
+        "ine": "46008",
+        "compared_ha": 1374.72,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 1.68,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        }
+       },
+       {
+        "name": "Alc\u00e0sser",
+        "ine": "46015",
+        "compared_ha": 342.28,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.76,
+         "after_ha": 0.36,
+         "new_ha": 0.36
+        }
+       },
+       {
+        "name": "Algemes\u00ed",
+        "ine": "46029",
+        "compared_ha": 2930.72,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 1.68,
+         "after_ha": 0.72,
+         "new_ha": 0.68
+        }
+       },
+       {
+        "name": "Alginet",
+        "ine": "46031",
+        "compared_ha": 642.4,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        }
+       },
+       {
+        "name": "Almussafes",
+        "ine": "46035",
+        "compared_ha": 638.24,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 1.6,
+         "after_ha": 1.52,
+         "new_ha": 1.2
+        }
+       },
+       {
+        "name": "Alzira",
+        "ine": "46017",
+        "compared_ha": 1500.84,
+        "open_water": {
+         "before_ha": 0.32,
+         "after_ha": 0.24,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 3.2,
+         "after_ha": 0.88,
+         "new_ha": 0.52
+        }
+       },
+       {
+        "name": "Benet\u00fasser",
+        "ine": "46054",
+        "compared_ha": 4.32,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        }
+       },
+       {
+        "name": "Benifai\u00f3",
+        "ine": "46060",
+        "compared_ha": 1053.6,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 1.24,
+         "after_ha": 1.44,
+         "new_ha": 1.4
+        }
+       },
+       {
+        "name": "Beniparrell",
+        "ine": "46065",
+        "compared_ha": 219.16,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.0,
+         "after_ha": 0.4,
+         "new_ha": 0.4
+        }
+       },
+       {
+        "name": "Fortaleny",
+        "ine": "46125",
+        "compared_ha": 424.64,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.12,
+         "after_ha": 0.16,
+         "new_ha": 0.16
+        }
+       },
+       {
+        "name": "Llaur\u00ed",
+        "ine": "46155",
+        "compared_ha": 186.44,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 2.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        }
+       },
+       {
+        "name": "Paiporta",
+        "ine": "46186",
+        "compared_ha": 186.12,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 1.28,
+         "after_ha": 0.72,
+         "new_ha": 0.04
+        }
+       },
+       {
+        "name": "Picanya",
+        "ine": "46193",
+        "compared_ha": 493.52,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.96,
+         "after_ha": 1.04,
+         "new_ha": 0.48
+        }
+       },
+       {
+        "name": "Picassent",
+        "ine": "46194",
+        "compared_ha": 1091.12,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 1.2,
+         "after_ha": 0.68,
+         "new_ha": 0.68
+        }
+       },
+       {
+        "name": "Poliny\u00e0 de X\u00faquer",
+        "ine": "46197",
+        "compared_ha": 831.8,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        }
+       },
+       {
+        "name": "Sedav\u00ed",
+        "ine": "46223",
+        "compared_ha": 83.2,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.52,
+         "after_ha": 0.36,
+         "new_ha": 0.32
+        }
+       },
+       {
+        "name": "Torrent",
+        "ine": "46244",
+        "compared_ha": 238.24,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 1.24,
+         "after_ha": 0.72,
+         "new_ha": 0.6
+        }
+       },
+       {
+        "name": "Xirivella",
+        "ine": "46110",
+        "compared_ha": 12.6,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.0,
+         "after_ha": 0.04,
+         "new_ha": 0.04
+        }
+       }
+      ]
+     }
+    },
+    "municipalities": "data/labels/albufera_municipalities_osm.geojson: OpenStreetMap admin_level 8 with INE codes, (c) OpenStreetMap contributors, ODbL 1.0; built-up land is not assessed, so a town's numbers cover its fields only"
+   }
+  },
+  "pego_oliva": {
+   "stacks": [
+    "066_D_069",
+    "058_A_021",
+    "167_D_069"
+   ],
+   "pass_count": 30,
+   "pass_list": "data/labels_nisar/pego_oliva_passes.json",
+   "land_ha": 50562.76,
+   "permanent_water_ha": 60.12,
+   "built_up_ha": 4358.96,
+   "passes": [
+    {
+     "site": "pego_oliva",
+     "stack": "066_D_069",
+     "date": "2026-06-18",
+     "split": "train",
+     "maturity": "PROVISIONAL",
+     "crid": "P05023",
+     "coherence_pair": "2026-06-18_2026-06-30",
+     "hectares": {
+      "not_water": 43085.08,
+      "open_water": 246.92,
+      "water_under_plants": 3.28,
+      "not_assessed_built": 4216.76,
+      "open_water_on_permanent_water": 0.76,
+      "no_data_on_land": 3010.72,
+      "not_water_where_the_model_sees_inundated_vegetation": 123.96
+     },
+     "mean_confidence": {
+      "not_water": 99.6,
+      "open_water": 57.4,
+      "water_under_plants": 0.1
+     },
+     "checks": {
+      "share_with_optical": 0.0,
+      "share_with_coherence": 1.0,
+      "share_with_optical_or_coherence": 1.0,
+      "changing_open_water_confirmed_by_optical": null,
+      "not_water_where_optical_sees_open_water": null,
+      "changing_open_water_with_low_coherence": 0.3113
+     }
+    },
+    {
+     "site": "pego_oliva",
+     "stack": "066_D_069",
+     "date": "2026-06-30",
+     "split": "train",
+     "maturity": "PROVISIONAL",
+     "crid": "P05023",
+     "coherence_pair": "2026-06-18_2026-06-30",
+     "hectares": {
+      "not_water": 43191.32,
+      "open_water": 139.44,
+      "water_under_plants": 4.8,
+      "not_assessed_built": 4216.76,
+      "open_water_on_permanent_water": 1.0,
+      "no_data_on_land": 3010.44,
+      "not_water_where_the_model_sees_inundated_vegetation": 85.96
+     },
+     "mean_confidence": {
+      "not_water": 99.6,
+      "open_water": 48.5,
+      "water_under_plants": 0.4
+     },
+     "checks": {
+      "share_with_optical": 0.9807,
+      "share_with_coherence": 1.0,
+      "share_with_optical_or_coherence": 1.0,
+      "changing_open_water_confirmed_by_optical": 0.2212,
+      "not_water_where_optical_sees_open_water": 0.0019,
+      "changing_open_water_with_low_coherence": 0.3242
+     }
+    },
+    {
+     "site": "pego_oliva",
+     "stack": "066_D_069",
+     "date": "2026-07-12",
+     "split": "train",
+     "maturity": "PROVISIONAL",
+     "crid": "P05023",
+     "coherence_pair": "2026-06-30_2026-07-12",
+     "hectares": {
+      "not_water": 43287.68,
+      "open_water": 42.28,
+      "water_under_plants": 5.52,
+      "not_assessed_built": 4216.76,
+      "open_water_on_permanent_water": 0.48,
+      "no_data_on_land": 3010.52,
+      "not_water_where_the_model_sees_inundated_vegetation": 67.72
+     },
+     "mean_confidence": {
+      "not_water": 99.7,
+      "open_water": 38.6,
+      "water_under_plants": 0.0
+     },
+     "checks": {
+      "share_with_optical": 0.0322,
+      "share_with_coherence": 1.0,
+      "share_with_optical_or_coherence": 1.0,
+      "changing_open_water_confirmed_by_optical": null,
+      "not_water_where_optical_sees_open_water": 0.0,
+      "changing_open_water_with_low_coherence": 0.2842
+     }
+    },
+    {
+     "site": "pego_oliva",
+     "stack": "066_D_069",
+     "date": "2026-07-24",
+     "split": "train",
+     "maturity": "PROVISIONAL",
+     "crid": "P05023",
+     "coherence_pair": "2026-07-12_2026-07-24",
+     "hectares": {
+      "not_water": 43244.08,
+      "open_water": 56.72,
+      "water_under_plants": 34.64,
+      "not_assessed_built": 4216.76,
+      "open_water_on_permanent_water": 0.68,
+      "no_data_on_land": 3010.56,
+      "not_water_where_the_model_sees_inundated_vegetation": 56.04
+     },
+     "mean_confidence": {
+      "not_water": 99.9,
+      "open_water": 31.3,
+      "water_under_plants": 5.4
+     },
+     "checks": {
+      "share_with_optical": 0.985,
+      "share_with_coherence": 1.0,
+      "share_with_optical_or_coherence": 1.0,
+      "changing_open_water_confirmed_by_optical": 0.0097,
+      "not_water_where_optical_sees_open_water": 0.0,
+      "changing_open_water_with_low_coherence": 0.2948
+     }
+    },
+    {
+     "site": "pego_oliva",
+     "stack": "066_D_069",
+     "date": "2026-08-17",
+     "split": "train",
+     "maturity": "PROVISIONAL",
+     "crid": "P05023",
+     "coherence_pair": "2026-07-24_2026-08-17",
+     "hectares": {
+      "not_water": 43241.64,
+      "open_water": 59.6,
+      "water_under_plants": 34.16,
+      "not_assessed_built": 4216.76,
+      "open_water_on_permanent_water": 0.52,
+      "no_data_on_land": 3010.6,
+      "not_water_where_the_model_sees_inundated_vegetation": 32.12
+     },
+     "mean_confidence": {
+      "not_water": 99.8,
+      "open_water": 25.6,
+      "water_under_plants": 1.9
+     },
+     "checks": {
+      "share_with_optical": 0.9282,
+      "share_with_coherence": 1.0,
+      "share_with_optical_or_coherence": 1.0,
+      "changing_open_water_confirmed_by_optical": 0.0211,
+      "not_water_where_optical_sees_open_water": 0.0004,
+      "changing_open_water_with_low_coherence": 0.2823
+     }
+    },
+    {
+     "site": "pego_oliva",
+     "stack": "066_D_069",
+     "date": "2026-08-29",
+     "split": "train",
+     "maturity": "PROVISIONAL",
+     "crid": "P05023",
+     "coherence_pair": "2026-08-17_2026-08-29",
+     "hectares": {
+      "not_water": 43268.92,
+      "open_water": 56.52,
+      "water_under_plants": 10.12,
+      "not_assessed_built": 4216.76,
+      "open_water_on_permanent_water": 0.32,
+      "no_data_on_land": 3010.44,
+      "not_water_where_the_model_sees_inundated_vegetation": 16.8
+     },
+     "mean_confidence": {
+      "not_water": 99.9,
+      "open_water": 26.6,
+      "water_under_plants": 0.0
+     },
+     "checks": {
+      "share_with_optical": 0.9915,
+      "share_with_coherence": 1.0,
+      "share_with_optical_or_coherence": 1.0,
+      "changing_open_water_confirmed_by_optical": 0.0365,
+      "not_water_where_optical_sees_open_water": 0.0005,
+      "changing_open_water_with_low_coherence": 0.2989
+     }
+    },
+    {
+     "site": "pego_oliva",
+     "stack": "066_D_069",
+     "date": "2026-09-10",
+     "split": "train",
+     "maturity": "PROVISIONAL",
+     "crid": "P05023",
+     "coherence_pair": "2026-08-29_2026-09-10",
+     "hectares": {
+      "not_water": 42887.96,
+      "open_water": 61.64,
+      "water_under_plants": 385.88,
+      "not_assessed_built": 4216.76,
+      "open_water_on_permanent_water": 0.32,
+      "no_data_on_land": 3010.52,
+      "not_water_where_the_model_sees_inundated_vegetation": 108.6
+     },
+     "mean_confidence": {
+      "not_water": 99.6,
+      "open_water": 37.5,
+      "water_under_plants": 0.0
+     },
+     "checks": {
+      "share_with_optical": 0.0,
+      "share_with_coherence": 1.0,
+      "share_with_optical_or_coherence": 1.0,
+      "changing_open_water_confirmed_by_optical": null,
+      "not_water_where_optical_sees_open_water": null,
+      "changing_open_water_with_low_coherence": 0.3933
+     }
+    },
+    {
+     "site": "pego_oliva",
+     "stack": "066_D_069",
+     "date": "2026-09-22",
+     "split": "train",
+     "maturity": "PROVISIONAL",
+     "crid": "P05023",
+     "coherence_pair": "2026-09-10_2026-09-22",
+     "hectares": {
+      "not_water": 43222.64,
+      "open_water": 72.2,
+      "water_under_plants": 40.32,
+      "not_assessed_built": 4216.76,
+      "open_water_on_permanent_water": 0.4,
+      "no_data_on_land": 3010.84,
+      "not_water_where_the_model_sees_inundated_vegetation": 41.84
+     },
+     "mean_confidence": {
+      "not_water": 99.8,
+      "open_water": 40.1,
+      "water_under_plants": 0.0
+     },
+     "checks": {
+      "share_with_optical": 0.7422,
+      "share_with_coherence": 1.0,
+      "share_with_optical_or_coherence": 1.0,
+      "changing_open_water_confirmed_by_optical": 0.0791,
+      "not_water_where_optical_sees_open_water": 0.0004,
+      "changing_open_water_with_low_coherence": 0.3421
+     }
+    },
+    {
+     "site": "pego_oliva",
+     "stack": "066_D_069",
+     "date": "2026-10-04",
+     "split": "train",
+     "maturity": "PROVISIONAL",
+     "crid": "P05023",
+     "coherence_pair": "2026-09-22_2026-10-04",
+     "hectares": {
+      "not_water": 42833.96,
+      "open_water": 76.2,
+      "water_under_plants": 425.04,
+      "not_assessed_built": 4216.76,
+      "open_water_on_permanent_water": 0.68,
+      "no_data_on_land": 3010.8,
+      "not_water_where_the_model_sees_inundated_vegetation": 96.84
+     },
+     "mean_confidence": {
+      "not_water": 99.7,
+      "open_water": 42.9,
+      "water_under_plants": 0.0
+     },
+     "checks": {
+      "share_with_optical": 0.008,
+      "share_with_coherence": 1.0,
+      "share_with_optical_or_coherence": 1.0,
+      "changing_open_water_confirmed_by_optical": null,
+      "not_water_where_optical_sees_open_water": 0.0201,
+      "changing_open_water_with_low_coherence": 0.3099
+     }
+    },
+    {
+     "site": "pego_oliva",
+     "stack": "066_D_069",
+     "date": "2026-10-16",
+     "split": "test",
+     "maturity": "PROVISIONAL",
+     "crid": "P05023",
+     "coherence_pair": "2026-10-04_2026-10-16",
+     "hectares": {
+      "not_water": 43137.8,
+      "open_water": 185.88,
+      "water_under_plants": 11.8,
+      "not_assessed_built": 4216.76,
+      "open_water_on_permanent_water": 0.6,
+      "no_data_on_land": 3010.52,
+      "not_water_where_the_model_sees_inundated_vegetation": 60.04
+     },
+     "mean_confidence": {
+      "not_water": 99.7,
+      "open_water": 56.2,
+      "water_under_plants": 0.0
+     },
+     "checks": {
+      "share_with_optical": 0.9814,
+      "share_with_coherence": 1.0,
+      "share_with_optical_or_coherence": 1.0,
+      "changing_open_water_confirmed_by_optical": 0.1686,
+      "not_water_where_optical_sees_open_water": 0.0007,
+      "changing_open_water_with_low_coherence": 0.3325
+     }
+    },
+    {
+     "site": "pego_oliva",
+     "stack": "066_D_069",
+     "date": "2026-10-28",
+     "split": "test",
+     "maturity": "VALIDATED",
+     "crid": "P05036",
+     "coherence_pair": null,
+     "hectares": {
+      "not_water": 42747.84,
+      "open_water": 452.76,
+      "water_under_plants": 135.08,
+      "not_assessed_built": 4216.76,
+      "open_water_on_permanent_water": 7.88,
+      "no_data_on_land": 3010.32,
+      "not_water_where_the_model_sees_inundated_vegetation": 124.48
+     },
+     "mean_confidence": {
+      "not_water": 99.7,
+      "open_water": 80.4,
+      "water_under_plants": 0.0
+     },
+     "checks": {
+      "share_with_optical": 0.8612,
+      "share_with_coherence": 0.0,
+      "share_with_optical_or_coherence": 0.8612,
+      "changing_open_water_confirmed_by_optical": 0.6777,
+      "not_water_where_optical_sees_open_water": 0.0025,
+      "changing_open_water_with_low_coherence": null
+     }
+    },
+    {
+     "site": "pego_oliva",
+     "stack": "058_A_021",
+     "date": "2026-06-18",
+     "split": "train",
+     "maturity": "PROVISIONAL",
+     "crid": "P05023",
+     "coherence_pair": "2026-06-18_2026-06-30",
+     "hectares": {
+      "not_water": 42979.8,
+      "open_water": 335.0,
+      "water_under_plants": 11.84,
+      "not_assessed_built": 4216.76,
+      "open_water_on_permanent_water": 0.16,
+      "no_data_on_land": 3019.36,
+      "not_water_where_the_model_sees_inundated_vegetation": 71.44
+     },
+     "mean_confidence": {
+      "not_water": 99.8,
+      "open_water": 58.9,
+      "water_under_plants": 0.4
+     },
+     "checks": {
+      "share_with_optical": 0.0,
+      "share_with_coherence": 1.0,
+      "share_with_optical_or_coherence": 1.0,
+      "changing_open_water_confirmed_by_optical": null,
+      "not_water_where_optical_sees_open_water": null,
+      "changing_open_water_with_low_coherence": 0.2798
+     }
+    },
+    {
+     "site": "pego_oliva",
+     "stack": "058_A_021",
+     "date": "2026-06-30",
+     "split": "train",
+     "maturity": "PROVISIONAL",
+     "crid": "P05023",
+     "coherence_pair": "2026-06-18_2026-06-30",
+     "hectares": {
+      "not_water": 43085.56,
+      "open_water": 229.52,
+      "water_under_plants": 10.24,
+      "not_assessed_built": 4216.76,
+      "open_water_on_permanent_water": 0.2,
+      "no_data_on_land": 3020.68,
+      "not_water_where_the_model_sees_inundated_vegetation": 67.48
+     },
+     "mean_confidence": {
+      "not_water": 99.7,
+      "open_water": 52.6,
+      "water_under_plants": 0.1
+     },
+     "checks": {
+      "share_with_optical": 0.9806,
+      "share_with_coherence": 1.0,
+      "share_with_optical_or_coherence": 1.0,
+      "changing_open_water_confirmed_by_optical": 0.3501,
+      "not_water_where_optical_sees_open_water": 0.0015,
+      "changing_open_water_with_low_coherence": 0.2876
+     }
+    },
+    {
+     "site": "pego_oliva",
+     "stack": "058_A_021",
+     "date": "2026-07-12",
+     "split": "train",
+     "maturity": "PROVISIONAL",
+     "crid": "P05023",
+     "coherence_pair": "2026-06-30_2026-07-12",
+     "hectares": {
+      "not_water": 43251.28,
+      "open_water": 66.72,
+      "water_under_plants": 6.96,
+      "not_assessed_built": 4216.76,
+      "open_water_on_permanent_water": 0.32,
+      "no_data_on_land": 3021.04,
+      "not_water_where_the_model_sees_inundated_vegetation": 38.76
+     },
+     "mean_confidence": {
+      "not_water": 99.8,
+      "open_water": 36.9,
+      "water_under_plants": 0.0
+     },
+     "checks": {
+      "share_with_optical": 0.0322,
+      "share_with_coherence": 1.0,
+      "share_with_optical_or_coherence": 1.0,
+      "changing_open_water_confirmed_by_optical": null,
+      "not_water_where_optical_sees_open_water": 0.0,
+      "changing_open_water_with_low_coherence": 0.2602
+     }
+    },
+    {
+     "site": "pego_oliva",
+     "stack": "058_A_021",
+     "date": "2026-07-24",
+     "split": "train",
+     "maturity": "PROVISIONAL",
+     "crid": "P05023",
+     "coherence_pair": "2026-07-12_2026-07-24",
+     "hectares": {
+      "not_water": 43232.48,
+      "open_water": 74.52,
+      "water_under_plants": 18.08,
+      "not_assessed_built": 4216.76,
+      "open_water_on_permanent_water": 0.24,
+      "no_data_on_land": 3020.92,
+      "not_water_where_the_model_sees_inundated_vegetation": 24.16
+     },
+     "mean_confidence": {
+      "not_water": 99.9,
+      "open_water": 30.9,
+      "water_under_plants": 1.9
+     },
+     "checks": {
+      "share_with_optical": 0.985,
+      "share_with_coherence": 1.0,
+      "share_with_optical_or_coherence": 1.0,
+      "changing_open_water_confirmed_by_optical": 0.0066,
+      "not_water_where_optical_sees_open_water": 0.0,
+      "changing_open_water_with_low_coherence": 0.2364
+     }
+    },
+    {
+     "site": "pego_oliva",
+     "stack": "058_A_021",
+     "date": "2026-08-17",
+     "split": "train",
+     "maturity": "PROVISIONAL",
+     "crid": "P05023",
+     "coherence_pair": "2026-07-24_2026-08-17",
+     "hectares": {
+      "not_water": 43224.52,
+      "open_water": 65.6,
+      "water_under_plants": 34.92,
+      "not_assessed_built": 4216.76,
+      "open_water_on_permanent_water": 0.16,
+      "no_data_on_land": 3020.96,
+      "not_water_where_the_model_sees_inundated_vegetation": 18.28
+     },
+     "mean_confidence": {
+      "not_water": 99.8,
+      "open_water": 29.8,
+      "water_under_plants": 0.1
+     },
+     "checks": {
+      "share_with_optical": 0.9282,
+      "share_with_coherence": 1.0,
+      "share_with_optical_or_coherence": 1.0,
+      "changing_open_water_confirmed_by_optical": 0.0235,
+      "not_water_where_optical_sees_open_water": 0.0004,
+      "changing_open_water_with_low_coherence": 0.2671
+     }
+    },
+    {
+     "site": "pego_oliva",
+     "stack": "058_A_021",
+     "date": "2026-08-29",
+     "split": "train",
+     "maturity": "PROVISIONAL",
+     "crid": "P05023",
+     "coherence_pair": "2026-08-17_2026-08-29",
+     "hectares": {
+      "not_water": 43241.64,
+      "open_water": 70.84,
+      "water_under_plants": 12.28,
+      "not_assessed_built": 4216.76,
+      "open_water_on_permanent_water": 0.12,
+      "no_data_on_land": 3021.24,
+      "not_water_where_the_model_sees_inundated_vegetation": 16.32
+     },
+     "mean_confidence": {
+      "not_water": 99.9,
+      "open_water": 28.4,
+      "water_under_plants": 0.0
+     },
+     "checks": {
+      "share_with_optical": 0.9915,
+      "share_with_coherence": 1.0,
+      "share_with_optical_or_coherence": 1.0,
+      "changing_open_water_confirmed_by_optical": 0.0364,
+      "not_water_where_optical_sees_open_water": 0.0005,
+      "changing_open_water_with_low_coherence": 0.2449
+     }
+    },
+    {
+     "site": "pego_oliva",
+     "stack": "058_A_021",
+     "date": "2026-09-10",
+     "split": "train",
+     "maturity": "PROVISIONAL",
+     "crid": "P05023",
+     "coherence_pair": "2026-08-29_2026-09-10",
+     "hectares": {
+      "not_water": 42714.6,
+      "open_water": 58.28,
+      "water_under_plants": 553.04,
+      "not_assessed_built": 4216.76,
+      "open_water_on_permanent_water": 0.32,
+      "no_data_on_land": 3020.08,
+      "not_water_where_the_model_sees_inundated_vegetation": 3.08
+     },
+     "mean_confidence": {
+      "not_water": 99.0,
+      "open_water": 36.0,
+      "water_under_plants": 0.0
+     },
+     "checks": {
+      "share_with_optical": 0.0,
+      "share_with_coherence": 1.0,
+      "share_with_optical_or_coherence": 1.0,
+      "changing_open_water_confirmed_by_optical": null,
+      "not_water_where_optical_sees_open_water": null,
+      "changing_open_water_with_low_coherence": 0.3444
+     }
+    },
+    {
+     "site": "pego_oliva",
+     "stack": "058_A_021",
+     "date": "2026-10-04",
+     "split": "train",
+     "maturity": "PROVISIONAL",
+     "crid": "P05023",
+     "coherence_pair": "2026-09-22_2026-10-04",
+     "hectares": {
+      "not_water": 42954.44,
+      "open_water": 79.04,
+      "water_under_plants": 292.24,
+      "not_assessed_built": 4216.76,
+      "open_water_on_permanent_water": 0.24,
+      "no_data_on_land": 3020.28,
+      "not_water_where_the_model_sees_inundated_vegetation": 34.08
+     },
+     "mean_confidence": {
+      "not_water": 99.7,
+      "open_water": 35.1,
+      "water_under_plants": 0.1
+     },
+     "checks": {
+      "share_with_optical": 0.008,
+      "share_with_coherence": 1.0,
+      "share_with_optical_or_coherence": 1.0,
+      "changing_open_water_confirmed_by_optical": 1.0,
+      "not_water_where_optical_sees_open_water": 0.0203,
+      "changing_open_water_with_low_coherence": 0.2594
+     }
+    },
+    {
+     "site": "pego_oliva",
+     "stack": "058_A_021",
+     "date": "2026-10-16",
+     "split": "test",
+     "maturity": "PROVISIONAL",
+     "crid": "P05023",
+     "coherence_pair": "2026-10-04_2026-10-16",
+     "hectares": {
+      "not_water": 43076.64,
+      "open_water": 223.88,
+      "water_under_plants": 24.36,
+      "not_assessed_built": 4216.76,
+      "open_water_on_permanent_water": 0.28,
+      "no_data_on_land": 3021.12,
+      "not_water_where_the_model_sees_inundated_vegetation": 21.32
+     },
+     "mean_confidence": {
+      "not_water": 99.8,
+      "open_water": 54.1,
+      "water_under_plants": 0.2
+     },
+     "checks": {
+      "share_with_optical": 0.9814,
+      "share_with_coherence": 1.0,
+      "share_with_optical_or_coherence": 1.0,
+      "changing_open_water_confirmed_by_optical": 0.1279,
+      "not_water_where_optical_sees_open_water": 0.0007,
+      "changing_open_water_with_low_coherence": 0.3275
+     }
+    },
+    {
+     "site": "pego_oliva",
+     "stack": "058_A_021",
+     "date": "2026-10-28",
+     "split": "test",
+     "maturity": "VALIDATED",
+     "crid": "P05036",
+     "coherence_pair": null,
+     "hectares": {
+      "not_water": 42780.52,
+      "open_water": 493.92,
+      "water_under_plants": 51.76,
+      "not_assessed_built": 4216.76,
+      "open_water_on_permanent_water": 9.84,
+      "no_data_on_land": 3019.8,
+      "not_water_where_the_model_sees_inundated_vegetation": 65.04
+     },
+     "mean_confidence": {
+      "not_water": 99.8,
+      "open_water": 77.2,
+      "water_under_plants": 0.1
+     },
+     "checks": {
+      "share_with_optical": 0.8612,
+      "share_with_coherence": 0.0,
+      "share_with_optical_or_coherence": 0.8612,
+      "changing_open_water_confirmed_by_optical": 0.6265,
+      "not_water_where_optical_sees_open_water": 0.0023,
+      "changing_open_water_with_low_coherence": null
+     }
+    },
+    {
+     "site": "pego_oliva",
+     "stack": "167_D_069",
+     "date": "2026-06-25",
+     "split": "train",
+     "maturity": "PROVISIONAL",
+     "crid": "P05023",
+     "coherence_pair": "2026-06-25_2026-07-07",
+     "hectares": {
+      "not_water": 29521.64,
+      "open_water": 50.88,
+      "water_under_plants": 7.84,
+      "not_assessed_built": 2635.88,
+      "open_water_on_permanent_water": 0.28,
+      "no_data_on_land": 18346.52,
+      "not_water_where_the_model_sees_inundated_vegetation": 4.16
+     },
+     "mean_confidence": {
+      "not_water": 99.8,
+      "open_water": 43.6,
+      "water_under_plants": 0.2
+     },
+     "checks": {
+      "share_with_optical": 0.0,
+      "share_with_coherence": 1.0,
+      "share_with_optical_or_coherence": 1.0,
+      "changing_open_water_confirmed_by_optical": null,
+      "not_water_where_optical_sees_open_water": null,
+      "changing_open_water_with_low_coherence": 0.302
+     }
+    },
+    {
+     "site": "pego_oliva",
+     "stack": "167_D_069",
+     "date": "2026-07-07",
+     "split": "train",
+     "maturity": "PROVISIONAL",
+     "crid": "P05023",
+     "coherence_pair": "2026-06-25_2026-07-07",
+     "hectares": {
+      "not_water": 29558.56,
+      "open_water": 46.64,
+      "water_under_plants": 5.92,
+      "not_assessed_built": 2636.64,
+      "open_water_on_permanent_water": 0.12,
+      "no_data_on_land": 18315.0,
+      "not_water_where_the_model_sees_inundated_vegetation": 3.72
+     },
+     "mean_confidence": {
+      "not_water": 99.9,
+      "open_water": 33.1,
+      "water_under_plants": 0.0
+     },
+     "checks": {
+      "share_with_optical": 0.9958,
+      "share_with_coherence": 1.0,
+      "share_with_optical_or_coherence": 1.0,
+      "changing_open_water_confirmed_by_optical": 0.0433,
+      "not_water_where_optical_sees_open_water": 0.0004,
+      "changing_open_water_with_low_coherence": 0.2872
+     }
+    },
+    {
+     "site": "pego_oliva",
+     "stack": "167_D_069",
+     "date": "2026-07-19",
+     "split": "train",
+     "maturity": "PROVISIONAL",
+     "crid": "P05023",
+     "coherence_pair": "2026-07-07_2026-07-19",
+     "hectares": {
+      "not_water": 29523.4,
+      "open_water": 46.92,
+      "water_under_plants": 7.08,
+      "not_assessed_built": 2635.72,
+      "open_water_on_permanent_water": 0.16,
+      "no_data_on_land": 18349.64,
+      "not_water_where_the_model_sees_inundated_vegetation": 3.32
+     },
+     "mean_confidence": {
+      "not_water": 99.9,
+      "open_water": 35.8,
+      "water_under_plants": 0.0
+     },
+     "checks": {
+      "share_with_optical": 0.4797,
+      "share_with_coherence": 1.0,
+      "share_with_optical_or_coherence": 1.0,
+      "changing_open_water_confirmed_by_optical": 0.0,
+      "not_water_where_optical_sees_open_water": 0.0,
+      "changing_open_water_with_low_coherence": 0.2874
+     }
+    },
+    {
+     "site": "pego_oliva",
+     "stack": "167_D_069",
+     "date": "2026-08-24",
+     "split": "train",
+     "maturity": "PROVISIONAL",
+     "crid": "P05023",
+     "coherence_pair": "2026-07-19_2026-08-24",
+     "hectares": {
+      "not_water": 29511.36,
+      "open_water": 44.76,
+      "water_under_plants": 9.36,
+      "not_assessed_built": 2635.44,
+      "open_water_on_permanent_water": 0.0,
+      "no_data_on_land": 18361.84,
+      "not_water_where_the_model_sees_inundated_vegetation": 4.24
+     },
+     "mean_confidence": {
+      "not_water": 99.6,
+      "open_water": 33.2,
+      "water_under_plants": 0.2
+     },
+     "checks": {
+      "share_with_optical": 0.9646,
+      "share_with_coherence": 1.0,
+      "share_with_optical_or_coherence": 1.0,
+      "changing_open_water_confirmed_by_optical": 0.0587,
+      "not_water_where_optical_sees_open_water": 0.0004,
+      "changing_open_water_with_low_coherence": 0.3342
+     }
+    },
+    {
+     "site": "pego_oliva",
+     "stack": "167_D_069",
+     "date": "2026-09-05",
+     "split": "train",
+     "maturity": "PROVISIONAL",
+     "crid": "P05023",
+     "coherence_pair": "2026-08-24_2026-09-05",
+     "hectares": {
+      "not_water": 29572.48,
+      "open_water": 46.84,
+      "water_under_plants": 6.72,
+      "not_assessed_built": 2637.08,
+      "open_water_on_permanent_water": 0.08,
+      "no_data_on_land": 18299.64,
+      "not_water_where_the_model_sees_inundated_vegetation": 5.64
+     },
+     "mean_confidence": {
+      "not_water": 99.9,
+      "open_water": 36.9,
+      "water_under_plants": 0.0
+     },
+     "checks": {
+      "share_with_optical": 0.1711,
+      "share_with_coherence": 1.0,
+      "share_with_optical_or_coherence": 1.0,
+      "changing_open_water_confirmed_by_optical": 0.0365,
+      "not_water_where_optical_sees_open_water": 0.0013,
+      "changing_open_water_with_low_coherence": 0.3148
+     }
+    },
+    {
+     "site": "pego_oliva",
+     "stack": "167_D_069",
+     "date": "2026-09-17",
+     "split": "train",
+     "maturity": "PROVISIONAL",
+     "crid": "P05023",
+     "coherence_pair": "2026-09-05_2026-09-17",
+     "hectares": {
+      "not_water": 29558.48,
+      "open_water": 44.32,
+      "water_under_plants": 11.4,
+      "not_assessed_built": 2636.88,
+      "open_water_on_permanent_water": 0.08,
+      "no_data_on_land": 18311.68,
+      "not_water_where_the_model_sees_inundated_vegetation": 6.4
+     },
+     "mean_confidence": {
+      "not_water": 99.8,
+      "open_water": 38.1,
+      "water_under_plants": 0.0
+     },
+     "checks": {
+      "share_with_optical": 0.116,
+      "share_with_coherence": 1.0,
+      "share_with_optical_or_coherence": 1.0,
+      "changing_open_water_confirmed_by_optical": 0.0,
+      "not_water_where_optical_sees_open_water": 0.0055,
+      "changing_open_water_with_low_coherence": 0.3029
+     }
+    },
+    {
+     "site": "pego_oliva",
+     "stack": "167_D_069",
+     "date": "2026-09-29",
+     "split": "train",
+     "maturity": "PROVISIONAL",
+     "crid": "P05023",
+     "coherence_pair": "2026-09-17_2026-09-29",
+     "hectares": {
+      "not_water": 29429.0,
+      "open_water": 52.08,
+      "water_under_plants": 13.96,
+      "not_assessed_built": 2633.28,
+      "open_water_on_permanent_water": 0.0,
+      "no_data_on_land": 18434.44,
+      "not_water_where_the_model_sees_inundated_vegetation": 6.84
+     },
+     "mean_confidence": {
+      "not_water": 99.9,
+      "open_water": 41.7,
+      "water_under_plants": 0.1
+     },
+     "checks": {
+      "share_with_optical": 0.0,
+      "share_with_coherence": 1.0,
+      "share_with_optical_or_coherence": 1.0,
+      "changing_open_water_confirmed_by_optical": null,
+      "not_water_where_optical_sees_open_water": null,
+      "changing_open_water_with_low_coherence": 0.2773
+     }
+    },
+    {
+     "site": "pego_oliva",
+     "stack": "167_D_069",
+     "date": "2026-10-11",
+     "split": "train",
+     "maturity": "PROVISIONAL",
+     "crid": "P05023",
+     "coherence_pair": "2026-09-29_2026-10-11",
+     "hectares": {
+      "not_water": 29453.52,
+      "open_water": 50.12,
+      "water_under_plants": 26.44,
+      "not_assessed_built": 2634.32,
+      "open_water_on_permanent_water": 0.0,
+      "no_data_on_land": 18398.36,
+      "not_water_where_the_model_sees_inundated_vegetation": 5.84
+     },
+     "mean_confidence": {
+      "not_water": 99.8,
+      "open_water": 35.7,
+      "water_under_plants": 0.2
+     },
+     "checks": {
+      "share_with_optical": 0.9078,
+      "share_with_coherence": 1.0,
+      "share_with_optical_or_coherence": 1.0,
+      "changing_open_water_confirmed_by_optical": 0.1769,
+      "not_water_where_optical_sees_open_water": 0.0014,
+      "changing_open_water_with_low_coherence": 0.2634
+     }
+    },
+    {
+     "site": "pego_oliva",
+     "stack": "167_D_069",
+     "date": "2026-10-23",
+     "split": "test",
+     "maturity": "VALIDATED",
+     "crid": "P05036",
+     "coherence_pair": null,
+     "hectares": {
+      "not_water": 29404.0,
+      "open_water": 48.96,
+      "water_under_plants": 122.0,
+      "not_assessed_built": 2635.68,
+      "open_water_on_permanent_water": 0.2,
+      "no_data_on_land": 18352.12,
+      "not_water_where_the_model_sees_inundated_vegetation": 53.0
+     },
+     "mean_confidence": {
+      "not_water": 100.0,
+      "open_water": 48.2,
+      "water_under_plants": 0.1
+     },
+     "checks": {
+      "share_with_optical": 0.0,
+      "share_with_coherence": 0.0,
+      "share_with_optical_or_coherence": 0.0,
+      "changing_open_water_confirmed_by_optical": null,
+      "not_water_where_optical_sees_open_water": null,
+      "changing_open_water_with_low_coherence": null
+     }
+    }
+   ],
+   "dana": {
+    "rain": "DANA Adam, 18 to 19 Oct 2026 (pipeline/prediction/flood)",
+    "region": "land labelled on both dates (not sea, not built-up, not no data), not permanent water",
+    "layer_codes": {
+     "0": "dry on both dates",
+     "1": "open water on both dates",
+     "2": "new open water",
+     "3": "open water gone",
+     "4": "permanent water",
+     "255": "not compared (no data or sea on either date, or built-up)"
+    },
+    "stacks": {
+     "066_D_069": {
+      "before": "2026-10-16",
+      "after": "2026-10-28",
+      "layer": "data/labels_nisar/pego_oliva_066_D_069/dana_2026-10-16_2026-10-28.tif",
+      "compared_ha": 43285.52,
+      "open_water": {
+       "before_ha": 185.28,
+       "after_ha": 444.88,
+       "new_ha": 270.4,
+       "on_both_ha": 174.48,
+       "gone_ha": 10.8
+      },
+      "open_water_or_under_plants": {
+       "before_ha": 197.08,
+       "after_ha": 579.8,
+       "new_ha": 399.64,
+       "on_both_ha": 180.16,
+       "gone_ha": 16.92
+      },
+      "per_municipality": [
+       {
+        "name": "Pego",
+        "ine": "03102",
+        "compared_ha": 5082.4,
+        "open_water": {
+         "before_ha": 129.36,
+         "after_ha": 272.52,
+         "new_ha": 143.84
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 131.56,
+         "after_ha": 291.28,
+         "new_ha": 161.52
+        }
+       },
+       {
+        "name": "Oliva",
+        "ine": "46181",
+        "compared_ha": 5396.6,
+        "open_water": {
+         "before_ha": 20.0,
+         "after_ha": 92.24,
+         "new_ha": 77.8
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 23.0,
+         "after_ha": 117.44,
+         "new_ha": 101.48
+        }
+       },
+       {
+        "name": "D\u00e9nia",
+        "ine": "03063",
+        "compared_ha": 1562.6,
+        "open_water": {
+         "before_ha": 5.6,
+         "after_ha": 46.88,
+         "new_ha": 41.84
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 6.6,
+         "after_ha": 55.24,
+         "new_ha": 49.72
+        }
+       },
+       {
+        "name": "Gandia",
+        "ine": "46131",
+        "compared_ha": 3526.88,
+        "open_water": {
+         "before_ha": 13.08,
+         "after_ha": 17.68,
+         "new_ha": 5.68
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 14.32,
+         "after_ha": 22.32,
+         "new_ha": 10.32
+        }
+       },
+       {
+        "name": "Vilallonga / Villalonga",
+        "ine": "46255",
+        "compared_ha": 3018.8,
+        "open_water": {
+         "before_ha": 1.56,
+         "after_ha": 1.96,
+         "new_ha": 0.44
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 2.04,
+         "after_ha": 5.72,
+         "new_ha": 4.2
+        }
+       },
+       {
+        "name": "la Vall d'Ebo",
+        "ine": "03135",
+        "compared_ha": 2901.28,
+        "open_water": {
+         "before_ha": 4.12,
+         "after_ha": 4.36,
+         "new_ha": 0.36
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 4.12,
+         "after_ha": 13.88,
+         "new_ha": 9.88
+        }
+       },
+       {
+        "name": "Ador",
+        "ine": "46002",
+        "compared_ha": 989.28,
+        "open_water": {
+         "before_ha": 0.72,
+         "after_ha": 0.84,
+         "new_ha": 0.12
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.72,
+         "after_ha": 2.48,
+         "new_ha": 1.76
+        }
+       },
+       {
+        "name": "la Vall de Laguar",
+        "ine": "03137",
+        "compared_ha": 811.32,
+        "open_water": {
+         "before_ha": 2.12,
+         "after_ha": 2.16,
+         "new_ha": 0.12
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 2.12,
+         "after_ha": 4.48,
+         "new_ha": 2.44
+        }
+       },
+       {
+        "name": "el Real de Gandia",
+        "ine": "46211",
+        "compared_ha": 512.76,
+        "open_water": {
+         "before_ha": 0.24,
+         "after_ha": 0.32,
+         "new_ha": 0.08
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.24,
+         "after_ha": 1.32,
+         "new_ha": 1.08
+        }
+       },
+       {
+        "name": "Bellreguard",
+        "ine": "46048",
+        "compared_ha": 186.88,
+        "open_water": {
+         "before_ha": 0.56,
+         "after_ha": 0.56,
+         "new_ha": 0.04
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.56,
+         "after_ha": 0.56,
+         "new_ha": 0.04
+        }
+       },
+       {
+        "name": "Miramar",
+        "ine": "46168",
+        "compared_ha": 173.28,
+        "open_water": {
+         "before_ha": 1.12,
+         "after_ha": 0.84,
+         "new_ha": 0.04
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 1.12,
+         "after_ha": 1.08,
+         "new_ha": 0.28
+        }
+       },
+       {
+        "name": "Alcalal\u00ed",
+        "ine": "03006",
+        "compared_ha": 19.88,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        }
+       },
+       {
+        "name": "Alfauir",
+        "ine": "46023",
+        "compared_ha": 436.4,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.0,
+         "after_ha": 0.92,
+         "new_ha": 0.92
+        }
+       },
+       {
+        "name": "Almoines",
+        "ine": "46034",
+        "compared_ha": 165.44,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.0,
+         "after_ha": 0.48,
+         "new_ha": 0.48
+        }
+       },
+       {
+        "name": "Beniarbeig",
+        "ine": "03026",
+        "compared_ha": 674.0,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.0,
+         "after_ha": 0.44,
+         "new_ha": 0.44
+        }
+       },
+       {
+        "name": "Beniarj\u00f3",
+        "ine": "46055",
+        "compared_ha": 238.04,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.0,
+         "after_ha": 0.56,
+         "new_ha": 0.56
+        }
+       },
+       {
+        "name": "Benidoleig",
+        "ine": "03030",
+        "compared_ha": 660.28,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.0,
+         "after_ha": 1.16,
+         "new_ha": 1.16
+        }
+       },
+       {
+        "name": "Benifl\u00e0",
+        "ine": "46061",
+        "compared_ha": 39.48,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        }
+       },
+       {
+        "name": "Benimeli",
+        "ine": "03040",
+        "compared_ha": 340.92,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        }
+       },
+       {
+        "name": "Benirredr\u00e0",
+        "ine": "46066",
+        "compared_ha": 21.4,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        }
+       },
+       {
+        "name": "Castellonet de la Conquesta",
+        "ine": "46091",
+        "compared_ha": 2.32,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        }
+       },
+       {
+        "name": "Daim\u00fas",
+        "ine": "46113",
+        "compared_ha": 208.04,
+        "open_water": {
+         "before_ha": 0.36,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.36,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        }
+       },
+       {
+        "name": "Gata de Gorgos",
+        "ine": "03071",
+        "compared_ha": 0.48,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        }
+       },
+       {
+        "name": "Guardamar de la Safor",
+        "ine": "46140",
+        "compared_ha": 87.08,
+        "open_water": {
+         "before_ha": 0.68,
+         "after_ha": 0.28,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.68,
+         "after_ha": 0.28,
+         "new_ha": 0.0
+        }
+       },
+       {
+        "name": "Ondara",
+        "ine": "03095",
+        "compared_ha": 846.96,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.0,
+         "after_ha": 1.12,
+         "new_ha": 1.12
+        }
+       },
+       {
+        "name": "Orba",
+        "ine": "03097",
+        "compared_ha": 1075.44,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        }
+       },
+       {
+        "name": "Palma de Gand\u00eda",
+        "ine": "46187",
+        "compared_ha": 900.0,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.8,
+         "after_ha": 3.88,
+         "new_ha": 3.12
+        }
+       },
+       {
+        "name": "Palmera",
+        "ine": "46188",
+        "compared_ha": 74.76,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        }
+       },
+       {
+        "name": "Pedreguer",
+        "ine": "03101",
+        "compared_ha": 1882.8,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.92,
+         "after_ha": 3.96,
+         "new_ha": 3.08
+        }
+       },
+       {
+        "name": "Piles",
+        "ine": "46195",
+        "compared_ha": 313.16,
+        "open_water": {
+         "before_ha": 1.24,
+         "after_ha": 0.48,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 1.24,
+         "after_ha": 1.16,
+         "new_ha": 0.68
+        }
+       },
+       {
+        "name": "Potries",
+        "ine": "46198",
+        "compared_ha": 277.96,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.32,
+         "after_ha": 0.28,
+         "new_ha": 0.04
+        }
+       },
+       {
+        "name": "Rafelcofer",
+        "ine": "46208",
+        "compared_ha": 178.12,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        }
+       },
+       {
+        "name": "R\u00f2tova",
+        "ine": "46218",
+        "compared_ha": 20.0,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        }
+       },
+       {
+        "name": "Sagra",
+        "ine": "03115",
+        "compared_ha": 547.32,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        }
+       },
+       {
+        "name": "Sanet y Negrals",
+        "ine": "03117",
+        "compared_ha": 351.28,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.0,
+         "after_ha": 1.36,
+         "new_ha": 1.36
+        }
+       },
+       {
+        "name": "Tormos",
+        "ine": "03131",
+        "compared_ha": 518.44,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        }
+       },
+       {
+        "name": "Xeraco",
+        "ine": "46143",
+        "compared_ha": 25.2,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        }
+       },
+       {
+        "name": "Xeresa",
+        "ine": "46146",
+        "compared_ha": 968.2,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.36,
+         "after_ha": 2.16,
+         "new_ha": 2.16
+        }
+       },
+       {
+        "name": "el R\u00e0fol d'Alm\u00fania",
+        "ine": "03110",
+        "compared_ha": 455.76,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        }
+       },
+       {
+        "name": "el Verger",
+        "ine": "03138",
+        "compared_ha": 632.4,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.0,
+         "after_ha": 11.48,
+         "new_ha": 11.48
+        }
+       },
+       {
+        "name": "els Poblets",
+        "ine": "03901",
+        "compared_ha": 202.16,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.0,
+         "after_ha": 1.08,
+         "new_ha": 1.08
+        }
+       },
+       {
+        "name": "l'Alqueria de la Comtessa",
+        "ine": "46037",
+        "compared_ha": 167.68,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        }
+       },
+       {
+        "name": "l'Atz\u00fabia",
+        "ine": "03001",
+        "compared_ha": 1443.76,
+        "open_water": {
+         "before_ha": 0.04,
+         "after_ha": 0.04,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.16,
+         "after_ha": 4.8,
+         "new_ha": 4.68
+        }
+       },
+       {
+        "name": "la Font d'en Carr\u00f2s",
+        "ine": "46127",
+        "compared_ha": 911.24,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.08,
+         "after_ha": 0.68,
+         "new_ha": 0.68
+        }
+       },
+       {
+        "name": "la Vall d'Alcal\u00e0",
+        "ine": "03134",
+        "compared_ha": 786.76,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.0,
+         "after_ha": 5.64,
+         "new_ha": 5.64
+        }
+       },
+       {
+        "name": "la Vall de Gallinera",
+        "ine": "03136",
+        "compared_ha": 3642.96,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 1.28,
+         "after_ha": 18.84,
+         "new_ha": 18.2
+        }
+       }
+      ]
+     },
+     "058_A_021": {
+      "before": "2026-10-16",
+      "after": "2026-10-28",
+      "layer": "data/labels_nisar/pego_oliva_058_A_021/dana_2026-10-16_2026-10-28.tif",
+      "compared_ha": 43274.6,
+      "open_water": {
+       "before_ha": 223.6,
+       "after_ha": 484.08,
+       "new_ha": 273.0,
+       "on_both_ha": 211.08,
+       "gone_ha": 12.52
+      },
+      "open_water_or_under_plants": {
+       "before_ha": 247.96,
+       "after_ha": 535.84,
+       "new_ha": 318.72,
+       "on_both_ha": 217.12,
+       "gone_ha": 30.84
+      },
+      "per_municipality": [
+       {
+        "name": "Pego",
+        "ine": "03102",
+        "compared_ha": 5082.72,
+        "open_water": {
+         "before_ha": 143.96,
+         "after_ha": 286.52,
+         "new_ha": 143.68
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 144.84,
+         "after_ha": 289.04,
+         "new_ha": 146.08
+        }
+       },
+       {
+        "name": "Oliva",
+        "ine": "46181",
+        "compared_ha": 5395.96,
+        "open_water": {
+         "before_ha": 22.28,
+         "after_ha": 99.28,
+         "new_ha": 80.8
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 30.56,
+         "after_ha": 112.12,
+         "new_ha": 90.36
+        }
+       },
+       {
+        "name": "D\u00e9nia",
+        "ine": "03063",
+        "compared_ha": 1562.6,
+        "open_water": {
+         "before_ha": 5.72,
+         "after_ha": 51.56,
+         "new_ha": 46.88
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 6.08,
+         "after_ha": 56.68,
+         "new_ha": 51.96
+        }
+       },
+       {
+        "name": "la Vall de Laguar",
+        "ine": "03137",
+        "compared_ha": 811.48,
+        "open_water": {
+         "before_ha": 4.08,
+         "after_ha": 4.44,
+         "new_ha": 0.36
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 5.56,
+         "after_ha": 5.48,
+         "new_ha": 1.36
+        }
+       },
+       {
+        "name": "Gandia",
+        "ine": "46131",
+        "compared_ha": 3525.36,
+        "open_water": {
+         "before_ha": 25.68,
+         "after_ha": 24.0,
+         "new_ha": 0.32
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 26.76,
+         "after_ha": 26.88,
+         "new_ha": 3.2
+        }
+       },
+       {
+        "name": "l'Atz\u00fabia",
+        "ine": "03001",
+        "compared_ha": 1443.6,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.32,
+         "new_ha": 0.32
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 2.2,
+         "after_ha": 1.76,
+         "new_ha": 1.04
+        }
+       },
+       {
+        "name": "Vilallonga / Villalonga",
+        "ine": "46255",
+        "compared_ha": 3016.0,
+        "open_water": {
+         "before_ha": 0.68,
+         "after_ha": 0.92,
+         "new_ha": 0.24
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 1.4,
+         "after_ha": 3.24,
+         "new_ha": 2.52
+        }
+       },
+       {
+        "name": "la Vall de Gallinera",
+        "ine": "03136",
+        "compared_ha": 3639.84,
+        "open_water": {
+         "before_ha": 3.16,
+         "after_ha": 3.2,
+         "new_ha": 0.2
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 3.72,
+         "after_ha": 5.32,
+         "new_ha": 2.32
+        }
+       },
+       {
+        "name": "Piles",
+        "ine": "46195",
+        "compared_ha": 313.16,
+        "open_water": {
+         "before_ha": 1.72,
+         "after_ha": 1.48,
+         "new_ha": 0.08
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 2.04,
+         "after_ha": 2.88,
+         "new_ha": 1.48
+        }
+       },
+       {
+        "name": "Bellreguard",
+        "ine": "46048",
+        "compared_ha": 186.88,
+        "open_water": {
+         "before_ha": 0.2,
+         "after_ha": 0.2,
+         "new_ha": 0.04
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.2,
+         "after_ha": 0.4,
+         "new_ha": 0.24
+        }
+       },
+       {
+        "name": "Miramar",
+        "ine": "46168",
+        "compared_ha": 173.28,
+        "open_water": {
+         "before_ha": 1.8,
+         "after_ha": 1.52,
+         "new_ha": 0.04
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 1.8,
+         "after_ha": 1.52,
+         "new_ha": 0.04
+        }
+       },
+       {
+        "name": "la Vall d'Ebo",
+        "ine": "03135",
+        "compared_ha": 2900.44,
+        "open_water": {
+         "before_ha": 5.96,
+         "after_ha": 5.32,
+         "new_ha": 0.04
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 6.32,
+         "after_ha": 8.04,
+         "new_ha": 2.76
+        }
+       },
+       {
+        "name": "Ador",
+        "ine": "46002",
+        "compared_ha": 989.28,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.4,
+         "after_ha": 0.84,
+         "new_ha": 0.84
+        }
+       },
+       {
+        "name": "Alcalal\u00ed",
+        "ine": "03006",
+        "compared_ha": 19.88,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        }
+       },
+       {
+        "name": "Alfauir",
+        "ine": "46023",
+        "compared_ha": 436.4,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.0,
+         "after_ha": 0.28,
+         "new_ha": 0.28
+        }
+       },
+       {
+        "name": "Almoines",
+        "ine": "46034",
+        "compared_ha": 165.44,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.0,
+         "after_ha": 0.28,
+         "new_ha": 0.28
+        }
+       },
+       {
+        "name": "Beniarbeig",
+        "ine": "03026",
+        "compared_ha": 674.48,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.0,
+         "after_ha": 0.04,
+         "new_ha": 0.04
+        }
+       },
+       {
+        "name": "Beniarj\u00f3",
+        "ine": "46055",
+        "compared_ha": 238.04,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.0,
+         "after_ha": 0.96,
+         "new_ha": 0.96
+        }
+       },
+       {
+        "name": "Benidoleig",
+        "ine": "03030",
+        "compared_ha": 660.28,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.16,
+         "after_ha": 0.24,
+         "new_ha": 0.24
+        }
+       },
+       {
+        "name": "Benifl\u00e0",
+        "ine": "46061",
+        "compared_ha": 39.48,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        }
+       },
+       {
+        "name": "Benimeli",
+        "ine": "03040",
+        "compared_ha": 340.92,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.0,
+         "after_ha": 0.6,
+         "new_ha": 0.6
+        }
+       },
+       {
+        "name": "Benirredr\u00e0",
+        "ine": "46066",
+        "compared_ha": 21.4,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        }
+       },
+       {
+        "name": "Castellonet de la Conquesta",
+        "ine": "46091",
+        "compared_ha": 2.32,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        }
+       },
+       {
+        "name": "Daim\u00fas",
+        "ine": "46113",
+        "compared_ha": 208.04,
+        "open_water": {
+         "before_ha": 2.48,
+         "after_ha": 0.44,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 3.4,
+         "after_ha": 0.44,
+         "new_ha": 0.0
+        }
+       },
+       {
+        "name": "Gata de Gorgos",
+        "ine": "03071",
+        "compared_ha": 0.48,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        }
+       },
+       {
+        "name": "Guardamar de la Safor",
+        "ine": "46140",
+        "compared_ha": 87.08,
+        "open_water": {
+         "before_ha": 1.04,
+         "after_ha": 0.8,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 1.04,
+         "after_ha": 0.8,
+         "new_ha": 0.0
+        }
+       },
+       {
+        "name": "Ondara",
+        "ine": "03095",
+        "compared_ha": 846.96,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.4,
+         "after_ha": 0.12,
+         "new_ha": 0.12
+        }
+       },
+       {
+        "name": "Orba",
+        "ine": "03097",
+        "compared_ha": 1075.04,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.4,
+         "after_ha": 0.56,
+         "new_ha": 0.2
+        }
+       },
+       {
+        "name": "Palma de Gand\u00eda",
+        "ine": "46187",
+        "compared_ha": 898.16,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.0,
+         "after_ha": 1.96,
+         "new_ha": 1.96
+        }
+       },
+       {
+        "name": "Palmera",
+        "ine": "46188",
+        "compared_ha": 74.76,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        }
+       },
+       {
+        "name": "Pedreguer",
+        "ine": "03101",
+        "compared_ha": 1882.64,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 1.96,
+         "after_ha": 2.36,
+         "new_ha": 1.56
+        }
+       },
+       {
+        "name": "Potries",
+        "ine": "46198",
+        "compared_ha": 277.96,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.2,
+         "after_ha": 0.48,
+         "new_ha": 0.48
+        }
+       },
+       {
+        "name": "Rafelcofer",
+        "ine": "46208",
+        "compared_ha": 178.12,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        }
+       },
+       {
+        "name": "R\u00f2tova",
+        "ine": "46218",
+        "compared_ha": 20.0,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.12,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        }
+       },
+       {
+        "name": "Sagra",
+        "ine": "03115",
+        "compared_ha": 547.32,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.36,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        }
+       },
+       {
+        "name": "Sanet y Negrals",
+        "ine": "03117",
+        "compared_ha": 351.28,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.0,
+         "after_ha": 0.16,
+         "new_ha": 0.16
+        }
+       },
+       {
+        "name": "Tormos",
+        "ine": "03131",
+        "compared_ha": 518.04,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 1.12,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        }
+       },
+       {
+        "name": "Xeraco",
+        "ine": "46143",
+        "compared_ha": 25.2,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        }
+       },
+       {
+        "name": "Xeresa",
+        "ine": "46146",
+        "compared_ha": 968.2,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.56,
+         "after_ha": 1.88,
+         "new_ha": 1.88
+        }
+       },
+       {
+        "name": "el Real de Gandia",
+        "ine": "46211",
+        "compared_ha": 512.76,
+        "open_water": {
+         "before_ha": 0.12,
+         "after_ha": 0.12,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.76,
+         "after_ha": 1.44,
+         "new_ha": 0.8
+        }
+       },
+       {
+        "name": "el R\u00e0fol d'Alm\u00fania",
+        "ine": "03110",
+        "compared_ha": 455.76,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        }
+       },
+       {
+        "name": "el Verger",
+        "ine": "03138",
+        "compared_ha": 632.4,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.28,
+         "after_ha": 2.96,
+         "new_ha": 2.84
+        }
+       },
+       {
+        "name": "els Poblets",
+        "ine": "03901",
+        "compared_ha": 202.16,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        }
+       },
+       {
+        "name": "l'Alqueria de la Comtessa",
+        "ine": "46037",
+        "compared_ha": 167.68,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.48,
+         "after_ha": 0.28,
+         "new_ha": 0.28
+        }
+       },
+       {
+        "name": "la Font d'en Carr\u00f2s",
+        "ine": "46127",
+        "compared_ha": 911.24,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.12,
+         "after_ha": 0.48,
+         "new_ha": 0.48
+        }
+       },
+       {
+        "name": "la Vall d'Alcal\u00e0",
+        "ine": "03134",
+        "compared_ha": 786.76,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.0,
+         "after_ha": 1.36,
+         "new_ha": 1.36
+        }
+       }
+      ]
+     },
+     "167_D_069": {
+      "before": "2026-10-11",
+      "after": "2026-10-23",
+      "layer": "data/labels_nisar/pego_oliva_167_D_069/dana_2026-10-11_2026-10-23.tif",
+      "compared_ha": 29503.72,
+      "open_water": {
+       "before_ha": 50.12,
+       "after_ha": 48.72,
+       "new_ha": 4.88,
+       "on_both_ha": 43.84,
+       "gone_ha": 6.28
+      },
+      "open_water_or_under_plants": {
+       "before_ha": 76.52,
+       "after_ha": 169.6,
+       "new_ha": 115.4,
+       "on_both_ha": 54.2,
+       "gone_ha": 22.32
+      },
+      "per_municipality": [
+       {
+        "name": "Gandia",
+        "ine": "46131",
+        "compared_ha": 3531.04,
+        "open_water": {
+         "before_ha": 15.64,
+         "after_ha": 17.2,
+         "new_ha": 2.36
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 17.12,
+         "after_ha": 30.32,
+         "new_ha": 15.12
+        }
+       },
+       {
+        "name": "Oliva",
+        "ine": "46181",
+        "compared_ha": 4243.04,
+        "open_water": {
+         "before_ha": 11.16,
+         "after_ha": 9.88,
+         "new_ha": 1.36
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 15.64,
+         "after_ha": 33.84,
+         "new_ha": 23.44
+        }
+       },
+       {
+        "name": "Vilallonga / Villalonga",
+        "ine": "46255",
+        "compared_ha": 3022.76,
+        "open_water": {
+         "before_ha": 2.76,
+         "after_ha": 2.92,
+         "new_ha": 0.32
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 6.4,
+         "after_ha": 12.76,
+         "new_ha": 8.88
+        }
+       },
+       {
+        "name": "la Vall de Gallinera",
+        "ine": "03136",
+        "compared_ha": 3645.6,
+        "open_water": {
+         "before_ha": 1.84,
+         "after_ha": 1.88,
+         "new_ha": 0.24
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 6.0,
+         "after_ha": 21.72,
+         "new_ha": 18.56
+        }
+       },
+       {
+        "name": "Piles",
+        "ine": "46195",
+        "compared_ha": 313.16,
+        "open_water": {
+         "before_ha": 1.6,
+         "after_ha": 1.36,
+         "new_ha": 0.16
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 1.6,
+         "after_ha": 2.48,
+         "new_ha": 1.28
+        }
+       },
+       {
+        "name": "la Vall d'Ebo",
+        "ine": "03135",
+        "compared_ha": 2903.4,
+        "open_water": {
+         "before_ha": 5.6,
+         "after_ha": 5.56,
+         "new_ha": 0.12
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 5.76,
+         "after_ha": 11.08,
+         "new_ha": 5.64
+        }
+       },
+       {
+        "name": "Bellreguard",
+        "ine": "46048",
+        "compared_ha": 186.88,
+        "open_water": {
+         "before_ha": 0.68,
+         "after_ha": 0.76,
+         "new_ha": 0.08
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.8,
+         "after_ha": 0.76,
+         "new_ha": 0.08
+        }
+       },
+       {
+        "name": "Pego",
+        "ine": "03102",
+        "compared_ha": 2525.48,
+        "open_water": {
+         "before_ha": 0.4,
+         "after_ha": 0.48,
+         "new_ha": 0.08
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 1.44,
+         "after_ha": 9.12,
+         "new_ha": 8.44
+        }
+       },
+       {
+        "name": "l'Atz\u00fabia",
+        "ine": "03001",
+        "compared_ha": 1442.84,
+        "open_water": {
+         "before_ha": 0.6,
+         "after_ha": 0.56,
+         "new_ha": 0.08
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 3.92,
+         "after_ha": 4.36,
+         "new_ha": 3.08
+        }
+       },
+       {
+        "name": "Guardamar de la Safor",
+        "ine": "46140",
+        "compared_ha": 87.08,
+        "open_water": {
+         "before_ha": 0.6,
+         "after_ha": 0.6,
+         "new_ha": 0.04
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.6,
+         "after_ha": 0.6,
+         "new_ha": 0.04
+        }
+       },
+       {
+        "name": "la Vall de Laguar",
+        "ine": "03137",
+        "compared_ha": 430.64,
+        "open_water": {
+         "before_ha": 1.8,
+         "after_ha": 1.8,
+         "new_ha": 0.04
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 2.44,
+         "after_ha": 1.8,
+         "new_ha": 0.04
+        }
+       },
+       {
+        "name": "Ador",
+        "ine": "46002",
+        "compared_ha": 990.72,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 1.48,
+         "after_ha": 1.68,
+         "new_ha": 0.56
+        }
+       },
+       {
+        "name": "Alfauir",
+        "ine": "46023",
+        "compared_ha": 439.88,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 1.2,
+         "after_ha": 2.16,
+         "new_ha": 1.16
+        }
+       },
+       {
+        "name": "Almoines",
+        "ine": "46034",
+        "compared_ha": 165.44,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.6,
+         "after_ha": 1.4,
+         "new_ha": 1.32
+        }
+       },
+       {
+        "name": "Beniarj\u00f3",
+        "ine": "46055",
+        "compared_ha": 238.04,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.0,
+         "after_ha": 1.68,
+         "new_ha": 1.68
+        }
+       },
+       {
+        "name": "Benifl\u00e0",
+        "ine": "46061",
+        "compared_ha": 39.48,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        }
+       },
+       {
+        "name": "Benirredr\u00e0",
+        "ine": "46066",
+        "compared_ha": 21.4,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        }
+       },
+       {
+        "name": "Castellonet de la Conquesta",
+        "ine": "46091",
+        "compared_ha": 2.64,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        }
+       },
+       {
+        "name": "Daim\u00fas",
+        "ine": "46113",
+        "compared_ha": 208.04,
+        "open_water": {
+         "before_ha": 0.6,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.6,
+         "after_ha": 0.8,
+         "new_ha": 0.8
+        }
+       },
+       {
+        "name": "Miramar",
+        "ine": "46168",
+        "compared_ha": 173.28,
+        "open_water": {
+         "before_ha": 1.72,
+         "after_ha": 1.56,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 2.16,
+         "after_ha": 1.84,
+         "new_ha": 0.08
+        }
+       },
+       {
+        "name": "Orba",
+        "ine": "03097",
+        "compared_ha": 49.04,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        }
+       },
+       {
+        "name": "Palma de Gand\u00eda",
+        "ine": "46187",
+        "compared_ha": 901.4,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 1.16,
+         "after_ha": 9.24,
+         "new_ha": 8.36
+        }
+       },
+       {
+        "name": "Palmera",
+        "ine": "46188",
+        "compared_ha": 74.76,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.36,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        }
+       },
+       {
+        "name": "Potries",
+        "ine": "46198",
+        "compared_ha": 277.96,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 1.04,
+         "after_ha": 1.84,
+         "new_ha": 1.12
+        }
+       },
+       {
+        "name": "Rafelcofer",
+        "ine": "46208",
+        "compared_ha": 178.12,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.0,
+         "after_ha": 0.24,
+         "new_ha": 0.24
+        }
+       },
+       {
+        "name": "R\u00f2tova",
+        "ine": "46218",
+        "compared_ha": 20.48,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        }
+       },
+       {
+        "name": "Xeraco",
+        "ine": "46143",
+        "compared_ha": 26.0,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.0,
+         "after_ha": 0.56,
+         "new_ha": 0.56
+        }
+       },
+       {
+        "name": "Xeresa",
+        "ine": "46146",
+        "compared_ha": 974.56,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.36,
+         "after_ha": 4.52,
+         "new_ha": 4.44
+        }
+       },
+       {
+        "name": "el Real de Gandia",
+        "ine": "46211",
+        "compared_ha": 512.56,
+        "open_water": {
+         "before_ha": 0.88,
+         "after_ha": 0.64,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.88,
+         "after_ha": 3.44,
+         "new_ha": 2.8
+        }
+       },
+       {
+        "name": "l'Alqueria de la Comtessa",
+        "ine": "46037",
+        "compared_ha": 167.68,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.52,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        }
+       },
+       {
+        "name": "la Font d'en Carr\u00f2s",
+        "ine": "46127",
+        "compared_ha": 911.24,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.2,
+         "after_ha": 4.04,
+         "new_ha": 3.88
+        }
+       },
+       {
+        "name": "la Vall d'Alcal\u00e0",
+        "ine": "03134",
+        "compared_ha": 792.96,
+        "open_water": {
+         "before_ha": 0.0,
+         "after_ha": 0.0,
+         "new_ha": 0.0
+        },
+        "open_water_or_under_plants": {
+         "before_ha": 0.0,
+         "after_ha": 3.8,
+         "new_ha": 3.8
+        }
+       }
+      ]
+     }
+    },
+    "municipalities": "data/labels/pego_oliva_municipalities_osm.geojson: OpenStreetMap admin_level 8 with INE codes, (c) OpenStreetMap contributors, ODbL 1.0; built-up land is not assessed, so a town's numbers cover its fields only",
+    "emsr935_flooded_area_still_water": {
+     "outline": "EMSR935 flooded_area, imagery 20 to 21 Oct 2026, not permanent water",
+     "outline_ha": 877.4,
+     "per_pass": {
+      "066_D_069 2026-10-28": {
+       "seen_ha": 864.84,
+       "open_water_ha": 264.28,
+       "open_water_or_under_plants_ha": 267.92,
+       "open_water_share": 0.3056
+      },
+      "058_A_021 2026-10-28": {
+       "seen_ha": 864.84,
+       "open_water_ha": 287.84,
+       "open_water_or_under_plants_ha": 289.56,
+       "open_water_share": 0.3328
+      },
+      "167_D_069 2026-10-23": {
+       "seen_ha": 31.8,
+       "open_water_ha": 0.0,
+       "open_water_or_under_plants_ha": 0.64,
+       "open_water_share": 0.0
+      }
+     }
+    },
+    "open_water_23_oct_still_there_28_oct": {
+     "note": "167 D on 23 Oct against another track on 28 Oct: two viewing geometries, descriptive only",
+     "per_pass": {
+      "066_D_069 2026-10-28": {
+       "compared_ha": 29504.8,
+       "open_water_23_oct_ha": 48.68,
+       "still_open_water_28_oct_ha": 33.8,
+       "still_share": 0.6943
+      },
+      "058_A_021 2026-10-28": {
+       "compared_ha": 29493.0,
+       "open_water_23_oct_ha": 47.16,
+       "still_open_water_28_oct_ha": 33.64,
+       "still_share": 0.7133
+      }
+     }
+    }
+   }
+  }
+ }
+}
