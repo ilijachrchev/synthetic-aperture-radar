@@ -193,6 +193,12 @@
 .gd-pair p[data-on] {
 	opacity: 1;
 }
+.gd-pair[data-n="3"] {
+	grid-template-columns: repeat(3, 1fr);
+}
+.gd-pair[data-n="3"] b {
+	font-size: 40px;
+}
 .gd-pair span {
 	font-size: 13.5px;
 	font-weight: 650;
@@ -233,6 +239,12 @@
 	height: 4px;
 	border-radius: 2px;
 	background: var(--flooded);
+}
+.gd-sw[data-k="hit"] {
+	background: var(--hit);
+}
+.gd-sw[data-k="false"] {
+	background: var(--false);
 }
 .gd-sw[data-k="zone"] {
 	height: 0;
@@ -362,7 +374,7 @@
 /* the switch of step 3 */
 .gd-seg {
 	display: grid;
-	grid-template-columns: 1fr 1fr;
+	grid-template-columns: repeat(var(--n, 2), 1fr);
 	padding: 4px;
 	border-radius: 14px;
 	background: var(--bg-2);
@@ -378,13 +390,9 @@
 	font-weight: 750;
 	transition: background 0.25s var(--ease), color 0.25s var(--ease);
 }
-.gd-seg button[aria-checked="true"][data-k="zone"] {
-	background: var(--zone);
-	color: #1a0d00;
-}
-.gd-seg button[aria-checked="true"][data-k="sim"] {
-	background: var(--sim);
-	color: #14001f;
+.gd-seg button[aria-checked="true"] {
+	background: var(--ink);
+	color: var(--bg);
 }
 
 /* the rain slider of step 6 (the explorer's own, in the card's paper) */

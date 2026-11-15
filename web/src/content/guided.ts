@@ -41,6 +41,10 @@ export const COLORS = {
 	rain: '#7fe0f0',
 }
 
+/** what the swipe of step 4 compares: 'open' (open water only on both sides, public/layers/guided/swipe.json) or
+ *  'any' (open water and flooded vegetation on both sides, the /views pictures and numbers of views.json) */
+export const SWIPE_WATER: 'open' | 'any' = 'open'
+
 /** how long the flooded streets take to appear when step 2 opens, and how long each of its 16 groups fades in */
 export const REVEAL_MS = 4000
 export const REVEAL_FADE_MS = 700

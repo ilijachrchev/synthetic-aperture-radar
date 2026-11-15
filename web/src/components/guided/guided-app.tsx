@@ -16,7 +16,7 @@ import type { GeoJSONSource, Map as MapLibreMap, MapMouseEvent } from 'maplibre-
 import Link from 'next/link'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ICV, PNOA } from '@/content/explore'
-import { COLORS, REVEAL_FADE_MS, REVEAL_MS, STEPS, type StepKey } from '@/content/guided'
+import { COLORS, REVEAL_FADE_MS, REVEAL_MS, STEPS, type StepKey, SWIPE_WATER } from '@/content/guided'
 import { RainSlider } from '../explore/rain-slider'
 import { MapSwipe } from './map-swipe'
 import './guided.css'
@@ -33,6 +33,18 @@ const maplibre =
 
 const ROOT = '/layers/guided'
 type Num = { value: number; source: string }
+/** one option of step 3's switch: which street property flags a street, and its numbers against key A */
+type Method = {
+	key: string
+	label: string
+	prop: string
+	note: string | null
+	drawn_from: string
+	hit_rate_pct: Num
+	precision_pct: Num
+	flagged_km: Num
+	exact: boolean | null
+}
 type StreetsIndex = {
 	baked_utc: string
 	files: Record<string, { file: string; bytes: number }>
@@ -40,6 +52,7 @@ type StreetsIndex = {
 	names: string[]
 	zones: Record<string, string>
 	reveal: { bins: number; rule: string }
+	methods: Method[]
 	numbers: Record<string, Num>
 	marks: { radius_m: number; points: [number, number, number][]; source: string }
 	sources: Record<string, string>
@@ -47,6 +60,14 @@ type StreetsIndex = {
 type Pic = { file: string; bytes?: number }
 type SwipeItem = { date: string; nisar: Pic & { time_utc: string }; s1: Pic & { time_utc: string }; numbers: Record<string, { value: number; what: string; source: unknown[] }> }
 type ViewsDoc = { baked_utc: string; bounds: [number, number, number, number]; views: { swipe?: { items: SwipeItem[] } } }
+/** the swipe of step 4 with open water only on both sides (scripts/bake_swipe_open.py) */
+type SwipeDoc = {
+	baked_utc: string
+	bounds: [number, number, number, number]
+	nisar: Pic & { time_utc: string; product: string }
+	s1: Pic & { time_utc: string; product: string }
+	numbers: Record<string, { value: number; what: string; source: string[] }>
+}
 type ExploreDoc = { sites: { pego_oliva?: { nisar: { still?: { date: string; open_water_share: number; source: string } } | null } } }
 type ExamDoc = {
 	baked_utc: string
@@ -77,15 +98,28 @@ const BIN_LAYERS = Array.from({ length: BINS }, (_, i) => binLayer(i))
 /** which map layers each step shows */
 const STEP_LAYERS: Record<StepKey, string[]> = {
 	missed: ['g-zones-line', ...BIN_LAYERS],
-	simulation: ['g-flood-all'],
+	simulation: ['g-s3-missed', 'g-s3-dry', 'g-s3-found'],
 	nisar: [],
 	exam: [],
 	rain: ['g-rain-fill', 'g-rain-line'],
 }
-const ALL_LAYERS = [...new Set([...Object.values(STEP_LAYERS).flat(), 'g-zones-line', 'g-zones-fill', 'g-sim-line', 'g-sim-fill', 'g-pick'])]
+const ALL_LAYERS = [...new Set([...Object.values(STEP_LAYERS).flat(), 'g-zones-line', 'g-pick'])]
+/** a street piece of streets_2024.json that flooded (key A), and one a method flags (its property above 0) */
+const FLOODED = ['==', ['coalesce', ['get', 'f'], 0], 1]
+const flagged = (prop: string) => ['>', ['coalesce', ['get', prop], 0], 0]
+const s3Filters = (prop: string) => ({
+	'g-s3-found': ['all', FLOODED, flagged(prop)],
+	'g-s3-missed': ['all', FLOODED, ['!', flagged(prop)]],
+	'g-s3-dry': ['all', ['!', FLOODED], flagged(prop)],
+})
 const lineWidth = (k = 1) => ['interpolate', ['exponential', 1.6], ['zoom'], 11, 0.9 * k, 13, 1.8 * k, 15, 3.4 * k, 17, 6.5 * k, 18.6, 10 * k] as never
 
 const pct = (v: number) => `${Math.round(v)}%`
+/** a method's label inside a sentence: "Official map" is "the official map", "Our simulation" is "our simulation" */
+const sentence = (label: string) => {
+	const l = label.charAt(0).toLowerCase() + label.slice(1)
+	return /^(our|the|a|an) /.test(l) ? l : `the ${l}`
+}
 const ha = (v: number) => Math.round(v).toLocaleString('en-US')
 const f2 = (v: number) => v.toFixed(2)
 const timeOf = (iso: string) => iso.slice(11, 16)
@@ -145,12 +179,13 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 
 	const [streets, setStreets] = useState<StreetsIndex | null>(null)
 	const [views, setViews] = useState<ViewsDoc | null>(null)
+	const [swipe, setSwipe] = useState<SwipeDoc | null>(null)
 	const [explore, setExplore] = useState<ExploreDoc | null>(null)
 	const [exam, setExam] = useState<ExamDoc | null>(null)
 	const [score, setScore] = useState<ScoreDoc | null>(null)
 
 	const [pick, setPick] = useState<Pick | null>(null)
-	const [method, setMethod] = useState<'zones' | 'sim'>('zones')
+	const [methodKey, setMethod] = useState<string | null>(null)
 	const [rainIdx, setRainIdx] = useState(2)
 
 	const key = STEPS[step].key
@@ -168,11 +203,12 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 	useEffect(() => {
 		const fail = (e: Error) => setError(e.message)
 		if ((key === 'missed' || key === 'simulation') && !streets) getJson<StreetsIndex>(`${ROOT}/streets.json`).then(setStreets).catch(fail)
-		if (key === 'nisar' && !views) getJson<ViewsDoc>('/layers/pego_oliva/views.json').then(setViews).catch(fail)
+		if (key === 'nisar' && SWIPE_WATER === 'any' && !views) getJson<ViewsDoc>('/layers/pego_oliva/views.json').then(setViews).catch(fail)
+		if (key === 'nisar' && SWIPE_WATER === 'open' && !swipe) getJson<SwipeDoc>(`${ROOT}/swipe.json`).then(setSwipe).catch(fail)
 		if (key === 'nisar' && !explore) getJson<ExploreDoc>('/layers/explore/explore.json').then(setExplore).catch(fail)
 		if ((key === 'exam' || key === 'rain') && !exam) getJson<ExamDoc>(`${ROOT}/exam.json`).then(setExam).catch(fail)
 		if ((key === 'exam' || key === 'rain') && !score) getJson<ScoreDoc>(`${ROOT}/test_score.json`).then(setScore).catch(fail)
-	}, [key, streets, views, explore, exam, score])
+	}, [key, streets, views, swipe, explore, exam, score])
 
 	// ---------------------------------------------------------------- the map
 	useEffect(() => {
@@ -257,22 +293,24 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 		if (!map || !ready || !streets || map.getSource('g-streets')) return
 		const v = `?v=${encodeURIComponent(streets.baked_utc)}`
 		map.addSource('g-zones', { type: 'geojson', data: `${ROOT}/${streets.files.zones.file}${v}` })
-		map.addSource('g-sim', { type: 'geojson', data: `${ROOT}/${streets.files.simulated.file}${v}` })
 		map.addSource('g-streets', { type: 'geojson', data: `${ROOT}/${streets.files.streets.file}${v}` })
 		map.addSource('g-pick', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } })
 		const hidden = { visibility: 'none' as const }
-		map.addLayer({ id: 'g-zones-fill', type: 'fill', source: 'g-zones', layout: hidden, paint: { 'fill-color': COLORS.zone, 'fill-opacity': 0.16 } })
-		map.addLayer({ id: 'g-sim-fill', type: 'fill', source: 'g-sim', layout: hidden, paint: { 'fill-color': COLORS.sim, 'fill-opacity': 0.34 } })
 		map.addLayer({ id: 'g-zones-line', type: 'line', source: 'g-zones', layout: hidden, paint: { 'line-color': COLORS.zone, 'line-width': ['interpolate', ['linear'], ['zoom'], 10, 1, 16, 2.4] as never, 'line-opacity': 0.95 } })
-		map.addLayer({ id: 'g-sim-line', type: 'line', source: 'g-sim', layout: hidden, paint: { 'line-color': COLORS.sim, 'line-width': ['interpolate', ['linear'], ['zoom'], 10, 1, 16, 2.4] as never, 'line-opacity': 0.95 } })
 		const street = { 'line-color': COLORS.flooded, 'line-width': lineWidth(), 'line-opacity': 0 }
 		for (let i = 0; i < BINS; i++) {
 			map.addLayer({ id: binLayer(i), type: 'line', source: 'g-streets', filter: ['==', ['get', 'r'], i], layout: { ...hidden, 'line-cap': 'round', 'line-join': 'round' }, paint: street as never })
 		}
-		map.addLayer({ id: 'g-flood-all', type: 'line', source: 'g-streets', layout: { ...hidden, 'line-cap': 'round', 'line-join': 'round' }, paint: { ...street, 'line-opacity': 1 } as never })
+		// step 3: the streets the chosen method flags, green where they flooded, red where they stayed dry, and the
+		// flooded streets it missed in the blue of step 2
+		const line = { ...hidden, 'line-cap': 'round' as const, 'line-join': 'round' as const }
+		const first = s3Filters(streets.methods[0]?.prop ?? 'z')
+		map.addLayer({ id: 'g-s3-missed', type: 'line', source: 'g-streets', filter: first['g-s3-missed'] as never, layout: line, paint: { 'line-color': COLORS.flooded, 'line-width': lineWidth(), 'line-opacity': 0.9 } })
+		map.addLayer({ id: 'g-s3-dry', type: 'line', source: 'g-streets', filter: first['g-s3-dry'] as never, layout: line, paint: { 'line-color': COLORS.falseAlarm, 'line-width': lineWidth(), 'line-opacity': 0.95 } })
+		map.addLayer({ id: 'g-s3-found', type: 'line', source: 'g-streets', filter: first['g-s3-found'] as never, layout: line, paint: { 'line-color': COLORS.hit, 'line-width': lineWidth(1.15), 'line-opacity': 1 } })
 		map.addLayer({ id: 'g-pick', type: 'line', source: 'g-pick', layout: { ...hidden, 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-color': '#ffffff', 'line-width': lineWidth(2.2), 'line-opacity': 0.95 } }, binLayer(0))
 		// what a tap reads: the flooded streets, wide and unseen
-		map.addLayer({ id: 'g-hit', type: 'line', source: 'g-streets', paint: { 'line-width': ['interpolate', ['linear'], ['zoom'], 11, 10, 16, 22] as never, 'line-opacity': 0 } })
+		map.addLayer({ id: 'g-hit', type: 'line', source: 'g-streets', filter: FLOODED as never, paint: { 'line-width': ['interpolate', ['linear'], ['zoom'], 11, 10, 16, 22] as never, 'line-opacity': 0 } })
 	}, [map, ready, streets])
 
 	// the rain outlines (step 6)
@@ -287,11 +325,18 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 	useEffect(() => {
 		if (!map || !ready) return
 		const on = new Set(STEP_LAYERS[key])
-		if (key === 'simulation') for (const id of method === 'zones' ? ['g-zones-line', 'g-zones-fill'] : ['g-sim-fill']) on.add(id)
 		if (key === 'missed' && pick) on.add('g-pick')
 		for (const id of ALL_LAYERS) if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', on.has(id) ? 'visible' : 'none')
 		if (map.getLayer('g-hit')) map.setLayoutProperty('g-hit', 'visibility', key === 'missed' ? 'visible' : 'none')
-	}, [map, ready, key, method, pick, streets, exam])
+	}, [map, ready, key, pick, streets, exam])
+
+	// step 3: the chosen method's streets
+	const methods = useMemo(() => streets?.methods ?? [], [streets])
+	const method = methods.find((m) => m.key === methodKey) ?? methods[0] ?? null
+	useEffect(() => {
+		if (!map || !ready || !method || !map.getLayer('g-s3-found')) return
+		for (const [id, f] of Object.entries(s3Filters(method.prop))) map.setFilter(id, f as never)
+	}, [map, ready, method, streets])
 
 	// step 2 opens with the flooded streets appearing outward from the ravines, about 4 s, then still
 	const playReveal = useCallback(() => {
@@ -432,7 +477,30 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 	}, [map, ready, go, playReveal])
 
 	// ---------------------------------------------------------------- what the card says
-	const swipe28 = useMemo(() => views?.views.swipe?.items.find((i) => i.date === '2026-10-28') ?? null, [views])
+	// the swipe of step 4: open water only on both sides (swipe.json), or water of any kind (views.json)
+	const swipe28 = useMemo(() => {
+		if (SWIPE_WATER === 'open') {
+			if (!swipe) return null
+			const v = `?v=${encodeURIComponent(swipe.baked_utc)}`
+			return {
+				bounds: swipe.bounds,
+				s1: { src: `${ROOT}/${swipe.s1.file}${v}`, time_utc: swipe.s1.time_utc },
+				nisar: { src: `${ROOT}/${swipe.nisar.file}${v}`, time_utc: swipe.nisar.time_utc },
+				nisarFinds: swipe.numbers.nisar_finds_open.value,
+				s1Finds: swipe.numbers.s1_finds_open.value,
+			}
+		}
+		const it = views?.views.swipe?.items.find((i) => i.date === '2026-10-28')
+		if (!views || !it) return null
+		const v = `?v=${encodeURIComponent(views.baked_utc)}`
+		return {
+			bounds: views.bounds,
+			s1: { src: `/layers/pego_oliva/${it.s1.file}${v}`, time_utc: it.s1.time_utc },
+			nisar: { src: `/layers/pego_oliva/${it.nisar.file}${v}`, time_utc: it.nisar.time_utc },
+			nisarFinds: it.numbers.nisar_finds.value,
+			s1Finds: it.numbers.s1_finds.value,
+		}
+	}, [views, swipe])
 	const still = explore?.sites.pego_oliva?.nisar?.still ?? null
 	const n = streets?.numbers
 
@@ -482,40 +550,45 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 	} else if (key === 'simulation') {
 		body = (
 			<>
-				<div className="gd-seg" role="radiogroup" aria-label="Which map">
-					<button type="button" role="radio" aria-checked={method === 'zones'} data-k="zone" onClick={() => setMethod('zones')}>
-						Official map
-					</button>
-					<button type="button" role="radio" aria-checked={method === 'sim'} data-k="sim" onClick={() => setMethod('sim')}>
-						Our simulation
-					</button>
+				<div className="gd-seg" role="radiogroup" aria-label="Which map" style={{ ['--n' as string]: Math.max(1, methods.length) }}>
+					{methods.map((m) => (
+						<button key={m.key} type="button" role="radio" aria-checked={m.key === method?.key} onClick={() => setMethod(m.key)}>
+							{m.label}
+						</button>
+					))}
 				</div>
-				{n && (
-					<div className="gd-pair">
-						<p data-on={method === 'sim' || undefined}>
-							<b className="display">{pct(n.sim_hit_pct.value)}</b>
-							<span>of the flooded streets found by our simulation</span>
-						</p>
-						<p data-on={method === 'zones' || undefined}>
-							<b className="display">{pct(n.zones_hit_pct.value)}</b>
-							<span>by the official map</span>
-						</p>
+				{method && (
+					<div className="gd-pair" data-n={methods.length}>
+						{methods.map((m) => (
+							<p key={m.key} data-on={m.key === method.key || undefined}>
+								<b className="display">{pct(m.hit_rate_pct.value)}</b>
+								<span>of the flooded streets found by {sentence(m.label)}</span>
+							</p>
+						))}
 					</div>
 				)}
-				{n && (
+				{method && (
 					<p className="gd-small">
-						{pct(n.sim_precision_pct.value)} of the streets our simulation flagged really flooded; the official map {pct(n.zones_precision_pct.value)}.
+						{pct(method.precision_pct.value)} of the streets {sentence(method.label)} flagged really flooded
+						{methods
+							.filter((m) => m.key !== method.key)
+							.map((m) => `; ${sentence(m.label)} ${pct(m.precision_pct.value)}`)
+							.join('')}
+						.
 					</p>
 				)}
 				<ul className="gd-key">
 					<li>
-						<i className="gd-sw" data-k="flooded" /> Street that flooded
+						<i className="gd-sw" data-k="hit" /> Flagged, and it flooded
 					</li>
 					<li>
-						<i className="gd-sw" data-k={method === 'zones' ? 'zone' : 'sim'} data-fill /> {method === 'zones' ? 'Official flood zone (SNCZI)' : 'Our simulation: water deeper than 0.3 m'}
+						<i className="gd-sw" data-k="flooded" /> Flooded, not flagged
+					</li>
+					<li>
+						<i className="gd-sw" data-k="false" /> Flagged, stayed dry
 					</li>
 				</ul>
-				<p className="gd-note">Run with the rain that fell on 29 Oct 2024.</p>
+				{method?.note && <p className="gd-note">{method.note}</p>}
 			</>
 		)
 	} else if (key === 'nisar') {
@@ -524,11 +597,11 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 				{swipe28 && (
 					<div className="gd-pair">
 						<p data-on>
-							<b className="display">{pct(swipe28.numbers.nisar_finds.value * 100)}</b>
+							<b className="display">{pct(swipe28.nisarFinds * 100)}</b>
 							<span>of the open water a same-day photo shows, found by NISAR</span>
 						</p>
 						<p>
-							<b className="display">{pct(swipe28.numbers.s1_finds.value * 100)}</b>
+							<b className="display">{pct(swipe28.s1Finds * 100)}</b>
 							<span>by Sentinel-1</span>
 						</p>
 					</div>
@@ -536,7 +609,7 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 				{still && <p className="gd-small">9 days after the flood, {pct(still.open_water_share * 100)} of the flooded farmland was still under water.</p>}
 				<ul className="gd-key">
 					<li>
-						<i className="gd-sw" data-k="water" data-fill /> Water on each radar map
+						<i className="gd-sw" data-k="water" data-fill /> {SWIPE_WATER === 'open' ? 'Open water' : 'Water'} on each radar map
 					</li>
 					<li>
 						<i className="gd-sw" data-k="nodata" data-fill /> Ground the map does not cover
@@ -547,6 +620,7 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 						<i /> {s.hint}: the same evening, {minutesApart(swipe28.nisar.time_utc, swipe28.s1.time_utc)} minutes apart
 					</p>
 				)}
+				{SWIPE_WATER === 'open' && <p className="gd-note">Both sides: open water only.</p>}
 			</>
 		)
 	} else if (key === 'exam') {
@@ -621,11 +695,17 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 	if (key === 'missed' || key === 'simulation') {
 		if (streets) src.push(`Streets: ${streets.sources.streets}.`, `Flood: ${streets.sources.flood}.`, `Water marks: ${streets.sources.marks}.`, `Zones: ${streets.sources.zones}.`)
 		if (key === 'simulation' && streets) src.push(`Simulation: ${streets.sources.simulated}, with no infiltration, so an upper bound.`)
+		if (key === 'simulation' && method && method.exact === false) src.push(`The streets drawn for ${sentence(method.label)} come from ${method.drawn_from}; the numbers are those of the scores.`)
 		if (streets) src.push(`Numbers: ${streets.sources.scores}.`)
 	}
 	if (key === 'nisar') {
-		src.push('NISAR: NASA-ISRO L2 GCOV, track 066 D, water by the team CV model (v1 at 0.3).', 'Sentinel-1: OPERA DSWx-S1 (open water and flooded vegetation).', 'Same-day photo: OPERA DSWx-HLS (Landsat 9, Sentinel-2) within a day.')
-		src.push('Numbers: public/layers/pego_oliva/views.json (bake_views.py); still flooded: data/metrics/nisar_labels_summary.json against Copernicus EMS EMSR935.')
+		if (SWIPE_WATER === 'open') {
+			src.push('NISAR: NASA-ISRO L2 GCOV, track 066 D, open water by the team CV model (v1 at 0.3 on p(open water)).', 'Sentinel-1: OPERA DSWx-S1, open water (class 1).')
+			src.push('Same-day photo: OPERA DSWx-HLS (Landsat 9, Sentinel-2) within a day, its open water outside permanent water, where clear.', 'Numbers: public/layers/guided/swipe.json (bake_swipe_open.py); still flooded: data/metrics/nisar_labels_summary.json against Copernicus EMS EMSR935.')
+		} else {
+			src.push('NISAR: NASA-ISRO L2 GCOV, track 066 D, water by the team CV model (v1 at 0.3).', 'Sentinel-1: OPERA DSWx-S1 (open water and flooded vegetation).', 'Same-day photo: OPERA DSWx-HLS (Landsat 9, Sentinel-2) within a day.')
+			src.push('Numbers: public/layers/pego_oliva/views.json (bake_views.py); still flooded: data/metrics/nisar_labels_summary.json against Copernicus EMS EMSR935.')
+		}
 	}
 	if (key === 'exam') {
 		if (score) src.push(`Test: ${score.by}. ${score.source}.`)
@@ -639,14 +719,14 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 		<div className="gd" data-step={key} data-ready={ready || undefined}>
 			<div ref={mapEl} className="gd-map" />
 
-			{swipeOn && key === 'nisar' && views && swipe28 && (
+			{swipeOn && key === 'nisar' && swipe28 && (
 				<MapSwipe
 					key="nisar"
 					map={map}
-					bounds={views.bounds}
+					bounds={swipe28.bounds}
 					beside=".gd-card"
-					left={{ src: `/layers/pego_oliva/${swipe28.s1.file}?v=${encodeURIComponent(views.baked_utc)}`, label: 'Sentinel-1', sub: `${timeOf(swipe28.s1.time_utc)} UTC` }}
-					right={{ src: `/layers/pego_oliva/${swipe28.nisar.file}?v=${encodeURIComponent(views.baked_utc)}`, label: 'NISAR', sub: `${timeOf(swipe28.nisar.time_utc)} UTC` }}
+					left={{ src: swipe28.s1.src, label: 'Sentinel-1', sub: `${timeOf(swipe28.s1.time_utc)} UTC` }}
+					right={{ src: swipe28.nisar.src, label: 'NISAR', sub: `${timeOf(swipe28.nisar.time_utc)} UTC` }}
 				/>
 			)}
 			{swipeOn && key === 'exam' && exam && (

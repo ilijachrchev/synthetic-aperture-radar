@@ -1,0 +1,128 @@
+{
+ "made_by": "web/scripts/bake_swipe_open.py",
+ "baked_utc": "2026-11-15T08:27:13Z",
+ "site": "pego_oliva",
+ "date": "2026-10-28",
+ "bounds": [
+  -0.2501106,
+  38.7799152,
+  0.0600815,
+  39.0201173
+ ],
+ "width": 1807,
+ "height": 1798,
+ "shows": "open water only on both sides",
+ "nisar": {
+  "file": "swipe_2026-10-28_nisar_open.webp",
+  "bytes": 4028,
+  "time_utc": "2026-10-28T18:53:18Z",
+  "granule": "NISAR_L2_PR_GCOV_034_066_D_069_2005_DHDH_M_20261028T185318_20261028T185353_P05036_N_F_J_001",
+  "product": "NISAR GCOV, team CV model v1 (5 U-Nets) at 0.3 on p(open water)"
+ },
+ "s1": {
+  "file": "swipe_2026-10-28_s1_open.webp",
+  "bytes": 7282,
+  "time_utc": "2026-10-28T18:01:44Z",
+  "granules": [
+   "OPERA_L3_DSWx-S1_T30SYH_20261028T180144Z_20261030T090804Z_S1D_30_v1.0_B01_WTR.tif",
+   "OPERA_L3_DSWx-S1_T30SYJ_20261028T180144Z_20261030T090804Z_S1D_30_v1.0_B01_WTR.tif",
+   "OPERA_L3_DSWx-S1_T31SBC_20261028T180144Z_20261030T090804Z_S1D_30_v1.0_B01_WTR.tif",
+   "OPERA_L3_DSWx-S1_T31SBD_20261028T180144Z_20261030T090804Z_S1D_30_v1.0_B01_WTR.tif"
+  ],
+  "product": "OPERA DSWx-S1 B01_WTR class 1 (open water)"
+ },
+ "numbers": {
+  "optical_clear": {
+   "value": 0.879,
+   "what": "of the changing land the optical map saw clear",
+   "source": [
+    "data/optical/pego_oliva_066_D_069/2026-10-28.tif"
+   ]
+  },
+  "optical_open_water_ha": {
+   "value": 192.1,
+   "what": "open water the optical map sees, outside permanent water",
+   "source": [
+    "data/optical/pego_oliva_066_D_069/2026-10-28.tif"
+   ]
+  },
+  "nisar_finds_open": {
+   "value": 0.572,
+   "what": "of that optical open water on NISAR's map of open water",
+   "source": [
+    "data/stack/pego_oliva_066_D_069.nc",
+    "data/interim/cv_prob/v1/pego_oliva_066_D_069_2026-10-28.npz",
+    "data/optical/pego_oliva_066_D_069/2026-10-28.tif"
+   ]
+  },
+  "s1_finds_open": {
+   "value": 0.359,
+   "what": "of that optical open water on Sentinel-1's map of open water",
+   "source": [
+    "OPERA_L3_DSWx-S1_T30SYH_20261028T180144Z_20261030T090804Z_S1D_30_v1.0_B01_WTR.tif",
+    "OPERA_L3_DSWx-S1_T30SYJ_20261028T180144Z_20261030T090804Z_S1D_30_v1.0_B01_WTR.tif",
+    "OPERA_L3_DSWx-S1_T31SBC_20261028T180144Z_20261030T090804Z_S1D_30_v1.0_B01_WTR.tif",
+    "OPERA_L3_DSWx-S1_T31SBD_20261028T180144Z_20261030T090804Z_S1D_30_v1.0_B01_WTR.tif",
+    "data/optical/pego_oliva_066_D_069/2026-10-28.tif"
+   ]
+  },
+  "nisar_water_ha_open": {
+   "value": 451.4,
+   "what": "open water NISAR maps on the land both maps cover",
+   "source": [
+    "data/stack/pego_oliva_066_D_069.nc",
+    "data/interim/cv_prob/v1/pego_oliva_066_D_069_2026-10-28.npz"
+   ]
+  },
+  "s1_water_ha_open": {
+   "value": 332.1,
+   "what": "open water Sentinel-1 maps there",
+   "source": [
+    "OPERA_L3_DSWx-S1_T30SYH_20261028T180144Z_20261030T090804Z_S1D_30_v1.0_B01_WTR.tif",
+    "OPERA_L3_DSWx-S1_T30SYJ_20261028T180144Z_20261030T090804Z_S1D_30_v1.0_B01_WTR.tif",
+    "OPERA_L3_DSWx-S1_T31SBC_20261028T180144Z_20261030T090804Z_S1D_30_v1.0_B01_WTR.tif",
+    "OPERA_L3_DSWx-S1_T31SBD_20261028T180144Z_20261030T090804Z_S1D_30_v1.0_B01_WTR.tif"
+   ]
+  },
+  "nisar_finds_any": {
+   "value": 0.59,
+   "what": "of that optical open water on NISAR's map of open water and flooded vegetation",
+   "source": [
+    "data/stack/pego_oliva_066_D_069.nc",
+    "data/interim/cv_prob/v1/pego_oliva_066_D_069_2026-10-28.npz",
+    "data/optical/pego_oliva_066_D_069/2026-10-28.tif"
+   ]
+  },
+  "s1_finds_any": {
+   "value": 0.42,
+   "what": "of that optical open water on Sentinel-1's map of open water and flooded vegetation",
+   "source": [
+    "OPERA_L3_DSWx-S1_T30SYH_20261028T180144Z_20261030T090804Z_S1D_30_v1.0_B01_WTR.tif",
+    "OPERA_L3_DSWx-S1_T30SYJ_20261028T180144Z_20261030T090804Z_S1D_30_v1.0_B01_WTR.tif",
+    "OPERA_L3_DSWx-S1_T31SBC_20261028T180144Z_20261030T090804Z_S1D_30_v1.0_B01_WTR.tif",
+    "OPERA_L3_DSWx-S1_T31SBD_20261028T180144Z_20261030T090804Z_S1D_30_v1.0_B01_WTR.tif",
+    "data/optical/pego_oliva_066_D_069/2026-10-28.tif"
+   ]
+  },
+  "nisar_water_ha_any": {
+   "value": 575.5,
+   "what": "open water and flooded vegetation NISAR maps on the land both maps cover",
+   "source": [
+    "data/stack/pego_oliva_066_D_069.nc",
+    "data/interim/cv_prob/v1/pego_oliva_066_D_069_2026-10-28.npz"
+   ]
+  },
+  "s1_water_ha_any": {
+   "value": 651.2,
+   "what": "open water and flooded vegetation Sentinel-1 maps there",
+   "source": [
+    "OPERA_L3_DSWx-S1_T30SYH_20261028T180144Z_20261030T090804Z_S1D_30_v1.0_B01_WTR.tif",
+    "OPERA_L3_DSWx-S1_T30SYJ_20261028T180144Z_20261030T090804Z_S1D_30_v1.0_B01_WTR.tif",
+    "OPERA_L3_DSWx-S1_T31SBC_20261028T180144Z_20261030T090804Z_S1D_30_v1.0_B01_WTR.tif",
+    "OPERA_L3_DSWx-S1_T31SBD_20261028T180144Z_20261030T090804Z_S1D_30_v1.0_B01_WTR.tif"
+   ]
+  }
+ },
+ "rule": "the swipe of bake_views.py for the same evening, open water only: DSWx-S1 class 1 against v1 p(open water) >= 0.3; referee an optical OPERA DSWx-HLS map within a day, open water outside permanent water, where clear",
+ "views_json_any_water": "public/layers/pego_oliva/views.json views.swipe.items[2026-10-28].numbers (nisar_finds, s1_finds): any water"
+}
