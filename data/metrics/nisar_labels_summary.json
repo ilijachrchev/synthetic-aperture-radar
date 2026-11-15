@@ -1,5 +1,5 @@
 {
- "created_utc": "2026-11-15T00:27:28+00:00",
+ "created_utc": "2026-11-15T00:39:04+00:00",
  "module": "pipeline/cv/labels.py",
  "grid": "pipeline.stack.site_grid, EPSG:32630, 20 m (0.04 ha)",
  "classes": "0 not water, 1 open water, 2 water under plants (possible, not validated), 3 not assessed (built-up), 255 no data or sea",
@@ -8,7 +8,7 @@
   "water_under_plants": "candidate rule, not validated: vegetated WorldCover land, 5x5 filtered HH at least 3.0 dB above its stack median and HV within 1.5 dB of its median",
   "not_assessed": "ESA WorldCover 50 built-up: the radar cannot see water between buildings at 20 m",
   "confidence": "share of agreeing checks, steps of 5: model margin to 0.3; HH below -15.0 dB; coherence below 0.25; clear optical DSWx-HLS within 1 day. Class 2: the model's p(any water) only, capped at 50",
-  "s1": "OPERA DSWx-S1 at most 2 h from the pass: 0 not water, 1 open water, 2 inundated vegetation, 3 built-up"
+  "dana": "0 dry on both dates, 1 open water on both dates, 2 new open water, 3 open water gone, 4 permanent water, 255 not compared (no data or sea on either date, or built-up)"
  },
  "test_window": [
   "2026-10-15",
@@ -52,6 +52,7 @@
     "058_A_021"
    ],
    "pass_count": 21,
+   "pass_list": "data/labels_nisar/albufera_passes.json",
    "land_ha": 50805.56,
    "permanent_water_ha": 2816.4,
    "built_up_ha": 6917.28,
@@ -64,7 +65,6 @@
      "maturity": "PROVISIONAL",
      "crid": "P05023",
      "coherence_pair": "2026-06-18_2026-06-30",
-     "sentinel1_hours_from_nisar": 0.98,
      "hectares": {
       "not_water": 38808.76,
       "open_water": 2775.64,
@@ -86,20 +86,6 @@
       "changing_open_water_confirmed_by_optical": null,
       "not_water_where_optical_sees_open_water": null,
       "changing_open_water_with_low_coherence": 0.257
-     },
-     "sentinel1": {
-      "hectares": {
-       "not_water": 40856.52,
-       "open_water": 2588.96,
-       "inundated_vegetation": 402.76,
-       "not_assessed_built": 6915.4
-      },
-      "changing_open_water_compared": {
-       "compared_ha": 38756.96,
-       "both_ha": 104.16,
-       "nisar_only_ha": 297.52,
-       "sentinel1_only_ha": 114.12
-      }
      }
     },
     {
@@ -110,7 +96,6 @@
      "maturity": "PROVISIONAL",
      "crid": "P05023",
      "coherence_pair": "2026-06-18_2026-06-30",
-     "sentinel1_hours_from_nisar": null,
      "hectares": {
       "not_water": 39137.16,
       "open_water": 2453.96,
@@ -142,7 +127,6 @@
      "maturity": "PROVISIONAL",
      "crid": "P05023",
      "coherence_pair": "2026-06-30_2026-07-12",
-     "sentinel1_hours_from_nisar": null,
      "hectares": {
       "not_water": 39133.84,
       "open_water": 2441.48,
@@ -174,7 +158,6 @@
      "maturity": "PROVISIONAL",
      "crid": "P05023",
      "coherence_pair": "2026-07-12_2026-07-24",
-     "sentinel1_hours_from_nisar": null,
      "hectares": {
       "not_water": 38528.32,
       "open_water": 2389.44,
@@ -206,7 +189,6 @@
      "maturity": "PROVISIONAL",
      "crid": "P05023",
      "coherence_pair": "2026-07-24_2026-08-17",
-     "sentinel1_hours_from_nisar": null,
      "hectares": {
       "not_water": 38595.36,
       "open_water": 2378.68,
@@ -238,7 +220,6 @@
      "maturity": "PROVISIONAL",
      "crid": "P05023",
      "coherence_pair": "2026-08-17_2026-08-29",
-     "sentinel1_hours_from_nisar": null,
      "hectares": {
       "not_water": 39061.68,
       "open_water": 2379.8,
@@ -270,7 +251,6 @@
      "maturity": "PROVISIONAL",
      "crid": "P05023",
      "coherence_pair": "2026-08-29_2026-09-10",
-     "sentinel1_hours_from_nisar": null,
      "hectares": {
       "not_water": 38992.88,
       "open_water": 2381.72,
@@ -302,7 +282,6 @@
      "maturity": "PROVISIONAL",
      "crid": "P05023",
      "coherence_pair": "2026-09-10_2026-09-22",
-     "sentinel1_hours_from_nisar": 0.85,
      "hectares": {
       "not_water": 39056.76,
       "open_water": 2401.72,
@@ -324,20 +303,6 @@
       "changing_open_water_confirmed_by_optical": 1.0,
       "not_water_where_optical_sees_open_water": 0.0004,
       "changing_open_water_with_low_coherence": 0.428
-     },
-     "sentinel1": {
-      "hectares": {
-       "not_water": 41320.84,
-       "open_water": 2391.88,
-       "inundated_vegetation": 165.48,
-       "not_assessed_built": 6917.28
-      },
-      "changing_open_water_compared": {
-       "compared_ha": 38784.24,
-       "both_ha": 12.68,
-       "nisar_only_ha": 24.52,
-       "sentinel1_only_ha": 25.8
-      }
      }
     },
     {
@@ -348,7 +313,6 @@
      "maturity": "PROVISIONAL",
      "crid": "P05023",
      "coherence_pair": "2026-09-22_2026-10-04",
-     "sentinel1_hours_from_nisar": 0.85,
      "hectares": {
       "not_water": 38509.08,
       "open_water": 2874.24,
@@ -370,20 +334,6 @@
       "changing_open_water_confirmed_by_optical": 1.0,
       "not_water_where_optical_sees_open_water": 0.0335,
       "changing_open_water_with_low_coherence": 0.5787
-     },
-     "sentinel1": {
-      "hectares": {
-       "not_water": 41016.96,
-       "open_water": 2680.72,
-       "inundated_vegetation": 180.32,
-       "not_assessed_built": 6917.28
-      },
-      "changing_open_water_compared": {
-       "compared_ha": 38784.2,
-       "both_ha": 284.36,
-       "nisar_only_ha": 229.04,
-       "sentinel1_only_ha": 71.56
-      }
      }
     },
     {
@@ -394,7 +344,6 @@
      "maturity": "PROVISIONAL",
      "crid": "P05023",
      "coherence_pair": "2026-10-04_2026-10-16",
-     "sentinel1_hours_from_nisar": 0.85,
      "hectares": {
       "not_water": 37100.04,
       "open_water": 4367.8,
@@ -416,20 +365,6 @@
       "changing_open_water_confirmed_by_optical": 0.9972,
       "not_water_where_optical_sees_open_water": 0.091,
       "changing_open_water_with_low_coherence": 0.5058
-     },
-     "sentinel1": {
-      "hectares": {
-       "not_water": 39892.72,
-       "open_water": 3736.68,
-       "inundated_vegetation": 248.2,
-       "not_assessed_built": 6917.28
-      },
-      "changing_open_water_compared": {
-       "compared_ha": 38783.8,
-       "both_ha": 1277.8,
-       "nisar_only_ha": 728.48,
-       "sentinel1_only_ha": 138.76
-      }
      }
     },
     {
@@ -440,7 +375,6 @@
      "maturity": "VALIDATED",
      "crid": "P05036",
      "coherence_pair": null,
-     "sentinel1_hours_from_nisar": 0.85,
      "hectares": {
       "not_water": 34050.2,
       "open_water": 7426.6,
@@ -462,20 +396,6 @@
       "changing_open_water_confirmed_by_optical": 0.9905,
       "not_water_where_optical_sees_open_water": 0.0808,
       "changing_open_water_with_low_coherence": null
-     },
-     "sentinel1": {
-      "hectares": {
-       "not_water": 38160.28,
-       "open_water": 5473.12,
-       "inundated_vegetation": 244.56,
-       "not_assessed_built": 6917.28
-      },
-      "changing_open_water_compared": {
-       "compared_ha": 38784.08,
-       "both_ha": 3013.04,
-       "nisar_only_ha": 2040.52,
-       "sentinel1_only_ha": 174.0
-      }
      }
     },
     {
@@ -486,7 +406,6 @@
      "maturity": "PROVISIONAL",
      "crid": "P05023",
      "coherence_pair": "2026-06-18_2026-06-30",
-     "sentinel1_hours_from_nisar": null,
      "hectares": {
       "not_water": 33083.28,
       "open_water": 8496.76,
@@ -518,7 +437,6 @@
      "maturity": "PROVISIONAL",
      "crid": "P05023",
      "coherence_pair": "2026-06-18_2026-06-30",
-     "sentinel1_hours_from_nisar": 1.04,
      "hectares": {
       "not_water": 39149.36,
       "open_water": 2412.96,
@@ -540,20 +458,6 @@
       "changing_open_water_confirmed_by_optical": 0.236,
       "not_water_where_optical_sees_open_water": 0.0061,
       "changing_open_water_with_low_coherence": 0.3172
-     },
-     "sentinel1": {
-      "hectares": {
-       "not_water": 41160.04,
-       "open_water": 2328.32,
-       "inundated_vegetation": 372.84,
-       "not_assessed_built": 6915.96
-      },
-      "changing_open_water_compared": {
-       "compared_ha": 38770.76,
-       "both_ha": 3.76,
-       "nisar_only_ha": 42.4,
-       "sentinel1_only_ha": 8.2
-      }
      }
     },
     {
@@ -564,7 +468,6 @@
      "maturity": "PROVISIONAL",
      "crid": "P05023",
      "coherence_pair": "2026-06-30_2026-07-12",
-     "sentinel1_hours_from_nisar": 1.04,
      "hectares": {
       "not_water": 39146.36,
       "open_water": 2432.6,
@@ -586,20 +489,6 @@
       "changing_open_water_confirmed_by_optical": null,
       "not_water_where_optical_sees_open_water": null,
       "changing_open_water_with_low_coherence": 0.273
-     },
-     "sentinel1": {
-      "hectares": {
-       "not_water": 41052.88,
-       "open_water": 2394.08,
-       "inundated_vegetation": 414.36,
-       "not_assessed_built": 6915.8
-      },
-      "changing_open_water_compared": {
-       "compared_ha": 38770.92,
-       "both_ha": 5.4,
-       "nisar_only_ha": 55.12,
-       "sentinel1_only_ha": 17.8
-      }
      }
     },
     {
@@ -610,7 +499,6 @@
      "maturity": "PROVISIONAL",
      "crid": "P05023",
      "coherence_pair": "2026-07-12_2026-07-24",
-     "sentinel1_hours_from_nisar": 1.04,
      "hectares": {
       "not_water": 38370.04,
       "open_water": 2398.44,
@@ -632,20 +520,6 @@
       "changing_open_water_confirmed_by_optical": 0.0748,
       "not_water_where_optical_sees_open_water": 0.0008,
       "changing_open_water_with_low_coherence": 0.3057
-     },
-     "sentinel1": {
-      "hectares": {
-       "not_water": 41145.92,
-       "open_water": 2351.48,
-       "inundated_vegetation": 361.96,
-       "not_assessed_built": 6915.8
-      },
-      "changing_open_water_compared": {
-       "compared_ha": 38769.24,
-       "both_ha": 5.4,
-       "nisar_only_ha": 20.64,
-       "sentinel1_only_ha": 13.28
-      }
      }
     },
     {
@@ -656,7 +530,6 @@
      "maturity": "PROVISIONAL",
      "crid": "P05023",
      "coherence_pair": "2026-07-24_2026-08-17",
-     "sentinel1_hours_from_nisar": 1.04,
      "hectares": {
       "not_water": 38105.6,
       "open_water": 2394.36,
@@ -678,20 +551,6 @@
       "changing_open_water_confirmed_by_optical": 0.1541,
       "not_water_where_optical_sees_open_water": 0.0037,
       "changing_open_water_with_low_coherence": 0.3189
-     },
-     "sentinel1": {
-      "hectares": {
-       "not_water": 41255.84,
-       "open_water": 2334.24,
-       "inundated_vegetation": 270.36,
-       "not_assessed_built": 6915.56
-      },
-      "changing_open_water_compared": {
-       "compared_ha": 38770.32,
-       "both_ha": 3.36,
-       "nisar_only_ha": 25.36,
-       "sentinel1_only_ha": 11.76
-      }
      }
     },
     {
@@ -702,7 +561,6 @@
      "maturity": "PROVISIONAL",
      "crid": "P05023",
      "coherence_pair": "2026-08-17_2026-08-29",
-     "sentinel1_hours_from_nisar": 1.04,
      "hectares": {
       "not_water": 38934.6,
       "open_water": 2398.08,
@@ -724,20 +582,6 @@
       "changing_open_water_confirmed_by_optical": 0.1233,
       "not_water_where_optical_sees_open_water": 0.004,
       "changing_open_water_with_low_coherence": 0.3159
-     },
-     "sentinel1": {
-      "hectares": {
-       "not_water": 41168.44,
-       "open_water": 2351.88,
-       "inundated_vegetation": 341.2,
-       "not_assessed_built": 6915.44
-      },
-      "changing_open_water_compared": {
-       "compared_ha": 38771.36,
-       "both_ha": 7.12,
-       "nisar_only_ha": 27.32,
-       "sentinel1_only_ha": 14.36
-      }
      }
     },
     {
@@ -748,7 +592,6 @@
      "maturity": "PROVISIONAL",
      "crid": "P05023",
      "coherence_pair": "2026-08-29_2026-09-10",
-     "sentinel1_hours_from_nisar": 1.04,
      "hectares": {
       "not_water": 38932.6,
       "open_water": 2394.52,
@@ -770,20 +613,6 @@
       "changing_open_water_confirmed_by_optical": 0.5,
       "not_water_where_optical_sees_open_water": 0.0071,
       "changing_open_water_with_low_coherence": 0.3527
-     },
-     "sentinel1": {
-      "hectares": {
-       "not_water": 41230.32,
-       "open_water": 2405.68,
-       "inundated_vegetation": 224.56,
-       "not_assessed_built": 6916.0
-      },
-      "changing_open_water_compared": {
-       "compared_ha": 38770.52,
-       "both_ha": 10.48,
-       "nisar_only_ha": 17.08,
-       "sentinel1_only_ha": 26.56
-      }
      }
     },
     {
@@ -794,7 +623,6 @@
      "maturity": "PROVISIONAL",
      "crid": "P05023",
      "coherence_pair": "2026-09-22_2026-10-04",
-     "sentinel1_hours_from_nisar": 1.04,
      "hectares": {
       "not_water": 38424.36,
       "open_water": 3003.08,
@@ -816,20 +644,6 @@
       "changing_open_water_confirmed_by_optical": 1.0,
       "not_water_where_optical_sees_open_water": 0.0291,
       "changing_open_water_with_low_coherence": 0.5283
-     },
-     "sentinel1": {
-      "hectares": {
-       "not_water": 40794.44,
-       "open_water": 2806.24,
-       "inundated_vegetation": 259.32,
-       "not_assessed_built": 6915.96
-      },
-      "changing_open_water_compared": {
-       "compared_ha": 38769.68,
-       "both_ha": 388.24,
-       "nisar_only_ha": 246.88,
-       "sentinel1_only_ha": 62.88
-      }
      }
     },
     {
@@ -840,7 +654,6 @@
      "maturity": "PROVISIONAL",
      "crid": "P05023",
      "coherence_pair": "2026-10-04_2026-10-16",
-     "sentinel1_hours_from_nisar": 1.04,
      "hectares": {
       "not_water": 36681.52,
       "open_water": 4846.48,
@@ -862,20 +675,6 @@
       "changing_open_water_confirmed_by_optical": 0.996,
       "not_water_where_optical_sees_open_water": 0.0659,
       "changing_open_water_with_low_coherence": 0.4626
-     },
-     "sentinel1": {
-      "hectares": {
-       "not_water": 39778.92,
-       "open_water": 3760.56,
-       "inundated_vegetation": 321.44,
-       "not_assessed_built": 6916.04
-      },
-      "changing_open_water_compared": {
-       "compared_ha": 38771.08,
-       "both_ha": 1334.44,
-       "nisar_only_ha": 1140.28,
-       "sentinel1_only_ha": 98.28
-      }
      }
     },
     {
@@ -886,7 +685,6 @@
      "maturity": "VALIDATED",
      "crid": "P05036",
      "coherence_pair": null,
-     "sentinel1_hours_from_nisar": 1.04,
      "hectares": {
       "not_water": 33258.92,
       "open_water": 8295.48,
@@ -908,30 +706,25 @@
       "changing_open_water_confirmed_by_optical": 0.9885,
       "not_water_where_optical_sees_open_water": 0.0574,
       "changing_open_water_with_low_coherence": null
-     },
-     "sentinel1": {
-      "hectares": {
-       "not_water": 36389.52,
-       "open_water": 7133.96,
-       "inundated_vegetation": 338.4,
-       "not_assessed_built": 6915.96
-      },
-      "changing_open_water_compared": {
-       "compared_ha": 38771.44,
-       "both_ha": 4564.2,
-       "nisar_only_ha": 1333.52,
-       "sentinel1_only_ha": 190.52
-      }
      }
     }
    ],
    "dana": {
     "rain": "DANA Adam, 18 to 19 Oct 2026 (pipeline/prediction/flood)",
     "region": "land labelled on both dates (not sea, not built-up, not no data), not permanent water",
+    "layer_codes": {
+     "0": "dry on both dates",
+     "1": "open water on both dates",
+     "2": "new open water",
+     "3": "open water gone",
+     "4": "permanent water",
+     "255": "not compared (no data or sea on either date, or built-up)"
+    },
     "stacks": {
      "066_D_069": {
       "before": "2026-10-16",
       "after": "2026-10-28",
+      "layer": "data/labels_nisar/albufera_066_D_069/dana_2026-10-16_2026-10-28.tif",
       "compared_ha": 38791.24,
       "open_water": {
        "before_ha": 2006.28,
@@ -1403,6 +1196,7 @@
      "058_A_021": {
       "before": "2026-10-16",
       "after": "2026-10-28",
+      "layer": "data/labels_nisar/albufera_058_A_021/dana_2026-10-16_2026-10-28.tif",
       "compared_ha": 38790.6,
       "open_water": {
        "before_ha": 2474.72,
@@ -1882,6 +1676,7 @@
     "167_D_069"
    ],
    "pass_count": 30,
+   "pass_list": "data/labels_nisar/pego_oliva_passes.json",
    "land_ha": 50562.76,
    "permanent_water_ha": 60.12,
    "built_up_ha": 4358.96,
@@ -1894,7 +1689,6 @@
      "maturity": "PROVISIONAL",
      "crid": "P05023",
      "coherence_pair": "2026-06-18_2026-06-30",
-     "sentinel1_hours_from_nisar": 0.99,
      "hectares": {
       "not_water": 43085.08,
       "open_water": 246.92,
@@ -1916,20 +1710,6 @@
       "changing_open_water_confirmed_by_optical": null,
       "not_water_where_optical_sees_open_water": null,
       "changing_open_water_with_low_coherence": 0.3113
-     },
-     "sentinel1": {
-      "hectares": {
-       "not_water": 44475.24,
-       "open_water": 38.04,
-       "inundated_vegetation": 459.72,
-       "not_assessed_built": 4356.56
-      },
-      "changing_open_water_compared": {
-       "compared_ha": 42122.24,
-       "both_ha": 21.72,
-       "nisar_only_ha": 221.08,
-       "sentinel1_only_ha": 12.28
-      }
      }
     },
     {
@@ -1940,7 +1720,6 @@
      "maturity": "PROVISIONAL",
      "crid": "P05023",
      "coherence_pair": "2026-06-18_2026-06-30",
-     "sentinel1_hours_from_nisar": null,
      "hectares": {
       "not_water": 43191.32,
       "open_water": 139.44,
@@ -1972,7 +1751,6 @@
      "maturity": "PROVISIONAL",
      "crid": "P05023",
      "coherence_pair": "2026-06-30_2026-07-12",
-     "sentinel1_hours_from_nisar": null,
      "hectares": {
       "not_water": 43287.68,
       "open_water": 42.28,
@@ -2004,7 +1782,6 @@
      "maturity": "PROVISIONAL",
      "crid": "P05023",
      "coherence_pair": "2026-07-12_2026-07-24",
-     "sentinel1_hours_from_nisar": null,
      "hectares": {
       "not_water": 43244.08,
       "open_water": 56.72,
@@ -2036,7 +1813,6 @@
      "maturity": "PROVISIONAL",
      "crid": "P05023",
      "coherence_pair": "2026-07-24_2026-08-17",
-     "sentinel1_hours_from_nisar": null,
      "hectares": {
       "not_water": 43241.64,
       "open_water": 59.6,
@@ -2068,7 +1844,6 @@
      "maturity": "PROVISIONAL",
      "crid": "P05023",
      "coherence_pair": "2026-08-17_2026-08-29",
-     "sentinel1_hours_from_nisar": null,
      "hectares": {
       "not_water": 43268.92,
       "open_water": 56.52,
@@ -2100,7 +1875,6 @@
      "maturity": "PROVISIONAL",
      "crid": "P05023",
      "coherence_pair": "2026-08-29_2026-09-10",
-     "sentinel1_hours_from_nisar": null,
      "hectares": {
       "not_water": 42887.96,
       "open_water": 61.64,
@@ -2132,7 +1906,6 @@
      "maturity": "PROVISIONAL",
      "crid": "P05023",
      "coherence_pair": "2026-09-10_2026-09-22",
-     "sentinel1_hours_from_nisar": 0.86,
      "hectares": {
       "not_water": 43222.64,
       "open_water": 72.2,
@@ -2154,20 +1927,6 @@
       "changing_open_water_confirmed_by_optical": 0.0791,
       "not_water_where_optical_sees_open_water": 0.0004,
       "changing_open_water_with_low_coherence": 0.3421
-     },
-     "sentinel1": {
-      "hectares": {
-       "not_water": 45044.32,
-       "open_water": 32.2,
-       "inundated_vegetation": 291.92,
-       "not_assessed_built": 4357.48
-      },
-      "changing_open_water_compared": {
-       "compared_ha": 42499.88,
-       "both_ha": 20.12,
-       "nisar_only_ha": 49.64,
-       "sentinel1_only_ha": 8.84
-      }
      }
     },
     {
@@ -2178,7 +1937,6 @@
      "maturity": "PROVISIONAL",
      "crid": "P05023",
      "coherence_pair": "2026-09-22_2026-10-04",
-     "sentinel1_hours_from_nisar": 0.86,
      "hectares": {
       "not_water": 42833.96,
       "open_water": 76.2,
@@ -2200,20 +1958,6 @@
       "changing_open_water_confirmed_by_optical": null,
       "not_water_where_optical_sees_open_water": 0.0201,
       "changing_open_water_with_low_coherence": 0.3099
-     },
-     "sentinel1": {
-      "hectares": {
-       "not_water": 44997.68,
-       "open_water": 17.88,
-       "inundated_vegetation": 354.28,
-       "not_assessed_built": 4357.48
-      },
-      "changing_open_water_compared": {
-       "compared_ha": 42501.2,
-       "both_ha": 9.32,
-       "nisar_only_ha": 63.32,
-       "sentinel1_only_ha": 7.04
-      }
      }
     },
     {
@@ -2224,7 +1968,6 @@
      "maturity": "PROVISIONAL",
      "crid": "P05023",
      "coherence_pair": "2026-10-04_2026-10-16",
-     "sentinel1_hours_from_nisar": 0.86,
      "hectares": {
       "not_water": 43137.8,
       "open_water": 185.88,
@@ -2246,20 +1989,6 @@
       "changing_open_water_confirmed_by_optical": 0.1686,
       "not_water_where_optical_sees_open_water": 0.0007,
       "changing_open_water_with_low_coherence": 0.3325
-     },
-     "sentinel1": {
-      "hectares": {
-       "not_water": 44907.84,
-       "open_water": 28.52,
-       "inundated_vegetation": 432.48,
-       "not_assessed_built": 4357.48
-      },
-      "changing_open_water_compared": {
-       "compared_ha": 42500.52,
-       "both_ha": 16.84,
-       "nisar_only_ha": 166.4,
-       "sentinel1_only_ha": 9.24
-      }
      }
     },
     {
@@ -2270,7 +1999,6 @@
      "maturity": "VALIDATED",
      "crid": "P05036",
      "coherence_pair": null,
-     "sentinel1_hours_from_nisar": 0.86,
      "hectares": {
       "not_water": 42747.84,
       "open_water": 452.76,
@@ -2292,20 +2020,6 @@
       "changing_open_water_confirmed_by_optical": 0.6777,
       "not_water_where_optical_sees_open_water": 0.0025,
       "changing_open_water_with_low_coherence": null
-     },
-     "sentinel1": {
-      "hectares": {
-       "not_water": 44658.12,
-       "open_water": 333.72,
-       "inundated_vegetation": 378.36,
-       "not_assessed_built": 4357.48
-      },
-      "changing_open_water_compared": {
-       "compared_ha": 42501.92,
-       "both_ha": 284.96,
-       "nisar_only_ha": 157.64,
-       "sentinel1_only_ha": 37.2
-      }
      }
     },
     {
@@ -2316,7 +2030,6 @@
      "maturity": "PROVISIONAL",
      "crid": "P05023",
      "coherence_pair": "2026-06-18_2026-06-30",
-     "sentinel1_hours_from_nisar": null,
      "hectares": {
       "not_water": 42979.8,
       "open_water": 335.0,
@@ -2348,7 +2061,6 @@
      "maturity": "PROVISIONAL",
      "crid": "P05023",
      "coherence_pair": "2026-06-18_2026-06-30",
-     "sentinel1_hours_from_nisar": 1.05,
      "hectares": {
       "not_water": 43085.56,
       "open_water": 229.52,
@@ -2370,20 +2082,6 @@
       "changing_open_water_confirmed_by_optical": 0.3501,
       "not_water_where_optical_sees_open_water": 0.0015,
       "changing_open_water_with_low_coherence": 0.2876
-     },
-     "sentinel1": {
-      "hectares": {
-       "not_water": 36874.8,
-       "open_water": 20.92,
-       "inundated_vegetation": 336.88,
-       "not_assessed_built": 3170.56
-      },
-      "changing_open_water_compared": {
-       "compared_ha": 35188.56,
-       "both_ha": 13.6,
-       "nisar_only_ha": 201.4,
-       "sentinel1_only_ha": 4.08
-      }
      }
     },
     {
@@ -2394,7 +2092,6 @@
      "maturity": "PROVISIONAL",
      "crid": "P05023",
      "coherence_pair": "2026-06-30_2026-07-12",
-     "sentinel1_hours_from_nisar": 1.04,
      "hectares": {
       "not_water": 43251.28,
       "open_water": 66.72,
@@ -2416,20 +2113,6 @@
       "changing_open_water_confirmed_by_optical": null,
       "not_water_where_optical_sees_open_water": 0.0,
       "changing_open_water_with_low_coherence": 0.2602
-     },
-     "sentinel1": {
-      "hectares": {
-       "not_water": 36943.56,
-       "open_water": 18.84,
-       "inundated_vegetation": 302.4,
-       "not_assessed_built": 3172.12
-      },
-      "changing_open_water_compared": {
-       "compared_ha": 35219.36,
-       "both_ha": 6.36,
-       "nisar_only_ha": 45.12,
-       "sentinel1_only_ha": 5.96
-      }
      }
     },
     {
@@ -2440,7 +2123,6 @@
      "maturity": "PROVISIONAL",
      "crid": "P05023",
      "coherence_pair": "2026-07-12_2026-07-24",
-     "sentinel1_hours_from_nisar": 1.04,
      "hectares": {
       "not_water": 43232.48,
       "open_water": 74.52,
@@ -2462,20 +2144,6 @@
       "changing_open_water_confirmed_by_optical": 0.0066,
       "not_water_where_optical_sees_open_water": 0.0,
       "changing_open_water_with_low_coherence": 0.2364
-     },
-     "sentinel1": {
-      "hectares": {
-       "not_water": 37110.56,
-       "open_water": 23.12,
-       "inundated_vegetation": 249.48,
-       "not_assessed_built": 3179.44
-      },
-      "changing_open_water_compared": {
-       "compared_ha": 35330.4,
-       "both_ha": 10.92,
-       "nisar_only_ha": 46.36,
-       "sentinel1_only_ha": 4.64
-      }
      }
     },
     {
@@ -2486,7 +2154,6 @@
      "maturity": "PROVISIONAL",
      "crid": "P05023",
      "coherence_pair": "2026-07-24_2026-08-17",
-     "sentinel1_hours_from_nisar": 1.05,
      "hectares": {
       "not_water": 43224.52,
       "open_water": 65.6,
@@ -2508,20 +2175,6 @@
       "changing_open_water_confirmed_by_optical": 0.0235,
       "not_water_where_optical_sees_open_water": 0.0004,
       "changing_open_water_with_low_coherence": 0.2671
-     },
-     "sentinel1": {
-      "hectares": {
-       "not_water": 37112.28,
-       "open_water": 15.08,
-       "inundated_vegetation": 179.88,
-       "not_assessed_built": 3175.44
-      },
-      "changing_open_water_compared": {
-       "compared_ha": 35257.72,
-       "both_ha": 7.48,
-       "nisar_only_ha": 42.92,
-       "sentinel1_only_ha": 3.08
-      }
      }
     },
     {
@@ -2532,7 +2185,6 @@
      "maturity": "PROVISIONAL",
      "crid": "P05023",
      "coherence_pair": "2026-08-17_2026-08-29",
-     "sentinel1_hours_from_nisar": 1.05,
      "hectares": {
       "not_water": 43241.64,
       "open_water": 70.84,
@@ -2554,20 +2206,6 @@
       "changing_open_water_confirmed_by_optical": 0.0364,
       "not_water_where_optical_sees_open_water": 0.0005,
       "changing_open_water_with_low_coherence": 0.2449
-     },
-     "sentinel1": {
-      "hectares": {
-       "not_water": 37130.88,
-       "open_water": 18.84,
-       "inundated_vegetation": 152.04,
-       "not_assessed_built": 3174.96
-      },
-      "changing_open_water_compared": {
-       "compared_ha": 35253.4,
-       "both_ha": 8.68,
-       "nisar_only_ha": 46.88,
-       "sentinel1_only_ha": 5.04
-      }
      }
     },
     {
@@ -2578,7 +2216,6 @@
      "maturity": "PROVISIONAL",
      "crid": "P05023",
      "coherence_pair": "2026-08-29_2026-09-10",
-     "sentinel1_hours_from_nisar": 1.05,
      "hectares": {
       "not_water": 42714.6,
       "open_water": 58.28,
@@ -2600,20 +2237,6 @@
       "changing_open_water_confirmed_by_optical": null,
       "not_water_where_optical_sees_open_water": null,
       "changing_open_water_with_low_coherence": 0.3444
-     },
-     "sentinel1": {
-      "hectares": {
-       "not_water": 37151.2,
-       "open_water": 46.4,
-       "inundated_vegetation": 89.36,
-       "not_assessed_built": 3173.6
-      },
-      "changing_open_water_compared": {
-       "compared_ha": 35240.2,
-       "both_ha": 17.36,
-       "nisar_only_ha": 29.32,
-       "sentinel1_only_ha": 20.48
-      }
      }
     },
     {
@@ -2624,7 +2247,6 @@
      "maturity": "PROVISIONAL",
      "crid": "P05023",
      "coherence_pair": "2026-09-22_2026-10-04",
-     "sentinel1_hours_from_nisar": 1.05,
      "hectares": {
       "not_water": 42954.44,
       "open_water": 79.04,
@@ -2646,20 +2268,6 @@
       "changing_open_water_confirmed_by_optical": 1.0,
       "not_water_where_optical_sees_open_water": 0.0203,
       "changing_open_water_with_low_coherence": 0.2594
-     },
-     "sentinel1": {
-      "hectares": {
-       "not_water": 36869.6,
-       "open_water": 52.28,
-       "inundated_vegetation": 196.56,
-       "not_assessed_built": 3161.04
-      },
-      "changing_open_water_compared": {
-       "compared_ha": 35086.4,
-       "both_ha": 19.96,
-       "nisar_only_ha": 45.0,
-       "sentinel1_only_ha": 22.2
-      }
      }
     },
     {
@@ -2670,7 +2278,6 @@
      "maturity": "PROVISIONAL",
      "crid": "P05023",
      "coherence_pair": "2026-10-04_2026-10-16",
-     "sentinel1_hours_from_nisar": 1.05,
      "hectares": {
       "not_water": 43076.64,
       "open_water": 223.88,
@@ -2692,20 +2299,6 @@
       "changing_open_water_confirmed_by_optical": 0.1279,
       "not_water_where_optical_sees_open_water": 0.0007,
       "changing_open_water_with_low_coherence": 0.3275
-     },
-     "sentinel1": {
-      "hectares": {
-       "not_water": 37173.44,
-       "open_water": 20.36,
-       "inundated_vegetation": 193.6,
-       "not_assessed_built": 3180.2
-      },
-      "changing_open_water_compared": {
-       "compared_ha": 35333.56,
-       "both_ha": 13.24,
-       "nisar_only_ha": 196.8,
-       "sentinel1_only_ha": 2.68
-      }
      }
     },
     {
@@ -2716,7 +2309,6 @@
      "maturity": "VALIDATED",
      "crid": "P05036",
      "coherence_pair": null,
-     "sentinel1_hours_from_nisar": 1.05,
      "hectares": {
       "not_water": 42780.52,
       "open_water": 493.92,
@@ -2738,20 +2330,6 @@
       "changing_open_water_confirmed_by_optical": 0.6265,
       "not_water_where_optical_sees_open_water": 0.0023,
       "changing_open_water_with_low_coherence": null
-     },
-     "sentinel1": {
-      "hectares": {
-       "not_water": 36640.56,
-       "open_water": 479.28,
-       "inundated_vegetation": 143.28,
-       "not_assessed_built": 3172.04
-      },
-      "changing_open_water_compared": {
-       "compared_ha": 35218.24,
-       "both_ha": 383.48,
-       "nisar_only_ha": 87.0,
-       "sentinel1_only_ha": 76.36
-      }
      }
     },
     {
@@ -2762,7 +2340,6 @@
      "maturity": "PROVISIONAL",
      "crid": "P05023",
      "coherence_pair": "2026-06-25_2026-07-07",
-     "sentinel1_hours_from_nisar": null,
      "hectares": {
       "not_water": 29521.64,
       "open_water": 50.88,
@@ -2794,7 +2371,6 @@
      "maturity": "PROVISIONAL",
      "crid": "P05023",
      "coherence_pair": "2026-06-25_2026-07-07",
-     "sentinel1_hours_from_nisar": null,
      "hectares": {
       "not_water": 29558.56,
       "open_water": 46.64,
@@ -2826,7 +2402,6 @@
      "maturity": "PROVISIONAL",
      "crid": "P05023",
      "coherence_pair": "2026-07-07_2026-07-19",
-     "sentinel1_hours_from_nisar": null,
      "hectares": {
       "not_water": 29523.4,
       "open_water": 46.92,
@@ -2858,7 +2433,6 @@
      "maturity": "PROVISIONAL",
      "crid": "P05023",
      "coherence_pair": "2026-07-19_2026-08-24",
-     "sentinel1_hours_from_nisar": null,
      "hectares": {
       "not_water": 29511.36,
       "open_water": 44.76,
@@ -2890,7 +2464,6 @@
      "maturity": "PROVISIONAL",
      "crid": "P05023",
      "coherence_pair": "2026-08-24_2026-09-05",
-     "sentinel1_hours_from_nisar": null,
      "hectares": {
       "not_water": 29572.48,
       "open_water": 46.84,
@@ -2922,7 +2495,6 @@
      "maturity": "PROVISIONAL",
      "crid": "P05023",
      "coherence_pair": "2026-09-05_2026-09-17",
-     "sentinel1_hours_from_nisar": 1.13,
      "hectares": {
       "not_water": 29558.48,
       "open_water": 44.32,
@@ -2944,20 +2516,6 @@
       "changing_open_water_confirmed_by_optical": 0.0,
       "not_water_where_optical_sees_open_water": 0.0055,
       "changing_open_water_with_low_coherence": 0.3029
-     },
-     "sentinel1": {
-      "hectares": {
-       "not_water": 44664.52,
-       "open_water": 28.4,
-       "inundated_vegetation": 278.48,
-       "not_assessed_built": 4356.44
-      },
-      "changing_open_water_compared": {
-       "compared_ha": 28753.24,
-       "both_ha": 8.72,
-       "nisar_only_ha": 26.04,
-       "sentinel1_only_ha": 6.2
-      }
      }
     },
     {
@@ -2968,7 +2526,6 @@
      "maturity": "PROVISIONAL",
      "crid": "P05023",
      "coherence_pair": "2026-09-17_2026-09-29",
-     "sentinel1_hours_from_nisar": 1.13,
      "hectares": {
       "not_water": 29429.0,
       "open_water": 52.08,
@@ -2990,20 +2547,6 @@
       "changing_open_water_confirmed_by_optical": null,
       "not_water_where_optical_sees_open_water": null,
       "changing_open_water_with_low_coherence": 0.2773
-     },
-     "sentinel1": {
-      "hectares": {
-       "not_water": 44700.56,
-       "open_water": 52.64,
-       "inundated_vegetation": 221.44,
-       "not_assessed_built": 4356.48
-      },
-      "changing_open_water_compared": {
-       "compared_ha": 28638.08,
-       "both_ha": 14.56,
-       "nisar_only_ha": 28.4,
-       "sentinel1_only_ha": 8.68
-      }
      }
     },
     {
@@ -3014,7 +2557,6 @@
      "maturity": "PROVISIONAL",
      "crid": "P05023",
      "coherence_pair": "2026-09-29_2026-10-11",
-     "sentinel1_hours_from_nisar": 1.13,
      "hectares": {
       "not_water": 29453.52,
       "open_water": 50.12,
@@ -3036,20 +2578,6 @@
       "changing_open_water_confirmed_by_optical": 0.1769,
       "not_water_where_optical_sees_open_water": 0.0014,
       "changing_open_water_with_low_coherence": 0.2634
-     },
-     "sentinel1": {
-      "hectares": {
-       "not_water": 44576.72,
-       "open_water": 28.16,
-       "inundated_vegetation": 366.96,
-       "not_assessed_built": 4356.52
-      },
-      "changing_open_water_compared": {
-       "compared_ha": 28671.0,
-       "both_ha": 10.2,
-       "nisar_only_ha": 31.84,
-       "sentinel1_only_ha": 2.88
-      }
      }
     },
     {
@@ -3060,7 +2588,6 @@
      "maturity": "VALIDATED",
      "crid": "P05036",
      "coherence_pair": null,
-     "sentinel1_hours_from_nisar": 1.13,
      "hectares": {
       "not_water": 29404.0,
       "open_water": 48.96,
@@ -3082,30 +2609,25 @@
       "changing_open_water_confirmed_by_optical": null,
       "not_water_where_optical_sees_open_water": null,
       "changing_open_water_with_low_coherence": null
-     },
-     "sentinel1": {
-      "hectares": {
-       "not_water": 44187.92,
-       "open_water": 534.76,
-       "inundated_vegetation": 248.48,
-       "not_assessed_built": 4356.56
-      },
-      "changing_open_water_compared": {
-       "compared_ha": 28715.72,
-       "both_ha": 15.36,
-       "nisar_only_ha": 25.2,
-       "sentinel1_only_ha": 9.28
-      }
      }
     }
    ],
    "dana": {
     "rain": "DANA Adam, 18 to 19 Oct 2026 (pipeline/prediction/flood)",
     "region": "land labelled on both dates (not sea, not built-up, not no data), not permanent water",
+    "layer_codes": {
+     "0": "dry on both dates",
+     "1": "open water on both dates",
+     "2": "new open water",
+     "3": "open water gone",
+     "4": "permanent water",
+     "255": "not compared (no data or sea on either date, or built-up)"
+    },
     "stacks": {
      "066_D_069": {
       "before": "2026-10-16",
       "after": "2026-10-28",
+      "layer": "data/labels_nisar/pego_oliva_066_D_069/dana_2026-10-16_2026-10-28.tif",
       "compared_ha": 43285.52,
       "open_water": {
        "before_ha": 185.28,
@@ -3817,6 +3339,7 @@
      "058_A_021": {
       "before": "2026-10-16",
       "after": "2026-10-28",
+      "layer": "data/labels_nisar/pego_oliva_058_A_021/dana_2026-10-16_2026-10-28.tif",
       "compared_ha": 43274.6,
       "open_water": {
        "before_ha": 223.6,
@@ -4528,6 +4051,7 @@
      "167_D_069": {
       "before": "2026-10-11",
       "after": "2026-10-23",
+      "layer": "data/labels_nisar/pego_oliva_167_D_069/dana_2026-10-11_2026-10-23.tif",
       "compared_ha": 29503.72,
       "open_water": {
        "before_ha": 50.12,
