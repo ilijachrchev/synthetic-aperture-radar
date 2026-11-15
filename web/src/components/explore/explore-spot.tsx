@@ -17,6 +17,8 @@ export type ExploreSpotInfo = {
 	floods: { year: number; code: string; observed: string }[]
 	/** the damage grade of a building Copernicus graded at the spot, in 2024 */
 	building: string | null
+	/** a water mark surveyed at the spot after the 2024 flood, in words ("1.4 m, surveyed by UPV, Torrent") */
+	mark: string | null
 	/** PR #35's DANA code at the spot (0 dry, 1 water on both dates, 2 new water, 3 gone, 4 permanent), and whether the
 	 *  spot is in the still-flooded layer; null outside the NISAR boxes */
 	nisar: { code: number; before: string; after: string; still: boolean } | null
@@ -77,7 +79,7 @@ function Info({ info, sources, setSources }: { info: ExploreSpotInfo; sources: b
 	const m = info.model
 	const thr = m ? Math.round(m.map.thresholds.new_water * 100) : 20
 	const counted = !!m && m.evidence === 0 && m.dryBefore === true
-	const flooded = info.floods.length > 0 || !!info.building || (info.nisar && (info.nisar.code === 1 || info.nisar.code === 2))
+	const flooded = info.floods.length > 0 || !!info.building || !!info.mark || (info.nisar && (info.nisar.code === 1 || info.nisar.code === 2))
 	return (
 		<>
 			<p className="sp-head">
@@ -125,6 +127,15 @@ function Info({ info, sources, setSources }: { info: ExploreSpotInfo; sources: b
 							<span>
 								2024: a building graded &ldquo;{info.building.toLowerCase()}&rdquo;
 								<small>Copernicus EMS EMSR773</small>
+							</span>
+						</li>
+					)}
+					{info.mark && (
+						<li>
+							<i style={{ background: '#2463eb', borderRadius: '50%' }} />
+							<span>
+								2024: water stood {info.mark}
+								<small>measured mark, Institut Cartogràfic Valencià</small>
 							</span>
 						</li>
 					)}

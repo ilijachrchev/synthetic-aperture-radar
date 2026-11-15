@@ -11,6 +11,10 @@ the rest, under web/public/layers/explore/:
                                                   flood (flooded area and flood traces) and its graded buildings
     floods_2026.json                              DANA Adam, 18 to 19 Oct 2026, Pego and Oliva: EMSR935 observed flood
     municipalities.json                           the 12 municipalities the zones were checked in
+    water_marks_2024.json                         the water heights surveyed after the 2024 flood in the 10 towns
+                                                  (MEASURED, ICV DANA 2024 service), from data/streets (PR #39)
+    simulated_2024.json                           the SIMULATED maximum water depth of the 2024 rain on the terrain
+                                                  (25 m, no infiltration: an upper bound), from data/streets (PR #39)
     nisar_<site>_before.webp, _after.webp         NISAR open water before and after DANA Adam (16 and 28 Oct 2026,
                                                   track 066 D), from PR #35's DANA layer: after shows new water bright
                                                   and water on both dates deep blue
@@ -46,6 +50,7 @@ WEB = Path(__file__).resolve().parents[1]
 REPO = WEB.parent
 OUT = WEB / "public" / "layers" / "explore"
 ZONES = REPO / "data" / "zones"
+STREETS = REPO / "data" / "streets"
 LABELS = REPO / "data" / "labels_nisar"
 SUMMARY = REPO / "data" / "metrics" / "nisar_labels_summary.json"
 SITES = {"pego_oliva": "Pego-Oliva", "albufera": "Albufera"}
@@ -67,10 +72,17 @@ COLOURS = {
 }
 
 
-def vectors() -> dict:
+# the layers of PR #39 (data/streets): measured water marks and the simulated depth of 2024
+STREET_VECTORS = {
+    "water_marks_2024": ("water_marks_2024.geojson", ["depth_m", "class", "surveyed_by", "town"]),
+    "simulated_2024": ("simulated_max_depth.geojson", ["max_depth"]),
+}
+
+
+def vectors(table: dict = VECTORS, folder: Path = ZONES) -> dict:
     out = {}
-    for key, (name, keep) in VECTORS.items():
-        src = ZONES / name
+    for key, (name, keep) in table.items():
+        src = folder / name
         if not src.exists():
             print(f"  {key}: {src} missing, skipped")
             continue
@@ -148,10 +160,39 @@ def nisar(site: str) -> dict | None:
     return rec
 
 
+def streets() -> dict:
+    """The two layers of data/streets with the numbers the page shows about them, from results.json (PR #39)."""
+    vec = vectors(STREET_VECTORS, STREETS)
+    f_res = STREETS / "results.json"
+    if not f_res.exists():
+        return vec
+    res = json.loads(f_res.read_text(encoding="utf-8"))
+    cite = f_res.relative_to(REPO).as_posix()
+    marks = res.get("water_marks_layer") or {}
+    if "water_marks_2024" in vec and marks:
+        vec["water_marks_2024"].update({
+            "points": marks.get("points"), "by_class": marks.get("by_class"), "by_survey": marks.get("by_survey"),
+            "publisher": (marks.get("source") or {}).get("publisher"), "licence": (marks.get("source") or {}).get("licence"),
+            "service": (marks.get("source") or {}).get("service"), "numbers_source": f"{cite} water_marks_layer",
+        })
+    sim, zones = res["methods"].get("simulated_rain_equal_area_union"), res["methods"].get("official_union")
+    if "simulated_2024" in vec and sim and zones:
+        vec["simulated_2024"].update({
+            "label": res["simulation"].get("label"), "infiltration": res["simulation"].get("infiltration"), "cell_m": res["simulation"].get("cell_m"),
+            "buildings_pct": sim["total"]["buildings_covered_pct"], "zones_buildings_pct": zones["total"]["buildings_covered_pct"],
+            "torrent_buildings_pct": sim["towns"]["Torrent"]["buildings_covered_pct"], "torrent_zones_buildings_pct": zones["towns"]["Torrent"]["buildings_covered_pct"],
+            "rule": sim.get("what"),
+            "numbers_source": f"{cite} methods.simulated_rain_equal_area_union and methods.official_union (buildings_covered_pct, total and Torrent)",
+        })
+    return vec
+
+
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
     print("vectors (data/zones, PR #36)")
     vec = vectors()
+    print("streets (data/streets, PR #39)")
+    vec.update(streets())
     print("NISAR before and after DANA Adam (data/labels_nisar, PR #35)")
     sites = {site: {"name": name, "nisar": nisar(site)} for site, name in SITES.items()}
     doc = {

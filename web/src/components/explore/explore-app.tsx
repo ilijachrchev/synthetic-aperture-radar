@@ -11,10 +11,10 @@
 
 import 'maplibre-gl/dist/maplibre-gl.css'
 import { Layers, Pause, Play, X } from 'lucide-react'
-import type { MapGeoJSONFeature, Map as MapLibreMap, MapMouseEvent, Marker as MapLibreMarker, PointLike } from 'maplibre-gl'
+import type { MapGeoJSONFeature, Map as MapLibreMap, MapLayerMouseEvent, MapMouseEvent, Marker as MapLibreMarker, PointLike, Popup as MapLibrePopup } from 'maplibre-gl'
 import Link from 'next/link'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { CREDITS, DEFAULT_LAYERS, ICV, LEGEND, type LayerKey, PLACES, PNOA, START, STREET_FADE, ZONES } from '@/content/explore'
+import { CREDITS, DEFAULT_LAYERS, ICV, LEGEND, type LayerKey, MARK_CLASSES, MODEL_AREAS, PLACES, PNOA, SIM_CLASSES, START, STREET_FADE, ZONES } from '@/content/explore'
 import { DANA } from '@/content/stories'
 import { utcDay } from '@/lib/flood-model'
 import type { Bounds } from '@/lib/gl-quad'
@@ -49,7 +49,18 @@ type NisarSite = {
 	data: { file: string; planes: string[] }
 	sources: Record<string, string>
 }
-type ExploreIndex = { baked_utc: string; vectors: Record<string, { file: string; source: string }>; sites: Record<string, { name: string; nisar: NisarSite | null }> }
+type Vector = {
+	file: string
+	source: string
+	/** the water marks: how many */
+	points?: number
+	/** the simulation, from data/streets/results.json: share of the damaged buildings caught on the official zones' area */
+	buildings_pct?: number
+	zones_buildings_pct?: number
+	torrent_buildings_pct?: number
+	torrent_zones_buildings_pct?: number
+}
+type ExploreIndex = { baked_utc: string; vectors: Record<string, Vector>; sites: Record<string, { name: string; nisar: NisarSite | null }> }
 type Base = 'pnoa' | 'icv'
 
 /** the vector layers of bake_explore.py: a source each, a hit layer each (always on, never seen: a click reads it
@@ -69,8 +80,8 @@ const SHOWS: Record<LayerKey, string[]> = {
 	nisar: ['nisar-pego_oliva', 'nisar-albufera'],
 	still: ['still-pego_oliva'],
 	model: [],
-	flow: [],
-	depth: [],
+	marks2024: ['marks2024'],
+	sim2024: ['sim2024'],
 }
 /** the DANA replay: its steps, how long each holds while it plays, and the map layers of each */
 const SCENES = 4
@@ -78,6 +89,62 @@ const SCENE_MS = 5600
 const SCENE_LAYERS: string[][] = [['nisar0-pego_oliva'], [], ['nisar-pego_oliva', 'floods_2026-fill', 'floods_2026-line'], ['still-pego_oliva', 'floods_2026-line']]
 const ALL_SHOWN = [...new Set([...Object.values(SHOWS).flat(), ...SCENE_LAYERS.flat()])]
 const ha = (x: number) => Math.round(x).toLocaleString('en-US')
+const markColor = ['match', ['get', 'class'], ...MARK_CLASSES.flatMap((c) => [c.key, c.color]), '#ffffff'] as const
+/** one surveyed water mark in words: "1.4 m, surveyed by UPV, Torrent" */
+const markText = (p: Record<string, unknown> | null | undefined) =>
+	p ? `${p.depth_m} m, surveyed by ${p.surveyed_by === 'town hall' ? 'the town hall' : p.surveyed_by}, ${p.town}` : ''
+
+/** The two layers of data/streets, added the first time they are switched on: nobody who never asks for them loads
+ *  them. The water marks go on top of the outlines, the simulated depth under them, striped, so it never reads as
+ *  a measurement. */
+function addMarks(map: MapLibreMap, idx: ExploreIndex, onAdd: () => void) {
+	const vec = idx.vectors.water_marks_2024
+	if (!vec || map.getSource('water_marks_2024')) return
+	map.addSource('water_marks_2024', { type: 'geojson', data: `${ROOT}/${vec.file}` } as never)
+	map.addLayer(
+		{
+			id: 'marks2024',
+			type: 'circle',
+			source: 'water_marks_2024',
+			layout: { visibility: 'none' },
+			paint: {
+				'circle-color': markColor as never,
+				'circle-radius': ['interpolate', ['linear'], ['zoom'], 10, 1.8, 14, 3.6, 17, 6.5] as never,
+				'circle-stroke-color': '#06121c',
+				'circle-stroke-width': ['interpolate', ['linear'], ['zoom'], 10, 0.3, 14, 0.9, 17, 1.4] as never,
+			},
+		},
+		map.getLayer('zones_horta_sud-hit') ? 'zones_horta_sud-hit' : undefined,
+	)
+	onAdd()
+}
+function addSim(map: MapLibreMap, idx: ExploreIndex) {
+	const vec = idx.vectors.simulated_2024
+	if (!vec || map.getSource('simulated_2024')) return
+	// diagonal stripes in the colour of each class: a simulation, not a measurement
+	SIM_CLASSES.forEach((c, i) => {
+		const n = 12
+		const data = new Uint8Array(n * n * 4)
+		const rgb = [1, 3, 5].map((k) => Number.parseInt(c.color.slice(k, k + 2), 16))
+		for (let y = 0; y < n; y++)
+			for (let x = 0; x < n; x++) {
+				const on = (x + y) % 6 < 2
+				data.set(on ? [rgb[0], rgb[1], rgb[2], 235] : [rgb[0], rgb[1], rgb[2], 70], (y * n + x) * 4)
+			}
+		if (!map.hasImage(`sim-${i}`)) map.addImage(`sim-${i}`, { width: n, height: n, data })
+	})
+	map.addSource('simulated_2024', { type: 'geojson', data: `${ROOT}/${vec.file}` } as never)
+	map.addLayer(
+		{
+			id: 'sim2024',
+			type: 'fill',
+			source: 'simulated_2024',
+			layout: { visibility: 'none' },
+			paint: { 'fill-pattern': ['match', ['get', 'max_depth'], ...SIM_CLASSES.flatMap((c, i) => [c.key, `sim-${i}`]), 'sim-0'] as never },
+		},
+		map.getLayer('floods_2024-fill') ? 'floods_2024-fill' : undefined,
+	)
+}
 const day = (iso: string) => utcDay(Date.parse(iso.length === 10 ? `${iso}T12:00:00Z` : iso), false)
 const smooth = (a: number, b: number, x: number) => {
 	const t = Math.min(1, Math.max(0, (x - a) / (b - a)))
@@ -115,6 +182,7 @@ export function ExploreApp() {
 	const spotMarker = useRef<MapLibreMarker | null>(null)
 	const spotAt = useRef<{ lngLat: [number, number]; point: [number, number] } | null>(null)
 	const spotSeq = useRef(0)
+	const tip = useRef<MapLibrePopup | null>(null)
 
 	const pego = preds.pego_oliva ?? null
 	const rains = useMemo(() => (preds[modelSite] ?? pego)?.scenarios.filter((s) => s.rain_mm !== null) ?? [], [preds, modelSite, pego])
@@ -280,14 +348,38 @@ export function ExploreApp() {
 		map.setLayoutProperty('icv', 'visibility', base === 'icv' ? 'visible' : 'none')
 	}, [base, ready])
 
+	/** a water mark under the pointer says what was measured there */
+	const hoverMarks = useCallback(() => {
+		const map = mapRef.current
+		if (!map) return
+		map.on('mousemove', 'marks2024', async (e: MapLayerMouseEvent) => {
+			const f = e.features?.[0]
+			if (!f) return
+			map.getCanvas().style.cursor = 'pointer'
+			if (!tip.current) {
+				const { Popup } = await (maplibre ?? import('maplibre-gl'))
+				tip.current = new Popup({ closeButton: false, closeOnClick: false, offset: 10, className: 'ex-tip' })
+			}
+			tip.current.setLngLat((f.geometry as { coordinates: [number, number] }).coordinates).setText(markText(f.properties)).addTo(map)
+		})
+		map.on('mouseleave', 'marks2024', () => {
+			map.getCanvas().style.cursor = ''
+			tip.current?.remove()
+		})
+	}, [])
+
 	// which layers show: the legend's, or the step of the replay
 	useEffect(() => {
 		const map = mapRef.current
-		if (!map || !ready) return
+		if (!map || !ready || !idx) return
+		// the layers of data/streets come in the first time they are asked for
+		if (layers.marks2024) addMarks(map, idx, hoverMarks)
+		if (layers.sim2024) addSim(map, idx)
+		if (!layers.marks2024) tip.current?.remove()
 		const on = new Set(replaying ? SCENE_LAYERS[scene] : (Object.keys(layers) as LayerKey[]).filter((k) => layers[k]).flatMap((k) => SHOWS[k]))
 		for (const id of ALL_SHOWN) if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', on.has(id) ? 'visible' : 'none')
 		if (map.getLayer('municipalities-line')) map.setLayoutProperty('municipalities-line', 'visibility', replaying ? 'none' : 'visible')
-	}, [layers, replaying, scene, ready])
+	}, [layers, replaying, scene, ready, idx, hoverMarks])
 
 	// ---------------------------------------------------------------- the model layers
 	useEffect(() => {
@@ -402,6 +494,8 @@ export function ExploreApp() {
 					[point[0] + 5, point[1] + 5],
 				]
 				const building = (hits(['buildings_2024-hit'], box)[0]?.properties?.damage as string | undefined) ?? null
+				const markAt = hits(['marks2024'], box)[0]?.properties
+				const mark = markAt ? markText(markAt) : null
 
 				// the files of the model and of NISAR
 				const mapId = replaying && sceneRef.current === 1 ? (prestorm?.id ?? null) : (rains[Math.round(rainPos.current)]?.id ?? 'scenario_100mm')
@@ -419,7 +513,7 @@ export function ExploreApp() {
 					break
 				}
 				if (seq !== spotSeq.current) return
-				if (!muni && model.kind !== 'spot' && !nisar && !floods.length && !building) {
+				if (!muni && model.kind !== 'spot' && !nisar && !floods.length && !building && !mark) {
 					setSpot({ result: { kind: 'outside', lngLat }, loading: false })
 					return
 				}
@@ -428,6 +522,7 @@ export function ExploreApp() {
 				const sources = [
 					...(zone !== null ? ['Zones: SNCZI (MITECO), data/zones/zones_*.geojson (PR #36)'] : []),
 					...(floods.length || building ? ['Floods: Copernicus EMS EMSR773 (2024) and EMSR935 (2026), data/zones (PR #36)'] : []),
+					...(mark ? ['Water marks: Institut Cartogràfic Valencià, Generalitat Valenciana, DANA 2024 service, CC BY 4.0 (data/streets, PR #39)'] : []),
 					...(nisar ? [`NISAR: ${nisarLayer} (PR #35)`] : []),
 					...(m?.model ? [`Model: ${String(m.model.map.sources.water_likelihood)} (model ${p?.source.model_sha256_16 ?? ''})`] : []),
 					...(p?.inspect.soil ? [`Soil: ${p.inspect.soil.product}, ${p.inspect.soil.source}`] : []),
@@ -439,6 +534,7 @@ export function ExploreApp() {
 					zone,
 					floods,
 					building,
+					mark,
 					nisar: nisar && nisar.code !== 255 ? nisar : nisar?.still ? nisar : null,
 					model: m?.model
 						? { ...m.model, evidenceText: m.model.evidence !== 0 && m.model.evidence !== 255 ? (p?.evidence?.[String(m.model.evidence)] ?? null) : null }
@@ -625,7 +721,16 @@ export function ExploreApp() {
 		return null
 	}, [replaying, nisarPego, prestorm, scene, layers.model, rain, dry, modelSite])
 
-	const toggle = (k: LayerKey) => setLayers((was) => ({ ...was, [k]: !was[k] }))
+	const toggle = (k: LayerKey) => {
+		// "What if it rains" where the model has nothing to show (L'Horta Sud's towns) first flies to Pego-Oliva
+		if (k === 'model' && !layers.model) {
+			const c = mapRef.current?.getCenter()
+			if (c && !MODEL_AREAS.some((b) => inBounds(b, [c.lng, c.lat]))) go('pego')
+		}
+		setLayers((was) => ({ ...was, [k]: !was[k] }))
+	}
+	const sim = idx?.vectors.simulated_2024
+	const marks = idx?.vectors.water_marks_2024
 
 	return (
 		<div className="ex" data-ready={ready || undefined}>
@@ -656,14 +761,33 @@ export function ExploreApp() {
 						<h2>{g.title}</h2>
 						{g.layers.map((l) => (
 							<div key={l.key}>
-								<button type="button" className="ex-row" role="switch" aria-checked={!!layers[l.key] && !l.soon} disabled={l.soon || replaying} onClick={() => toggle(l.key)}>
+								<button type="button" className="ex-row" role="switch" aria-checked={!!layers[l.key]} disabled={replaying} onClick={() => toggle(l.key)}>
 									<span className="ex-sw" data-kind={l.swatch} />
 									<span>
+										{l.badge && <em className="ex-badge">{l.badge}</em>}
 										<b>{l.label}</b>
-										{l.detail && <small>{l.detail}</small>}
+										{l.detail && <small>{l.key === 'marks2024' && marks?.points ? `${marks.points.toLocaleString('en-US')} ${l.detail}` : l.detail}</small>}
 									</span>
-									{l.soon ? <span className="ex-soon">soon</span> : <i />}
+									<i />
 								</button>
+								{l.key === 'marks2024' && layers.marks2024 && (
+									<ul className="ex-zonekey ex-classkey">
+										{MARK_CLASSES.map((c) => (
+											<li key={c.key}>
+												<i style={{ background: c.color }} /> {c.key}
+											</li>
+										))}
+									</ul>
+								)}
+								{l.key === 'sim2024' && layers.sim2024 && (
+									<ul className="ex-zonekey ex-simkey">
+										{SIM_CLASSES.map((c) => (
+											<li key={c.key}>
+												<i style={{ background: `repeating-linear-gradient(45deg, ${c.color} 0 2px, transparent 2px 5px)` }} /> {c.key}
+											</li>
+										))}
+									</ul>
+								)}
 								{l.key === 'zones' && layers.zones && (
 									<ul className="ex-zonekey">
 										{ZONES.map((z) => (
@@ -701,6 +825,13 @@ export function ExploreApp() {
 								<b>{c.what}</b> {c.who}
 							</li>
 						))}
+						{sim?.buildings_pct !== undefined && (
+							<li>
+								<b>Simulated depth</b> The team&apos;s rain-on-terrain run of the 2024 rain (data/streets, PR #39). On the official zones&apos; area it catches {sim.buildings_pct.toFixed(1)} % of the damaged
+								buildings over the 10 towns (zones {sim.zones_buildings_pct?.toFixed(1)} %), and {sim.torrent_buildings_pct?.toFixed(1)} % in Torrent (zones {sim.torrent_zones_buildings_pct?.toFixed(1)} %). More flood events and
+								data would sharpen it.
+							</li>
+						)}
 					</ul>
 				)}
 			</aside>

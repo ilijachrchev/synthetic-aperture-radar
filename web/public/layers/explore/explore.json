@@ -1,6 +1,6 @@
 {
  "made_by": "web/scripts/bake_explore.py",
- "baked_utc": "2026-11-15T02:08:50Z",
+ "baked_utc": "2026-11-15T04:13:06Z",
  "vectors": {
   "zones_horta_sud": {
    "file": "zones_horta_sud.json",
@@ -37,6 +37,44 @@
    "bytes": 25974,
    "features": 12,
    "source": "data/zones/municipalities.geojson"
+  },
+  "water_marks_2024": {
+   "file": "water_marks_2024.json",
+   "bytes": 453343,
+   "features": 2699,
+   "source": "data/streets/water_marks_2024.geojson",
+   "points": 2699,
+   "by_class": {
+    "1 to 2 m": 1361,
+    "0.2 to 1 m": 652,
+    "above 2 m": 645,
+    "below 0.2 m": 41
+   },
+   "by_survey": {
+    "IVE": 1939,
+    "SGRT": 385,
+    "UPV": 362,
+    "town hall": 13
+   },
+   "publisher": "Institut Cartogràfic Valencià (ICV), Generalitat Valenciana",
+   "licence": "CC BY 4.0 Generalitat (WFS capabilities of 2702_DANA2024: AccessConstraints; Fees: no conditions)",
+   "service": "https://terramapas.icv.gva.es/2702_DANA2024",
+   "numbers_source": "data/streets/results.json water_marks_layer"
+  },
+  "simulated_2024": {
+   "file": "simulated_2024.json",
+   "bytes": 655326,
+   "features": 3,
+   "source": "data/streets/simulated_max_depth.geojson",
+   "label": "SIMULATED",
+   "infiltration": "none (all rain runs off: an upper bound)",
+   "cell_m": 25.0,
+   "buildings_pct": 34.2,
+   "zones_buildings_pct": 42.1,
+   "torrent_buildings_pct": 18.9,
+   "torrent_zones_buildings_pct": 7.0,
+   "rule": "Method 4, SIMULATED: deepest simulated cells of each town (25 m run), as many as the town's cells in the official union area",
+   "numbers_source": "data/streets/results.json methods.simulated_rain_equal_area_union and methods.official_union (buildings_covered_pct, total and Torrent)"
   }
  },
  "sites": {
