@@ -14,7 +14,7 @@ export const HERO = {
 	stories: 'More NISAR stories',
 }
 
-/** The one film of the monitor: steps 2 and 3 of the guided tour as they run (/explore?film), recorded frame by frame
+/** The one film of the monitor: the guided tour's streets step as it runs (/explore?film), recorded frame by frame
  *  by scripts/landing_films.py. The numbers in it are the tour's own, read from its data files when it was recorded. */
 export const TOUR_FILM = {
 	key: 'tour',

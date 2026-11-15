@@ -10,6 +10,9 @@ line layer.
                   are then flagged from the run's own 25 m cells, as PR #43 did. Without it they come from the web copy
                   data/streets/simulated_max_depth.geojson (simplified at 25 m, specks under 4 cells dropped), which
                   flags fewer streets; the index says which, and the check shows the difference.
+    --upv-raster  the UPV street depth map of 2024 (upv_depth5.tif of the street scores, 5 m, no value = NaN) and,
+    --upv-outlines  beside it, its outlines (outline_cgat.geojson, outline_extra.geojson): the tap card then says what
+                  that map holds on each street (a depth, no value inside its outlines, or outside them)
     --method      one more option for the switch of step 3, e.g. the run driven by the forecast of the night before:
                   KEY (a short name), LABEL (the words on the switch), RASTER (its maximum depth raster, flagged above
                   0.3 m like the SIMULATED run), RESULTS_PATH (optional: a dotted path in data/streets/results.json to
@@ -38,9 +41,13 @@ Writes, under web/public/layers/guided/:
 
     streets_2024.json      GeoJSON lines (WGS84, 5 decimals) of every scored street piece that flooded or that a method
                            flags, consecutive pieces of a way with the same values merged. Properties (left out when
-                           0): f 1 flooded (key A), z official zone (1 T500, 2 T100, 3 T10), s 1 flagged by the
-                           SIMULATED run, m_<key> 1 flagged by an added method, r reveal order of a flooded street (0
-                           to 15, outward from the ravines), t town, n street name (indexes into streets.json)
+                           0): f 1 flooded (key A), o 1 inside the EMSR773 observed flood, z official zone (1 T500,
+                           2 T100, 3 T10), s 1 flagged by the SIMULATED run, sd its median maximum depth there (m,
+                           SIMULATED), m_<key> 1 flagged by an added method, u the UPV map's median depth there (m,
+                           MEASURED map) and uo 1 inside the UPV map's outlines, b graded buildings of EMSR773 within
+                           25 m and bx the worst grade (1 possibly damaged, 2 damaged, 3 destroyed), r reveal order of a
+                           flooded street (0 to 15, outward from the ravines), t town, n street name (indexes into
+                           streets.json)
     zones_horta_sud.json   the official zones as one outline (the display copy of data/zones, dissolved)
     streets.json           the index: files, names and towns, the methods of step 3 (label, the property that flags a
                            street, their numbers with the field of results.json they come from, the rebuild check),
@@ -76,6 +83,8 @@ SIM = REPO / "data" / "streets" / "simulated_max_depth.geojson"
 FLOW = REPO / "data" / "streets" / "flow_paths.geojson"
 MARKS = REPO / "data" / "streets" / "water_marks_2024.geojson"
 ZONES_WEB = REPO / "data" / "zones" / "zones_horta_sud.geojson"
+BUILDINGS = REPO / "data" / "zones" / "buildings_dana_2024_horta_sud.geojson"
+BUILDINGS_M = 25.0  # the graded buildings counted beside a stretch of street
 RAVINE_KM2 = 20.0  # a ravine: a terrain flow path draining more than 20 km2 (data/streets/flow_paths.geojson)
 REVEAL_BINS = 16
 KINDS = {
@@ -122,6 +131,12 @@ def web_copy_at(cells: np.ndarray, on_grid: np.ndarray) -> np.ndarray:
 
 def raster_at(path: Path, xy: np.ndarray, depth_m: float = ss.SIM_EXTENT_M) -> np.ndarray:
     """A maximum depth raster deeper than depth_m at the points (EPSG:25830), cell by cell; no data or NaN is not."""
+    vals = raster_values(path, xy)
+    return np.isfinite(vals) & (vals > depth_m)
+
+
+def raster_values(path: Path, xy: np.ndarray) -> np.ndarray:
+    """A raster's values at the points (EPSG:25830), cell by cell; NaN where it has no value or no cell."""
     import rasterio
 
     with rasterio.open(path) as r:
@@ -132,11 +147,11 @@ def raster_at(path: Path, xy: np.ndarray, depth_m: float = ss.SIM_EXTENT_M) -> n
         rows, cols = np.asarray(rows), np.asarray(cols)
         ok = (rows >= 0) & (rows < r.height) & (cols >= 0) & (cols < r.width)
         band = r.read(1, masked=True)
-        vals = np.zeros(xy.shape[0], dtype=np.float64)
+        vals = np.full(xy.shape[0], np.nan, dtype=np.float64)
         got = band[rows[ok], cols[ok]]
-        vals[ok] = np.where(np.ma.getmaskarray(got), np.nan, np.ma.getdata(got))
+        vals[ok] = np.where(np.ma.getmaskarray(got), np.nan, np.ma.getdata(got).astype(np.float64))
         print(f"  {path.name}: {r.width} x {r.height} cells of {r.res[0]:g} m, {r.crs}", flush=True)
-    return ok & np.isfinite(vals) & (vals > depth_m)
+    return vals
 
 
 def dotted(doc: dict, path: str):
@@ -149,6 +164,8 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("--sim-raster", type=Path, default=None, help="maximum depth raster of the SIMULATED run (PR #39 sim_hmax_25m.tif)")
     ap.add_argument("--method", action="append", default=[], help="KEY=LABEL=RASTER[=RESULTS_PATH[=NOTE]]: one more option for step 3")
+    ap.add_argument("--upv-raster", type=Path, default=None, help="the UPV street depth map (upv_depth5.tif, 5 m, EPSG:25830)")
+    ap.add_argument("--upv-outlines", type=Path, nargs="*", default=[], help="the UPV map's outlines (GeoJSON)")
     a = ap.parse_args()
     extras = []
     for spec in a.method:
@@ -198,13 +215,16 @@ def main() -> None:
     del zones
     gc.collect()
     if a.sim_raster:
-        lay["sim"] = raster_at(a.sim_raster, points) & on_grid
+        lay["sim_depth"] = np.where(on_grid, raster_values(a.sim_raster, points), np.nan)
+        lay["sim"] = np.isfinite(lay["sim_depth"]) & (lay["sim_depth"] > ss.SIM_EXTENT_M)
         sim_from = f"the run's own raster ({a.sim_raster.name})"
     else:
         lay["sim"] = web_copy_at(safe, on_grid)
         sim_from = "the web copy data/streets/simulated_max_depth.geojson (simplified at 25 m, specks under 4 cells dropped)"
     for e in extras:
         lay[f"m_{e['key']}"] = raster_at(e["raster"], points) & on_grid
+    if a.upv_raster:
+        lay["upv"] = np.where(on_grid, raster_values(a.upv_raster, points), np.nan)
     print(f"layers read, {time.time() - t0:.0f} s", flush=True)
 
     # ------------------------------------------------------------ the rules of evaluate()
@@ -237,6 +257,17 @@ def main() -> None:
     zone = np.where(zone_share["T10"] >= ss.MAJORITY, 3, np.where(zone_share["T100"] >= ss.MAJORITY, 2, np.where(in_zone, 1, 0)))
     sim_flag = frac("sim") >= ss.MAJORITY
     extra_flags = {e["key"]: frac(f"m_{e['key']}") >= ss.MAJORITY for e in extras}
+    # what the tap card reads: medians over each piece's samples (NaN where the layer has no value)
+    sim_depth = ss.group_median(lay["sim_depth"][e_rows], e_piece, n) if "sim_depth" in lay else np.full(n, np.nan)
+    upv_depth = ss.group_median(lay["upv"][e_rows], e_piece, n) if "upv" in lay else np.full(n, np.nan)
+    in_upv = np.zeros(n, dtype=bool)
+    if a.upv_outlines:
+        import geopandas as gpd
+
+        outline = shapely.union_all([g for f in a.upv_outlines for g in gpd.read_file(f).to_crs(st.CRS).geometry])
+        shapely.prepare(outline)
+        mid = b["m_xy"][keep]
+        in_upv = shapely.contains_xy(outline, mid[:, 0], mid[:, 1])
 
     # ------------------------------------------------------------ checks against results.json
     def km(sel: np.ndarray) -> float:
@@ -322,15 +353,42 @@ def main() -> None:
             name_list.append(text)
         return name_ix[text]
 
-    def props_of(i: int) -> dict:
+    # the graded buildings of EMSR773 (data/zones), for the count within 25 m of a stretch of street
+    import geopandas as gpd
+
+    grades = {"Possibly damaged": 1, "Damaged": 2, "Destroyed": 3}
+    bld = gpd.read_file(BUILDINGS).to_crs(st.CRS)
+    bld_grade = np.array([grades.get(str(d), 0) for d in bld["damage"]])
+    bld_tree = shapely.STRtree(np.asarray(bld.geometry))
+
+    def median_of(values: np.ndarray, run: list[int]) -> float:
+        v = values[run]
+        v = v[np.isfinite(v)]
+        return float(np.median(v)) if v.size else float("nan")
+
+    def props_of(i: int, run: list[int], line) -> dict:
         p = {}
         if flooded[i]:
             p["f"] = 1
             p["r"] = int(order[i])
+        if in_obs[i]:
+            p["o"] = 1
         if zone[i]:
             p["z"] = int(zone[i])
         if sim_flag[i]:
             p["s"] = 1
+        sd = median_of(sim_depth, run)
+        if np.isfinite(sd) and sd >= 0.05:
+            p["sd"] = round(sd, 1)
+        ud = median_of(upv_depth, run)
+        if np.isfinite(ud):
+            p["u"] = round(max(0.0, ud), 1)
+        if in_upv[run].any():
+            p["uo"] = 1
+        near_b = bld_tree.query(line, predicate="dwithin", distance=BUILDINGS_M)
+        if near_b.size:
+            p["b"] = int(near_b.size)
+            p["bx"] = int(bld_grade[near_b].max())
         for k, fl in extra_flags.items():
             if fl[i]:
                 p[f"m_{k}"] = 1
@@ -356,11 +414,11 @@ def main() -> None:
         dedup = [coords[0]] + [p for i, p in enumerate(coords[1:], 1) if p != coords[i - 1]]
         if len(dedup) < 2:
             dedup = [coords[0], coords[-1]]
-        feats.append({"type": "Feature", "properties": props_of(run[0]), "geometry": {"type": "LineString", "coordinates": dedup}})
+        feats.append({"type": "Feature", "properties": props_of(run[0], run, line), "geometry": {"type": "LineString", "coordinates": dedup}})
 
     prev = None
     for i in idx:
-        key = (int(piece_way[i]), int(flooded[i]), int(zone[i]), int(order[i]), int(sim_flag[i]), *(int(fl[i]) for fl in extra_flags.values()))
+        key = (int(piece_way[i]), int(flooded[i]), int(in_obs[i]), int(zone[i]), int(order[i]), int(sim_flag[i]), *(int(fl[i]) for fl in extra_flags.values()))
         if prev is not None and key == prev[0] and piece_k[i] == prev[1] + 1:
             run.append(int(i))
         else:
@@ -430,6 +488,8 @@ def main() -> None:
             "marks": "Institut Cartogràfic Valencià, Generalitat Valenciana, DANA 2024 service, CC BY 4.0",
             "zones": "SNCZI, MITECO (T10, T100, T500)",
             "simulated": f"the team's rain-on-terrain run (PR #39), streets flagged from {sim_from}",
+            "upv": "UPV street depth map of the 2024 flood (Roch Talens et al. 2025, doi 10.7203/CGUV.114-15.32144), median depth over the stretch",
+            "buildings": "Copernicus EMS EMSR773 grading of damaged buildings (© European Union), within 25 m of the stretch",
             "scores": "data/streets/results.json (PR #43), docs/STREETS.md",
         },
     }

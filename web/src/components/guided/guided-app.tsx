@@ -1,28 +1,28 @@
 'use client'
 
-// The guided flood map (/explore): one flat map, one card, four steps after the landing, one main action each. Back
+// The guided flood map (/explore): one flat map, one card, three steps after the landing, one main action each. Back
 // and Next are quiet; "All layers" opens the free explorer. Every number on the card is read from a baked or
 // hand-kept file at run time, with the field it comes from (see content/guided.ts for the files).
 //
-//   2  The official map said safe      tap a blue street (streets that flooded in 2024, official zones as outlines)
-//   3  Our simulation saw it           one switch: the streets the official map or our simulation flags
-//   4  NISAR sees more water           drag the line between Sentinel-1 and NISAR of the same evening, open water
-//   5  Would we have seen it coming?   one switch: the street simulation with the real rain, the forecast of the same
+//   2  The official map said safe /    the streets that flooded in 2024 over the official zones, then one switch to the
+//      Our simulation saw it           streets our simulation flags; any street tapped shows what each record says
+//   3  NISAR sees more water           drag the line between Sentinel-1 and NISAR of the same evening, open water
+//   4  Would we have seen it coming?   one switch: the street simulation with the real rain, the forecast of the same
 //                                      morning or the forecast of the night before
 //
 // Out of the flow, opened from "All layers" (?screen=exam, ?screen=rain): the marsh model's test against EMSR935 (drag
 // the line between our prediction and what happened) and its rain slider (one outline).
 //
-// ?film plays steps 2 and 3 by themselves, for the landing's film (scripts/landing_films.py records it frame by frame
-// on the page's own clock): the streets appear, the card holds on step 2's number, step 3 opens on the official map
-// and switches to our simulation. FILM below is its timing.
+// ?film plays the streets step by itself, for the landing's film (scripts/landing_films.py records it frame by frame
+// on the page's own clock): the streets appear over the official map, the card holds on its number, then it switches
+// to our simulation. FILM below is its timing.
 
 import 'maplibre-gl/dist/maplibre-gl.css'
 import { ArrowLeft, ArrowRight, Layers, RotateCcw, X } from 'lucide-react'
 import type { GeoJSONSource, Map as MapLibreMap, MapMouseEvent } from 'maplibre-gl'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ICV, PNOA } from '@/content/explore'
-import { COLORS, REVEAL_FADE_MS, REVEAL_MS, SCREENS, STEP3_METHODS, STEPS, type StepKey, SWIPE_WATER } from '@/content/guided'
+import { COLORS, REVEAL_FADE_MS, REVEAL_MS, SCREENS, STEP3_METHODS, STEPS, STREET_TITLES, type StepKey, SWIPE_WATER } from '@/content/guided'
 import { RainSlider } from '../explore/rain-slider'
 import { SiteNav } from '../site-nav'
 import { MapSwipe } from './map-swipe'
@@ -96,7 +96,7 @@ type ScoreDoc = {
 	source: string
 }
 
-/** step 5: the rains of the street simulation, hand-kept in public/layers/guided/coming.json */
+/** the last step: the rains of the street simulation, hand-kept in public/layers/guided/coming.json */
 type ComingOption = {
 	key: string
 	label: string
@@ -113,12 +113,31 @@ type ComingOption = {
 }
 type ComingDoc = { options: ComingOption[]; ceiling: { text: string; pair: number[]; source: string }; closing: string }
 
-type Pick = { name: string; town: string; zone: string; zoneCode: number; water: number | null; lngLat: [number, number] }
+/** a tapped street: what each record says there (streets_2024.json, the water marks of streets.json) */
+type Pick = {
+	name: string
+	town: string
+	zone: string
+	zoneCode: number
+	/** our simulation: flagged (deeper than 0.3 m) and its median maximum depth (m, SIMULATED) */
+	sim: boolean
+	simDepth: number | null
+	/** measured and mapped: the nearest water mark within 25 m (m), the Copernicus EMS flooded area, the UPV map */
+	water: number | null
+	ems: boolean
+	upv: number | null
+	upvIn: boolean
+	/** graded buildings of EMSR773 within 25 m, and the worst grade (1 possibly damaged, 2 damaged, 3 destroyed) */
+	buildings: number
+	worst: number
+	lngLat: [number, number]
+}
+const GRADES = ['', 'possibly damaged', 'damaged', 'destroyed']
 type Extra = 'exam' | 'rain'
 type At = { step: number; extra: Extra | null }
 
 /** ?film: when each move of the film happens, in ms from the moment the map and the streets are in */
-const FILM = { step3: 7600, simulation: 11800, done: 17800 }
+const FILM = { simulation: 7600, done: 13800 }
 
 /** the 16 groups of the reveal, each its own layer, so a group fades in with one paint value */
 const BINS = 16
@@ -126,14 +145,16 @@ const binLayer = (i: number) => `g-flood-${i}`
 const BIN_LAYERS = Array.from({ length: BINS }, (_, i) => binLayer(i))
 /** which map layers each step shows */
 const STEP_LAYERS: Record<StepKey, string[]> = {
-	missed: ['g-zones-line', ...BIN_LAYERS],
-	simulation: ['g-s3-missed', 'g-s3-dry', 'g-s3-found'],
+	streets: [],
 	nisar: [],
 	coming: ['g-s3-missed', 'g-s3-dry', 'g-s3-found'],
 	exam: [],
 	rain: ['g-rain-fill', 'g-rain-line'],
 }
-const ALL_LAYERS = [...new Set([...Object.values(STEP_LAYERS).flat(), 'g-zones-line', 'g-pick'])]
+/** the streets step: over the official map (the reveal's groups, the zones as faint areas), or our simulation's */
+const OFFICIAL_LAYERS = ['g-zones-fill', 'g-zones-line', ...BIN_LAYERS]
+const SIM_LAYERS = ['g-s3-missed', 'g-s3-dry', 'g-s3-found']
+const ALL_LAYERS = [...new Set([...Object.values(STEP_LAYERS).flat(), ...OFFICIAL_LAYERS, ...SIM_LAYERS, 'g-pick'])]
 /** a street piece of streets_2024.json that flooded (key A), and one a method flags (its property above 0) */
 const FLOODED = ['==', ['coalesce', ['get', 'f'], 0], 1]
 const flagged = (prop: string) => ['>', ['coalesce', ['get', prop], 0], 0]
@@ -216,7 +237,7 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 	const [map, setMap] = useState<MapLibreMap | null>(null)
 	const [ready, setReady] = useState(false)
 	const [at, setAt] = useState<At>(firstAt)
-	/** ?film: steps 2 and 3 play by themselves (the landing's film) */
+	/** ?film: the streets step plays by itself (the landing's film) */
 	const [film] = useState(() => typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('film'))
 	const [filmReady, setFilmReady] = useState(false)
 	const step = at.step
@@ -256,7 +277,7 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 	// ---------------------------------------------------------------- the files, each when its step first needs it
 	useEffect(() => {
 		const fail = (e: Error) => setError(e.message)
-		if ((key === 'missed' || key === 'simulation' || key === 'coming') && !streets) getJson<StreetsIndex>(`${ROOT}/streets.json`).then(setStreets).catch(fail)
+		if ((key === 'streets' || key === 'coming') && !streets) getJson<StreetsIndex>(`${ROOT}/streets.json`).then(setStreets).catch(fail)
 		if (key === 'coming' && !coming) getJson<ComingDoc>(`${ROOT}/coming.json`).then(setComing).catch(fail)
 		if (key === 'nisar' && SWIPE_WATER === 'any' && !views) getJson<ViewsDoc>('/layers/pego_oliva/views.json').then(setViews).catch(fail)
 		if (key === 'nisar' && SWIPE_WATER === 'open' && !swipe) getJson<SwipeDoc>(`${ROOT}/swipe.json`).then(setSwipe).catch(fail)
@@ -346,7 +367,7 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 		firstView.current = false
 	}, [map, ready, view, padding])
 
-	// ---------------------------------------------------------------- the street layers (steps 2 and 3)
+	// ---------------------------------------------------------------- the street layers (the streets step and the last one)
 	useEffect(() => {
 		if (!map || !ready || !streets || map.getSource('g-streets')) return
 		const v = `?v=${encodeURIComponent(streets.baked_utc)}`
@@ -355,23 +376,24 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 		map.addSource('g-pick', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } })
 		const hidden = { visibility: 'none' as const }
 		map.addLayer({ id: 'g-zones-line', type: 'line', source: 'g-zones', layout: hidden, paint: { 'line-color': COLORS.zone, 'line-width': ['interpolate', ['linear'], ['zoom'], 10, 1, 16, 2.4] as never, 'line-opacity': 0.95 } })
-		const street = { 'line-color': COLORS.flooded, 'line-width': lineWidth(), 'line-opacity': 0 }
+		const street = { 'line-color': ['case', ['>', ['coalesce', ['get', 'z'], 0], 0], COLORS.hit, COLORS.flooded], 'line-width': lineWidth(), 'line-opacity': 0 }
+		map.addLayer({ id: 'g-zones-fill', type: 'fill', source: 'g-zones', layout: hidden, paint: { 'fill-color': COLORS.zone, 'fill-opacity': 0.13 } }, 'g-zones-line')
 		for (let i = 0; i < BINS; i++) {
 			map.addLayer({ id: binLayer(i), type: 'line', source: 'g-streets', filter: ['==', ['get', 'r'], i], layout: { ...hidden, 'line-cap': 'round', 'line-join': 'round' }, paint: street as never })
 		}
 		// step 3: the streets the chosen method flags, green where they flooded, red where they stayed dry, and the
-		// flooded streets it missed in the blue of step 2
+		// flooded streets it missed in blue
 		const line = { ...hidden, 'line-cap': 'round' as const, 'line-join': 'round' as const }
 		const first = s3Filters(streets.methods[0]?.prop ?? 'z')
 		map.addLayer({ id: 'g-s3-missed', type: 'line', source: 'g-streets', filter: first['g-s3-missed'] as never, layout: line, paint: { 'line-color': COLORS.flooded, 'line-width': lineWidth(), 'line-opacity': 0.9 } })
 		map.addLayer({ id: 'g-s3-dry', type: 'line', source: 'g-streets', filter: first['g-s3-dry'] as never, layout: line, paint: { 'line-color': COLORS.falseAlarm, 'line-width': lineWidth(), 'line-opacity': 0.95 } })
 		map.addLayer({ id: 'g-s3-found', type: 'line', source: 'g-streets', filter: first['g-s3-found'] as never, layout: line, paint: { 'line-color': COLORS.hit, 'line-width': lineWidth(1.15), 'line-opacity': 1 } })
 		map.addLayer({ id: 'g-pick', type: 'line', source: 'g-pick', layout: { ...hidden, 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-color': '#ffffff', 'line-width': lineWidth(2.2), 'line-opacity': 0.95 } }, binLayer(0))
-		// what a tap reads: the flooded streets, wide and unseen
-		map.addLayer({ id: 'g-hit', type: 'line', source: 'g-streets', filter: FLOODED as never, paint: { 'line-width': ['interpolate', ['linear'], ['zoom'], 11, 10, 16, 22] as never, 'line-opacity': 0 } })
+		// what a tap reads: every street drawn, wide and unseen
+		map.addLayer({ id: 'g-hit', type: 'line', source: 'g-streets', paint: { 'line-width': ['interpolate', ['linear'], ['zoom'], 11, 10, 16, 22] as never, 'line-opacity': 0 } })
 	}, [map, ready, streets])
 
-	// the rain outlines (step 6)
+	// the rain outlines (the marsh model's rain screen)
 	useEffect(() => {
 		if (!map || !ready || !exam?.rain || map.getSource('g-rain')) return
 		map.addSource('g-rain', { type: 'geojson', data: `${ROOT}/${exam.rain.file}?v=${encodeURIComponent(exam.baked_utc)}` })
@@ -379,18 +401,20 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 		map.addLayer({ id: 'g-rain-line', type: 'line', source: 'g-rain', layout: { visibility: 'none', 'line-join': 'round' }, paint: { 'line-color': COLORS.rain, 'line-width': ['interpolate', ['linear'], ['zoom'], 10, 1.2, 16, 3] as never } })
 	}, [map, ready, exam])
 
+	const methods = useMemo(() => (streets?.methods ?? []).filter((m) => STEP3_METHODS.includes(m.key)), [streets])
+	const method = methods.find((m) => m.key === methodKey) ?? methods[0] ?? null
+
 	// which layers show
 	useEffect(() => {
 		if (!map || !ready) return
 		const on = new Set(STEP_LAYERS[key])
-		if (key === 'missed' && pick) on.add('g-pick')
+		if (key === 'streets') for (const id of method?.key === 'sim' ? SIM_LAYERS : OFFICIAL_LAYERS) on.add(id)
+		if (key === 'streets' && pick) on.add('g-pick')
 		for (const id of ALL_LAYERS) if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', on.has(id) ? 'visible' : 'none')
-		if (map.getLayer('g-hit')) map.setLayoutProperty('g-hit', 'visibility', key === 'missed' ? 'visible' : 'none')
-	}, [map, ready, key, pick, streets, exam])
+		if (map.getLayer('g-hit')) map.setLayoutProperty('g-hit', 'visibility', key === 'streets' ? 'visible' : 'none')
+	}, [map, ready, key, pick, streets, exam, method])
 
-	// step 3: the chosen method's streets; step 5: the chosen rain's (none while its streets are still arriving)
-	const methods = useMemo(() => (streets?.methods ?? []).filter((m) => STEP3_METHODS.includes(m.key)), [streets])
-	const method = methods.find((m) => m.key === methodKey) ?? methods[0] ?? null
+	// the streets step: the chosen method's streets; the last step: the chosen rain's (none while still arriving)
 	const rains = coming?.options ?? []
 	const rainOpt = rains.find((o) => o.key === rainKey) ?? rains[0] ?? null
 	const rainProp = rainOpt && rainOpt.status === 'in' && streets?.methods.some((m) => m.prop === rainOpt.streets) ? rainOpt.streets : null
@@ -424,7 +448,7 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 		}
 	}, [map])
 	useEffect(() => {
-		if (key !== 'missed' || !map || !map.getLayer(binLayer(0))) return
+		if (key !== 'streets' || !map || !map.getLayer(binLayer(0))) return
 		// wait for the camera and the lines, so the first group is drawn when it starts
 		let gone = false
 		let cancel = () => {}
@@ -443,7 +467,7 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 	// ---------------------------------------------------------------- tap a street (step 2)
 	const tap = useCallback(
 		(e: MapMouseEvent) => {
-			if (!map || !streets || key !== 'missed' || !map.getLayer('g-hit')) return
+			if (!map || !streets || key !== 'streets' || !map.getLayer('g-hit')) return
 			const p = e.point
 			const hits = map.queryRenderedFeatures(
 				[
@@ -464,8 +488,8 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 				setPick(null)
 				return
 			}
-			// zero values are left out of the file: no z means no flood zone
-			const props = best.f.properties as { z?: number; t: number; n: number }
+			// zero values are left out of the file: no z means no flood zone, no s not flagged, and so on
+			const props = best.f.properties as { z?: number; t: number; n: number; s?: number; sd?: number; o?: number; u?: number; uo?: number; b?: number; bx?: number }
 			const zoneCode = Number(props.z ?? 0)
 			let water: number | null = null
 			let dw = Infinity
@@ -477,7 +501,21 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 					water = depth
 				}
 			}
-			setPick({ name: streets.names[props.n] ?? 'Street', town: streets.towns[props.t] ?? '', zone: streets.zones[String(zoneCode)] ?? '', zoneCode, water, lngLat: best.q })
+			setPick({
+				name: streets.names[props.n] ?? 'Street',
+				town: streets.towns[props.t] ?? '',
+				zone: streets.zones[String(zoneCode)] ?? '',
+				zoneCode,
+				sim: props.s === 1,
+				simDepth: typeof props.sd === 'number' ? props.sd : null,
+				water,
+				ems: props.o === 1,
+				upv: typeof props.u === 'number' ? props.u : null,
+				upvIn: props.uo === 1,
+				buildings: Number(props.b ?? 0),
+				worst: Number(props.bx ?? 0),
+				lngLat: best.q,
+			})
 			const src = map.getSource('g-pick') as GeoJSONSource | undefined
 			src?.setData({ type: 'FeatureCollection', features: [{ type: 'Feature', properties: {}, geometry: best.f.geometry }] })
 		},
@@ -503,7 +541,7 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 		}
 	}, [map, ready])
 
-	// ---------------------------------------------------------------- step 6: the rain outline
+	// ---------------------------------------------------------------- the rain screen: the rain outline
 	const rainStops = exam?.rain?.stops ?? []
 	const rain = rainStops[Math.min(rainIdx, Math.max(0, rainStops.length - 1))]
 	useEffect(() => {
@@ -560,12 +598,11 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 		if (!film || !filmReady) return
 		const host = window as unknown as { __filmDone?: boolean }
 		const timers = [
-			window.setTimeout(() => go(1), FILM.step3),
 			window.setTimeout(() => setMethod('sim'), FILM.simulation),
 			window.setTimeout(() => (host.__filmDone = true), FILM.done),
 		]
 		return () => timers.forEach((t) => window.clearTimeout(t))
-	}, [film, filmReady, go])
+	}, [film, filmReady])
 
 	// a small handle for scripted checks
 	useEffect(() => {
@@ -614,50 +651,45 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 	const still = explore?.sites.pego_oliva?.nisar?.still ?? null
 	const n = streets?.numbers
 
+	// a tapped street: what the official map, our simulation and the records of the flood say there
+	const card = pick ? (
+		<div className="gd-pick" aria-live="polite">
+			<div className="gd-pick-head">
+				<b>{pick.name}</b>
+				<button type="button" className="gd-x" aria-label="Close" onClick={() => setPick(null)}>
+					<X size={15} strokeWidth={2.4} />
+				</button>
+			</div>
+			<small>{pick.town}</small>
+			<dl className="gd-rec">
+				<dt>Official map</dt>
+				<dd data-zone={pick.zoneCode === 0 || undefined}>{pick.zoneCode === 0 ? 'No flood zone' : `In the ${pick.zone}`}</dd>
+				<dt>Our simulation, simulated</dt>
+				<dd>{pick.sim ? `Flooded${pick.simDepth !== null ? `, ${pick.simDepth.toFixed(1)} m deep` : ''}` : 'Dry'}</dd>
+			</dl>
+			<p className="gd-rec-head">What really happened, measured</p>
+			<dl className="gd-rec">
+				<dt>Water mark</dt>
+				<dd>{pick.water !== null ? `${pick.water.toFixed(1)} m, measured` : 'None within 25 m'}</dd>
+				<dt>Copernicus EMS map</dt>
+				<dd>{pick.ems ? 'Inside the flooded area' : 'Outside the flooded area'}</dd>
+				<dt>UPV depth map</dt>
+				<dd>{pick.upv !== null ? (pick.upv >= 0.05 ? `${pick.upv.toFixed(1)} m` : 'No water') : pick.upvIn ? 'No value here' : 'Outside its area'}</dd>
+				<dt>Damaged buildings</dt>
+				<dd>{pick.buildings ? `${pick.buildings} within 25 m, worst ${GRADES[pick.worst]}` : 'None graded within 25 m'}</dd>
+			</dl>
+			<p className="gd-rec-src">Sources: SNCZI (MITECO); the team&apos;s simulation of the rain that fell; ICV water marks; Copernicus EMS EMSR773; UPV depth map (Roch Talens et al. 2025).</p>
+		</div>
+	) : (
+		<p className="gd-hint">
+			<i /> {s.hint}
+		</p>
+	)
+
 	let body: React.ReactNode = null
-	if (key === 'missed') {
-		body = (
-			<>
-				{n && (
-					<div className="gd-num">
-						<b className="display">{pct(n.outside_pct.value)}</b>
-						<span>of the streets that flooded were outside every official flood zone</span>
-					</div>
-				)}
-				{n && (
-					<p className="gd-small">
-						{ha(n.outside_km.value)} of {ha(n.flooded_km.value)} km of flooded street.
-					</p>
-				)}
-				<ul className="gd-key">
-					<li>
-						<i className="gd-sw" data-k="flooded" /> Street that flooded: Copernicus EMS map or a measured water mark
-					</li>
-					<li>
-						<i className="gd-sw" data-k="zone" /> Official flood zone (SNCZI)
-					</li>
-				</ul>
-				{pick ? (
-					<div className="gd-pick" aria-live="polite">
-						<div className="gd-pick-head">
-							<b>{pick.name}</b>
-							<button type="button" className="gd-x" aria-label="Close" onClick={() => setPick(null)}>
-								<X size={15} strokeWidth={2.4} />
-							</button>
-						</div>
-						<small>{pick.town}</small>
-						<p data-zone={pick.zoneCode === 0 || undefined}>{pick.zoneCode === 0 ? 'No flood zone' : `In the ${pick.zone}`}</p>
-						<p>{pick.water !== null ? `Water ${pick.water.toFixed(1)} m, measured` : 'No measurement here'}</p>
-					</div>
-				) : (
-					<p className="gd-hint">
-						<i /> {s.hint}
-					</p>
-				)}
-				<p className="gd-note">Shown outward from the ravines, not in time order.</p>
-			</>
-		)
-	} else if (key === 'simulation') {
+	if (key === 'streets') {
+		const sim = method?.key === 'sim'
+		const zones = methods.find((m) => m.key === 'zones')
 		body = (
 			<>
 				<div className="gd-seg" role="radiogroup" aria-label="Which map" style={{ ['--n' as string]: Math.max(1, methods.length) }}>
@@ -667,38 +699,60 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 						</button>
 					))}
 				</div>
-				{method && (
-					<div className="gd-pair" data-n={methods.length}>
-						{methods.map((m) => (
-							<p key={m.key} data-on={m.key === method.key || undefined}>
-								<b className="display">{pct(m.hit_rate_pct.value)}</b>
-								<span>of the flooded streets found by {sentence(m.label)}</span>
-							</p>
-						))}
+				{!sim && n && (
+					<div className="gd-num">
+						<b className="display">{pct(n.outside_pct.value)}</b>
+						<span>of the streets that flooded were outside every official flood zone</span>
 					</div>
 				)}
-				{method && (
+				{!sim && n && (
 					<p className="gd-small">
-						{pct(method.precision_pct.value)} of the streets {sentence(method.label)} flagged really flooded
-						{methods
-							.filter((m) => m.key !== method.key)
-							.map((m) => `; ${sentence(m.label)} ${pct(m.precision_pct.value)}`)
-							.join('')}
-						.
+						{ha(n.outside_km.value)} of {ha(n.flooded_km.value)} km of flooded street.
 					</p>
 				)}
+				{sim && method && (
+					<div className="gd-num">
+						<b className="display">{pct(method.hit_rate_pct.value)}</b>
+						<span>of the flooded streets found by our simulation</span>
+					</div>
+				)}
+				{sim && method && (
+					<p className="gd-small">
+						{pct(method.precision_pct.value)} of the streets it flagged really flooded.
+						{zones && ` The official map: ${pct(zones.hit_rate_pct.value)} found, ${pct(zones.precision_pct.value)} really flooded.`}
+					</p>
+				)}
+				{!pick && (
 				<ul className="gd-key">
-					<li>
-						<i className="gd-sw" data-k="hit" /> Flagged, and it flooded
-					</li>
-					<li>
-						<i className="gd-sw" data-k="flooded" /> Flooded, not flagged
-					</li>
-					<li>
-						<i className="gd-sw" data-k="false" /> Flagged, stayed dry
-					</li>
+					{sim ? (
+						<>
+							<li>
+								<i className="gd-sw" data-k="hit" /> Flagged, and it flooded
+							</li>
+							<li>
+								<i className="gd-sw" data-k="flooded" /> Flooded, not flagged
+							</li>
+							<li>
+								<i className="gd-sw" data-k="false" /> Flagged, stayed dry
+							</li>
+						</>
+					) : (
+						<>
+							<li>
+								<i className="gd-sw" data-k="hit" /> Flooded, inside an official zone
+							</li>
+							<li>
+								<i className="gd-sw" data-k="flooded" /> Flooded, outside every official zone
+							</li>
+							<li>
+								<i className="gd-sw" data-k="zone" data-fill /> Official flood zone (SNCZI)
+							</li>
+						</>
+					)}
 				</ul>
-				{method?.note && <p className="gd-note">{method.note}</p>}
+				)}
+				{card}
+				{!pick && <p className="gd-note">{sim ? method?.note : 'Flooded: the Copernicus EMS map or a measured water mark. Shown outward from the ravines, not in time order.'}</p>}
 			</>
 		)
 	} else if (key === 'nisar') {
@@ -850,10 +904,11 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 	}
 
 	const src: string[] = []
-	if (key === 'missed' || key === 'simulation' || key === 'coming') {
+	if (key === 'streets' || key === 'coming') {
 		if (streets) src.push(`Streets: ${streets.sources.streets}.`, `Flood: ${streets.sources.flood}.`, `Water marks: ${streets.sources.marks}.`, `Zones: ${streets.sources.zones}.`)
-		if (key === 'simulation' && streets) src.push(`Simulation: ${streets.sources.simulated}, with no infiltration, so an upper bound.`)
-		if (key === 'simulation' && method && method.exact === false) src.push(`The streets drawn for ${sentence(method.label)} come from ${method.drawn_from}; the numbers are those of the scores.`)
+		if (streets) src.push(`Simulation: ${streets.sources.simulated}, with no infiltration, so an upper bound.`)
+		if (key === 'streets' && streets?.sources.upv) src.push(`UPV: ${streets.sources.upv}.`, `Buildings: ${streets.sources.buildings}.`)
+		if (key === 'streets' && method && method.exact === false) src.push(`The streets drawn for ${sentence(method.label)} come from ${method.drawn_from}; the numbers are those of the scores.`)
 		if (streets) src.push(`Numbers: ${streets.sources.scores}.`)
 	}
 	if (key === 'coming' && coming) {
@@ -928,7 +983,7 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 				<p className="gd-when">
 					{s.when} · {s.where}
 				</p>
-				<h1 className="display gd-title">{s.title}</h1>
+				<h1 className="display gd-title">{key === 'streets' ? (STREET_TITLES[method?.key ?? 'zones'] ?? s.title) : s.title}</h1>
 				<div className="gd-body" key={key}>
 					{body}
 				</div>
