@@ -14,6 +14,8 @@ export const HERO = {
 	toll: { damage: 'of damage', caption: 'Valencia flood' },
 	primary: { label: 'See what the map missed', href: '/explore' },
 	stories: 'More NISAR stories',
+	/** the third button: the research paper (its link lives in SITE.paper) */
+	paper: 'Research paper',
 }
 
 /** The one film of the monitor: the guided tour's streets step as it runs (/explore?film), recorded frame by frame
