@@ -1,0 +1,681 @@
+{
+ "site": "albufera",
+ "baked_utc": "2026-11-15T02:00:48Z",
+ "made_by": "web/scripts/bake_prediction.py",
+ "source": {
+  "folder": "pr-33:data/prediction/spatial",
+  "ref": "pr-33",
+  "commit": "3f54054fa623da49ee7a4c797d2f7771e7d3e21a",
+  "index": "pr-33:data/prediction/spatial/index.json",
+  "index_sha256_16": "ded61ac5f77ddb82",
+  "model_sha256_16": "749d27c3f84f5633"
+ },
+ "grid": {
+  "width": 1792,
+  "height": 2560,
+  "bounds": [
+   -0.4833984,
+   39.1300602,
+   -0.1757812,
+   39.4701251
+  ],
+  "zoom": 13,
+  "pixel_m": 14.79,
+  "note": "the model's own web grid (the zoom 13 lattice of meta.json, a little larger than its box): every likely pixel of the model is drawn, so the outline matches the hectares"
+ },
+ "display": {
+  "R": "255 the model predicts here (evidence 0, 1, 3), 96 extrapolated (evidence 2 built-up, 4 rarely mapped), 0 none",
+  "G": "relative water likelihood, percent 0 to 100",
+  "B": "ground on the issue map: 255 dry (water would be new), 0 water already or permanent, 128 no earlier map"
+ },
+ "data_planes": {
+  "evidence": "evidence flag of evidence_utm.tif, 255 sea or outside",
+  "water_likelihood_pct": "water_likelihood_web.tif as it is: 0 to 100, 255 no data",
+  "dry_before": "1 where new_water_likelihood_web.tif has a value (it is then the water likelihood)",
+  "new_water_likelihood_pct": "new_water_likelihood_web.tif as it is, when it is not the water likelihood"
+ },
+ "data_format": "PLN1: planes in bands of rows, each band zlib compressed (planes() in bake_prediction.py)",
+ "model": "spatial water likelihood (LightGBM)",
+ "score": "relative water likelihood 0-1 learned from Sentinel-1 water maps; not a calibrated flood probability",
+ "evidence": {
+  "0": "prediction from terrain, rain and the previous water map",
+  "1": "permanent water (JRC occurrence >= 90 %): context, not flooding",
+  "2": "built-up land: radar water maps are unreliable here, so nothing was learned from towns; the value is extrapolated from fields",
+  "3": "no water map before the issue time: new water cannot be told from old",
+  "4": "rarely or never mapped by Sentinel-1 (terrain mask, shadow): extrapolated",
+  "255": "sea or outside the land grid"
+ },
+ "holdout": {
+  "start": "2026-10-15",
+  "end": "2026-11-15"
+ },
+ "attribution": "OPERA DSWx-S1 (NASA JPL), Open-Meteo / ECMWF IFS (CC BY 4.0), ASF GLO-30 HAND, Copernicus DEM GLO-30, ESA WorldCover 2021, JRC Global Surface Water",
+ "native_resolution": {
+  "rain": "ECMWF IFS 9 km, one value per site and day",
+  "terrain": "30 m",
+  "water_maps": "30 m"
+ },
+ "scenarios": [
+  {
+   "id": "scenario_000mm",
+   "mode": "scenario",
+   "rain_mm": 0,
+   "file": "prediction/scenario_000mm.webp",
+   "bytes": 290428,
+   "data": "prediction/scenario_000mm.bin",
+   "data_bytes": 425371,
+   "data_planes": [
+    "evidence",
+    "water_likelihood_pct",
+    "dry_before"
+   ],
+   "issued_from_pass": "20261110T175337_S1C",
+   "issued_from_sensor": "Sentinel-1",
+   "issue_time_utc": "2026-11-10T17:53:37.000Z",
+   "target_time_utc": "2026-11-14T17:53:37Z",
+   "target_nisar_granule": null,
+   "lead_days": 4.0,
+   "rain": {
+    "rain_prior_7d_mm": 25.4,
+    "rain_prior_30d_mm": 304.19999999999993,
+    "rain_between_mm": 0.0,
+    "rain_between_max1d_mm": 0.0,
+    "days_since_rain_peak": 2.0
+   },
+   "rain_source": "Open-Meteo, ECMWF IFS 9 km, wettest lattice point of the site per day",
+   "rain_seen_in_training": {
+    "max": 212.8,
+    "p99": 184.0,
+    "p90": 53.6,
+    "targets_over_100mm": 18,
+    "inside_training_range": true
+   },
+   "thresholds": {
+    "water": 0.3129008966120227,
+    "new_water": 0.20000887192001116
+   },
+   "area_ha": {
+    "likely_water": 4729.4,
+    "likely_new_water": 1208.2,
+    "counted_on": "evidence 0 pixels only"
+   },
+   "area_ha_drawn": {
+    "likely_water": 4725.3,
+    "likely_new_water": 1182.8
+   },
+   "mode_note": "hypothetical: 0 mm at the wettest point of the site over the 4 days after the latest water map, 60 % of it on one day, two days before the target",
+   "validation_status": "retrospective check on the held-out October 2026 window against Sentinel-1 maps; not yet scored against Copernicus EMSR935",
+   "caption": {
+    "title": "0 mm of rain",
+    "line": "If no rain fell in the 4 days after the Sentinel-1 map of 10 Nov",
+    "note": "Relative likelihood from our model, not depth and not a flood probability",
+    "warning": null,
+    "detail": "With no rain the model still marks 1,208 ha of likely new water: mostly rice fields that farmers flood in this season, not new rain."
+   },
+   "sources": {
+    "forecast": "pr-33:data/prediction/spatial/albufera/scenario_000mm/forecast.json",
+    "water_likelihood": "pr-33:data/prediction/spatial/albufera/scenario_000mm/water_likelihood_web.tif",
+    "new_water_likelihood": "pr-33:data/prediction/spatial/albufera/scenario_000mm/new_water_likelihood_web.tif",
+    "evidence": "pr-33:data/prediction/spatial/albufera/scenario_000mm/evidence_utm.tif",
+    "how": {
+     "water_likelihood": "cut out",
+     "new_water_likelihood": "cut out",
+     "evidence": "nearest neighbour"
+    },
+    "area_ha_drawn": "bake_prediction.py: the thresholds of forecast.json on the drawn grid, evidence 0 pixels"
+   }
+  },
+  {
+   "id": "scenario_050mm",
+   "mode": "scenario",
+   "rain_mm": 50,
+   "file": "prediction/scenario_050mm.webp",
+   "bytes": 322000,
+   "data": "prediction/scenario_050mm.bin",
+   "data_bytes": 459832,
+   "data_planes": [
+    "evidence",
+    "water_likelihood_pct",
+    "dry_before"
+   ],
+   "issued_from_pass": "20261110T175337_S1C",
+   "issued_from_sensor": "Sentinel-1",
+   "issue_time_utc": "2026-11-10T17:53:37.000Z",
+   "target_time_utc": "2026-11-14T17:53:37Z",
+   "target_nisar_granule": null,
+   "lead_days": 4.0,
+   "rain": {
+    "rain_prior_7d_mm": 25.4,
+    "rain_prior_30d_mm": 304.19999999999993,
+    "rain_between_mm": 50.0,
+    "rain_between_max1d_mm": 30.0,
+    "days_since_rain_peak": 2.0
+   },
+   "rain_source": "Open-Meteo, ECMWF IFS 9 km, wettest lattice point of the site per day",
+   "rain_seen_in_training": {
+    "max": 212.8,
+    "p99": 184.0,
+    "p90": 53.6,
+    "targets_over_100mm": 18,
+    "inside_training_range": true
+   },
+   "thresholds": {
+    "water": 0.3129008966120227,
+    "new_water": 0.20000887192001116
+   },
+   "area_ha": {
+    "likely_water": 5483.5,
+    "likely_new_water": 1989.0,
+    "counted_on": "evidence 0 pixels only"
+   },
+   "area_ha_drawn": {
+    "likely_water": 5480.8,
+    "likely_new_water": 1952.3
+   },
+   "mode_note": "hypothetical: 50 mm at the wettest point of the site over the 4 days after the latest water map, 60 % of it on one day, two days before the target",
+   "validation_status": "retrospective check on the held-out October 2026 window against Sentinel-1 maps; not yet scored against Copernicus EMSR935",
+   "caption": {
+    "title": "50 mm of rain",
+    "line": "If 50 mm fell in the 4 days after the Sentinel-1 map of 10 Nov",
+    "note": "Relative likelihood from our model, not depth and not a flood probability",
+    "warning": null,
+    "detail": "50 and 100 mm give almost the same map (1,989 and 2,129 ha): the model saw few storms of this size (nine in ten of its training examples had at most 54 mm)."
+   },
+   "sources": {
+    "forecast": "pr-33:data/prediction/spatial/albufera/scenario_050mm/forecast.json",
+    "water_likelihood": "pr-33:data/prediction/spatial/albufera/scenario_050mm/water_likelihood_web.tif",
+    "new_water_likelihood": "pr-33:data/prediction/spatial/albufera/scenario_050mm/new_water_likelihood_web.tif",
+    "evidence": "pr-33:data/prediction/spatial/albufera/scenario_050mm/evidence_utm.tif",
+    "how": {
+     "water_likelihood": "cut out",
+     "new_water_likelihood": "cut out",
+     "evidence": "nearest neighbour"
+    },
+    "area_ha_drawn": "bake_prediction.py: the thresholds of forecast.json on the drawn grid, evidence 0 pixels"
+   }
+  },
+  {
+   "id": "scenario_100mm",
+   "mode": "scenario",
+   "rain_mm": 100,
+   "file": "prediction/scenario_100mm.webp",
+   "bytes": 329662,
+   "data": "prediction/scenario_100mm.bin",
+   "data_bytes": 469733,
+   "data_planes": [
+    "evidence",
+    "water_likelihood_pct",
+    "dry_before"
+   ],
+   "issued_from_pass": "20261110T175337_S1C",
+   "issued_from_sensor": "Sentinel-1",
+   "issue_time_utc": "2026-11-10T17:53:37.000Z",
+   "target_time_utc": "2026-11-14T17:53:37Z",
+   "target_nisar_granule": null,
+   "lead_days": 4.0,
+   "rain": {
+    "rain_prior_7d_mm": 25.4,
+    "rain_prior_30d_mm": 304.19999999999993,
+    "rain_between_mm": 100.0,
+    "rain_between_max1d_mm": 60.0,
+    "days_since_rain_peak": 2.0
+   },
+   "rain_source": "Open-Meteo, ECMWF IFS 9 km, wettest lattice point of the site per day",
+   "rain_seen_in_training": {
+    "max": 212.8,
+    "p99": 184.0,
+    "p90": 53.6,
+    "targets_over_100mm": 18,
+    "inside_training_range": true
+   },
+   "thresholds": {
+    "water": 0.3129008966120227,
+    "new_water": 0.20000887192001116
+   },
+   "area_ha": {
+    "likely_water": 5552.6,
+    "likely_new_water": 2128.5,
+    "counted_on": "evidence 0 pixels only"
+   },
+   "area_ha_drawn": {
+    "likely_water": 5545.4,
+    "likely_new_water": 2089.7
+   },
+   "mode_note": "hypothetical: 100 mm at the wettest point of the site over the 4 days after the latest water map, 60 % of it on one day, two days before the target",
+   "validation_status": "retrospective check on the held-out October 2026 window against Sentinel-1 maps; not yet scored against Copernicus EMSR935",
+   "caption": {
+    "title": "100 mm of rain",
+    "line": "If 100 mm fell in the 4 days after the Sentinel-1 map of 10 Nov",
+    "note": "Relative likelihood from our model, not depth and not a flood probability",
+    "warning": null,
+    "detail": "50 and 100 mm give almost the same map (1,989 and 2,129 ha): the model saw few storms of this size (nine in ten of its training examples had at most 54 mm)."
+   },
+   "sources": {
+    "forecast": "pr-33:data/prediction/spatial/albufera/scenario_100mm/forecast.json",
+    "water_likelihood": "pr-33:data/prediction/spatial/albufera/scenario_100mm/water_likelihood_web.tif",
+    "new_water_likelihood": "pr-33:data/prediction/spatial/albufera/scenario_100mm/new_water_likelihood_web.tif",
+    "evidence": "pr-33:data/prediction/spatial/albufera/scenario_100mm/evidence_utm.tif",
+    "how": {
+     "water_likelihood": "cut out",
+     "new_water_likelihood": "cut out",
+     "evidence": "nearest neighbour"
+    },
+    "area_ha_drawn": "bake_prediction.py: the thresholds of forecast.json on the drawn grid, evidence 0 pixels"
+   }
+  },
+  {
+   "id": "scenario_200mm",
+   "mode": "scenario",
+   "rain_mm": 200,
+   "file": "prediction/scenario_200mm.webp",
+   "bytes": 403726,
+   "data": "prediction/scenario_200mm.bin",
+   "data_bytes": 570838,
+   "data_planes": [
+    "evidence",
+    "water_likelihood_pct",
+    "dry_before"
+   ],
+   "issued_from_pass": "20261110T175337_S1C",
+   "issued_from_sensor": "Sentinel-1",
+   "issue_time_utc": "2026-11-10T17:53:37.000Z",
+   "target_time_utc": "2026-11-14T17:53:37Z",
+   "target_nisar_granule": null,
+   "lead_days": 4.0,
+   "rain": {
+    "rain_prior_7d_mm": 25.4,
+    "rain_prior_30d_mm": 304.19999999999993,
+    "rain_between_mm": 200.0,
+    "rain_between_max1d_mm": 120.0,
+    "days_since_rain_peak": 2.0
+   },
+   "rain_source": "Open-Meteo, ECMWF IFS 9 km, wettest lattice point of the site per day",
+   "rain_seen_in_training": {
+    "max": 212.8,
+    "p99": 184.0,
+    "p90": 53.6,
+    "targets_over_100mm": 18,
+    "inside_training_range": true
+   },
+   "thresholds": {
+    "water": 0.3129008966120227,
+    "new_water": 0.20000887192001116
+   },
+   "area_ha": {
+    "likely_water": 8125.9,
+    "likely_new_water": 5031.6,
+    "counted_on": "evidence 0 pixels only"
+   },
+   "area_ha_drawn": {
+    "likely_water": 8108.9,
+    "likely_new_water": 4952.0
+   },
+   "mode_note": "hypothetical: 200 mm at the wettest point of the site over the 4 days after the latest water map, 60 % of it on one day, two days before the target",
+   "validation_status": "retrospective check on the held-out October 2026 window against Sentinel-1 maps; not yet scored against Copernicus EMSR935",
+   "caption": {
+    "title": "200 mm of rain",
+    "line": "If 200 mm fell in the 4 days after the Sentinel-1 map of 10 Nov",
+    "note": "Relative likelihood from our model, not depth and not a flood probability",
+    "warning": null,
+    "detail": null
+   },
+   "sources": {
+    "forecast": "pr-33:data/prediction/spatial/albufera/scenario_200mm/forecast.json",
+    "water_likelihood": "pr-33:data/prediction/spatial/albufera/scenario_200mm/water_likelihood_web.tif",
+    "new_water_likelihood": "pr-33:data/prediction/spatial/albufera/scenario_200mm/new_water_likelihood_web.tif",
+    "evidence": "pr-33:data/prediction/spatial/albufera/scenario_200mm/evidence_utm.tif",
+    "how": {
+     "water_likelihood": "cut out",
+     "new_water_likelihood": "cut out",
+     "evidence": "nearest neighbour"
+    },
+    "area_ha_drawn": "bake_prediction.py: the thresholds of forecast.json on the drawn grid, evidence 0 pixels"
+   }
+  }
+ ],
+ "replays": [
+  {
+   "id": "replay_2026-10-22",
+   "mode": "reconstruction",
+   "rain_mm": null,
+   "file": "prediction/replay_2026-10-22.webp",
+   "bytes": 373790,
+   "data": "prediction/replay_2026-10-22.bin",
+   "data_bytes": 525211,
+   "data_planes": [
+    "evidence",
+    "water_likelihood_pct",
+    "dry_before"
+   ],
+   "issued_from_pass": "20261017T175337_S1C",
+   "issued_from_sensor": "Sentinel-1",
+   "issue_time_utc": "2026-10-17T17:53:37.000Z",
+   "target_time_utc": "2026-10-22T06:09:36.000Z",
+   "target_nisar_granule": null,
+   "lead_days": 4.51,
+   "rain": {
+    "rain_prior_7d_mm": 1.0,
+    "rain_prior_30d_mm": 190.7,
+    "rain_between_mm": 258.0,
+    "rain_between_max1d_mm": 135.1,
+    "days_since_rain_peak": 4.0
+   },
+   "rain_source": "Open-Meteo, ECMWF IFS 9 km, wettest lattice point of the site per day",
+   "rain_seen_in_training": null,
+   "thresholds": {
+    "water": 0.3129008966120227,
+    "new_water": 0.20000887192001116
+   },
+   "area_ha": {
+    "likely_water": 4144.2,
+    "likely_new_water": 4445.0,
+    "counted_on": "evidence 0 pixels only"
+   },
+   "area_ha_drawn": {
+    "likely_water": 4111.4,
+    "likely_new_water": 4316.3
+   },
+   "mode_note": "rain between issue and target is the rain that fell (IFS archive), not a forecast",
+   "validation_status": "retrospective check on the held-out October 2026 window against Sentinel-1 maps; not yet scored against Copernicus EMSR935",
+   "caption": {
+    "title": "Model map for 22 Oct",
+    "line": "Issued from the Sentinel-1 map of 17 Oct, given the 258 mm that fell after it",
+    "note": "A reconstruction with the rain that fell, not a forecast. Relative likelihood, not depth",
+    "warning": null,
+    "detail": null
+   },
+   "sources": {
+    "forecast": "pr-33:data/prediction/spatial/albufera/replay_2026-10-22/forecast.json",
+    "water_likelihood": "pr-33:data/prediction/spatial/albufera/replay_2026-10-22/water_likelihood_web.tif",
+    "new_water_likelihood": "pr-33:data/prediction/spatial/albufera/replay_2026-10-22/new_water_likelihood_web.tif",
+    "evidence": "pr-33:data/prediction/spatial/albufera/replay_2026-10-22/evidence_utm.tif",
+    "how": {
+     "water_likelihood": "cut out",
+     "new_water_likelihood": "cut out",
+     "evidence": "nearest neighbour"
+    },
+    "area_ha_drawn": "bake_prediction.py: the thresholds of forecast.json on the drawn grid, evidence 0 pixels"
+   }
+  },
+  {
+   "id": "replay_2026-10-28",
+   "mode": "reconstruction",
+   "rain_mm": null,
+   "file": "prediction/replay_2026-10-28.webp",
+   "bytes": 291960,
+   "data": "prediction/replay_2026-10-28.bin",
+   "data_bytes": 422540,
+   "data_planes": [
+    "evidence",
+    "water_likelihood_pct",
+    "dry_before"
+   ],
+   "issued_from_pass": "20261023T175350_S1D",
+   "issued_from_sensor": "Sentinel-1",
+   "issue_time_utc": "2026-10-23T17:53:50.000Z",
+   "target_time_utc": "2026-10-28T06:09:23.000Z",
+   "target_nisar_granule": null,
+   "lead_days": 4.51,
+   "rain": {
+    "rain_prior_7d_mm": 258.1,
+    "rain_prior_30d_mm": 427.70000000000005,
+    "rain_between_mm": 0.0,
+    "rain_between_max1d_mm": 0.0,
+    "days_since_rain_peak": 5.0
+   },
+   "rain_source": "Open-Meteo, ECMWF IFS 9 km, wettest lattice point of the site per day",
+   "rain_seen_in_training": null,
+   "thresholds": {
+    "water": 0.3129008966120227,
+    "new_water": 0.20000887192001116
+   },
+   "area_ha": {
+    "likely_water": 4593.9,
+    "likely_new_water": 618.9,
+    "counted_on": "evidence 0 pixels only"
+   },
+   "area_ha_drawn": {
+    "likely_water": 4587.8,
+    "likely_new_water": 593.7
+   },
+   "mode_note": "rain between issue and target is the rain that fell (IFS archive), not a forecast",
+   "validation_status": "retrospective check on the held-out October 2026 window against Sentinel-1 maps; not yet scored against Copernicus EMSR935",
+   "caption": {
+    "title": "Model map for 28 Oct",
+    "line": "Issued from the Sentinel-1 map of 23 Oct, given the 0 mm that fell after it",
+    "note": "A reconstruction with the rain that fell, not a forecast. Relative likelihood, not depth",
+    "warning": null,
+    "detail": null
+   },
+   "sources": {
+    "forecast": "pr-33:data/prediction/spatial/albufera/replay_2026-10-28/forecast.json",
+    "water_likelihood": "pr-33:data/prediction/spatial/albufera/replay_2026-10-28/water_likelihood_web.tif",
+    "new_water_likelihood": "pr-33:data/prediction/spatial/albufera/replay_2026-10-28/new_water_likelihood_web.tif",
+    "evidence": "pr-33:data/prediction/spatial/albufera/replay_2026-10-28/evidence_utm.tif",
+    "how": {
+     "water_likelihood": "cut out",
+     "new_water_likelihood": "cut out",
+     "evidence": "nearest neighbour"
+    },
+    "area_ha_drawn": "bake_prediction.py: the thresholds of forecast.json on the drawn grid, evidence 0 pixels"
+   }
+  },
+  {
+   "id": "replay_2026-10-28_prestorm",
+   "mode": "reconstruction",
+   "rain_mm": null,
+   "file": "prediction/replay_2026-10-28_prestorm.webp",
+   "bytes": 366334,
+   "data": "prediction/replay_2026-10-28_prestorm.bin",
+   "data_bytes": 518787,
+   "data_planes": [
+    "evidence",
+    "water_likelihood_pct",
+    "dry_before"
+   ],
+   "issued_from_pass": "20261017T175337_S1C",
+   "issued_from_sensor": "Sentinel-1",
+   "issue_time_utc": "2026-10-17T17:53:37.000Z",
+   "target_time_utc": "2026-10-28T18:53:18Z",
+   "target_nisar_granule": "NISAR_L2_PR_GCOV_034_066_D_069_2005_DHDH_M_20261028T185318_20261028T185353_P05036_N_F_J_001",
+   "lead_days": 11.04,
+   "rain": {
+    "rain_prior_7d_mm": 1.0,
+    "rain_prior_30d_mm": 190.7,
+    "rain_between_mm": 258.1,
+    "rain_between_max1d_mm": 135.1,
+    "days_since_rain_peak": 10.0
+   },
+   "rain_source": "Open-Meteo, ECMWF IFS 9 km, wettest lattice point of the site per day",
+   "rain_seen_in_training": null,
+   "thresholds": {
+    "water": 0.3129008966120227,
+    "new_water": 0.20000887192001116
+   },
+   "area_ha": {
+    "likely_water": 5633.4,
+    "likely_new_water": 4909.2,
+    "counted_on": "evidence 0 pixels only"
+   },
+   "area_ha_drawn": {
+    "likely_water": 5626.2,
+    "likely_new_water": 4840.2
+   },
+   "mode_note": "issued from the last Sentinel-1 map before the rain of 18 and 19 Oct, for the NISAR pass of 28 Oct; the rain in between is the rain that fell (IFS archive), not a forecast",
+   "validation_status": "checked against the NISAR water map of the target pass, see nisar_check.json",
+   "caption": {
+    "title": "Model map for 28 Oct",
+    "line": "Issued from the Sentinel-1 map of 17 Oct, given the 258 mm that fell after it",
+    "note": "A reconstruction with the rain that fell, not a forecast. Relative likelihood, not depth",
+    "warning": null,
+    "detail": null
+   },
+   "sources": {
+    "forecast": "pr-33:data/prediction/spatial/albufera/replay_2026-10-28_prestorm/forecast.json",
+    "water_likelihood": "pr-33:data/prediction/spatial/albufera/replay_2026-10-28_prestorm/water_likelihood_web.tif",
+    "new_water_likelihood": "pr-33:data/prediction/spatial/albufera/replay_2026-10-28_prestorm/new_water_likelihood_web.tif",
+    "evidence": "pr-33:data/prediction/spatial/albufera/replay_2026-10-28_prestorm/evidence_utm.tif",
+    "how": {
+     "water_likelihood": "cut out",
+     "new_water_likelihood": "cut out",
+     "evidence": "nearest neighbour"
+    },
+    "area_ha_drawn": "bake_prediction.py: the thresholds of forecast.json on the drawn grid, evidence 0 pixels"
+   }
+  }
+ ],
+ "inspect": {
+  "landcover": {
+   "plane": 0,
+   "source": "data/context/albufera_worldcover_2021_20m.tif",
+   "product": "ESA WorldCover 2021, 10 m, on the 20 m site grid",
+   "classes": {
+    "10": "Tree cover",
+    "20": "Shrubland",
+    "30": "Grassland",
+    "40": "Cropland",
+    "50": "Built-up",
+    "60": "Bare or sparse vegetation",
+    "70": "Snow and ice",
+    "80": "Permanent water",
+    "90": "Herbaceous wetland",
+    "95": "Mangroves",
+    "100": "Moss and lichen"
+   },
+   "nodata": 0
+  },
+  "soil": {
+   "plane": 1,
+   "date": "2026-10-16",
+   "source": "data/context/albufera_sme2_2026-10-16_200m.tif",
+   "index": "data/context/albufera_sme2_index.json",
+   "product": "NISAR_L3_SME2_PROVISIONAL_V1",
+   "maturity": "PROVISIONAL",
+   "unit": "m3/m3",
+   "scale": 100,
+   "nodata": 255,
+   "median_m3m3": 0.226,
+   "share_recommended": 0.536,
+   "granules": [
+    "NISAR_L3_PR_SME2_033_058_A_021_2005_DHDH_A_20261016T050652_20261016T050719_P05023_N_F_J_001",
+    "NISAR_L3_PR_SME2_033_058_A_022_2005_DHDH_A_20261016T050718_20261016T050753_P05023_N_F_J_001",
+    "NISAR_L3_PR_SME2_033_066_D_069_2005_DHDH_M_20261016T185318_20261016T185353_P05023_N_F_J_001"
+   ],
+   "resolution_m": 200
+  },
+  "history": {
+   "series": "nisar_066_D_069",
+   "sensor": "NISAR",
+   "product": "NISAR GCOV water, the team CV model",
+   "source": "web/public/layers/albufera/nisar_066_D_069/*.webp (bake_water.py), the frames the map draws",
+   "bounds": [
+    -0.4500961,
+    39.1498983,
+    -0.2198982,
+    39.4501125
+   ],
+   "outside": "the frames cover the box of meta.json only: outside it every pass reads 0",
+   "states": {
+    "0": "not seen by this pass",
+    "1": "dry",
+    "2": "water under plants",
+    "3": "open water"
+   },
+   "passes": [
+    {
+     "plane": 2,
+     "time_utc": "2026-06-18T18:53:21Z",
+     "date": "2026-06-18",
+     "granule": "NISAR_L2_PR_GCOV_023_066_D_069_2005_DHDH_M_20260618T185321_20260618T185356_P05023_N_F_J_001",
+     "open_ha": 2645.5,
+     "veg_ha": 0.0
+    },
+    {
+     "plane": 3,
+     "time_utc": "2026-06-30T18:53:21Z",
+     "date": "2026-06-30",
+     "granule": "NISAR_L2_PR_GCOV_024_066_D_069_2005_DHDH_M_20260630T185321_20260630T185356_P05023_N_F_J_001",
+     "open_ha": 2453.3,
+     "veg_ha": 0.0
+    },
+    {
+     "plane": 4,
+     "time_utc": "2026-07-12T18:53:20Z",
+     "date": "2026-07-12",
+     "granule": "NISAR_L2_PR_GCOV_025_066_D_069_2005_DHDH_M_20260712T185320_20260712T185355_P05023_N_F_J_001",
+     "open_ha": 2492.3,
+     "veg_ha": 0.0
+    },
+    {
+     "plane": 5,
+     "time_utc": "2026-07-24T18:53:19Z",
+     "date": "2026-07-24",
+     "granule": "NISAR_L2_PR_GCOV_026_066_D_069_2005_DHDH_M_20260724T185319_20260724T185354_P05023_N_F_J_001",
+     "open_ha": 2478.9,
+     "veg_ha": 0.0
+    },
+    {
+     "plane": 6,
+     "time_utc": "2026-08-17T18:53:18Z",
+     "date": "2026-08-17",
+     "granule": "NISAR_L2_PR_GCOV_028_066_D_069_2005_DHDH_M_20260817T185318_20260817T185353_P05023_N_F_J_001",
+     "open_ha": 2461.3,
+     "veg_ha": 0.0
+    },
+    {
+     "plane": 7,
+     "time_utc": "2026-08-29T18:53:18Z",
+     "date": "2026-08-29",
+     "granule": "NISAR_L2_PR_GCOV_029_066_D_069_2005_DHDH_M_20260829T185318_20260829T185353_P05023_N_F_J_001",
+     "open_ha": 2466.4,
+     "veg_ha": 0.0
+    },
+    {
+     "plane": 8,
+     "time_utc": "2026-09-10T18:53:18Z",
+     "date": "2026-09-10",
+     "granule": "NISAR_L2_PR_GCOV_030_066_D_069_2005_DHDH_M_20260910T185318_20260910T185353_P05023_N_F_J_001",
+     "open_ha": 2453.3,
+     "veg_ha": 0.0
+    },
+    {
+     "plane": 9,
+     "time_utc": "2026-09-22T18:53:18Z",
+     "date": "2026-09-22",
+     "granule": "NISAR_L2_PR_GCOV_031_066_D_069_2005_DHDH_M_20260922T185318_20260922T185353_P05023_N_F_J_001",
+     "open_ha": 2469.8,
+     "veg_ha": 0.0
+    },
+    {
+     "plane": 10,
+     "time_utc": "2026-10-04T18:53:18Z",
+     "date": "2026-10-04",
+     "granule": "NISAR_L2_PR_GCOV_032_066_D_069_2005_DHDH_M_20261004T185318_20261004T185353_P05023_N_F_J_001",
+     "open_ha": 2962.7,
+     "veg_ha": 0.0
+    },
+    {
+     "plane": 11,
+     "time_utc": "2026-10-16T18:53:18Z",
+     "date": "2026-10-16",
+     "granule": "NISAR_L2_PR_GCOV_033_066_D_069_2005_DHDH_M_20261016T185318_20261016T185353_P05023_N_F_J_001",
+     "open_ha": 4370.8,
+     "veg_ha": 0.0
+    },
+    {
+     "plane": 12,
+     "time_utc": "2026-10-28T18:53:18Z",
+     "date": "2026-10-28",
+     "granule": "NISAR_L2_PR_GCOV_034_066_D_069_2005_DHDH_M_20261028T185318_20261028T185353_P05036_N_F_J_001",
+     "open_ha": 7324.8,
+     "veg_ha": 0.0
+    }
+   ]
+  },
+  "file": "prediction/inspect.bin",
+  "bytes": 524633,
+  "planes": 13
+ },
+ "game": null,
+ "still_flooded": null
+}
