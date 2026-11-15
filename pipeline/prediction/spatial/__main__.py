@@ -380,11 +380,16 @@ def predict(args):
 
 
 def _cv_on_grid(path, grid):
-    """A data/cv water map (Web Mercator, 0 / 1 / 255) on the site grid, nearest neighbour."""
+    """A data/cv water map (Web Mercator) on the site grid, nearest neighbour, as 0 dry / 1 water / 255 unknown.
+
+    Class 2 (flooded vegetation, written by three-class exports) counts as water; any other code is unknown.
+    """
     out = np.full((grid.height, grid.width), 255, dtype="uint8")
     with rasterio.open(path) as src:
         reproject(source=rasterio.band(src, 1), destination=out, src_nodata=255, dst_transform=grid.transform,
                   dst_crs=grid.crs, dst_nodata=255, resampling=Resampling.nearest)
+    out[out == 2] = 1
+    out[(out != 0) & (out != 1)] = 255
     return out
 
 
