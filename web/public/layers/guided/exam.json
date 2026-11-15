@@ -1,8 +1,9 @@
 {
  "made_by": "web/scripts/bake_exam.py",
- "baked_utc": "2026-11-15T07:56:57Z",
- "ref": null,
- "commit": null,
+ "baked_utc": "2026-11-15T08:04:00Z",
+ "ref": "origin/main",
+ "commit": "2f12653427a939b4939a62632504a9d641abbdb7",
+ "spatial": "data/prediction/spatial",
  "bounds": [
   -0.2507973,
   38.7722871,
@@ -43,8 +44,8 @@
  },
  "rule": "likely water (water_likelihood >= the frozen threshold) against EMSR935 AOI01 flooded_area, on the pixels of the independent test (set all_pixels): inside AOI01, land, not permanent water, valid in NISAR's pass of 16 Oct",
  "source": {
-  "model": "data/prediction/spatial/pego_oliva/replay_2026-10-22/water_likelihood_utm.tif",
-  "threshold": "data/prediction/spatial/development_metrics.json thresholds.rain_and_state.water",
+  "model": "data/prediction/spatial/pego_oliva/replay_2026-10-22/water_likelihood_utm.tif at origin/main (2f12653)",
+  "threshold": "data/prediction/spatial/development_metrics.json at origin/main (2f12653) thresholds.rain_and_state.water",
   "flood": "Copernicus EMSR935 AOI01 flooded_area, imagery 20 to 21 Oct 2026 (data/labels/pego_oliva_emsr935_flood.geojson, © European Union)",
   "test": "pipeline/validation/emsr935_test.py on branch claude/paper-0808b2 (the scored pixels are rebuilt the same way here)"
  },
@@ -62,7 +63,7 @@
     "issued_from_pass": "20261110T175323_S1C",
     "target_time_utc": "2026-11-14T17:53:23Z",
     "warning": null,
-    "source": "data/prediction/spatial/pego_oliva/scenario_000mm/forecast.json area_ha.likely_new_water"
+    "source": "data/prediction/spatial/pego_oliva/scenario_000mm/forecast.json at origin/main (2f12653) area_ha.likely_new_water"
    },
    {
     "id": "scenario_050mm",
@@ -74,7 +75,7 @@
     "issued_from_pass": "20261110T175323_S1C",
     "target_time_utc": "2026-11-14T17:53:23Z",
     "warning": null,
-    "source": "data/prediction/spatial/pego_oliva/scenario_050mm/forecast.json area_ha.likely_new_water"
+    "source": "data/prediction/spatial/pego_oliva/scenario_050mm/forecast.json at origin/main (2f12653) area_ha.likely_new_water"
    },
    {
     "id": "scenario_100mm",
@@ -86,7 +87,7 @@
     "issued_from_pass": "20261110T175323_S1C",
     "target_time_utc": "2026-11-14T17:53:23Z",
     "warning": null,
-    "source": "data/prediction/spatial/pego_oliva/scenario_100mm/forecast.json area_ha.likely_new_water"
+    "source": "data/prediction/spatial/pego_oliva/scenario_100mm/forecast.json at origin/main (2f12653) area_ha.likely_new_water"
    },
    {
     "id": "scenario_200mm",
@@ -98,12 +99,12 @@
     "issued_from_pass": "20261110T175323_S1C",
     "target_time_utc": "2026-11-14T17:53:23Z",
     "warning": "Beyond the storms the model learned from: the largest had 194 mm",
-    "source": "data/prediction/spatial/pego_oliva/scenario_200mm/forecast.json area_ha.likely_new_water"
+    "source": "data/prediction/spatial/pego_oliva/scenario_200mm/forecast.json at origin/main (2f12653) area_ha.likely_new_water"
    }
   ],
   "rule": "likely new water: new_water_likelihood_utm.tif at forecast.json thresholds.new_water, on evidence 0 pixels (as forecast.json counts area_ha.likely_new_water); drawn as an outline around it: gaps under 40 m closed, holes and parts under 1 ha left out, simplified by 15 m (ha_inside_outline); the number shown is ha, from forecast.json",
   "source": {
-   "model": "data/prediction/spatial/pego_oliva/scenario_*mm, the team spatial model (LightGBM, PR #33)",
+   "model": "data/prediction/spatial/pego_oliva/scenario_*mm at origin/main (2f12653), the team spatial model (LightGBM, PR #33)",
    "rain": "hypothetical rain in the 4 days after the latest Sentinel-1 map, at the wettest point of the site (forecast.json mode_note)"
   },
   "streets": "no street scenarios in data/streets yet: fields only"

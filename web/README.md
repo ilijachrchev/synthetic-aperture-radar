@@ -12,6 +12,23 @@ pnpm build && pnpm start
 
 `pnpm build` runs `check:dashes` first: no en or em dash may appear anywhere in the app's own files.
 
+## The flood map (/explore)
+
+`/explore` is a guided map of five steps, one main action each (the landing is step 1): the official map said safe
+(tap a street that flooded in 2024), our simulation saw it (one switch), NISAR sees more water (swipe against
+Sentinel-1), did we get it right (swipe our prediction against EMSR935), what if it rains (rain slider).
+`/explore?step=2` to `6` opens a step, `/explore?all` the free explorer with every layer. Code:
+`src/components/guided/`, copy: `src/content/guided.ts`. Every number is read at run time from a baked file:
+
+```bash
+# from the repo root, pipeline environment, PYTHONPATH set to the repo root
+python web/scripts/bake_streets.py                 # steps 2 and 3: the 2024 streets that flooded (needs data/interim downloads, see its docstring)
+python web/scripts/bake_exam.py --ref <git ref>    # steps 5 and 6: the colour layer and the rain outlines from the frozen model maps of that ref
+python web/scripts/bake_exam.py --result <result.json> --result-source "<how to cite it>"   # step 5 numbers from a new test
+```
+
+The numbers of step 5 sit in `public/layers/guided/test_score.json`: it can also be edited by hand, no code.
+
 ## The game
 
 `/game` replays the DANA "Adam" storm at the Pego-Oliva marsh as a guessing game: the player sees the last NISAR

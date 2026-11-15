@@ -1,10 +1,12 @@
 """Bake the model's two steps of the guided flood map (/explore, steps 5 and 6) from the model maps of a git ref.
 
-    python web/scripts/bake_exam.py [--ref REF] [--data DIR] [--result FILE]
+    python web/scripts/bake_exam.py [--ref REF] [--spatial PATH] [--data DIR] [--result FILE]
         (from the repository root, with the pipeline environment and PYTHONPATH set to the repository root)
 
     --ref     a git ref (branch, tag or commit) that holds data/prediction/spatial, the frozen model maps; without it,
               the files of the working tree. New frozen maps: run again with --ref <their branch or commit>.
+    --spatial where the model maps sit in the repository (default data/prediction/spatial), should new maps land in
+              another folder of the same layout (development_metrics.json, pego_oliva/<scenario>/...)
     --data    the folder that holds stack/pego_oliva_066_D_069.nc (NISAR, for the scored pixels of the test); by
               default data/ here, else the data/ of the main checkout
     --result  a result.json of the independent test (data/validation/emsr935/result.json): rewrites test_score.json
@@ -56,7 +58,7 @@ from bake_water import pixel_ha, web_grid  # noqa: E402
 WEB = Path(__file__).resolve().parents[1]
 REPO = WEB.parent
 OUT = WEB / "public" / "layers" / "guided"
-SPATIAL = "data/prediction/spatial"
+SPATIAL = "data/prediction/spatial"  # --spatial changes it
 SITE = "pego_oliva"
 REPLAY = "replay_2026-10-22"
 FORECAST = "forecast_2026-10-22"
@@ -290,16 +292,19 @@ def score_from(result: Path, label: str | None = None) -> None:
 
 
 def main() -> None:
+    global SPATIAL
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("--ref", default=None, help="git ref holding data/prediction/spatial (default: the working tree)")
+    ap.add_argument("--spatial", default=SPATIAL, help="folder of the model maps in the repository (PR #33 layout)")
     ap.add_argument("--data", type=Path, default=None, help="folder holding stack/pego_oliva_066_D_069.nc")
     ap.add_argument("--result", type=Path, default=None, help="result.json of the independent test")
     ap.add_argument("--result-source", default=None, help="how the page names the result file")
     a = ap.parse_args()
+    SPATIAL = a.spatial.strip("/")
     OUT.mkdir(parents=True, exist_ok=True)
     src = Ref(a.ref)
     print(f"model maps: {a.ref or 'working tree'}{f' ({src.commit[:7]})' if src.commit else ''}", flush=True)
-    doc = {"made_by": "web/scripts/bake_exam.py", "baked_utc": now(), "ref": a.ref, "commit": src.commit}
+    doc = {"made_by": "web/scripts/bake_exam.py", "baked_utc": now(), "ref": a.ref, "commit": src.commit, "spatial": SPATIAL}
     doc.update(exam(src, stack_dir(a.data)))
     doc["rain"] = rain(src)
     if a.result:
