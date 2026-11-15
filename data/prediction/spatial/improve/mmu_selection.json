@@ -1,0 +1,327 @@
+{
+  "rule": "docs/MODEL_IMPROVE.md, amendment, variant 6: mean over the two sites of the development new-water F1 at 20 m on full maps of the development check targets, counted on the held-back 1 km blocks; ties to the smaller patch size and no majority test",
+  "candidate": "mono_neigh+blend",
+  "chosen_setting": "min0px",
+  "chosen": null,
+  "settings": [
+    {
+      "setting": "min0px",
+      "min_patch_px": 0,
+      "majority_3x3": false,
+      "development_f1": 0.4133,
+      "albufera_f1": 0.3747,
+      "pego_oliva_f1": 0.4519
+    },
+    {
+      "setting": "min3px",
+      "min_patch_px": 3,
+      "majority_3x3": false,
+      "development_f1": 0.4037,
+      "albufera_f1": 0.3641,
+      "pego_oliva_f1": 0.4433
+    },
+    {
+      "setting": "min5px",
+      "min_patch_px": 5,
+      "majority_3x3": false,
+      "development_f1": 0.3923,
+      "albufera_f1": 0.352,
+      "pego_oliva_f1": 0.4327
+    },
+    {
+      "setting": "min10px",
+      "min_patch_px": 10,
+      "majority_3x3": false,
+      "development_f1": 0.3742,
+      "albufera_f1": 0.3326,
+      "pego_oliva_f1": 0.4159
+    },
+    {
+      "setting": "min0px_majority",
+      "min_patch_px": 0,
+      "majority_3x3": true,
+      "development_f1": 0.3518,
+      "albufera_f1": 0.3094,
+      "pego_oliva_f1": 0.3942
+    },
+    {
+      "setting": "min3px_majority",
+      "min_patch_px": 3,
+      "majority_3x3": true,
+      "development_f1": 0.3484,
+      "albufera_f1": 0.3057,
+      "pego_oliva_f1": 0.391
+    },
+    {
+      "setting": "min25px",
+      "min_patch_px": 25,
+      "majority_3x3": false,
+      "development_f1": 0.3468,
+      "albufera_f1": 0.3027,
+      "pego_oliva_f1": 0.3909
+    },
+    {
+      "setting": "min5px_majority",
+      "min_patch_px": 5,
+      "majority_3x3": true,
+      "development_f1": 0.3438,
+      "albufera_f1": 0.3007,
+      "pego_oliva_f1": 0.3868
+    },
+    {
+      "setting": "min10px_majority",
+      "min_patch_px": 10,
+      "majority_3x3": true,
+      "development_f1": 0.332,
+      "albufera_f1": 0.2881,
+      "pego_oliva_f1": 0.3759
+    },
+    {
+      "setting": "min25px_majority",
+      "min_patch_px": 25,
+      "majority_3x3": true,
+      "development_f1": 0.3122,
+      "albufera_f1": 0.2663,
+      "pego_oliva_f1": 0.3581
+    }
+  ],
+  "sites": {
+    "albufera": {
+      "site": "albufera",
+      "candidate": "mono_neigh+blend",
+      "threshold_new_water": 0.17653340825370928,
+      "targets": 238,
+      "settings": {
+        "min0px": {
+          "min_patch_px": 0,
+          "majority_3x3": false,
+          "f1": 0.3747,
+          "hit_rate": 0.4606,
+          "false_alarm_ratio": 0.6842,
+          "tp": 418244,
+          "fp": 906085,
+          "fn": 489862,
+          "marked_ha_all_blocks": 225073.8
+        },
+        "min3px": {
+          "min_patch_px": 3,
+          "majority_3x3": false,
+          "f1": 0.3641,
+          "hit_rate": 0.4324,
+          "false_alarm_ratio": 0.6855,
+          "tp": 392680,
+          "fp": 855918,
+          "fn": 515426,
+          "marked_ha_all_blocks": 212075.5
+        },
+        "min5px": {
+          "min_patch_px": 5,
+          "majority_3x3": false,
+          "f1": 0.352,
+          "hit_rate": 0.403,
+          "false_alarm_ratio": 0.6876,
+          "tp": 365960,
+          "fp": 805394,
+          "fn": 542146,
+          "marked_ha_all_blocks": 198900.7
+        },
+        "min10px": {
+          "min_patch_px": 10,
+          "majority_3x3": false,
+          "f1": 0.3326,
+          "hit_rate": 0.3587,
+          "false_alarm_ratio": 0.69,
+          "tp": 325736,
+          "fp": 725029,
+          "fn": 582370,
+          "marked_ha_all_blocks": 176894.6
+        },
+        "min25px": {
+          "min_patch_px": 25,
+          "majority_3x3": false,
+          "f1": 0.3027,
+          "hit_rate": 0.2993,
+          "false_alarm_ratio": 0.6939,
+          "tp": 271807,
+          "fp": 616259,
+          "fn": 636299,
+          "marked_ha_all_blocks": 147973.8
+        },
+        "min0px_majority": {
+          "min_patch_px": 0,
+          "majority_3x3": true,
+          "f1": 0.3094,
+          "hit_rate": 0.3102,
+          "false_alarm_ratio": 0.6915,
+          "tp": 281683,
+          "fp": 631269,
+          "fn": 626423,
+          "marked_ha_all_blocks": 154577.6
+        },
+        "min3px_majority": {
+          "min_patch_px": 3,
+          "majority_3x3": true,
+          "f1": 0.3057,
+          "hit_rate": 0.3034,
+          "false_alarm_ratio": 0.6921,
+          "tp": 275514,
+          "fp": 619183,
+          "fn": 632592,
+          "marked_ha_all_blocks": 151257.5
+        },
+        "min5px_majority": {
+          "min_patch_px": 5,
+          "majority_3x3": true,
+          "f1": 0.3007,
+          "hit_rate": 0.2944,
+          "false_alarm_ratio": 0.6927,
+          "tp": 267375,
+          "fp": 602825,
+          "fn": 640731,
+          "marked_ha_all_blocks": 146669.6
+        },
+        "min10px_majority": {
+          "min_patch_px": 10,
+          "majority_3x3": true,
+          "f1": 0.2881,
+          "hit_rate": 0.2725,
+          "false_alarm_ratio": 0.6945,
+          "tp": 247463,
+          "fp": 562442,
+          "fn": 660643,
+          "marked_ha_all_blocks": 136184.5
+        },
+        "min25px_majority": {
+          "min_patch_px": 25,
+          "majority_3x3": true,
+          "f1": 0.2663,
+          "hit_rate": 0.2372,
+          "false_alarm_ratio": 0.6964,
+          "tp": 215392,
+          "fp": 494133,
+          "fn": 692714,
+          "marked_ha_all_blocks": 119258.4
+        }
+      }
+    },
+    "pego_oliva": {
+      "site": "pego_oliva",
+      "candidate": "mono_neigh+blend",
+      "threshold_new_water": 0.17653340825370928,
+      "targets": 238,
+      "settings": {
+        "min0px": {
+          "min_patch_px": 0,
+          "majority_3x3": false,
+          "f1": 0.4519,
+          "hit_rate": 0.6444,
+          "false_alarm_ratio": 0.6521,
+          "tp": 229855,
+          "fp": 430771,
+          "fn": 126820,
+          "marked_ha_all_blocks": 85830.4
+        },
+        "min3px": {
+          "min_patch_px": 3,
+          "majority_3x3": false,
+          "f1": 0.4433,
+          "hit_rate": 0.614,
+          "false_alarm_ratio": 0.6532,
+          "tp": 219016,
+          "fp": 412502,
+          "fn": 137659,
+          "marked_ha_all_blocks": 81871.1
+        },
+        "min5px": {
+          "min_patch_px": 5,
+          "majority_3x3": false,
+          "f1": 0.4327,
+          "hit_rate": 0.5818,
+          "false_alarm_ratio": 0.6556,
+          "tp": 207504,
+          "fp": 395042,
+          "fn": 149171,
+          "marked_ha_all_blocks": 77926.3
+        },
+        "min10px": {
+          "min_patch_px": 10,
+          "majority_3x3": false,
+          "f1": 0.4159,
+          "hit_rate": 0.5347,
+          "false_alarm_ratio": 0.6597,
+          "tp": 190715,
+          "fp": 369636,
+          "fn": 165960,
+          "marked_ha_all_blocks": 71775.2
+        },
+        "min25px": {
+          "min_patch_px": 25,
+          "majority_3x3": false,
+          "f1": 0.3909,
+          "hit_rate": 0.469,
+          "false_alarm_ratio": 0.6648,
+          "tp": 167263,
+          "fp": 331788,
+          "fn": 189412,
+          "marked_ha_all_blocks": 64115.2
+        },
+        "min0px_majority": {
+          "min_patch_px": 0,
+          "majority_3x3": true,
+          "f1": 0.3942,
+          "hit_rate": 0.4662,
+          "false_alarm_ratio": 0.6586,
+          "tp": 166288,
+          "fp": 320801,
+          "fn": 190387,
+          "marked_ha_all_blocks": 62960.6
+        },
+        "min3px_majority": {
+          "min_patch_px": 3,
+          "majority_3x3": true,
+          "f1": 0.391,
+          "hit_rate": 0.4588,
+          "false_alarm_ratio": 0.6593,
+          "tp": 163632,
+          "fp": 316682,
+          "fn": 193043,
+          "marked_ha_all_blocks": 62027.3
+        },
+        "min5px_majority": {
+          "min_patch_px": 5,
+          "majority_3x3": true,
+          "f1": 0.3868,
+          "hit_rate": 0.4489,
+          "false_alarm_ratio": 0.6602,
+          "tp": 160114,
+          "fp": 311137,
+          "fn": 196561,
+          "marked_ha_all_blocks": 60815.3
+        },
+        "min10px_majority": {
+          "min_patch_px": 10,
+          "majority_3x3": true,
+          "f1": 0.3759,
+          "hit_rate": 0.4246,
+          "false_alarm_ratio": 0.6628,
+          "tp": 151457,
+          "fp": 297655,
+          "fn": 205218,
+          "marked_ha_all_blocks": 58066.0
+        },
+        "min25px_majority": {
+          "min_patch_px": 25,
+          "majority_3x3": true,
+          "f1": 0.3581,
+          "hit_rate": 0.3853,
+          "false_alarm_ratio": 0.6656,
+          "tp": 137432,
+          "fp": 273559,
+          "fn": 219243,
+          "marked_ha_all_blocks": 53363.9
+        }
+      }
+    }
+  },
+  "held_out_scored_before_this_file": false
+}

@@ -273,7 +273,8 @@ def pick_pool(domain: np.ndarray, wet: np.ndarray, obs: np.ndarray, size: int, r
 
 def build_table(pool_water: np.ndarray, times: np.ndarray, days: list[str], static_cols: np.ndarray,
                 pool_weight: np.ndarray, rain: dict[int, float], rng: np.random.Generator,
-                dry_keep: float = 0.1, soil=None, is_nisar: np.ndarray | None = None, neigh=None) -> dict[str, np.ndarray]:
+                dry_keep: float = 0.1, soil=None, is_nisar: np.ndarray | None = None, neigh=None,
+                fit: np.ndarray | None = None, only: np.ndarray | None = None) -> dict[str, np.ndarray]:
     """Samples of every target pass outside the held-out window.
 
     pool_water: (passes, pixels) 0 / 1 / 255. Dry samples are thinned to dry_keep
@@ -282,16 +283,18 @@ def build_table(pool_water: np.ndarray, times: np.ndarray, days: list[str], stat
     soil(issue_day, target_day) returns (values per pool pixel or None, age in days).
     is_nisar flags the NISAR passes, for the two sensor columns.
     neigh(j) returns the neighbourhood columns (pixels, len(NEIGH)) of issue pass j, for the optional NEIGH inputs.
+    fit (passes that may be targets and count in the past wet share; default: every pass outside the held-out window)
+    and only (restrict the targets further) are for the fit-then-test version, which adds held-out passes of one site.
     """
     nisar = np.zeros(len(days), bool) if is_nisar is None else is_nisar
     src = np.empty(pool_water.shape[1], dtype="int64")
-    fit = np.array([not in_holdout(d) for d in days])
+    fit = np.array([not in_holdout(d) for d in days]) if fit is None else np.asarray(fit, bool)
     cum_wet = np.cumsum((pool_water == 1) & fit[:, None], axis=0, dtype="int16")
     cum_obs = np.cumsum((pool_water != UNKNOWN) & fit[:, None], axis=0, dtype="int16")
     X, y, w, tt, pp = [], [], [], [], []
     for t in range(len(days)):
-        if not fit[t]:
-            continue                      # the held-out storm never enters the table
+        if not fit[t] or (only is not None and not only[t]):
+            continue                      # the held-out storm never enters the table (unless fit says so)
         j = issue_index(times, t)
         if j is None:
             continue
