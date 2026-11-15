@@ -2,8 +2,8 @@
 
 // The flat flood explorer: a street map, flat and sharp down to the houses, of the official flood zones (SNCZI), what
 // really flooded (Copernicus EMS in 2024 and 2026, NISAR in 2026), and our model of where the water would go, with
-// its rain slider and its honest notes. A click on any spot reads every layer there. A short replay walks through the
-// DANA of 2026 at Pego-Oliva, our maps in order and no score.
+// its rain slider and its honest notes. A click on any spot reads every layer there. The step by step replay of the
+// 2026 DANA is no longer offered (the team found it hard to read); its code stays reachable only through the test hook.
 //
 // Everything that is a measurement comes from the baked files: public/layers/explore/ (scripts/bake_explore.py) and
 // public/layers/<site>/prediction* (scripts/bake_prediction.py). The radar and model pictures are 15 to 20 m pixels:
@@ -913,11 +913,6 @@ export function ExploreApp() {
 						<button type="button" className="ex-pill" aria-pressed={layers.model} onClick={() => toggle('model')}>
 							What if it rains
 						</button>
-						{nisarPego && (
-							<button type="button" className="ex-pill" onClick={startReplay}>
-								<Play size={14} strokeWidth={2.6} /> DANA replay
-							</button>
-						)}
 					</div>
 				)}
 			</footer>
