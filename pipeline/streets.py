@@ -1052,7 +1052,11 @@ def rain_zones(rec: np.ndarray, upa: np.ndarray) -> dict:
 # Two runs, fixed before any score; both are reported, neither is chosen.
 FORECAST_API = "https://single-runs-api.open-meteo.com/v1/forecast"
 FORECAST_MODEL = "ecmwf_ifs"   # IFS HRES at its native 9 km (O1280 grid); single runs from March 2024
-FORECAST_RUNS = {"ifs_20241028T12": "2024-10-28T12:00", "ifs_20241029T00": "2024-10-29T00:00"}  # initial times, UTC
+FORECAST_RUNS = {"ifs_20241028T12": "2024-10-28T12:00", "ifs_20241029T00": "2024-10-29T00:00",  # initial times, UTC
+                 "ifs_20241029T06": "2024-10-29T06:00"}  # run A3, added by amendment (docs/STREETS.md)
+# Run A3 starts after the window opens (04:00 UTC): its window hours up to its initial time take the rain of the
+# run of 29 Oct 00 UTC, the newest forecast for those hours at 06 UTC.
+FORECAST_EARLIER_RUN = {"ifs_20241029T06": "ifs_20241029T00"}
 FORECAST_LATTICE_M = 2000.0    # query points every 2 km over the Poyo-Pozalet-Saleta catchment and 6 km around it,
 FORECAST_BUFFER_M = 6000.0     # so every grid point whose area reaches a rain zone is found
 FORECAST_DAYS = 3
@@ -1071,6 +1075,8 @@ SIM_RUNS = {
                         "what": "run A: ECMWF IFS HRES forecast of 28 Oct 2024 12 UTC, bare terrain"},
     "ifs_20241029T00": {"folder": "simulation_ifs_20241029T00", "rain": "ifs_20241029T00", "buildings": False,
                         "what": "run A: ECMWF IFS HRES forecast of 29 Oct 2024 00 UTC, bare terrain"},
+    "ifs_20241029T06": {"folder": "simulation_ifs_20241029T06", "rain": "ifs_20241029T06", "buildings": False,
+                        "what": "run A3 (amendment): ECMWF IFS HRES forecast of 29 Oct 2024 06 UTC, bare terrain"},
     "buildings": {"folder": "simulation_buildings", "rain": "gauged", "buildings": True,
                   "what": "run B: gauged rain (Perez Cueva et al. 2025), buildings raised by 10 m"},
 }
@@ -1095,12 +1101,14 @@ def forecast_query_points() -> dict:
     return {"x": x, "y": y, "lat": np.asarray(lat), "lon": np.asarray(lon)}
 
 
-def fetch_forecast(manifest: dict) -> None:
-    """Hourly precipitation of the two IFS runs at every lattice point (Open-Meteo picks the nearest grid cell)."""
+def fetch_forecast(manifest: dict, keys: list[str] | None = None) -> None:
+    """Hourly precipitation of the IFS runs at every lattice point (Open-Meteo picks the nearest grid cell)."""
     pts = forecast_query_points()
     out_dir = INTERIM_DIR / "forecast"
     out_dir.mkdir(parents=True, exist_ok=True)
     for key, run in FORECAST_RUNS.items():
+        if keys is not None and key not in keys:
+            continue
         responses, urls = [], []
         for i in range(0, pts["lat"].size, 100):
             params = {"latitude": ",".join(f"{v:.5f}" for v in pts["lat"][i:i + 100]),
@@ -1169,8 +1177,29 @@ def forecast_zone_rain(key: str, frac: np.ndarray, names: list[str]) -> dict:
     from pyproj import Transformer
 
     g = forecast_grid(key)
-    i0 = g["times"].index(FORECAST_FIRST_UTC)
-    p = g["p_mm"][:, i0:i0 + SIM_HOURS]
+    early = None
+    if FORECAST_FIRST_UTC in g["times"]:
+        i0 = g["times"].index(FORECAST_FIRST_UTC)
+        p = g["p_mm"][:, i0:i0 + SIM_HOURS]
+    else:
+        # a run that starts after the window opens: hours ending at or before its initial time come from the
+        # earlier run named in FORECAST_EARLIER_RUN (the same grid points), the rest from this run
+        from datetime import datetime, timedelta
+
+        e = forecast_grid(FORECAST_EARLIER_RUN[key])
+        if not (np.array_equal(e["lat"], g["lat"]) and np.array_equal(e["lon"], g["lon"])):
+            raise RuntimeError(f"{key}: the earlier run has other grid points")
+        t0 = datetime.fromisoformat(FORECAST_FIRST_UTC)
+        hours = [(t0 + timedelta(hours=k)).strftime("%Y-%m-%dT%H:%M") for k in range(SIM_HOURS)]
+        cols = []
+        for h in hours:
+            src = g if h > g["run_utc"] else e
+            cols.append(src["p_mm"][:, src["times"].index(h)])
+        p = np.stack(cols, axis=1)
+        early = {"from_run_utc": e["run_utc"], "hours_utc_end_of_hour": [h for h in hours if h <= g["run_utc"]]}
+        i0 = 0
+        g = {**g, "times": hours + [t for t in g["times"] if t > hours[-1]],
+             "p_mm": np.concatenate([p, g["p_mm"][:, [i for i, t in enumerate(g["times"]) if t > hours[-1]]]], axis=1)}
     if p.shape[1] != SIM_HOURS:
         raise RuntimeError(f"{key}: the run does not cover the {SIM_HOURS} hours from {FORECAST_FIRST_UTC} UTC")
     rr, cc = np.nonzero(frac.sum(axis=0) > 0)
@@ -1183,8 +1212,8 @@ def forecast_zone_rain(key: str, frac: np.ndarray, names: list[str]) -> dict:
     weights = np.stack([np.bincount(near, weights=frac[z][rr, cc], minlength=g["lat"].size) for z in range(len(names))])
     weights /= weights.sum(axis=1, keepdims=True)
     zone_mm = weights @ p                                   # (zones, hours)
-    t_issue = g["times"].index(g["run_utc"]) if g["run_utc"] in g["times"] else 0
-    since_issue = weights @ g["p_mm"][:, t_issue:i0 + SIM_HOURS].sum(axis=1)
+    after_issue = [i for i, t in enumerate(g["times"][:i0 + SIM_HOURS]) if t > g["run_utc"]]
+    since_issue = weights @ g["p_mm"][:, after_issue].sum(axis=1)
     hours_utc = g["times"][i0:i0 + SIM_HOURS]
     points = []
     for j in np.flatnonzero(weights.sum(axis=0) > 0):
@@ -1198,7 +1227,8 @@ def forecast_zone_rain(key: str, frac: np.ndarray, names: list[str]) -> dict:
             "zone_total_mm_in_window": {n: round(float(zone_mm[z].sum()), 1) for z, n in enumerate(names)},
             "zone_total_mm_from_initial_time_to_end_of_window": {n: round(float(since_issue[z]), 1)
                                                                  for z, n in enumerate(names)},
-            "zone_hourly_mm": {n: [round(float(v), 2) for v in zone_mm[z]] for z, n in enumerate(names)}}
+            "zone_hourly_mm": {n: [round(float(v), 2) for v in zone_mm[z]] for z, n in enumerate(names)},
+            "window_hours_from_an_earlier_run": early}
 
 
 def prepare_runs(runs: list[str]) -> dict:

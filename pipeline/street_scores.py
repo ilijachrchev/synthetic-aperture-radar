@@ -324,6 +324,7 @@ EXTRA_SIM_RUNS = {
     "ifs_20241028T12": "simulation_ifs_20241028T12",   # run A, forecast issued 28 Oct 2024 12 UTC
     "ifs_20241029T00": "simulation_ifs_20241029T00",   # run A, forecast issued 29 Oct 2024 00 UTC
     "buildings": "simulation_buildings",               # run B, gauged rain, buildings as obstacles
+    "ifs_20241029T06": "simulation_ifs_20241029T06",   # run A3 (amendment), forecast issued 29 Oct 2024 06 UTC
 }
 
 ROADS = ("motorway", "motorway_link", "trunk", "trunk_link", "primary", "primary_link", "secondary",
@@ -872,6 +873,8 @@ METHOD_WHAT = {
     "simulated_buildings_depth_above_0p3m": "SIMULATED run B: gauged rain, buildings as obstacles (25 m cells at "
                                             "least half Catastro footprint raised by 10 m); its own extent, maximum "
                                             "depth above 0.3 m",
+    "simulated_ifs_20241029T06_depth_above_0p3m": "SIMULATED run A3 (amendment): rain of the ECMWF IFS HRES forecast "
+                                                  "issued 29 Oct 2024 06 UTC; its own extent, maximum depth above 0.3 m",
 }
 
 
@@ -883,6 +886,9 @@ def _keep_name(name: str, available: dict) -> bool:
         return True
     if name.startswith("terrain"):
         return available["terrain"]
+    if name.startswith("simulated_equal_area"):
+        # the PR #39 pixel cut breaks its ties (25 cells of 5 m share each 25 m depth) by the bare upstream area
+        return available["terrain"] and available["simulated_pr39"]
     if name.startswith("simulated"):
         return available["simulated_pr39"]
     return True
@@ -1114,7 +1120,7 @@ def report() -> str:
 
 
 RUN_LABELS = {"ifs_20241028T12": "Run A, forecast of 28 Oct 12 UTC", "ifs_20241029T00": "Run A, forecast of 29 Oct 00 UTC",
-              "buildings": "Run B, gauged rain and buildings"}
+              "buildings": "Run B, gauged rain and buildings", "ifs_20241029T06": "Run A3, forecast of 29 Oct 06 UTC"}
 
 
 def report_runs() -> str:
@@ -1156,6 +1162,24 @@ def report_runs() -> str:
         lines.append(f"- {RUN_LABELS[r]}: {blk['flagged_km']:.1f} km, {_p(blk['precision_pct'])} flooded, "
                      f"catching {blk['flagged_and_flooded_km']:.1f} km of flooded street")
     lines.append(f"- chance outside the zones: {_p(new['descriptive']['outside_zones_chance_precision']['A'])}")
+    # the ceiling, on the streets inside the UPV outlines
+    ka, ce = new["key_a_inside_upv_outlines"], new["ceiling"]
+    inside = ce["key_b_against_key_a"]["total"]["street_km"]
+    lines += ["", f"Inside the UPV outlines ({inside:,.1f} km of street), own extent:", "",
+              "| Method | Flagged (km) | Key A: found | Key A: really flooded |", "|---|---|---|---|"]
+    t = ce["key_b_against_key_a"]["total"]
+    lines.append(f"| Ceiling (two records of the same flood): the UPV map against key A | {t['flagged_km']:,.1f} | "
+                 f"{_p(t['hit_rate_pct'])} | {_p(t['precision_pct'])} |")
+    rows_in = [("Official, any zone", "official_union")]
+    if "simulated_depth_above_0p3m" in ka["own_length"]:
+        rows_in.append(("SIMULATED, gauged rain (rebuilt)", "simulated_depth_above_0p3m"))
+    rows_in += [(RUN_LABELS[r], f"simulated_{r}_depth_above_0p3m") for r in runs]
+    for name, key in rows_in:
+        t = ka["own_length"][key]["total"]
+        lines.append(f"| {name} | {t['flagged_km']:,.1f} | {_p(t['hit_rate_pct'])} | {_p(t['precision_pct'])} |")
+    t = ce["key_a_against_key_b"]["total"]
+    lines += ["", f"Ceiling the other way: key A against the UPV map (key B): flagged {t['flagged_km']:,.1f} km, "
+                  f"found {_p(t['hit_rate_pct'])}, really flooded {_p(t['precision_pct'])}"]
     text = "\n".join(lines)
     print(text)
     return text
