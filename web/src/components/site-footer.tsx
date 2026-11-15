@@ -30,6 +30,7 @@ const COLUMNS = [
 		title: 'Project',
 		links: [
 			{ label: 'GitHub', href: SITE.repo, out: true },
+			{ label: 'Research paper', href: SITE.paper, out: true },
 			{ label: 'The challenge', href: SITE.challenge, out: true },
 			{ label: 'NISAR data guide', href: 'https://nisar-docs.asf.alaska.edu/', out: true },
 			{ label: 'Use of SI', href: `${SITE.repo}#use-of-super-intelligence-si`, out: true },
