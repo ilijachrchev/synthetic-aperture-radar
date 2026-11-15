@@ -103,6 +103,7 @@ Not in git: they are large (an estimated 100 to 200 MB each) and can be rebuilt.
 | `data/labels/espada_effis_burnt_area.geojson` | EFFIS burnt area of the Serra d'Espadà fire | CV, ML |
 | `data/catalog/<site>.json` | Every NISAR file over the site | all |
 | `data/context/lorca_gnss_LOR1_up.csv` | GNSS station LOR1 daily height | Prediction |
+| `data/zones/` | Official flood zones (SNCZI) against the observed flood (Copernicus EMS EMSR773 for 2024, EMSR935 for 2026) per municipality, with the web layers: [ZONES.md](ZONES.md) | app |
 
 Put an outline on a stack grid with `pipeline.cv.data.rasterize_on(ds, geodataframe)`.
 
