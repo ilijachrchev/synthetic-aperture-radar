@@ -21,6 +21,24 @@ water, and is scored against the pass after the storm. Every cell then explains 
 measured once by `python scripts/bake_game.py` from the baked frames, the terrain tiles and the EMS outline, into
 `public/layers/pego_oliva/game.json`. Code: `src/components/game/`, copy: `src/content/game.ts`.
 
+## The NISAR views
+
+`/views` is a demo of four views that answer "where is NISAR?" with what only NISAR gives: a swipe between the
+Sentinel-1 water map and NISAR's of the same evening, coherence switched on and off over dry marsh, NISAR soil
+moisture before the DANA, and NISAR water on every pass of track 066 D. It is a demo of reusable assets, not a
+final screen. Run from the repo root with the pipeline environment:
+
+```bash
+python web/scripts/bake_views.py                                  # every view of every site
+python web/scripts/bake_views.py --views swipe --sites pego_oliva
+```
+
+It writes `public/layers/<site>/views/*.webp` (small RGBA pictures that all cover the bounds in `views.json`, the
+map grid of `meta.json` for Albufera and Pego-Oliva) and `public/layers/<site>/views.json`: dates, files, captions,
+and every number with the files it comes from. It reads the stacks, the cached CV probabilities, the coherence,
+the optical answer key and the Sentinel-1 maps of `data/`, and the NISAR soil moisture windows from NASA Earthdata.
+Code: `src/components/views/`.
+
 ## Radar data
 
 `pnpm radar --raw <folder outside the repo>` asks NASA's public catalogue (CMR) for every NISAR GCOV and GUNW
