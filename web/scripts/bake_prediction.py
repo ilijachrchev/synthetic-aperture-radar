@@ -416,11 +416,11 @@ EMSR935 = REPO / "data" / "labels" / "pego_oliva_emsr935_flood.geojson"
 OPEN_WATER, PERMANENT = 1, 4  # the class of open water in <date>_class.tif, the code of permanent water in dana_*.tif
 
 
-def still_flooded(site: str, out: Path) -> dict | None:
-    """The ground the Copernicus EMS map EMSR935 marked flooded (imagery 20 to 21 Oct) that NISAR still saw as open
-    water on 28 Oct, for the last step of the DANA replay: the same rule as nisar_labels_summary.json
-    (pipeline/cv/labels.py, emsr935_flooded_area_still_water), drawn as one frame in the encoding of bake_water.py
-    on the box of meta.json, so the water layer draws it. The numbers on the page are the summary's own."""
+def still_mask(site: str):
+    """The ground the Copernicus EMS map EMSR935 marked flooded (imagery 20 to 21 Oct, outside permanent water) that
+    NISAR still saw as open water on 28 Oct: the rule of nisar_labels_summary.json (pipeline/cv/labels.py,
+    emsr935_flooded_area_still_water) on its 20 m grid. Returns (mask, transform, crs, summary entry, pass key) or
+    None when the files are not there."""
     stack = STORY_SERIES.get(site, "").replace("nisar_", "")
     if not (LABELS_SUMMARY.exists() and EMSR935.exists() and stack):
         return None
@@ -429,12 +429,10 @@ def still_flooded(site: str, out: Path) -> dict | None:
     if not key:
         return None
     after = key.split()[-1]
-    numbers = entry["per_pass"][key]
     f_cls = LABELS / f"{site}_{stack}" / f"{after}_class.tif"
     f_dana = next((LABELS / f"{site}_{stack}").glob(f"dana_*_{after}.tif"), None)
     if not f_cls.exists() or f_dana is None:
         return None
-    from bake_water import encode, signed_distance
     from rasterio.features import rasterize
     from rasterio.warp import transform_geom
 
@@ -445,7 +443,23 @@ def still_flooded(site: str, out: Path) -> dict | None:
     feats = [f for f in json.loads(EMSR935.read_text(encoding="utf-8"))["features"] if f["properties"].get("class") == "flooded_area"]
     shapes = [(transform_geom("EPSG:4326", crs, f["geometry"]), 1) for f in feats]
     flooded = rasterize(shapes, out_shape=cls.shape, transform=t, fill=0, dtype="uint8").astype(bool) & (dana != PERMANENT)
-    still = flooded & (cls == OPEN_WATER)
+    return flooded & (cls == OPEN_WATER), t, crs, entry, key
+
+
+def still_flooded(site: str, out: Path) -> dict | None:
+    """still_mask() as one frame in the encoding of bake_water.py on the box of meta.json, so the water layer draws
+    it. The numbers on the page are the summary's own."""
+    found = still_mask(site)
+    if found is None:
+        return None
+    still, t, crs, entry, key = found
+    stack = STORY_SERIES[site].replace("nisar_", "")
+    after = key.split()[-1]
+    numbers = entry["per_pass"][key]
+    f_cls = LABELS / f"{site}_{stack}" / f"{after}_class.tif"
+    f_dana = next((LABELS / f"{site}_{stack}").glob(f"dana_*_{after}.tif"))
+    from bake_water import encode, signed_distance
+
     utm_ha = round(float(still.sum()) * abs(t.a * t.e) / 1e4, 2)
 
     mt, w, h = web_grid(SITES[site]["bbox"])
