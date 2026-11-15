@@ -18,6 +18,7 @@ Steps (in this order):
     python -m pipeline.streets score      # every method on the same pixels: data/streets/results.json
     python -m pipeline.streets layers     # small web layers in data/streets/
     python -m pipeline.streets depth      # flood depth ESTIMATED from the outlines and terrain (2024, 2026)
+    python -m pipeline.streets marks      # the surveyed water marks of 2024 in the 10 towns as a web layer
     python -m pipeline.streets report     # the tables of docs/STREETS.md, printed from results.json
 
 The simulation runs fast with numba, which is not in the shared stack: make a
@@ -936,10 +937,11 @@ def score(zones_dir: Path, zones_json: Path | None = None) -> dict:
     }
     STREETS_DIR.mkdir(parents=True, exist_ok=True)
     path = STREETS_DIR / "results.json"
-    if path.exists():  # keep the depth estimates of the depth step
+    if path.exists():  # keep what the depth and marks steps wrote
         old = json.loads(path.read_text(encoding="utf-8"))
-        if "flood_depth" in old:
-            out["flood_depth"] = old["flood_depth"]
+        for key in ("flood_depth", "water_marks_layer"):
+            if key in old:
+                out[key] = old[key]
     path.write_text(json.dumps(out, indent=1, ensure_ascii=False), encoding="utf-8")
     print(f"wrote {path}")
     return out
@@ -1512,8 +1514,56 @@ def depth(zones_dir: Path) -> dict:
     return out
 
 
+# ---------------------------------------------------------------- surveyed water marks (MEASURED)
+
+MARK_SURVEYS = {"marks_upv": "UPV", "marks_ive": "IVE", "marks_sgrt": "SGRT", "marks_town_halls": "town hall"}
+ICV_LICENCE = "CC BY 4.0 Generalitat (WFS capabilities of 2702_DANA2024: AccessConstraints; Fees: no conditions)"
+
+
+def water_marks_layer(zones_dir: Path) -> dict:
+    """The surveyed water marks above 0 m in the 10 towns as a small web layer (measured, not estimated)."""
+    import geopandas as gpd
+
+    marks = water_marks_all()
+    marks = marks[marks["height_m"] > 0].reset_index(drop=True)
+    tid = town_grid(load_towns(zones_dir)).ravel()
+    cell = cells_of_points(marks["x"].to_numpy(), marks["y"].to_numpy())
+    town = np.where(cell >= 0, tid[np.maximum(cell, 0)], 0)
+    keep = town > 0
+    m = marks[keep]
+    h = m["height_m"].to_numpy()
+    cls = np.digitize(h, DEPTH_EDGES_M)
+    gdf = gpd.GeoDataFrame(
+        {"depth_m": np.round(h, 2), "class": [DEPTH_CLASSES[i] for i in cls],
+         "surveyed_by": m["layer"].map(MARK_SURVEYS).to_numpy(), "town": [TOWNS[t - 1] for t in town[keep]]},
+        geometry=gpd.points_from_xy(m["x"], m["y"]), crs=CRS)
+    path = _write_geojson(gdf, "water_marks_2024")
+    manifest = load_manifest()
+    info = {
+        "file": path.relative_to(DATA_DIR.parent).as_posix(), "bytes": path.stat().st_size,
+        "what": "water heights surveyed after the 2024 flood (MEASURED), every mark above 0 m whose 5 m cell lies "
+                "in one of the 10 municipalities; coordinates in WGS84 with 5 decimals (about 1 m)",
+        "points": int(len(gdf)), "by_survey": gdf["surveyed_by"].value_counts().to_dict(),
+        "by_town": gdf["town"].value_counts().to_dict(), "by_class": gdf["class"].value_counts().to_dict(),
+        "marks_above_0m_in_the_icv_layers": int(len(marks)),
+        "marks_above_0m_on_the_analysis_grid": int((cell >= 0).sum()),
+        "not_exported": "marks on the analysis grid outside the 10 municipalities (no town for them here)",
+        "source": {"service": ICV_DANA2024_WFS,
+                   "layers": [f"ms:{ICV_LAYERS[k]}" for k in WATER_MARK_LAYERS],
+                   "publisher": "Institut Cartogràfic Valencià (ICV), Generalitat Valenciana",
+                   "licence": ICV_LICENCE,
+                   "retrieved_utc": {k: manifest.get(f"icv_{k}", {}).get("retrieved_utc") for k in WATER_MARK_LAYERS},
+                   "urls": {k: manifest.get(f"icv_{k}", {}).get("url") for k in WATER_MARK_LAYERS}},
+    }
+    res_path = STREETS_DIR / "results.json"
+    res = json.loads(res_path.read_text(encoding="utf-8"))
+    res["water_marks_layer"] = info
+    res_path.write_text(json.dumps(res, indent=1, ensure_ascii=False), encoding="utf-8")
+    return info
+
+
 STEPS = ("fetch", "fetch-dtm", "fetch-other", "fetch-pego", "terrain", "simulate", "score", "layers", "depth",
-         "report")
+         "marks", "report")
 
 
 def main(argv: list[str] | None = None) -> None:
@@ -1551,6 +1601,8 @@ def main(argv: list[str] | None = None) -> None:
         save_manifest(manifest)
     elif args.step == "depth":
         depth(args.zones_interim)
+    elif args.step == "marks":
+        water_marks_layer(args.zones_interim)
     elif args.step == "report":
         report()
 

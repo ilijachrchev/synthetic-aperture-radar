@@ -195,7 +195,7 @@ All numbers are in `results.json` → `flood_depth`; the layers are `data/street
 
 **2026 DANA Adam, Pego-Oliva.** The EMSR935 outline holds 1,118.0 ha (99.8 % on the terrain sheet); over the 1,098.5 ha with terrain and not on permanent water, the estimate gives 80.9 % below 0.2 m, 18.7 % from 0.2 to 1 m, 0.4 % from 1 to 2 m and 0.1 % above 2 m (median 0.0 m, 90th percentile 0.37 m; Pego 460.9 ha, Oliva 500.7 ha). **No check**: none of the 71 surveyed marks lies inside the outline (18 lie within 50 m of it); they were measured along the ravines and in the towns around the marsh. In a marsh the 2015 LiDAR saw the water surface of that day over flooded fields and channels, not their bottom, so depths there come out low by construction.
 
-**Use.** The surveyed marks are measurements; this estimate is not, and the check shows it does not tell one street from another. If the app shows depth for 2024, the marks themselves are the honest layer; this estimate can at most say "shallow on the plain's edges, deep in the ravine beds".
+**Use.** The surveyed marks are measurements; this estimate is not, and the check shows it does not tell one street from another. If the app shows depth for 2024, the marks themselves are the honest layer (`data/streets/water_marks_2024.geojson`); this estimate can at most say "shallow on the plain's edges, deep in the ravine beds".
 
 ## Limits
 
@@ -221,6 +221,7 @@ All numbers are in `results.json` → `flood_depth`; the layers are `data/street
 | `data/streets/flow_paths.geojson` | terrain flow paths with an upstream area above 5 km² (WGS84) |
 | `data/streets/terrain_equal_area.geojson` | the terrain map at the official zones' area, per town (WGS84) |
 | `data/streets/simulated_max_depth.geojson` | SIMULATED maximum water depth classes (WGS84) |
+| `data/streets/water_marks_2024.geojson` | the 2,699 water heights MEASURED after the 2024 flood in the 10 towns (every surveyed mark above 0 m): `depth_m`, `class` (below 0.2, 0.2 to 1, 1 to 2, above 2 m), `surveyed_by` (UPV, IVE, SGRT, town hall), `town`; from the ICV service `https://terramapas.icv.gva.es/2702_DANA2024` (layers `DANA2024.ZonasInundadas.AlturaAgua.*`), read 15 Nov 2026, CC BY 4.0 Generalitat (WGS84) |
 | `data/streets/estimated_depth_dana_2024.geojson`, `estimated_depth_dana_adam_2026.geojson` | depth ESTIMATED from the flood outline and terrain, classes below 0.2, 0.2 to 1, 1 to 2, above 2 m, with the check against water marks (WGS84) |
 | `tests/test_streets.py`, `tests/test_streets_inertial.py` | the terrain flow, the equal-area cut and the scheme on tiny synthetic grids |
 

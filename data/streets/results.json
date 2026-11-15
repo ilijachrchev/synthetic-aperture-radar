@@ -9633,5 +9633,61 @@
     "result": "no check: no surveyed mark lies inside the EMSR935 outline"
    }
   }
+ },
+ "water_marks_layer": {
+  "file": "data/streets/water_marks_2024.geojson",
+  "bytes": 520839,
+  "what": "water heights surveyed after the 2024 flood (MEASURED), every mark above 0 m whose 5 m cell lies in one of the 10 municipalities; coordinates in WGS84 with 5 decimals (about 1 m)",
+  "points": 2699,
+  "by_survey": {
+   "IVE": 1939,
+   "SGRT": 385,
+   "UPV": 362,
+   "town hall": 13
+  },
+  "by_town": {
+   "Paiporta": 472,
+   "Massanassa": 341,
+   "Sedaví": 311,
+   "Catarroja": 311,
+   "Picanya": 289,
+   "Alfafar": 222,
+   "Chiva": 220,
+   "Benetússer": 218,
+   "Aldaia": 172,
+   "Torrent": 143
+  },
+  "by_class": {
+   "1 to 2 m": 1361,
+   "0.2 to 1 m": 652,
+   "above 2 m": 645,
+   "below 0.2 m": 41
+  },
+  "marks_above_0m_in_the_icv_layers": 5248,
+  "marks_above_0m_on_the_analysis_grid": 4064,
+  "not_exported": "marks on the analysis grid outside the 10 municipalities (no town for them here)",
+  "source": {
+   "service": "https://terramapas.icv.gva.es/2702_DANA2024",
+   "layers": [
+    "ms:DANA2024.ZonasInundadas.AlturaAgua.UPV",
+    "ms:DANA2024.ZonasInundadas.AlturaAgua.IVE",
+    "ms:DANA2024.ZonasInundadas.AlturaAgua.SGRT",
+    "ms:DANA2024.ZonasInundadas.AlturaAgua.AyuntamientosOtros"
+   ],
+   "publisher": "Institut Cartogràfic Valencià (ICV), Generalitat Valenciana",
+   "licence": "CC BY 4.0 Generalitat (WFS capabilities of 2702_DANA2024: AccessConstraints; Fees: no conditions)",
+   "retrieved_utc": {
+    "marks_upv": "2026-11-15T02:33:31+00:00",
+    "marks_ive": "2026-11-15T02:33:31+00:00",
+    "marks_sgrt": "2026-11-15T02:33:32+00:00",
+    "marks_town_halls": "2026-11-15T02:33:32+00:00"
+   },
+   "urls": {
+    "marks_upv": "https://terramapas.icv.gva.es/2702_DANA2024?service=WFS&version=2.0.0&request=GetFeature&typeNames=ms%3ADANA2024.ZonasInundadas.AlturaAgua.UPV&srsName=urn%3Aogc%3Adef%3Acrs%3AEPSG%3A%3A25830&outputFormat=text%2Fxml%3B+subtype%3Dgml%2F3.1.1",
+    "marks_ive": "https://terramapas.icv.gva.es/2702_DANA2024?service=WFS&version=2.0.0&request=GetFeature&typeNames=ms%3ADANA2024.ZonasInundadas.AlturaAgua.IVE&srsName=urn%3Aogc%3Adef%3Acrs%3AEPSG%3A%3A25830&outputFormat=text%2Fxml%3B+subtype%3Dgml%2F3.1.1",
+    "marks_sgrt": "https://terramapas.icv.gva.es/2702_DANA2024?service=WFS&version=2.0.0&request=GetFeature&typeNames=ms%3ADANA2024.ZonasInundadas.AlturaAgua.SGRT&srsName=urn%3Aogc%3Adef%3Acrs%3AEPSG%3A%3A25830&outputFormat=text%2Fxml%3B+subtype%3Dgml%2F3.1.1",
+    "marks_town_halls": "https://terramapas.icv.gva.es/2702_DANA2024?service=WFS&version=2.0.0&request=GetFeature&typeNames=ms%3ADANA2024.ZonasInundadas.AlturaAgua.AyuntamientosOtros&srsName=urn%3Aogc%3Adef%3Acrs%3AEPSG%3A%3A25830&outputFormat=text%2Fxml%3B+subtype%3Dgml%2F3.1.1"
+   }
+  }
  }
 }
