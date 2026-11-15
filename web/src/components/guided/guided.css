@@ -168,6 +168,8 @@
 .gd-pair b {
 	font-size: 52px;
 	line-height: 0.9;
+	/* a unit stays as written ("205 km", not "205 KM") */
+	text-transform: none;
 	color: var(--deep);
 	font-variant-numeric: tabular-nums;
 }
