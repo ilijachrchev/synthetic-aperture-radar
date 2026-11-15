@@ -1,14 +1,16 @@
 'use client'
 
-// The guided flood map (/explore): one flat map, one card, five steps, one main action each. Back and Next are quiet;
-// "All layers" opens the free explorer. Every number on the card is read from a baked file at run time, with the
-// field it comes from (see content/guided.ts for the files).
+// The guided flood map (/explore): one flat map, one card, four steps after the landing, one main action each. Back
+// and Next are quiet; "All layers" opens the free explorer. Every number on the card is read from a baked or
+// hand-kept file at run time, with the field it comes from (see content/guided.ts for the files).
 //
-//   2  The official map said safe   tap a blue street (streets that flooded in 2024, official zones as outlines)
-//   3  Our simulation saw it        one switch: the official map or our simulation, over the same blue streets
-//   4  NISAR sees more water        drag the line between Sentinel-1 and NISAR of the same evening
-//   5  Did we get it right?         drag the line between our prediction and what happened (EMSR935)
-//   6  What if it rains             the rain slider on the model's likely flooded area, one outline
+//   2  The official map said safe      tap a blue street (streets that flooded in 2024, official zones as outlines)
+//   3  Our simulation saw it           one switch: the streets the official map or our simulation flags
+//   4  NISAR sees more water           drag the line between Sentinel-1 and NISAR of the same evening, open water
+//   5  Would we have seen it coming?   one switch: the street simulation with the real rain or the night before's forecast
+//
+// Out of the flow, opened from "All layers" (?screen=exam, ?screen=rain): the marsh model's test against EMSR935 (drag
+// the line between our prediction and what happened) and its rain slider (one outline).
 
 import 'maplibre-gl/dist/maplibre-gl.css'
 import { ArrowLeft, ArrowRight, Layers, RotateCcw, X } from 'lucide-react'
@@ -16,7 +18,7 @@ import type { GeoJSONSource, Map as MapLibreMap, MapMouseEvent } from 'maplibre-
 import Link from 'next/link'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ICV, PNOA } from '@/content/explore'
-import { COLORS, REVEAL_FADE_MS, REVEAL_MS, STEPS, type StepKey, SWIPE_WATER } from '@/content/guided'
+import { COLORS, REVEAL_FADE_MS, REVEAL_MS, SCREENS, STEP3_METHODS, STEPS, type StepKey, SWIPE_WATER } from '@/content/guided'
 import { RainSlider } from '../explore/rain-slider'
 import { MapSwipe } from './map-swipe'
 import './guided.css'
@@ -89,7 +91,24 @@ type ScoreDoc = {
 	source: string
 }
 
+/** step 5: the two rains of the street simulation, hand-kept in public/layers/guided/coming.json */
+type ComingOption = {
+	key: string
+	label: string
+	status: 'in' | 'arriving'
+	found_pct: number | null
+	really_flooded_pct: number | null
+	flagged_km: number | null
+	/** the property of streets_2024.json that flags this option's streets */
+	streets: string
+	line: string
+	source: string
+}
+type ComingDoc = { options: ComingOption[]; agreement: { value: number; text: string; source: string }; closing: string }
+
 type Pick = { name: string; town: string; zone: string; zoneCode: number; water: number | null; lngLat: [number, number] }
+type Extra = 'exam' | 'rain'
+type At = { step: number; extra: Extra | null }
 
 /** the 16 groups of the reveal, each its own layer, so a group fades in with one paint value */
 const BINS = 16
@@ -100,6 +119,7 @@ const STEP_LAYERS: Record<StepKey, string[]> = {
 	missed: ['g-zones-line', ...BIN_LAYERS],
 	simulation: ['g-s3-missed', 'g-s3-dry', 'g-s3-found'],
 	nisar: [],
+	coming: ['g-s3-missed', 'g-s3-dry', 'g-s3-found'],
 	exam: [],
 	rain: ['g-rain-fill', 'g-rain-line'],
 }
@@ -107,11 +127,18 @@ const ALL_LAYERS = [...new Set([...Object.values(STEP_LAYERS).flat(), 'g-zones-l
 /** a street piece of streets_2024.json that flooded (key A), and one a method flags (its property above 0) */
 const FLOODED = ['==', ['coalesce', ['get', 'f'], 0], 1]
 const flagged = (prop: string) => ['>', ['coalesce', ['get', prop], 0], 0]
-const s3Filters = (prop: string) => ({
-	'g-s3-found': ['all', FLOODED, flagged(prop)],
-	'g-s3-missed': ['all', FLOODED, ['!', flagged(prop)]],
-	'g-s3-dry': ['all', ['!', FLOODED], flagged(prop)],
-})
+/** a filter that keeps nothing (a bare ['==', 1, 0] reads as the old filter syntax and is refused) */
+const NOTHING = ['literal', false]
+/** the streets a method flags, green or red, and the flooded streets it missed, blue; with no method (its streets
+ *  are still arriving), the flooded streets alone */
+const s3Filters = (prop: string | null) =>
+	prop
+		? {
+				'g-s3-found': ['all', FLOODED, flagged(prop)],
+				'g-s3-missed': ['all', FLOODED, ['!', flagged(prop)]],
+				'g-s3-dry': ['all', ['!', FLOODED], flagged(prop)],
+			}
+		: { 'g-s3-found': NOTHING, 'g-s3-missed': FLOODED, 'g-s3-dry': NOTHING }
 const lineWidth = (k = 1) => ['interpolate', ['exponential', 1.6], ['zoom'], 11, 0.9 * k, 13, 1.8 * k, 15, 3.4 * k, 17, 6.5 * k, 18.6, 10 * k] as never
 
 const pct = (v: number) => `${Math.round(v)}%`
@@ -155,11 +182,15 @@ function snap(p: [number, number], line: number[][]): [number, number] {
 	return best
 }
 
-/** the step the address asks for (?step=2 to 6, the numbers of the pitch: the landing is step 1) */
-function firstStep() {
-	if (typeof window === 'undefined') return 0
-	const n = Number(new URLSearchParams(window.location.search).get('step'))
-	return n >= 2 && n <= STEPS.length + 1 ? n - 2 : 0
+/** where the address asks to start: ?step=2 to 5 (the numbers of the pitch: the landing is step 1), or a screen out
+ *  of the flow, ?screen=exam or ?screen=rain */
+function firstAt(): At {
+	if (typeof window === 'undefined') return { step: 0, extra: null }
+	const q = new URLSearchParams(window.location.search)
+	const screen = q.get('screen')
+	if (screen === 'exam' || screen === 'rain') return { step: 0, extra: screen }
+	const n = Number(q.get('step'))
+	return { step: n >= 2 && n <= STEPS.length + 1 ? n - 2 : 0, extra: null }
 }
 
 async function getJson<T>(url: string): Promise<T> {
@@ -173,7 +204,8 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 	const cardRef = useRef<HTMLElement>(null)
 	const [map, setMap] = useState<MapLibreMap | null>(null)
 	const [ready, setReady] = useState(false)
-	const [step, setStep] = useState(firstStep)
+	const [at, setAt] = useState<At>(firstAt)
+	const step = at.step
 	const [error, setError] = useState<string | null>(null)
 	const [sources, setSources] = useState(false)
 
@@ -183,32 +215,41 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 	const [explore, setExplore] = useState<ExploreDoc | null>(null)
 	const [exam, setExam] = useState<ExamDoc | null>(null)
 	const [score, setScore] = useState<ScoreDoc | null>(null)
+	const [coming, setComing] = useState<ComingDoc | null>(null)
 
 	const [pick, setPick] = useState<Pick | null>(null)
 	const [methodKey, setMethod] = useState<string | null>(null)
 	const [rainIdx, setRainIdx] = useState(2)
+	const [rainKey, setRainKey] = useState<string | null>(null)
 
-	const key = STEPS[step].key
-	const s = STEPS[step]
+	const s = at.extra ? SCREENS.find((x) => x.key === at.extra)! : STEPS[step]
+	const key = s.key
 
 	// ---------------------------------------------------------------- the step in the address, so a step can be shared
 	useEffect(() => {
 		const url = new URL(window.location.href)
-		url.searchParams.set('step', String(step + 2))
 		url.searchParams.delete('all')
+		if (at.extra) {
+			url.searchParams.set('screen', at.extra)
+			url.searchParams.delete('step')
+		} else {
+			url.searchParams.set('step', String(at.step + 2))
+			url.searchParams.delete('screen')
+		}
 		window.history.replaceState(null, '', url)
-	}, [step])
+	}, [at])
 
 	// ---------------------------------------------------------------- the files, each when its step first needs it
 	useEffect(() => {
 		const fail = (e: Error) => setError(e.message)
-		if ((key === 'missed' || key === 'simulation') && !streets) getJson<StreetsIndex>(`${ROOT}/streets.json`).then(setStreets).catch(fail)
+		if ((key === 'missed' || key === 'simulation' || key === 'coming') && !streets) getJson<StreetsIndex>(`${ROOT}/streets.json`).then(setStreets).catch(fail)
+		if (key === 'coming' && !coming) getJson<ComingDoc>(`${ROOT}/coming.json`).then(setComing).catch(fail)
 		if (key === 'nisar' && SWIPE_WATER === 'any' && !views) getJson<ViewsDoc>('/layers/pego_oliva/views.json').then(setViews).catch(fail)
 		if (key === 'nisar' && SWIPE_WATER === 'open' && !swipe) getJson<SwipeDoc>(`${ROOT}/swipe.json`).then(setSwipe).catch(fail)
 		if (key === 'nisar' && !explore) getJson<ExploreDoc>('/layers/explore/explore.json').then(setExplore).catch(fail)
 		if ((key === 'exam' || key === 'rain') && !exam) getJson<ExamDoc>(`${ROOT}/exam.json`).then(setExam).catch(fail)
 		if ((key === 'exam' || key === 'rain') && !score) getJson<ScoreDoc>(`${ROOT}/test_score.json`).then(setScore).catch(fail)
-	}, [key, streets, views, swipe, explore, exam, score])
+	}, [key, streets, views, swipe, explore, exam, score, coming])
 
 	// ---------------------------------------------------------------- the map
 	useEffect(() => {
@@ -231,7 +272,7 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 						{ id: 'icv', type: 'raster', source: 'icv', layout: { visibility: 'none' }, paint: { 'raster-saturation': -0.35, 'raster-brightness-max': 0.82 } },
 					],
 				},
-				bounds: STEPS[0].view,
+				bounds: firstAt().extra ? SCREENS[0].view : STEPS[0].view,
 				fitBoundsOptions: { padding: 40 },
 				minZoom: 8,
 				maxZoom: 18.6,
@@ -283,10 +324,13 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 	}, [])
 
 	// each step frames its own ground
+	const view = s.view
+	const firstView = useRef(true)
 	useEffect(() => {
 		if (!map || !ready) return
-		map.fitBounds(STEPS[step].view, { padding: padding(), duration: step === 0 ? 0 : 1600, essential: true })
-	}, [map, ready, step, padding])
+		map.fitBounds(view, { padding: padding(), duration: firstView.current ? 0 : 1600, essential: true })
+		firstView.current = false
+	}, [map, ready, view, padding])
 
 	// ---------------------------------------------------------------- the street layers (steps 2 and 3)
 	useEffect(() => {
@@ -330,13 +374,17 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 		if (map.getLayer('g-hit')) map.setLayoutProperty('g-hit', 'visibility', key === 'missed' ? 'visible' : 'none')
 	}, [map, ready, key, pick, streets, exam])
 
-	// step 3: the chosen method's streets
-	const methods = useMemo(() => streets?.methods ?? [], [streets])
+	// step 3: the chosen method's streets; step 5: the chosen rain's (none while its streets are still arriving)
+	const methods = useMemo(() => (streets?.methods ?? []).filter((m) => STEP3_METHODS.includes(m.key)), [streets])
 	const method = methods.find((m) => m.key === methodKey) ?? methods[0] ?? null
+	const rains = coming?.options ?? []
+	const rainOpt = rains.find((o) => o.key === rainKey) ?? rains[0] ?? null
+	const rainProp = rainOpt && rainOpt.status === 'in' && streets?.methods.some((m) => m.prop === rainOpt.streets) ? rainOpt.streets : null
+	const s3Prop = key === 'coming' ? rainProp : (method?.prop ?? null)
 	useEffect(() => {
-		if (!map || !ready || !method || !map.getLayer('g-s3-found')) return
-		for (const [id, f] of Object.entries(s3Filters(method.prop))) map.setFilter(id, f as never)
-	}, [map, ready, method, streets])
+		if (!map || !ready || !map.getLayer('g-s3-found')) return
+		for (const [id, f] of Object.entries(s3Filters(s3Prop))) map.setFilter(id, f as never)
+	}, [map, ready, s3Prop, streets])
 
 	// step 2 opens with the flooded streets appearing outward from the ravines, about 4 s, then still
 	const playReveal = useCallback(() => {
@@ -454,29 +502,45 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 	// ---------------------------------------------------------------- moving between steps
 	const go = useCallback((i: number) => {
 		setPick(null)
-		setStep(Math.max(0, Math.min(STEPS.length - 1, i)))
+		setAt({ step: Math.max(0, Math.min(STEPS.length - 1, i)), extra: null })
 	}, [])
+	const openScreen = useCallback((k: Extra) => {
+		setPick(null)
+		setAt((was) => ({ step: was.step, extra: k }))
+	}, [])
+	const back = useCallback(() => (at.extra === 'rain' ? openScreen('exam') : at.extra ? onAllLayers() : go(step - 1)), [at.extra, openScreen, onAllLayers, go, step])
+	const next = useCallback(() => (at.extra === 'exam' ? openScreen('rain') : at.extra ? undefined : go(step + 1)), [at.extra, openScreen, go, step])
+	const lastNext = at.extra ? at.extra === 'rain' : step === STEPS.length - 1
 	useEffect(() => {
 		const onKey = (e: KeyboardEvent) => {
 			if (e.target instanceof HTMLElement && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return
 			if (e.target instanceof HTMLElement && e.target.getAttribute('role') === 'slider') return
 			if (e.key === 'Escape') setPick(null)
-			if (e.key === 'ArrowRight' || e.key === 'PageDown') go(step + 1)
-			if (e.key === 'ArrowLeft' || e.key === 'PageUp') go(step - 1)
+			if ((e.key === 'ArrowRight' || e.key === 'PageDown') && !lastNext) next()
+			if ((e.key === 'ArrowLeft' || e.key === 'PageUp') && (at.extra || step > 0)) back()
 		}
 		window.addEventListener('keydown', onKey)
 		return () => window.removeEventListener('keydown', onKey)
-	}, [step, go])
+	}, [step, at.extra, lastNext, next, back])
 
 	// a small handle for scripted checks
 	useEffect(() => {
-		const api = { map: () => map, step: (i: number) => go(i - 2), method: setMethod, rain: setRainIdx, reveal: () => void playReveal(), ready: () => ready && !!map?.loaded() }
+		const api = {
+			map: () => map,
+			step: (i: number) => go(i - 2),
+			screen: openScreen,
+			method: setMethod,
+			coming: setRainKey,
+			rain: setRainIdx,
+			reveal: () => void playReveal(),
+			ready: () => ready && !!map?.loaded(),
+		}
 		const host = window as unknown as { __guided?: typeof api }
 		host.__guided = api
 		return () => {
 			delete host.__guided
 		}
-	}, [map, ready, go, playReveal])
+	}, [map, ready, go, openScreen, playReveal])
 
 	// ---------------------------------------------------------------- what the card says
 	// the swipe of step 4: open water only on both sides (swipe.json), or water of any kind (views.json)
@@ -625,6 +689,54 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 				{SWIPE_WATER === 'open' && <p className="gd-note">Both sides: open water only.</p>}
 			</>
 		)
+	} else if (key === 'coming') {
+		body = (
+			<>
+				<div className="gd-seg" role="radiogroup" aria-label="Which rain" style={{ ['--n' as string]: Math.max(1, rains.length) }}>
+					{rains.map((o) => (
+						<button key={o.key} type="button" role="radio" aria-checked={o.key === rainOpt?.key} onClick={() => setRainKey(o.key)}>
+							{o.label}
+						</button>
+					))}
+				</div>
+				{rainOpt && (
+					<div className="gd-pair" data-n={rains.length}>
+						{rains.map((o) => (
+							<p key={o.key} data-on={o.key === rainOpt.key || undefined} data-arriving={o.status !== 'in' || undefined}>
+								{o.status === 'in' && o.found_pct !== null ? <b className="display">{pct(o.found_pct)}</b> : <b className="gd-arriving">Arriving</b>}
+								<span>of the flooded streets found {o.key === rains[0]?.key ? 'with the real rain' : 'with the forecast of the night before'}</span>
+							</p>
+						))}
+					</div>
+				)}
+				{rainOpt && rainOpt.status === 'in' && rainOpt.really_flooded_pct !== null && (
+					<p className="gd-small">{pct(rainOpt.really_flooded_pct)} of the streets it flagged really flooded.</p>
+				)}
+				{rainOpt && rainOpt.status !== 'in' && <p className="gd-small">The forecast run is still being simulated: its streets and numbers arrive here when it is done.</p>}
+				<ul className="gd-key">
+					<li>
+						<i className="gd-sw" data-k="hit" /> Flagged, and it flooded
+					</li>
+					<li>
+						<i className="gd-sw" data-k="flooded" /> Flooded, not flagged
+					</li>
+					<li>
+						<i className="gd-sw" data-k="false" /> Flagged, stayed dry
+					</li>
+				</ul>
+				{rainOpt && <p className="gd-note">{rainOpt.line}</p>}
+				{coming && <p className="gd-small">{coming.agreement.text.replace('{value}', String(Math.round(coming.agreement.value)))}</p>}
+				{coming && <p className="gd-close">{coming.closing}</p>}
+				<div className="gd-end">
+					<button type="button" className="gd-btn" onClick={() => go(0)}>
+						<RotateCcw size={15} strokeWidth={2.4} /> Start again
+					</button>
+					<button type="button" className="gd-btn" data-quiet onClick={onAllLayers}>
+						<Layers size={15} strokeWidth={2.4} /> All layers
+					</button>
+				</div>
+			</>
+		)
 	} else if (key === 'exam') {
 		body = (
 			<>
@@ -694,11 +806,15 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 	}
 
 	const src: string[] = []
-	if (key === 'missed' || key === 'simulation') {
+	if (key === 'missed' || key === 'simulation' || key === 'coming') {
 		if (streets) src.push(`Streets: ${streets.sources.streets}.`, `Flood: ${streets.sources.flood}.`, `Water marks: ${streets.sources.marks}.`, `Zones: ${streets.sources.zones}.`)
 		if (key === 'simulation' && streets) src.push(`Simulation: ${streets.sources.simulated}, with no infiltration, so an upper bound.`)
 		if (key === 'simulation' && method && method.exact === false) src.push(`The streets drawn for ${sentence(method.label)} come from ${method.drawn_from}; the numbers are those of the scores.`)
 		if (streets) src.push(`Numbers: ${streets.sources.scores}.`)
+	}
+	if (key === 'coming' && coming) {
+		for (const o of coming.options) src.push(`${o.label}: ${o.source}.`)
+		src.push(`Agreement: ${coming.agreement.source}.`)
 	}
 	if (key === 'nisar') {
 		if (SWIPE_WATER === 'open') {
@@ -752,13 +868,17 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 			</header>
 
 			<section ref={cardRef} className="gd-card" aria-live="polite">
-				<ol className="gd-dots" aria-label="Steps">
-					{STEPS.map((x, i) => (
-						<li key={x.key}>
-							<button type="button" aria-current={i === step ? 'step' : undefined} aria-label={x.title} onClick={() => go(i)} />
-						</li>
-					))}
-				</ol>
+				{at.extra ? (
+					<p className="gd-aside">Marsh model, out of the guided tour</p>
+				) : (
+					<ol className="gd-dots" aria-label="Steps">
+						{STEPS.map((x, i) => (
+							<li key={x.key}>
+								<button type="button" aria-current={i === step ? 'step' : undefined} aria-label={x.title} onClick={() => go(i)} />
+							</li>
+						))}
+					</ol>
+				)}
 				<p className="gd-when">
 					{s.when} · {s.where}
 				</p>
@@ -767,13 +887,13 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 					{body}
 				</div>
 				<nav className="gd-nav">
-					<button type="button" onClick={() => go(step - 1)} disabled={step === 0}>
-						<ArrowLeft size={15} strokeWidth={2.4} /> Back
+					<button type="button" onClick={back} disabled={!at.extra && step === 0}>
+						<ArrowLeft size={15} strokeWidth={2.4} /> {at.extra === 'exam' ? 'All layers' : 'Back'}
 					</button>
 					<button type="button" className="gd-src" aria-expanded={sources} onClick={() => setSources((v) => !v)}>
 						Sources
 					</button>
-					<button type="button" onClick={() => go(step + 1)} disabled={step === STEPS.length - 1}>
+					<button type="button" onClick={next} disabled={lastNext}>
 						Next <ArrowRight size={15} strokeWidth={2.4} />
 					</button>
 				</nav>

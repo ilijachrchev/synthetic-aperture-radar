@@ -152,7 +152,7 @@ const smooth = (a: number, b: number, x: number) => {
 	return t * t * (3 - 2 * t)
 }
 
-export function ExploreApp({ onGuide }: { onGuide?: () => void } = {}) {
+export function ExploreApp({ onGuide, onScreen }: { onGuide?: () => void; onScreen?: (k: 'exam' | 'rain') => void } = {}) {
 	const mapEl = useRef<HTMLDivElement>(null)
 	const mapRef = useRef<MapLibreMap | null>(null)
 	const [idx, setIdx] = useState<ExploreIndex | null>(null)
@@ -747,6 +747,18 @@ export function ExploreApp({ onGuide }: { onGuide?: () => void } = {}) {
 					<button type="button" className="ex-pill ex-guide" onClick={onGuide}>
 						<b>Back to the guided tour</b>
 					</button>
+				)}
+				{onScreen && (
+					<nav className="ex-screens" aria-label="Marsh model">
+						<button type="button" className="ex-pill" onClick={() => onScreen('exam')}>
+							<b>Did we get it right?</b>
+							<small>Marsh model, tested on Oct 2026</small>
+						</button>
+						<button type="button" className="ex-pill" onClick={() => onScreen('rain')}>
+							<b>Rain outline</b>
+							<small>Marsh model, version 1</small>
+						</button>
+					</nav>
 				)}
 				<nav className="ex-places" aria-label="Places">
 					{PLACES.map((p) => (

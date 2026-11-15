@@ -325,6 +325,29 @@
 	}
 }
 
+/* step 5: a rain whose numbers are still arriving, and the closing line */
+.gd-pair .gd-arriving {
+	font-size: 22px;
+	line-height: 1.6;
+	font-weight: 700;
+	color: var(--muted);
+}
+.gd-close {
+	margin: 2px 0 0;
+	font-size: 14px;
+	font-weight: 750;
+	color: var(--ink);
+}
+/* a screen out of the guided tour says so where the dots would be */
+.gd-aside {
+	margin: 0 0 10px;
+	font-size: 11.5px;
+	font-weight: 750;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	color: var(--muted);
+}
+
 /* the tapped street */
 .gd-pick {
 	display: grid;

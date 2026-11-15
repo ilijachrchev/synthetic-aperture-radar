@@ -20,10 +20,12 @@ const subscribe = (cb: () => void) => {
 const allLayers = () => new URLSearchParams(window.location.search).has('all')
 const onServer = () => null
 
-function open(on: boolean) {
+function open(on: boolean, screen?: 'exam' | 'rain') {
 	const url = new URL(window.location.href)
 	url.searchParams.delete('all')
 	url.searchParams.delete('step')
+	url.searchParams.delete('screen')
+	if (screen) url.searchParams.set('screen', screen)
 	const q = url.searchParams.toString()
 	const search = on ? `?all${q ? `&${q}` : ''}` : q ? `?${q}` : ''
 	window.history.pushState(null, '', `${url.pathname}${search}${url.hash}`)
@@ -33,5 +35,5 @@ function open(on: boolean) {
 export function ExploreRoot() {
 	const all = useSyncExternalStore(subscribe, allLayers, onServer)
 	if (all === null) return <div className="gd gd-boot" />
-	return all ? <ExploreApp onGuide={() => open(false)} /> : <GuidedApp onAllLayers={() => open(true)} />
+	return all ? <ExploreApp onGuide={() => open(false)} onScreen={(k) => open(false, k)} /> : <GuidedApp onAllLayers={() => open(true)} />
 }

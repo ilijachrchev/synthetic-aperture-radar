@@ -14,20 +14,24 @@ pnpm build && pnpm start
 
 ## The flood map (/explore)
 
-`/explore` is a guided map of five steps, one main action each (the landing is step 1): the official map said safe
-(tap a street that flooded in 2024), our simulation saw it (one switch), NISAR sees more water (swipe against
-Sentinel-1), did we get it right (swipe our prediction against EMSR935), what if it rains (rain slider).
-`/explore?step=2` to `6` opens a step, `/explore?all` the free explorer with every layer. Code:
-`src/components/guided/`, copy: `src/content/guided.ts`. Every number is read at run time from a baked file:
+`/explore` is a guided map of four steps after the landing (step 1), one main action each: the official map said
+safe (tap a street that flooded in 2024), our simulation saw it (one switch: the streets each method flags), NISAR
+sees more water (swipe against Sentinel-1, open water on both sides), would we have seen it coming (one switch: the
+street simulation with the real rain or the forecast of the night before). `/explore?step=2` to `5` opens a step,
+`/explore?all` the free explorer with every layer, and from there `/explore?screen=exam` and `?screen=rain` the marsh
+model's test and rain outline. Code: `src/components/guided/`, copy: `src/content/guided.ts`. Every number is read at
+run time from a baked or hand-kept file:
 
 ```bash
 # from the repo root, pipeline environment, PYTHONPATH set to the repo root
-python web/scripts/bake_streets.py                 # steps 2 and 3: the 2024 streets that flooded (needs data/interim downloads, see its docstring)
+python web/scripts/bake_streets.py --sim-raster <sim_hmax_25m.tif> [--method "forecast=The night before=<raster>"]   # steps 2, 3 and 5: the 2024 streets (needs data/interim downloads, see its docstring)
+python web/scripts/bake_swipe_open.py              # step 4: open water only on both sides
 python web/scripts/bake_exam.py --ref <git ref>    # steps 5 and 6: the colour layer and the rain outlines from the frozen model maps of that ref
 python web/scripts/bake_exam.py --result <result.json> --result-source "<how to cite it>"   # step 5 numbers from a new test
 ```
 
-The numbers of step 5 sit in `public/layers/guided/test_score.json`: it can also be edited by hand, no code.
+The numbers of step 5 sit in `public/layers/guided/coming.json` and those of the marsh model's test in
+`public/layers/guided/test_score.json`: both can be edited by hand, no code.
 
 ## The game
 
