@@ -90,7 +90,9 @@ function useDocs(): Docs {
 
 // Files are asked for with the time of their bake: the server keeps pictures for a year, so a new bake gets a new address.
 const url = (doc: Doc, file: string) => `/layers/${doc.site}/${file}?v=${encodeURIComponent(doc.baked_utc)}`
-const day = (d: string) => new Date(`${d.slice(0, 10)}T12:00:00Z`).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', timeZone: 'UTC' })
+// Dates are written as in the captions of views.json ("7 Sep", "28 Oct"), whatever the browser's locale.
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+const day = (d: string) => `${Number(d.slice(8, 10))} ${MONTHS[Number(d.slice(5, 7)) - 1]}`
 const clock = (t: string) => t.slice(11, 16)
 const ha = (v: number | null | undefined) => (v == null ? '' : `${new Intl.NumberFormat('en-GB').format(Math.round(v))} ha`)
 const pct = (v: number | null | undefined) => (v == null ? '' : `${Math.round(v * 100)} %`)
