@@ -325,6 +325,7 @@ EXTRA_SIM_RUNS = {
     "ifs_20241029T00": "simulation_ifs_20241029T00",   # run A, forecast issued 29 Oct 2024 00 UTC
     "buildings": "simulation_buildings",               # run B, gauged rain, buildings as obstacles
     "ifs_20241029T06": "simulation_ifs_20241029T06",   # run A3 (amendment), forecast issued 29 Oct 2024 06 UTC
+    "gauged_to_1600": "simulation_gauged_to_1600",     # run N (amendment), gauged rain up to 16:00 local only
 }
 
 ROADS = ("motorway", "motorway_link", "trunk", "trunk_link", "primary", "primary_link", "secondary",
@@ -800,10 +801,20 @@ def evaluate(b: dict, lay: dict, marks_xy: np.ndarray, outline, surveyed=None) -
             "A": street_metrics(outside, key_a, length, outside)["chance_precision_pct"],
             "B": street_metrics(outside, key_b, length, outside & dom_b)["chance_precision_pct"]},
     }
+    has_gauged = bool(np.isfinite(lay["sim_depth"]).any())
     for r in extra:
         ext = flags[f"simulated_{r}_depth_above_0p3m"]
         descriptive[f"simulated_{r}_outside_zones"] = {"A": by_town(ext & outside, key_a, length, town),
                                                        "B": by_town(ext & outside, key_b, length, town, dom_b)}
+        if has_gauged:
+            # descriptive: the flooded streets (key A) this run finds against those the full gauged run finds
+            both = float(length[ext & sim_ext & key_a].sum())
+            gauged_found = float(length[sim_ext & key_a].sum())
+            descriptive[f"simulated_{r}_with_the_gauged_run"] = {
+                "key_a_found_by_both_km": _km(both),
+                "key_a_found_by_the_gauged_run_only_km": _km(length[~ext & sim_ext & key_a].sum()),
+                "key_a_found_by_this_run_only_km": _km(length[ext & ~sim_ext & key_a].sum()),
+                "share_of_the_gauged_runs_found_length_pct": round(100.0 * both / max(gauged_found, 1e-9), 1)}
     post_hoc = None
     if surveyed is not None:
         shapely.prepare(surveyed)
@@ -875,6 +886,8 @@ METHOD_WHAT = {
                                             "depth above 0.3 m",
     "simulated_ifs_20241029T06_depth_above_0p3m": "SIMULATED run A3 (amendment): rain of the ECMWF IFS HRES forecast "
                                                   "issued 29 Oct 2024 06 UTC; its own extent, maximum depth above 0.3 m",
+    "simulated_gauged_to_1600_depth_above_0p3m": "SIMULATED run N (amendment): the gauged rain up to 16:00 local on "
+                                                 "29 Oct 2024 and none after; its own extent, maximum depth above 0.3 m",
 }
 
 
@@ -1120,7 +1133,8 @@ def report() -> str:
 
 
 RUN_LABELS = {"ifs_20241028T12": "Run A, forecast of 28 Oct 12 UTC", "ifs_20241029T00": "Run A, forecast of 29 Oct 00 UTC",
-              "buildings": "Run B, gauged rain and buildings", "ifs_20241029T06": "Run A3, forecast of 29 Oct 06 UTC"}
+              "buildings": "Run B, gauged rain and buildings", "ifs_20241029T06": "Run A3, forecast of 29 Oct 06 UTC",
+              "gauged_to_1600": "Run N, gauged rain up to 16:00 only"}
 
 
 def report_runs() -> str:
