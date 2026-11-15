@@ -1079,7 +1079,11 @@ SIM_RUNS = {
                         "what": "run A3 (amendment): ECMWF IFS HRES forecast of 29 Oct 2024 06 UTC, bare terrain"},
     "buildings": {"folder": "simulation_buildings", "rain": "gauged", "buildings": True,
                   "what": "run B: gauged rain (Perez Cueva et al. 2025), buildings raised by 10 m"},
+    "gauged_to_1600": {"folder": "simulation_gauged_to_1600", "rain": "gauged_to_1600", "buildings": False,
+                       "what": "run N (amendment): the gauged rain up to 16:00 local (PH06 to PH16), no rain after"},
 }
+# Run N keeps the gauged hours PH06 to PH16 (rain up to 16:00 local, 15:00 UTC, on 29 Oct 2024) and no rain after.
+GAUGED_KEPT_HOURS = 11
 
 
 def forecast_query_points() -> dict:
@@ -1267,10 +1271,20 @@ def prepare_runs(runs: list[str]) -> dict:
                                          f"{BUILDING_SHARE_25M:g} of its 5 m cells are Catastro footprint cells",
                                  "raised_cells": int(raised.sum()), "cells_with_any_building": int((share > 0).sum()),
                                  "raised_km2": round(int(raised.sum()) * SIM_CELL_M * SIM_CELL_M / 1e6, 2)}
-        if cfg["rain"] == "gauged":
+        if cfg["rain"] in ("gauged", "gauged_to_1600"):
             # 1 hm3 over 1 km2 is 1 m of water: depth (m) = hm3 / km2, spread over the hour
             rates = np.array([[v / RAIN_TABLE[k]["area_km2"] / 3600.0 for v in RAIN_TABLE[k]["hm3"]] for k in names])
             prep["rain"] = {"source": "gauged: Perez Cueva et al. (2025), Tables 5 and 6"}
+            if cfg["rain"] == "gauged_to_1600":
+                rates[:, GAUGED_KEPT_HOURS:] = 0.0
+                kept = {k: round(sum(RAIN_TABLE[k]["hm3"][:GAUGED_KEPT_HOURS]), 1) for k in names}
+                full = {k: round(sum(RAIN_TABLE[k]["hm3"]), 1) for k in names}
+                prep["rain"] = {"source": "gauged: Perez Cueva et al. (2025), Tables 5 and 6, hours PH06 to PH16 "
+                                          "(rain up to 16:00 local, 15:00 UTC, on 29 Oct 2024); no rain after",
+                                "kept_hm3": kept, "full_run_hm3": full,
+                                "kept_mm": {k: round(kept[k] / RAIN_TABLE[k]["area_km2"] * 1000.0, 1) for k in names},
+                                "kept_share_pct": {k: round(100.0 * kept[k] / full[k], 1) for k in names},
+                                "kept_total_hm3": round(sum(kept.values()), 1), "full_total_hm3": round(sum(full.values()), 1)}
         else:
             fr = forecast_zone_rain(cfg["rain"], frac, names)
             rates = fr.pop("zone_mm") / 1000.0 / 3600.0
@@ -1332,6 +1346,8 @@ def collect_run(run: str, engine: str) -> dict:
         info["rain_table"] = {k: {**v, "total_hm3_listed_hours": round(sum(v["hm3"]), 1)} for k, v in RAIN_TABLE.items()}
         info["rain_source"] = ("Perez Cueva et al. (2025), Investigaciones Geograficas 84, 9-29, "
                                "doi:10.14198/INGEO.30056, Tables 5 and 6")
+    elif cfg["rain"] == "gauged_to_1600":
+        info["rain_gauged_to_1600"] = prep["rain"]
     else:
         info["rain_forecast"] = prep["rain"]
     if cfg["buildings"]:
