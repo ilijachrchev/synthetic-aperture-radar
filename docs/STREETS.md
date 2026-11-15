@@ -157,6 +157,19 @@ The Generalitat's flood footprint holds 6,493.2 ha of the scored pixels, more th
 - Every scored pixel has a HAND value in the headline map; no flat area was left undrained (4,121,463 flat cells drained in 459 rounds) and the accumulation found no loop.
 - Grid: 4,900 × 10,800 cells, 52,653,524 with terrain (the rest is sea). Drainage cells (upstream area above 0.5 km², plus permanent water): 1,896,665, of them 1,621,421 permanent water. Buildings as obstacles: 479,941 cells of Catastro footprints (data of 21 Aug 2026).
 
+## Flood depth, estimated from the flood outline and terrain
+
+Added after the test above, on request: how deep the water of the two floods may have been, estimated from the satellite outline and the terrain, never measured. Nothing here predicts depth for future storms.
+
+### Method (written before any comparison with the water marks)
+
+- **The FwDET rule** (Floodwater Depth Estimation Tool, Cohen et al. 2018): the water surface of each flooded cell is the ground elevation of its nearest flood-edge cell, and the depth is that surface minus the ground, never below 0. As in FwDET 2.0 (Cohen et al. 2019), edges that are not a real shore of the flood do not count: a flood cell is an edge only where it touches (sharing a side) a dry cell with terrain that a satellite map looked at and that is not permanent water (ESA WorldCover class 80, the sea and missing terrain included). No smoothing.
+- **Terrain**: the same 5 m terrain as above (ICV MDT 1 m 2015 averaged to 5 m, not filled).
+- **2024 DANA**: the outline is EMSR773's maximum observed extent (flooded area plus flood traces, the same three products), on the whole analysis grid, so the flood's real edges outside the 10 towns count; numbers are given for the 10 towns.
+- **2026 DANA Adam, Pego-Oliva**: the outline is EMSR935 (`data/labels/pego_oliva_emsr935_flood.geojson`, flooded area plus flood traces) on the ICV MDT 1 m 2015 sheet 0796, averaged to 5 m in the same way; that sheet holds 99.8 % of the outline (the rest is left out).
+- **Classes**, as in the official viewers: below 0.2 m, 0.2 to 1 m, 1 to 2 m, above 2 m.
+- **Check against surveyed water marks** (the ICV water heights used above, heights above 0 m): for the marks inside the outline, the estimated depth of the mark's cell against the measured height: mean error (bias), mean absolute error, root mean square error, median absolute error, the share within 0.5 m, by survey. Marks outside the outline get no estimate (the method gives depth only inside it); how many there are is reported. For 2026, none of the 71 surveyed marks (`data/labels/pego_oliva_water_depth_points.geojson`) lies inside the EMSR935 outline, so there is no check there.
+
 ## Limits
 
 - **One event.** The 2024 DANA is one test. A method that ranks well here may rank worse in a flood of another shape; nothing here is a validation across events.
