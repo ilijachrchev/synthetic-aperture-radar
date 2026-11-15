@@ -99,8 +99,11 @@ def load_manifest() -> dict:
 
 
 def save_manifest(manifest: dict) -> None:
+    """Write the manifest, keeping entries another step wrote meanwhile (fetch steps can run side by side)."""
     INTERIM_DIR.mkdir(parents=True, exist_ok=True)
-    _manifest_path().write_text(json.dumps(manifest, indent=1, ensure_ascii=False), encoding="utf-8")
+    merged = {**load_manifest(), **manifest}
+    manifest.update(merged)
+    _manifest_path().write_text(json.dumps(merged, indent=1, ensure_ascii=False), encoding="utf-8")
 
 
 def record(manifest: dict, key: str, url: str, path: Path, data_bytes: int, sha256: str, **extra) -> None:
@@ -734,11 +737,11 @@ def score(zones_dir: Path, zones_json: Path | None = None) -> dict:
         hm5 = np.repeat(np.repeat(hm, f, axis=0), f, axis=1).ravel()[idx]
         del hm
         neg = -hm5.astype(np.float64)  # deepest first
+        sim_orders = {t: ranked(neg, upa["bare"], p) for t, p in town_pos.items()}
         for z in ZONE_NAMES:
             sel = np.zeros(n, dtype=bool)
             for t, p in town_pos.items():
-                order = ranked(neg, upa["bare"], p)
-                sel[order[:int(zones[z][p].sum())]] = True
+                sel[sim_orders[t][:int(zones[z][p].sum())]] = True
             name = f"simulated_rain_equal_area_{z}"
             methods[name] = sel
             describe[name] = (f"Method 4, SIMULATED: deepest simulated cells of each town (25 m run), as many as "
@@ -746,22 +749,55 @@ def score(zones_dir: Path, zones_json: Path | None = None) -> dict:
         simulation = json.loads((sim_dir / "simulation_info.json").read_text(encoding="utf-8"))
         simulation["wet_share_of_scored_pct"] = pct(int((hm5 > 0.0).sum()), n)
 
+    # per town: the references, buildings and water marks on its own pixels (computed once)
+    town_refs, town_b, town_m = {}, {}, {}
+    lp = np.full(n, -1, dtype=np.int64)
+    for t, p in town_pos.items():
+        town_refs[t] = {r: v[p] for r, v in refs.items()}
+        lp[p] = np.arange(p.size)
+        tb = lp[b_pos[b_town == t]]
+        tm = lp[m_pos[town_s[m_pos] == TOWNS.index(t) + 1]]
+        town_b[t], town_m[t] = tb[tb >= 0], tm[tm >= 0]
+        lp[p] = -1
+
     results = {}
     for name, sel in methods.items():
         block = {"what": describe[name], "total": metrics(sel, refs, b_pos, m_pos), "towns": {}}
-        for i, t in enumerate(TOWNS):
-            p = town_pos[t]
-            sub = {r: v[p] for r, v in refs.items()}
-            lp = np.full(n, -1, dtype=np.int64)
-            lp[p] = np.arange(p.size)
-            tb = lp[b_pos[b_town == t]]
-            tm = lp[m_pos]
-            block["towns"][t] = metrics(sel[p], sub, tb[tb >= 0], tm[tm >= 0])
+        for t, p in town_pos.items():
+            block["towns"][t] = metrics(sel[p], town_refs[t], town_b[t], town_m[t])
         results[name] = block
         tot = block["total"]
         print(f"{name}: area {tot['area_pct_of_scored']} %, buildings {tot['buildings_covered_pct']} %, "
               f"traces {tot['flood_trace_covered_pct']} %, own area flooded {tot['own_area_flooded_pct']} %",
               flush=True)
+
+    # diagnostics: how high above the nearest drainage the water stood (bare terrain HAND)
+    hb = hand["bare"]
+    eq = methods["terrain_bare_equal_area_union"]
+
+    def hand_stats(values: np.ndarray) -> dict | None:
+        v = values[np.isfinite(values)]
+        if v.size == 0:
+            return None
+        q = np.percentile(v, [25, 50, 75, 90])
+        return {"n": int(values.size), "p25_m": round(float(q[0]), 2), "median_m": round(float(q[1]), 2),
+                "p75_m": round(float(q[2]), 2), "p90_m": round(float(q[3]), 2),
+                "share_below_1m_pct": pct(int((v < 1).sum()), v.size), "share_below_3m_pct": pct(int((v < 3).sum()), v.size),
+                "share_15m_or_more_pct": pct(int((v >= 15).sum()), v.size)}
+
+    diagnostics = {"what": "HAND (bare terrain, drainage above 0.5 km2) of the flooded cells, the flood traces, the "
+                           "graded buildings and all scored cells, and the HAND at which the equal-area cut stops",
+                   "towns": {}}
+    for t, p in [*town_pos.items(), ("total", np.arange(n))]:
+        bp = b_pos if t == "total" else b_pos[b_town == t]
+        cut = hb[p][eq[p]]
+        diagnostics["towns"][t] = {
+            "observed_flood": hand_stats(hb[p][refs["observed"][p]]),
+            "flood_traces": hand_stats(hb[p][refs["flood_trace"][p]]),
+            "graded_buildings": hand_stats(hb[bp]),
+            "all_scored": hand_stats(hb[p]),
+            "equal_area_cut_stops_at_hand_m": round(float(np.nanmax(cut)), 2) if cut.size and np.isfinite(cut).any() else None,
+        }
 
     scored_by_town = {t: {"cells": int(p.size), "ha": round(p.size * 25 / 1e4, 1),
                           "observed_ha": round(int(refs["observed"][p].sum()) * 25 / 1e4, 1),
@@ -802,6 +838,7 @@ def score(zones_dir: Path, zones_json: Path | None = None) -> dict:
                                   "product analysed, not permanent water (ESA WorldCover 2021 class 80)"},
         "checks": checks,
         "methods": results,
+        "diagnostics": diagnostics,
         "simulation": simulation,
         "inputs": input_files(zones_dir),
     }

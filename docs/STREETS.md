@@ -64,6 +64,68 @@ For every method, per town and for the 10 towns together:
 
 Not computed yet.
 
+## Limits
+
+- **One event.** The 2024 DANA is one test. A method that ranks well here may rank worse in a flood of another shape; nothing here is a validation across events.
+- **HAND does not know how much water comes.** It ranks land by its height above the nearest drainage line, the same for a 10-year and a 500-year flood. In 2024 the water came as a flash flood from the catchment upstream (the CHJ gauge read 2,282.9 m³/s at 18:55 before it was destroyed), so how far it spread on the plain depended on that volume, which no terrain map carries. The equal-area cut uses the official zones' area as the budget; a real warning would have to choose a budget from the forecast.
+- **Terrain of 2015.** The LiDAR was flown in October and November 2015, nine years before the flood. Buildings, roads and earthworks built since are not in it. Averaging to 5 m smooths walls, kerbs and narrow channels.
+- **The references are satellite outlines.** EMSR773 mapped the flood one to two days after the peak; in dense streets the flood traces are photo-interpreted, and a satellite misses water under trees and roofs. "Own area that flooded" is therefore a lower bound for every method alike. The graded buildings exist only where the AOI03 grading map looked (all of L'Horta Sud, 6 % of Chiva).
+- **Small official zones, small budgets.** Where the official zones cover little (Torrent, Chiva, Picanya), the terrain map at equal area covers just as little, by design.
+- **The simulation is simple and simulated.** No infiltration (all rain runs off, an upper bound), one Manning's n, 25 m cells that cannot resolve streets, no sewers, culverts or bridges other than what the bare-earth terrain shows, and rain only on the three upstream zones.
+
+## What more time and data would add
+
+**More flood events with traces** would turn one test into a check: the pipeline runs on any flood that has an EMSR delineation and surveyed water marks, and the ICV already publishes such marks for DANA Adam 2026 (service `2702_DANAAdam2026`, read by `pipeline.labels`), though that flood was in a marsh, not in towns. **Sewer networks** matter for the frequent rains this test says nothing about: a coupled sewer and street model (for example EPA's SWMM, Rossman 2015) needs the municipal networks, which are not open data. **Detailed rain radar** would replace our three uniform rain zones, but only once corrected: from 15:00 to 21:00 on 29 Oct 2024 the Valencia radar estimated 42.0 mm at Turís and 15.7 mm at Chiva where the gauges measured 615.2 and 421.0 mm, because rain that heavy attenuates the radar signal (Pérez Cueva et al. 2025, Table 2). **A NISAR pass close to a flood, with coherence,** would add what no terrain map can know: where the water actually stood. Interferometric coherence drops where water covers the ground between buildings; Chini et al. (2019) used this with Sentinel-1 to map flooded urban areas of Houston after Hurricane Harvey, and in our own benchmark NISAR's 12-day coherence separated water (0.25) from dry land (0.81, `docs/CV_BENCHMARK.md`). NISAR repeats each track every 12 days, so on one track the first pass after a flood can come up to 12 days later (sooner where tracks overlap, as the three over the Albufera do), and standing water drains within days; the team's NISAR data start in June 2026 (`docs/DATA.md`), so none could see the 2024 DANA. The terrain map says where water can run before the rain; a pass after it says where it ran.
+
+## Files and how to rebuild
+
+| File | What |
+|---|---|
+| `pipeline/streets.py` | the pipeline: `fetch`, `terrain`, `simulate`, `score`, `layers`, `report` |
+| `pipeline/terrain_flow.py` | depressions, flats, D8 flow, accumulation, HAND (numpy, scipy, scikit-image) |
+| `pipeline/inertial.py`, `pipeline/inertial_kernel.py` | the rain-on-terrain scheme (numpy reference; the same with numba) |
+| `data/streets/results.json` | every number on this page, with the input files, URLs, checksums and retrieval times |
+| `data/streets/flow_paths.geojson` | terrain flow paths with an upstream area above 5 km² (WGS84) |
+| `data/streets/terrain_equal_area.geojson` | the terrain map at the official zones' area, per town (WGS84) |
+| `data/streets/simulated_max_depth.geojson` | SIMULATED maximum water depth classes (WGS84) |
+| `tests/test_streets.py`, `tests/test_streets_inertial.py` | the terrain flow, the equal-area cut and the scheme on tiny synthetic grids |
+
+Needs the downloads of `pipeline.zones` (PR #36) in `data/interim/flood-zones/` (`python -m pipeline.zones fetch`), or `--zones-interim` pointing at them. Downloads go to `data/interim/streets/` (not in git). The terrain sheets are about 2 GB each and are deleted once averaged to 5 m; the terrain step needs about 4 GB of RAM.
+
+```bash
+python -m pipeline.streets fetch
+```
+
+```bash
+python -m pipeline.streets terrain
+```
+
+The simulation is fast only with numba, which is not in the shared stack; it gets its own venv inside `data/interim/streets/` (the shared venv and `pyproject.toml` stay as they are). Without it, `simulate` runs the numpy version of the same scheme, hours instead of minutes.
+
+```bash
+python -m venv data/interim/streets/venv-numba
+```
+
+```bash
+data/interim/streets/venv-numba/Scripts/python -m pip install numba
+```
+
+```bash
+python -m pipeline.streets simulate
+```
+
+```bash
+python -m pipeline.streets score
+```
+
+```bash
+python -m pipeline.streets layers
+```
+
+```bash
+python -m pipeline.streets report
+```
+
 ## Changes to the rules
 
 1. **Permanent water also counts as drainage for HAND** (decided while writing the code, before any score). The rules make permanent water an outlet of the depression filling, so water that reaches the Albufera leaves the grid there; without this clarification a cell that drains straight into the lake would have no drainage cell on its path. HAND is then measured from the lake surface, as for a river. The lake itself is not a scored pixel.
@@ -76,6 +138,7 @@ Not computed yet.
 - **Permanent water**: ESA WorldCover 2021 v200, © ESA WorldCover project / Contains modified Copernicus Sentinel data (2021) processed by ESA WorldCover consortium, CC BY 4.0.
 - **Buildings**: Dirección General del Catastro, INSPIRE Buildings download service (ATOM), by municipality.
 - **Rain and gauge**: Pérez Cueva, A. J., Armengot Serrano, R., Fansa Saleh, G., Núñez Mora, J. Á., and Revert Ferrero, A. (2025), Estudio cronológico de los volúmenes de precipitación en las subcuencas de la rambla de Poyo en el episodio del 29 octubre de 2024, Investigaciones Geográficas 84, 9 to 29, [doi:10.14198/INGEO.30056](https://doi.org/10.14198/INGEO.30056) ([PDF at AEMET's repository](https://repositorio.aemet.es/bitstream/20.500.11765/17270/1/IG_Perez_2025.pdf)); Confederación Hidrográfica del Júcar, [Informe del episodio de lluvias y avenidas del 28 de octubre al 4 de noviembre de 2024](https://saih.chj.es/docs/20241029-1104Informe-Episodio-C-version2.pdf) (15 Jan 2025); AEMET, [informe del episodio DANA 29 oct 2024](https://repositorio.aemet.es/bitstream/20.500.11765/16360/1/informe_episodio_dana_29_oct_2024_.pdf). Read 15 Nov 2026.
+- **Further work**: Chini, M., Pelich, R., Pulvirenti, L., Pierdicca, N., Hostache, R., and Matgen, P. (2019), Sentinel-1 InSAR coherence to detect floodwater in urban areas: Houston and Hurricane Harvey as a test case, Remote Sensing 11(2), 107, doi:10.3390/rs11020107. Rossman, L. A. (2015), Storm Water Management Model User's Manual, Version 5.1, EPA/600/R-14/413b, U.S. Environmental Protection Agency.
 - **Methods**: Nobre, A. D., et al. (2011), Height Above the Nearest Drainage, a hydrologically relevant new terrain model, Journal of Hydrology 404, 13 to 29, doi:10.1016/j.jhydrol.2011.03.051. Yamazaki, D., et al. (2019), MERIT Hydro: a high-resolution global hydrography map based on latest topography datasets, Water Resources Research 55, 5053 to 5073, doi:10.1029/2019WR024873 (drainage above 0.5 km²: [MERIT Hydro page](https://global-hydrodynamics.github.io/MERIT_Hydro/), read 15 Nov 2026). Twele, A., Cao, W., Plank, S., and Martinis, S. (2016), Sentinel-1-based flood mapping: a fully automated processing chain, International Journal of Remote Sensing 37(13), 2990 to 3004, doi:10.1080/01431161.2016.1192304. Garbrecht, J., and Martz, L. W. (1997), The assignment of drainage direction over flat surfaces in raster digital elevation models, Journal of Hydrology 193, 204 to 213. Bates, P. D., Horritt, M. S., and Fewtrell, T. J. (2010), A simple inertial formulation of the shallow water equations for efficient two-dimensional flood inundation modelling, Journal of Hydrology 387, 33 to 45, doi:10.1016/j.jhydrol.2010.03.027.
 
 Written with SI assistance (Claude Code), reviewed by the team.
