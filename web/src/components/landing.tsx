@@ -67,6 +67,9 @@ export function Hero() {
 					<AnchorLink to="more" className="btn-ghost">
 						{HERO.stories}
 					</AnchorLink>
+					<a href={SITE.paper} className="btn-ghost" target="_blank" rel="noopener noreferrer">
+						{HERO.paper}
+					</a>
 				</div>
 			</div>
 			<MonitorStage films={FILMS} />
