@@ -275,4 +275,62 @@ To reproduce (main venv, the DSWx-S1 history in `data/raw/dswx_history`, about 1
     python -m pipeline.prediction.spatial.improve export mono_neigh+blend
     python -m pipeline.prediction.spatial.improve nisar mono_neigh+blend
 
+## Amendment of 15 Nov 2026, about 07:40 UTC (written before any of its numbers)
+
+The team asked for three more pieces after the held-out window had already been scored for every candidate above
+(`39c633f`, about 07:20 UTC). They could not be registered before that scoring, so they are registered here, and this
+section is committed before any of their numbers is computed. The choice above stays as it is. Nothing here uses
+Pego-Oliva's held-out window, the EMSR935 outline or the NISAR 28 Oct map to choose or tune anything.
+
+### Variant 6: minimum mapping unit
+
+The idea comes from the NISAR 28 Oct replay of an earlier model (`3f54054`) at Pego-Oliva, where 29 % of the area
+above the threshold lay more than 300 m from any real flood, in about 300 small patches (median 2 pixels). That check
+only motivated the idea; it is not used to pick anything.
+
+- **What:** a post-processing of the map of `mono_neigh+blend`. Likely new water = pixels dry on the issue map with a
+  new-water likelihood at or above the frozen threshold (permanent water excluded). Optionally a 3 x 3 majority test
+  first (a marked pixel stays marked only if at least 5 of the 9 pixels of its square are marked; it never adds
+  pixels); then patches of 8-connected marked pixels smaller than N pixels are dropped. Grid: N = 0 (no patch filter),
+  3, 5, 10, 25, each with and without the majority test (10 settings; N = 0 without the test is no filter at all).
+- **Choice of the setting (development data only):** the development models of `mono_neigh` and of terrain only
+  (fitted on targets before 1 Sep 2025, training blocks), with the development blend reference and the frozen
+  new-water threshold, predict the full maps of every Sentinel-1 development check target (1 Sep 2025 to 14 Oct 2026,
+  both sites); hits, misses and false alarms of new water are counted only on the held-back 1 km blocks (domain pixels,
+  label known). Score = mean over the two sites of the new-water F1 at 20 m. The highest setting wins; a tie goes to
+  the smaller N and to no majority test. If no filter wins, nothing changes.
+- **Held-out:** the chosen setting is scored once on the held-out window, next to the same map without it: hit rate,
+  false alarms and F1 at 20 m and 250 m, and the AP of the filtered map (dropped pixels set 0.005 below the
+  threshold; the filter does not reorder the rest, so AP can move only a little).
+- **Maps:** if a filter wins, the exported maps are written again with the dropped pixels set 0.005 below the
+  new-water threshold, in a separate commit; the maps without the filter stay at `39c633f`. The same setting is then
+  applied to the two exports below.
+
+### Fit, then test
+
+- **The fit version:** `mono_neigh+blend` refitted with Albufera's held-out passes (15 Oct to 15 Nov 2026) added to
+  the fit, both halves (the `mono_neigh` model and the terrain-only model), with the frozen numbers of trees (387 and
+  208), the frozen thresholds and the same settings; the blend reference is recomputed on the new fit table, as the
+  blend rule says. The past wet share at Albufera then counts the October passes up to each issue pass. Pego-Oliva's
+  held-out passes stay out of the fit, the counts and every choice.
+- **(a) Fitted:** its agreement with Albufera's Sentinel-1 maps on the DANA passes (22 and 23 Oct) and over the whole
+  window, labelled in sample (the model saw these passes).
+- **(b) Test:** the same frozen version on Pego-Oliva's held-out window with the rain that fell: the DANA passes (22
+  and 23 Oct) and the whole window.
+- **(c) Forecast:** (b) for the pass of 22 Oct, driven by the rain of the IFS run of 17 Oct (the inputs of
+  `forecast_2026-10-22`) instead of the rain that fell.
+- **Reported:** new-water AP, hit rate and false alarms at the frozen threshold, at 20 m and 250 m, next to terrain
+  only and past wet share (same fit), and next to the frozen `mono_neigh+blend`. With variant 6's setting if it wins.
+  It is the same storm at both sites, so (b) and (c) test new ground, not a new storm.
+
+### Two more exports for Luka's independent test
+
+- Both in the PR #33 layout under `data/prediction/spatial/improve/exports/<name>/data/prediction/spatial/`, so that
+  `python -m pipeline.validation.emsr935_test --model-dir data/prediction/spatial/improve/exports/<name>` reads them;
+  Pego-Oliva only (the site of that test). The chosen candidate stays in `data/prediction/spatial` (`--model-dir .`).
+- `nisar_labels`: the best candidate trained with the NISAR labels by the same development rule, which is
+  `nisar_flag+blend` (development score 0.3815, against 0.3804 for `nisar_flag` alone).
+- `fit_albufera_oct`: the fit version above. At Pego-Oliva it is out of sample.
+- The same post-processing (variant 6, if it wins) for all three.
+
 Written with SI assistance (Claude Code), reviewed by the team.
