@@ -76,7 +76,7 @@ def rows() -> list[tuple[str, str, str]]:
             add(f"{tag}.{m}.bounds_producer", f"{lo['producer']:.2f} / {hi['producer']:.2f}",
                 f"{src_r} {variant}.{m}.bounds_unclear_all_dry/wet.producer")
         for k, (lo, hi) in v.get("ci95", {}).items():
-            add(f"{tag}.ci95.{k}", f"{lo:.2f}–{hi:.2f}", f"{src_r} {variant}.ci95.{k}")
+            add(f"{tag}.ci95.{k}", f"{lo:.2f} to {hi:.2f}", f"{src_r} {variant}.ci95.{k}")
         add(f"{tag}.verdict", v.get("verdict", "-"), f"{src_r} {variant}.verdict")
 
     # Stratified estimate of wet rice area under rule v2 (decided points only, as the paper says)
@@ -120,7 +120,7 @@ def rows() -> list[tuple[str, str, str]]:
                         den += W[h] * (ww if kind == "producer" else mm) / n_h
                     res[(kind, side)] = num / den if den else float("nan")
             for kind in ("producer", "user"):
-                add(f"{tag}.{m}.range_{kind}", f"{res[(kind, 'lo')]:.2f}–{res[(kind, 'hi')]:.2f}",
+                add(f"{tag}.{m}.range_{kind}", f"{res[(kind, 'lo')]:.2f} to {res[(kind, 'hi')]:.2f}",
                     f"derived from reference.csv {lab_key}: unclear points set to the worst / best case")
     # Base rates: how wet the rice was anyway, and what a random map of NISAR's size would score
     for lab_key, tag in (("label_v1", "v1"), ("label", "v2")):
@@ -145,11 +145,11 @@ def rows() -> list[tuple[str, str, str]]:
         src1 = "git 54fdc99:data/validation/june18/result.json"
         for k in ("b_user", "nisar_producer", "nisar_user", "s1_producer"):
             lo, hi = v1c["ci95"][k]
-            add(f"v1.ci95.{k}", f"{lo:.2f}–{hi:.2f}", f"{src1} ci95.{k}")
+            add(f"v1.ci95.{k}", f"{lo:.2f} to {hi:.2f}", f"{src1} ci95.{k}")
         add("v1.wet_share", f"{v1c['estimates']['wet_share']:.2f}", f"{src1} estimates.wet_share")
         ha, (lo, hi) = v1c["wet_rice_ha"]
         add("v1.wet_rice_ha", f"{ha:,}", f"{src1} wet_rice_ha")
-        add("v1.wet_rice_ha_ci", f"{lo:,}–{hi:,}", f"{src1} wet_rice_ha interval")
+        add("v1.wet_rice_ha_ci", f"{lo:,} to {hi:,}", f"{src1} wet_rice_ha interval")
     except Exception as e:
         add("v1.unavailable", f"commit 54fdc99 not found ({type(e).__name__})", "-")
 
@@ -162,9 +162,9 @@ def rows() -> list[tuple[str, str, str]]:
         add(f"sweep.{k}.mapped", f"{row['mapped_share_of_rice_points_weighted']:.2f}", f"{src_sw} by_threshold.{t}.mapped_share")
         for lab in ("v1", "strict"):
             r_ = row[lab]
-            add(f"sweep.{k}.{lab}.producer", f"{r_['producer']:.2f} ({r_['producer_ci95'][0]:.2f}–{r_['producer_ci95'][1]:.2f})",
+            add(f"sweep.{k}.{lab}.producer", f"{r_['producer']:.2f} ({r_['producer_ci95'][0]:.2f} to {r_['producer_ci95'][1]:.2f})",
                 f"{src_sw} by_threshold.{t}.{lab}.producer")
-            add(f"sweep.{k}.{lab}.user", f"{r_['user']:.2f} ({r_['user_ci95'][0]:.2f}–{r_['user_ci95'][1]:.2f})",
+            add(f"sweep.{k}.{lab}.user", f"{r_['user']:.2f} ({r_['user_ci95'][0]:.2f} to {r_['user_ci95'][1]:.2f})",
                 f"{src_sw} by_threshold.{t}.{lab}.user")
     # Tipping point: unclear B points that would have to be wet for the rule to hold on all 150
     import math
@@ -203,6 +203,16 @@ def rows() -> list[tuple[str, str, str]]:
     m13 = dict(zip(r13["dates"], r13["max_mm"]))
     add("alert.run13_daily_18_19", f"{m13['2026-10-18']} / {m13['2026-10-19']} mm",
         "data/prediction/flood/early_runs_pego_oliva.json runs[2026-10-13].max_mm, 18 and 19 Oct")
+    r14 = next(r for r in er["runs"] if r["run"] == "2026-10-14")
+    m14 = dict(zip(r14["dates"], r14["max_mm"]))
+    add("alert.run14_daily_18_19", f"{m14['2026-10-18']} / {m14['2026-10-19']} mm",
+        "data/prediction/flood/early_runs_pego_oliva.json runs[2026-10-14].max_mm, 18 and 19 Oct")
+    rain = {r_["date"]: float(r_["max_mm"]) for r_ in csv.DictReader(
+        (ROOT / "data/prediction/flood/rain_pego_oliva.csv").open(encoding="utf-8"))}
+    add("rain.fell_18_19", f"{rain['2026-10-18']} / {rain['2026-10-19']} mm",
+        "data/prediction/flood/rain_pego_oliva.csv max_mm, 18 and 19 Oct")
+    add("rain.fell_17_21", f"{sum(rain[f'2026-10-{d}'] for d in range(17, 22)):.0f} mm",
+        "data/prediction/flood/rain_pego_oliva.csv max_mm summed 17 to 21 Oct")
     # NISAR dark rice on 4 Oct vs 22 Sep, both tracks (unverified hint of a rain flood, #29)
     nc = json.loads((ROOT / "data/prediction/nisar_check.json").read_text(encoding="utf-8"))
     hint = []
@@ -250,7 +260,7 @@ def rows() -> list[tuple[str, str, str]]:
     add("pego.new_ha", f"{z['new_water_ha']:.0f}", f"{src_n} pego_oliva_dana.nisar_new_water.+0.new_water_ha")
     add("pego.inside_share", pct(z["share_inside_outline"]), f"{src_n} pego_oliva_dana.nisar_new_water.+0.share_inside_outline")
     lo, hi = p["nisar_new_water"]["+1"]["share_inside_outline"], p["nisar_new_water"]["-1"]["share_inside_outline"]
-    add("pego.inside_range", f"{100 * lo:.0f}–{100 * hi:.0f} %", f"{src_n} pego_oliva_dana.nisar_new_water.±1.share_inside_outline")
+    add("pego.inside_range", f"{100 * lo:.0f} to {100 * hi:.0f} %", f"{src_n} pego_oliva_dana.nisar_new_water.±1.share_inside_outline")
     add("pego.outline_ha", f"{p['outline_ha_scored']:.0f}", f"{src_n} pego_oliva_dana.outline_ha_scored")
     d = p["dswx_in_emsr935_outline_ha"]
     add("pego.dswx_before", f"{d['before']['value']:.0f}", f"{src_n} pego_oliva_dana.dswx_in_emsr935_outline_ha.before.value")
@@ -282,6 +292,13 @@ def rows() -> list[tuple[str, str, str]]:
         add(f"alert.replay_{run['run']}", f"{run['rule_3d_mm']} mm, {run['alert']}",
             f"{src_f} dana_replay_pego_oliva[{run['run']}]")
     run15 = f["dana_replay_pego_oliva"][0]
+    rr = {r_["run"]: r_ for r_ in f["dana_replay_pego_oliva"]}
+    add("alert.run16_daily_18_19", f"{rr['2026-10-16']['daily_max_mm'][2]} / {rr['2026-10-16']['daily_max_mm'][3]} mm",
+        f"{src_f} dana_replay_pego_oliva[2026-10-16].daily_max_mm[2:4]")
+    add("alert.run17_daily_18_19", f"{rr['2026-10-17']['daily_max_mm'][1]} / {rr['2026-10-17']['daily_max_mm'][2]} mm",
+        f"{src_f} dana_replay_pego_oliva[2026-10-17].daily_max_mm[1:3]")
+    add("alert.run17_5d", f"{sum(rr['2026-10-17']['daily_max_mm']):.0f} mm",
+        f"{src_f} dana_replay_pego_oliva[2026-10-17].daily_max_mm summed (17 to 21 Oct)")
     add("alert.run15_daily_18_19", f"{run15['daily_max_mm'][3]} / {run15['daily_max_mm'][4]} mm",
         f"{src_f} dana_replay_pego_oliva[2026-10-15].daily_max_mm[3:5]")
 
@@ -297,12 +314,14 @@ def rows() -> list[tuple[str, str, str]]:
     add("test.area_ha", f"{A['area_ha']:,.0f} ha", f"{src_t} sets.all_pixels.area_ha")
     add("test.observed_ha", f"{S0['model']['observed_ha']:.0f} ha", f"{src_t} flooded_area observed_ha")
     add("test.model_ha", f"{S0['model']['predicted_ha']:.0f} ha", f"{src_t} model predicted_ha")
+    add("test.model_fc_ha", f"{S0['model_forecast_rain']['predicted_ha']:.0f} ha", f"{src_t} model_forecast_rain predicted_ha")
+    add("test.hand0_share", pct(A["hand_zero_share"], 1), f"{src_t} sets.all_pixels.hand_zero_share")
     for k in ("model", "model_forecast_rain", "low_hand_same_area", "jrc_past_water", "nisar_16oct_persistence",
               "nisar_16oct_persistence_otsu", "hand_zero_all"):
         add(f"test.{k}", sc(k), f"{src_t} sets.all_pixels.references.flooded_area.scores.{k}")
     add("test.hand0_ha", f"{S0['hand_zero_all']['predicted_ha']:,.0f} ha", f"{src_t} hand_zero_all predicted_ha")
     lo, mean, hi = A["low_hand_f1_over_50_tie_draws_flooded_area"]
-    add("test.low_hand_draws", f"{lo:.3f}–{hi:.3f}", f"{src_t} low_hand_f1_over_50_tie_draws_flooded_area (min, max)")
+    add("test.low_hand_draws", f"{lo:.3f} to {hi:.3f}", f"{src_t} low_hand_f1_over_50_tie_draws_flooded_area (min, max)")
     ci = A["references"]["flooded_area"]["f1_model_minus_baseline_ci95"]
     for k, short in (("low_hand_same_area", "hand"), ("jrc_past_water", "jrc"), ("nisar_16oct_persistence", "nisar")):
         add(f"test.diff_ci.{short}", f"{ci[k][0]:.2f} to {ci[k][1]:.2f}", f"{src_t} f1_model_minus_baseline_ci95.{k}")
@@ -322,6 +341,11 @@ def rows() -> list[tuple[str, str, str]]:
         add("model.storm_new_ap", f"{pv['base']['sites']['pego_oliva']['storm_passes_mean']['new_water_ap']:.2f} (base) vs "
             f"{pv['nisar']['sites']['pego_oliva']['storm_passes_mean']['new_water_ap']:.2f} (NISAR labels)",
             "PR #33 data/prediction/spatial/comparison.json pego_oliva storm_passes_mean.new_water_ap")
+        add("model.storm_new_ap_albufera", f"{pv['base']['sites']['albufera']['storm_passes_mean']['new_water_ap']:.2f} (base) vs "
+            f"{pv['nisar']['sites']['albufera']['storm_passes_mean']['new_water_ap']:.2f} (NISAR labels)",
+            "PR #33 data/prediction/spatial/comparison.json albufera storm_passes_mean.new_water_ap")
+        add("model.soil_gain_share", pct(pv['soil']['soil_importance_gain_share'], 2),
+            "PR #33 data/prediction/spatial/comparison.json variants.soil.soil_importance_gain_share")
         hm = json.loads(subprocess.run(["git", "-C", str(ROOT), "show", f"{T['model']['commit']}:data/prediction/spatial/holdout_s1_metrics.json"],
                                        capture_output=True, text=True, check=True, encoding="utf-8").stdout)
         pg = hm["sites"]["pego_oliva"]["pooled_over_held_out_passes"]["methods"]
@@ -329,6 +353,19 @@ def rows() -> list[tuple[str, str, str]]:
             "PR #33 data/prediction/spatial/holdout_s1_metrics.json pego_oliva pooled")
     except Exception as e:
         add("model.unavailable", f"PR #33 commit not fetched ({type(e).__name__})", "-")
+
+    # --- Official flood zones against the 2026 flood (pipeline.zones, I. Chrchev) ---
+    try:
+        zf = ROOT / "data/zones/zones_vs_floods.json"
+        zt = zf.read_text(encoding="utf-8") if zf.exists() else subprocess.run(
+            ["git", "-C", str(ROOT), "show", "origin/main:data/zones/zones_vs_floods.json"],
+            capture_output=True, text=True, check=True, encoding="utf-8").stdout
+        zt = json.loads(zt)["events"]["dana_adam_2026_pego_oliva"]["total"]
+        add("zones.pego_flooded_ha", f"{zt['flooded_ha']:,.1f} ha", "data/zones/zones_vs_floods.json dana_adam_2026_pego_oliva.total.flooded_ha")
+        add("zones.pego_freq_occ", f"{zt['frequent_or_occasional_pct']} %", "data/zones/zones_vs_floods.json ...total.frequent_or_occasional_pct")
+        add("zones.pego_outside", f"{zt['outside_every_zone_pct']} %", "data/zones/zones_vs_floods.json ...total.outside_every_zone_pct")
+    except Exception as e:
+        add("zones.unavailable", f"zones file not found ({type(e).__name__})", "-")
 
     # --- Land-class ML model (local branch, may be absent) -------------------
     try:
