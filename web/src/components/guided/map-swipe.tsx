@@ -86,8 +86,10 @@ export function MapSwipe({
 	}
 
 	const pct = `${(x * 100).toFixed(2)}%`
+	// the line near an edge: the side it leaves is a sliver, and on a phone its label would sit on the other one
+	const edge = x < 0.3 ? 'left' : x > 0.7 ? 'right' : undefined
 	return (
-		<div ref={root} className="gd-swipe" style={{ ['--x' as string]: pct }}>
+		<div ref={root} className="gd-swipe" data-edge={edge} style={{ ['--x' as string]: pct }}>
 			<div className="gd-swipe-side" data-side="left">
 				{/* eslint-disable-next-line @next/next/no-img-element */}
 				<img ref={(el) => void (pics.current[0] = el!)} src={left.src} alt="" draggable={false} />
