@@ -3,13 +3,13 @@
 **Luka Georgieski, Ilija Chrchev, Zhivko Stoimchev**
 NASA Space Apps Challenge 2026, Valencia · challenge "Dancing with the SARs"
 
-*Draft of 15 November 2026, revised after a simulated five-reviewer panel (reports in `docs/paper/review/`). Sections marked **[PLACEHOLDER]** wait for the flood-extent model, which is still being built; they will be filled from its result files when it lands on GitHub. Every number in this paper is read from a result file in the repository; `docs/paper/numbers.md` lists each value with its source, and the HTML comments `<!--#key-->` in the Markdown source point to that list.*
+*Draft of 15 November 2026, revised after a simulated five-reviewer panel (reports in `docs/paper/review/`). The flood-extent model (PR #33, commit b4c69d9) and its independent test are filled in from their result files. Every number in this paper is read from a result file in the repository; `docs/paper/numbers.md` lists each value with its source, and the HTML comments `<!--#key-->` in the Markdown source point to that list.*
 
 ---
 
 ## Abstract
 
-A rain alert tells people how much rain will fall; it does not tell them which fields, roads and neighbourhoods will be under water. We ask whether the first months of NASA-ISRO NISAR L-band radar data can help close that gap for the Valencia region. NISAR cannot forecast rain or floods, but it records where water actually is on every 12-day pass, through clouds and, at L-band, partly beneath crops. Our approach is to use those per-pass water maps as training labels for a model that learns *where* water collects given rain, terrain and land cover, so that an existing rain alert can be shown as a map of likely flooded places. Before training on NISAR water, we tested whether it is trustworthy, on the date where NISAR and Sentinel-1 disagree most. On 18 June 2026, inside 14,627.8 ha<!--#june.rice_ha--> of Albufera rice, a −15 dB NISAR threshold mapped 6,387.2 ha<!--#june.nisar_ha--> of water and the Sentinel-1 water product DSWx-S1 249.6 ha<!--#june.s1_ha-->. A stratified sample of 513<!--#june.n_points--> points, fixed in git before scoring and judged by an optical-only referee, gives the NISAR threshold a producer's accuracy of 0.53<!--#v1.nisar.producer--> (95 % interval 0.47–0.61<!--#v1.ci95.nisar_producer-->) against 0.02<!--#v1.s1.producer--> for DSWx-S1; where only NISAR sees water, the referee calls 0.83<!--#v1.b_wet_share--> of decided points wet (0.69–0.96<!--#v1.ci95.b_user-->), which passes a rule fixed in advance. Two caveats bound this: the optical referee can decide only 30<!--#v1.b_decided--> of the 150 points in that stratum, because the growing canopy hides the water, and a strict open-water referee does not confirm the extra water, so NISAR marks wet ground or water among young plants rather than open water. During DANA "Adam" (17–19 October 2026) at Pego-Oliva, 87 %<!--#pego.inside_share--> of 212 ha<!--#pego.new_ha--> of new NISAR water lies inside the official Copernicus EMSR935 flood outline, but NISAR's two passes missed the peak that Sentinel-1 sampled 18<!--#pego.s1_passes--> times. In the NISAR period before the DANA, no pass recorded a rain-driven flood, so the flood-extent model must learn mostly from farm water and dry storms; the model and its independent test against EMSR935, fixed before the model exists, are **[PLACEHOLDER]**. With only five months of data and one large test event, this is a demonstration of what is possible, not proof; we expect it to improve as NISAR keeps collecting.
+A rain alert tells people how much rain will fall; it does not tell them which fields, roads and neighbourhoods will be under water. We ask whether the first months of NASA-ISRO NISAR L-band radar data can help close that gap for the Valencia region. NISAR cannot forecast rain or floods, but it records where water actually is on every 12-day pass, through clouds and, at L-band, partly beneath crops. Our approach is to learn, from radar water maps of many past passes, *where* water collects given rain, terrain and land cover, so that an existing rain alert can be shown as a map of likely flooded places. Before using NISAR water, we tested whether it is trustworthy, on the date where NISAR and Sentinel-1 disagree most. On 18 June 2026, inside 14,627.8 ha<!--#june.rice_ha--> of Albufera rice, a −15 dB NISAR threshold mapped 6,387.2 ha<!--#june.nisar_ha--> of water and the Sentinel-1 water product DSWx-S1 249.6 ha<!--#june.s1_ha-->. A stratified sample of 513<!--#june.n_points--> points, fixed in git before scoring and judged by an optical-only referee, gives the NISAR threshold a producer's accuracy of 0.53<!--#v1.nisar.producer--> (95 % interval 0.47–0.61<!--#v1.ci95.nisar_producer-->) against 0.02<!--#v1.s1.producer--> for DSWx-S1; where only NISAR sees water, the referee calls 0.83<!--#v1.b_wet_share--> of decided points wet (0.69–0.96<!--#v1.ci95.b_user-->), which passes a rule fixed in advance. Two caveats bound this: the optical referee can decide only 30<!--#v1.b_decided--> of the 150 points in that stratum, because the growing canopy hides the water, and a strict open-water referee does not confirm the extra water, so NISAR marks wet ground or water among young plants rather than open water. During DANA "Adam" (17–19 October 2026) at Pego-Oliva, 87 %<!--#pego.inside_share--> of 212 ha<!--#pego.new_ha--> of new NISAR water lies inside the official Copernicus EMSR935 flood outline, but NISAR's two passes missed the peak that Sentinel-1 sampled 18<!--#pego.s1_passes--> times. A flood-extent model (LightGBM, labels from two years of Sentinel-1 water maps, DANA held out) was tested by a team member other than its author against the EMSR935 flood layer, under a rule fixed before the model existed. It reaches F1 0.42 (precision 0.51, recall 0.35)<!--#test.model--> and beats all three baselines: low terrain, past water and the last NISAR map before the storm. It also ranks flooded pixels best (average precision: model 0.45, NISAR 16 Oct darkness 0.36, low HAND 0.30, JRC 0.10, base rate 0.02)<!--#test.ap-->. The pass is not robust: two of the margins are within the block-bootstrap uncertainty, and the NISAR map of 16 October with a per-scene threshold scores higher (0.46 (precision 0.51, recall 0.42)<!--#test.nisar_16oct_persistence_otsu-->). NISAR labels enter the model only in a variant that has not yet been tested this way. With only five months of data and one large test event, this is a demonstration of what is possible, not proof; we expect it to improve as NISAR keeps collecting.
 
 ---
 
@@ -21,12 +21,12 @@ A rain alert tells people how much rain will fall; it does not tell them which f
 
 **Learning the footprint from observed water needs many honest water maps.** A data-driven alternative is to learn, from many past events, where water appears after a given rain. The bottleneck is labels: one needs a reliable water map for every pass, including under vegetation and through clouds. Optical images are blocked by the clouds that come with storms. C-band radar (Sentinel-1) sees through clouds but loses water beneath crops and marsh vegetation, and the operational DSWx-S1 product maps inundated vegetation only where its land-cover layer says "wetland" [OPERA DSWx-S1]. L-band radar penetrates further into vegetation [Hess et al. 1990], and NISAR is the first mission to provide free, systematic L-band coverage on an exact 12-day repeat [NISAR Handbook; ASF NISAR docs]. Learning flood extent from satellite water maps is not new in itself: Google's operational system learns a wet/dry threshold per pixel from Sentinel-1 flood maps paired with river stage [Nevo et al. 2022], and Dasgupta et al. [2022] trained a CNN on Sentinel-1 flood maps with rain, soil moisture and terrain as inputs. Both learn from C-band labels, which miss most water beneath vegetation. NISAR could supply better labels, but its calibrated public data only begin with acquisitions of 17 June 2026, its official water product (OPERA DSWx-NI) is still under development [OPERA DSWx suite], and no independent check of its water maps over Spain existed.
 
-**Our approach.** We use NISAR not as a predictor but as a teacher. Our innovation is to treat each NISAR pass as a labelled example of where water went, and to learn the mapping from rain before the pass, terrain (height above the nearest channel), land cover, long-term water history and NISAR soil moisture to the observed water. The trained model turns an existing rain alert into a map of likely flooded places. The first users we have in mind are people who live, farm or drive near the rice fields and the marsh, and local civil protection, who need to know which low fields and roads to watch when a warning comes. Because the labels drive everything, we first test them: an independent, pre-registered, sample-based accuracy assessment of NISAR water against Sentinel-1 on a date where the two disagree most.
+**Our approach.** We use NISAR not as a predictor but as a teacher. Our innovation is to treat each NISAR pass as a labelled example of where water went, and to learn the mapping from rain before the pass, terrain (height above the nearest channel), land cover, long-term water history and NISAR soil moisture to the observed water. The trained model turns an existing rain alert into a map of likely flooded places. The first users we have in mind are people who live, farm or drive near the rice fields and the marsh, and local civil protection, who need to know which low fields and roads to watch when a warning comes. In the model tested here (Section 4.4) the labels are Sentinel-1 water maps, because they cover two years where NISAR covers five months; NISAR checks those labels, is a baseline the model must beat, and adds its own labels in a variant. Because the labels drive everything, we first test them: an independent, pre-registered, sample-based accuracy assessment of NISAR water against Sentinel-1 on a date where the two disagree most.
 
 **Contributions.**
 1. **An independent, pre-registered check of early NISAR water maps.** On 18 June 2026 in the Albufera rice, a simple NISAR threshold finds about half of the water an optical referee calls wet (producer's accuracy 0.53<!--#v1.nisar.producer-->), where the DSWx-S1 product finds 0.02<!--#v1.s1.producer-->. Sample points and the pass rule were committed to git before scoring. We also report what goes against us: the referee can decide few points, and a strict open-water referee does not confirm the extra NISAR water.
 2. **An event check against an official flood outline.** For DANA "Adam", 87 %<!--#pego.inside_share--> of new NISAR water lies inside the Copernicus EMSR935 outline; we also show why NISAR's sparse sampling missed the peak.
-3. **A flood-extent model trained on NISAR water labels** and its independent test on the held-out DANA, with the test fixed before the model exists. **[IN PROGRESS — PLACEHOLDER: method and results]**
+3. **A flood-extent model and its independent test** on the held-out DANA, run by a team member other than the model's author under a rule fixed before the model existed. The model passes (F1 0.42 (precision 0.51, recall 0.35)<!--#test.model--> against at most 0.29 for the three baselines) but not robustly (Section 5.6).
 4. **Open code and data** with every number traceable to a result file, plus a plain statement of what five months of data can and cannot show.
 
 ---
@@ -50,7 +50,7 @@ A rain alert tells people how much rain will fall; it does not tell them which f
 | Google Flood Hub, inundation [Nevo et al. 2022] | River stage | Sentinel-1 (C-band) | no (gauged rivers) | no |
 | Dasgupta et al. [2022] | Rain, soil moisture, terrain | Sentinel-1 (C-band) | not tested here | no |
 | Copernicus GFM, OPERA DSWx-S1 | none (observation only) | Sentinel-1 (C-band) | open water only | no |
-| **This work** (model in progress) | **Rain of the warning, terrain, land cover, soil moisture** | **NISAR (L-band) + Sentinel-1, incl. flooded vegetation (not yet checked)** | **study sites only** | **planned** |
+| **This work** | **Rain before and during the event, terrain, land cover, past water, last water map** | **Sentinel-1 (C-band), checked with NISAR (L-band); NISAR labels in a variant** | **study sites only** | **yes (the map is shown when the alert fires)** |
 
 **Honest accuracy assessment.** Accuracy and area estimates from maps are biased when checked on convenience samples or against another map. Olofsson et al. [2014] set out good practice: a probability sample stratified by map class, stratum-weighted estimators of user's and producer's accuracy, and confidence intervals. For classifiers on rasters, spatially blocked validation avoids optimistic scores from neighbouring pixels [Roberts et al. 2017]. We follow both.
 
@@ -102,25 +102,26 @@ At Albufera we use two GCOV tracks, 066 D (evening) and 058 A (morning), each re
 
 Figure 1 shows the pipeline. NISAR provides one water map per pass (4.2). Before these maps are used as labels, an independent check measures how right they are (4.3). The flood-extent model learns where water appears given rain and terrain (4.4) and is tested on the held-out DANA against EMSR935 under a test fixed before the model exists (4.5). An existing rain alert (4.6) chooses *when* to show the map; the model chooses *where*.
 
-*Figure 1. Pipeline. Solid arrows: built and tested. Dashed: in progress.*
+*Figure 1. Pipeline. Solid arrows: built and tested. Dashed: built, not yet tested against EMSR935.*
 
 ```mermaid
 flowchart LR
     N["NISAR GCOV<br/>HH · HV · 20 m<br/>every 12-day pass"] --> W["Water per pass<br/>open water + flooded vegetation"]
     S1["Sentinel-1 DSWx-S1<br/>water per pass"] --> W
     W --> V["Independent check<br/>18 Jun sample, optical referee<br/>DANA vs EMSR935"]
-    W -. labels .-> M["Flood-extent model<br/>where water goes"]
-    R["Rain before each pass<br/>Open-Meteo / ECMWF IFS"] -. features .-> M
-    T["Terrain: height above<br/>nearest channel"] -. features .-> M
-    L["Land cover · JRC water history<br/>NISAR SME2 soil moisture"] -. features .-> M
+    S1 -- labels --> M["Flood-extent model<br/>LightGBM, where water goes"]
+    N -. NISAR labels, variant .-> M
+    R["Rain before and during<br/>Open-Meteo / ECMWF IFS"] --> M
+    T["Terrain: height above<br/>nearest channel · DEM"] --> M
+    L["Land cover · JRC water history<br/>past Sentinel-1 water"] --> M
     A["Rain-threshold alert<br/>100 mm in 3 days"] --> O["Alert shown as a map<br/>of likely flooded places"]
-    M -. where .-> O
-    M -. held-out DANA .-> X["Independent test<br/>vs EMSR935"]
+    M -- where --> O
+    M -- held-out DANA --> X["Independent test<br/>vs EMSR935"]
 ```
 
 ### 4.2 Water from each NISAR pass
 
-**Motivation.** The model needs one water map per pass that does not depend on the C-band products it is compared with. **Design.** Open water is a pixel whose 5 × 5-filtered HH is below −15.0 dB<!--#june.threshold_db-->. The threshold was fixed before any comparison (the fallback of our land-class pipeline), and was later confirmed on the second Albufera track, which played no part in choosing it: across 10<!--#alb.058.paired--> paired dates on track 058 A, NISAR's dark share of the rice and DSWx-S1's flooded share correlate at r = 0.978<!--#alb.058.r15-->. The labels for the flood-extent model add a flooded-vegetation class, where HH rises by about 3 dB between passes while HV stays flat (double bounce), and merge NISAR with Sentinel-1 water on each pass (work by I. Chrchev; **[PLACEHOLDER: final label rules and per-pass counts]**). This flooded-vegetation class is not used in any result of this paper and has not been checked yet. On 18 June the median rice backscatter was −14.41 dB<!--#alb.066.jun18_median-->, almost at the threshold, so the mapped area on that date is sensitive to it: 54.5 / 32.2 %<!--#alb.066.jun18_dark_14_16--> of the rice is darker than −14 / −16 dB. At Pego-Oliva (Section 5.3) the event check reuses the team's CV baseline, a per-scene Otsu threshold (−11.85 / −12.03<!--#pego.otsu_db--> dB before / after), not the fixed −15 dB. **Advantage.** L-band reaches water beneath young crops more often than C-band; Section 5.1 tests whether this is true here.
+**Motivation.** The model needs one water map per pass that does not depend on the C-band products it is compared with. **Design.** Open water is a pixel whose 5 × 5-filtered HH is below −15.0 dB<!--#june.threshold_db-->. The threshold was fixed before any comparison (the fallback of our land-class pipeline), and was later confirmed on the second Albufera track, which played no part in choosing it: across 10<!--#alb.058.paired--> paired dates on track 058 A, NISAR's dark share of the rice and DSWx-S1's flooded share correlate at r = 0.978<!--#alb.058.r15-->. The labels for the flood-extent model add a flooded-vegetation class, where HH rises by about 3 dB between passes while HV stays flat (double bounce), and merge NISAR with Sentinel-1 water on each pass (work by I. Chrchev). The model tested in Section 5.6 does not use these labels: its labels are Sentinel-1 water maps, and NISAR open water enters only in a variant (Section 4.4). The flooded-vegetation class is not used in any result of this paper and has not been checked yet. On 18 June the median rice backscatter was −14.41 dB<!--#alb.066.jun18_median-->, almost at the threshold, so the mapped area on that date is sensitive to it: 54.5 / 32.2 %<!--#alb.066.jun18_dark_14_16--> of the rice is darker than −14 / −16 dB. At Pego-Oliva (Section 5.3) the event check reuses the team's CV baseline, a per-scene Otsu threshold (−11.85 / −12.03<!--#pego.otsu_db--> dB before / after), not the fixed −15 dB. **Advantage.** L-band reaches water beneath young crops more often than C-band; Section 5.1 tests whether this is true here.
 
 ### 4.3 Independent check of NISAR water on 18 June 2026
 
@@ -142,20 +143,15 @@ flowchart LR
 
 **Design: scoring and pre-registered rule.** User's and producer's accuracy are stratum-weighted (weight = stratum share of the rice) over decided points, with 95 % intervals from a stratified bootstrap (2,000 resamples). The pass rule was posted on GitHub Discussion #25 before the first score: NISAR "wins" if its user's accuracy in stratum B is at least 0.7<!--#rule.min_share--> and the lower end of its 95 % interval is at least 0.6<!--#rule.min_ci_low-->. **Which referee is pre-registered.** The pass rule and referee v1 (Sentinel-2 on 8 and 23 June) were in place before the first score (commit `54fdc99`), so v1 is the primary result. After seeing v1 and a team review, we wrote referee v2, which takes the closest clear look after 18 June (Landsat 9, 22 June). v2 was committed (`e5a2d30`) before it was run (`de3e9f8`), but because it was written after v1 was seen, we report it as a sensitivity analysis, not as a pre-registered test. The pass rule did not change.
 
-### 4.4 Flood-extent model — **[PLACEHOLDER]**
+### 4.4 Flood-extent model
 
-> **To be filled from Z. Stoimchev's model once on GitHub** (expected under `pipeline/prediction/`). Planned design, as agreed in Discussion #29:
-> - **Target:** per pixel and per pass, water (open water or flooded vegetation) from the labels of Section 4.2.
-> - **Features:** rain before each pass (Open-Meteo, ECMWF IFS), height above the nearest channel, land cover, JRC water occurrence, NISAR SME2 soil moisture before the pass.
-> - **Training data:** all passes from 17 June to the cut-off, **excluding** the DANA window, which is held out for Section 4.5.
-> - **Output:** probability of water given a rain scenario; shown in the app as "likely flooded" when the rain alert is amber or red.
-> - **To report:** model type, features, spatial blocking, validation inside the training period, feature importance.
->
+**Motivation.** The rain alert says *when*; the model is meant to say *where*. **Design.** The model, built by Z. Stoimchev (PR #33, commit b4c69d9<!--#test.commit-->), is a LightGBM classifier [Ke et al. 2017] that scores every 20 m land pixel of Albufera and Pego-Oliva for water on a target Sentinel-1 pass. Its inputs are terrain (height above the nearest drainage from the GLO-30 HAND, elevation, slope), land cover (WorldCover, the Albufera rice mask), past water (JRC occurrence and the share of earlier Sentinel-1 passes that saw water), the water map of the issue pass (the latest pass at least three days before the target) and site rain from the IFS archive, split into rain before the issue day and rain between issue and target. Its labels are OPERA DSWx-S1 water maps, 413 passes per site from August 2024; NISAR does not enter the exported model. Variants add NISAR SME2 soil moisture, the team's NISAR open-water labels, or both; they are scored only against held-out Sentinel-1 passes and export no maps. The window 15 October – 15 November 2026 is held out of every fit, threshold and past-water share. The development check fits on targets before 1 September 2025 on training blocks and checks on later targets on held-back 1 km blocks; the number of trees and the decision thresholds come from that check and are then frozen. **Retrospective check (the author's).** On the held-out October passes at Pego-Oliva, scored against Sentinel-1, the full model ranks water better than terrain alone (water AP 0.64 vs 0.56 terrain only<!--#model.holdout_pego-->); on the two storm passes, NISAR labels raise the new-water score slightly (0.45 (base) vs 0.49 (NISAR labels)<!--#model.storm_new_ap-->) and soil moisture adds nothing. **Output.** A relative likelihood of water per pixel, not depth, speed or arrival time.
+
 > **Requirements for the residents' map** (from the review, fixed now): (1) three states, never two: *likely wet*, *no signal* (and the line "areas without colour can still flood"), and *not assessed* for built-up areas, where the labels are unreliable; (2) the map is triggered by the official AEMET warning level, not by a separate colour scheme of our own (the alert of Section 4.6 is a research baseline, not a public warning); (3) the official PATRICOVA / SNCZI zones are shown next to it as the legal reference.
 
 ### 4.5 Independent test against EMSR935 (fixed before the model exists)
 
-**Motivation.** A model tuned and scored by the same people on the same event proves little. This test is written down before the model is available and is run by a different team member (L. Georgieski) than the model's author. **Design.** The DANA "Adam" window (15 October – 15 November 2026) is held out of training. The model is given the rain of the event and predicts likely flooded pixels at Pego-Oliva. The reference is the *observed* flood layer of Copernicus EMSR935, area of interest 01, which covers the Pego-Oliva marsh and was mapped from optical SPOT-6/7 imagery of 20 October [Copernicus EMS EMSR935]. Its *modelled* layer (water pushed along low ground into areas the image could not see) is scored separately, and its "not analysed" areas are masked. We report precision (share of predicted flooded area inside the observed flood), recall (share of the observed flood predicted) and F1, plus the same scores for three baselines: (i) low terrain only (lowest height above the nearest channel, same flooded area as the model); (ii) past water only (JRC occurrence > 0); (iii) persistence, the NISAR water of the last pass before the event (16 October). As context, not part of the rule, we also report how much of the observed flood lies inside the official PATRICOVA hazard zone and the SNCZI 500-year zone. **Rule.** The model is said to add value if its F1 beats all three baselines; otherwise we report that it does not. *(This test was first written with baselines (i)–(ii) and the whole EMSR935 outline; on 14 November 2026, still before the model existed, it was tightened to add baseline (iii) and the observed/modelled split after a review of existing work. Both versions are in the git history.)* **[PLACEHOLDER: results, Section 5.6.]**
+**Motivation.** A model tuned and scored by the same people on the same event proves little. This test is written down before the model is available and is run by a different team member (L. Georgieski) than the model's author. **Design.** The DANA "Adam" window (15 October – 15 November 2026) is held out of training. The model is given the rain of the event and predicts likely flooded pixels at Pego-Oliva. The reference is the *observed* flood layer of Copernicus EMSR935, area of interest 01, which covers the Pego-Oliva marsh and was mapped from optical SPOT-6/7 imagery of 20 October [Copernicus EMS EMSR935]. Its *modelled* layer (water pushed along low ground into areas the image could not see) is scored separately, and its "not analysed" areas are masked. We report precision (share of predicted flooded area inside the observed flood), recall (share of the observed flood predicted) and F1, plus the same scores for three baselines: (i) low terrain only (lowest height above the nearest channel, same flooded area as the model); (ii) past water only (JRC occurrence > 0); (iii) persistence, the NISAR water of the last pass before the event (16 October). As context, not part of the rule, we also report how much of the observed flood lies inside the official PATRICOVA hazard zone and the SNCZI 500-year zone. **Rule.** The model is said to add value if its F1 beats all three baselines; otherwise we report that it does not. *(This test was first written with baselines (i)–(ii) and the whole EMSR935 outline; on 14 November 2026, still before the model existed, it was tightened to add baseline (iii) and the observed/modelled split after a review of existing work. Both versions are in the git history.)* **How it was run, and what changed.** The test script (`pipeline/validation/emsr935_test.py`) was committed before the first score. The model under test is the exported `base` model, replay of 22 October (issued from the Sentinel-1 pass of 17 October, with the rain that fell), the pass closest to the EMSR935 imagery; "likely flooded" is a likelihood at or above the model's frozen threshold of 0.284<!--#test.threshold-->. The published EMSR935 data (Copernicus via the Valencian cartographic institute) do not have the observed / modelled split or a "not analysed" mask assumed above; they have *flooded area* (semi-automatic extraction from the image) and *flood trace* (photo-interpretation of where water had been). We therefore score against *flooded area* and report *flooded area + flood trace* apart, over the whole of AOI01 inside our grid: 39,091 ha<!--#test.area_ha--> of land, without permanent water, where NISAR had a valid pixel on 16 October. Persistence uses the paper's general NISAR water rule (−15 dB, Section 4.2). Three things were added after the first run and are stated as such: (1) about 38 % of the HAND grid is exactly 0, so the first run filled the low-terrain quota with tied pixels in map order; ties are now broken at random (F1 over 50 draws 0.236–0.249<!--#test.low_hand_draws-->); (2) the Otsu threshold for persistence, as a sensitivity; (3) average precision, a score that does not depend on how much area a method maps. Uncertainty: 1,000 bootstrap resamples of 1 km blocks. PATRICOVA zones were not available in machine-readable form; the SNCZI comparison is in `data/zones/zones_vs_floods.json` (I. Chrchev).
 
 ### 4.6 Rain trigger (when): a research baseline, not a public warning
 
@@ -261,19 +257,33 @@ The final land-class model (v2d: both tracks plus texture) agrees with the label
 
 On the held-out DANA window, with rain already measured (the IFS archive, not a forecast), the rain trigger caught 2 of 2 new-flood events with 0 false alarms in 17<!--#alert.test--> passes over both sites. Two events are far too few for a skill claim; the result says only that the rule fired for the DANA and stayed quiet in the surrounding weeks. Replaying the live rule on each forecast run before the DANA gives green on 15 October (4.8 mm, green<!--#alert.replay_2026-10-15-->) and amber from 16 to 18 October (82.6 mm, amber<!--#alert.replay_2026-10-16-->; 62.5 mm, amber<!--#alert.replay_2026-10-17-->; 69.6 mm, amber<!--#alert.replay_2026-10-18-->): amber two to three days ahead, never red, because the 9 km grid smooths the extremes of a storm that dropped far more at rain gauges. The alert answers *when*; it has no map of *where*.
 
-### 5.6 Flood-extent model and its independent test — **[PLACEHOLDER]**
+### 5.6 Flood-extent model: independent test against EMSR935
 
-> To be filled from the result files of the flood-extent model and of the test in Section 4.5:
-> - Validation inside the training period (per site, spatial blocks).
-> - Held-out DANA vs EMSR935: precision, recall and F1 of the model, of the low-terrain baseline and of the past-water baseline; verdict under the rule of Section 4.5.
-> - A map figure: predicted likely-flooded area at Pego-Oliva with the EMSR935 outline.
-> - Towns: report scores separately for built-up pixels, where the labels are weakest (Section 6.2).
+**The model passes the rule fixed in advance.** Against the 760 ha<!--#test.observed_ha--> of EMSR935 *flooded area*, the model maps 527 ha<!--#test.model_ha--> as likely flooded, with F1 0.42 (precision 0.51, recall 0.35)<!--#test.model-->. The three baselines of Section 4.5 score lower: low terrain of the same area 0.24 (precision 0.30, recall 0.21)<!--#test.low_hand_same_area-->, past water 0.29 (precision 0.48, recall 0.21)<!--#test.jrc_past_water--> and the NISAR water of 16 October 0.27 (precision 0.53, recall 0.18)<!--#test.nisar_16oct_persistence--> (Table 6). The verdict is the same with flood traces added (model F1 0.42<!--#test.trace.model-->) and on the pixels where the model learned (0.42<!--#test.domain.model-->). With the rain the IFS run of 17 October *forecast* instead of the rain that fell, the model still reaches 0.40 (precision 0.54, recall 0.31)<!--#test.model_forecast_rain-->.
+
+**The pass is not robust.** The F1 margin over low terrain is clear (95 % interval of the difference 0.05 to 0.28<!--#test.diff_ci.hand-->), but over past water (-0.01 to 0.27<!--#test.diff_ci.jrc-->) and NISAR persistence (-0.05 to 0.32<!--#test.diff_ci.nisar-->) the interval includes zero. Two simple maps that cover more ground score higher than the model: the NISAR map of 16 October with its per-scene Otsu threshold, 0.46 (precision 0.51, recall 0.42)<!--#test.nisar_16oct_persistence_otsu-->, and all land with zero height above drainage, 0.45 (precision 0.30, recall 0.97)<!--#test.hand_zero_all--> over 2,491 ha<!--#test.hand0_ha-->. Much of what EMSR935 mapped on 20 October is the marsh that was already wet or lies lowest, and F1 rewards any map that covers it. A score that does not depend on mapped area favours the model: ranking pixels by likelihood gives average precision model 0.45, NISAR 16 Oct darkness 0.36, low HAND 0.30, JRC 0.10, base rate 0.02<!--#test.ap-->.
+
+**What this means.** By ranking, the model knows *where* water goes in the marsh better than terrain, history or the last NISAR map alone, and its map carries far less false area than the lowest-ground map (about 260 ha against about 1,750 ha). It finds about a third of the flood (recall 0.35), and it learned from Sentinel-1, not NISAR: this test does not show that NISAR labels improve it.
+
+*Table 6. Independent test at Pego-Oliva (EMSR935 AOI01, flooded area, imagery 20–21 October 2026; 39,091 ha<!--#test.area_ha--> of land scored, the same pixels for every method). Rule: the model must beat baselines (i)–(iii) on F1.*
+
+| Method | F1 ↑ | Precision ↑ | Recall ↑ | Mapped area |
+|---|---:|---:|---:|---:|
+| **Model, rain that fell** (replay of 22 Oct) | **0.42** | 0.51 | 0.35 | 527 ha |
+| Model, rain forecast on 17 Oct | 0.40 | 0.54 | 0.31 | 446 ha |
+| (i) Low terrain, same area as the model | 0.24 | 0.30 | 0.21 | 527 ha |
+| (ii) Past water, JRC occurrence > 0 | 0.29 | 0.48 | 0.21 | 328 ha |
+| (iii) NISAR 16 Oct, −15 dB (persistence) | 0.27 | 0.53 | 0.18 | 263 ha |
+| *Sensitivity:* NISAR 16 Oct, Otsu (−11.85 dB) | 0.46 | 0.51 | 0.42 | 625 ha |
+| *Sensitivity:* all land with HAND = 0 | 0.45 | 0.30 | 0.97 | 2,491 ha |
+
+*Source: `data/validation/emsr935/result.json`; every value also in `docs/paper/numbers.md`.*
 
 ### 5.7 Summary of checks
 
-Table 6 lists every check in this paper with what would count as passing and what we found. Every check runs on real observations; none uses synthetic data.
+Table 7 lists every check in this paper with what would count as passing and what we found. Every check runs on real observations; none uses synthetic data.
 
-*Table 6. Checks, expected outcome and result. PASS = the expected outcome holds; PARTLY = it holds with a stated caveat; FAIL = it does not hold; PENDING = not run yet.*
+*Table 7. Checks, expected outcome and result. PASS = the expected outcome holds; PARTLY = it holds with a stated caveat; FAIL = it does not hold; PENDING = not run yet.*
 
 | Check | Expected | Observed | Status |
 |---|---|---|---|
@@ -286,7 +296,7 @@ Table 6 lists every check in this paper with what would count as passing and wha
 | DANA: new NISAR water inside the official EMSR935 outline | most of it inside | 87 %<!--#pego.inside_share--> (62–93 %<!--#pego.inside_range--> for ±1 dB) | PASS |
 | DANA: share of the official flood found (recall) | most of it | at most 0.33 for any method (Section 5.3) | FAIL: the pass came nine days after the peak |
 | Rain trigger on the held-out DANA | red before the flood | measured rain: 2 of 2 events; forecast runs: amber, never red | PARTLY |
-| Flood-extent model vs low-HAND, JRC and persistence baselines (Section 4.5) | higher F1 than all three | **[PLACEHOLDER]** | PENDING |
+| Flood-extent model vs low-HAND, JRC and persistence baselines (Section 4.5) | higher F1 than all three | 0.42 vs 0.24 / 0.29 / 0.27; two margins within the uncertainty; NISAR 16 Oct with Otsu 0.46 | PARTLY (rule passed, not robust) |
 
 ---
 
@@ -301,6 +311,7 @@ NISAR adds two things that matter for learning where water goes. First, it sees 
 ### 6.2 Limits, stated plainly
 
 - **No rain flood to learn from yet.** Between 17 June and the DANA, the Sentinel-1 event list holds no new rain-driven flood at either site (0<!--#alert.nisar_period_new_floods--> events), including after the wettest 3-day rain of that period, 125 mm (albufera, 2026-10-04)<!--#alert.nisar_period_max_rain-->. NISAR does show 296 to 813 ha<!--#alb.oct4_extra_dark_ha--> more dark rice on 4 October than on 22 September (tracks 058 A and 066 D), but the paddies are also flooded on purpose after the harvest at that time, so this is not verified as a rain flood (raised by I. Chrchev, #29). Until more storms are observed, the model learns mostly where water does *not* go after rain and the farm-water calendar, and the only flood, the DANA, is held out for the test.
+- **The tested model learned from Sentinel-1, not NISAR.** Its labels are DSWx-S1 water maps; NISAR is its check and its baseline, and NISAR labels enter only in a variant not yet tested against EMSR935.
 - **The labels we checked are not yet the labels the model uses.** We checked the dark-HH threshold on one June date. The flooded-vegetation class and the merge with Sentinel-1 (Section 4.2) have not been checked yet.
 - **Very little data.** Calibrated NISAR data over Valencia cover June to November 2026, with a permanent gap from 27 July to 10 August. That is about a dozen passes per track, few storms and one large test event. Our results are a demonstration, not proof.
 - **One test event.** DANA "Adam" is the only large flood in the period. Any score on it carries the luck of one event.
@@ -319,7 +330,7 @@ Every 12 days NISAR adds another labelled example of where water went, and from 
 
 ### 6.4 Next steps
 
-- **Days.** Run the independent test of Section 4.5 on the flood-extent model; check the flooded-vegetation class of Section 4.2 the same way as the 18 June water; check the 4 October NISAR hint against optical images.
+- **Days.** Export maps from the NISAR-label variant of the model and run the same test on them (the script is ready); check the flooded-vegetation class of Section 4.2 the same way as the 18 June water; check the 4 October NISAR hint against optical images.
 - **Months.** Re-run every check on the VALIDATED NISAR data (from 21 October 2026) and on DSWx-NI when it is released; add each new storm as a labelled example and as a new held-out test; test NISAR soil moisture as an input once it leaves the provisional stage; show the residents' map to local civil protection and to residents and change it from what they say.
 - **Years.** Apply the same recipe to other rice deltas and wetlands that L-band can see under young crops, and keep the test fixed before each model, so that skill is measured on storms the model has never seen.
 
@@ -327,7 +338,7 @@ Every 12 days NISAR adds another labelled example of where water went, and from 
 
 ## 7. Conclusion
 
-We asked whether the first months of NISAR L-band data can help turn a rain alert into a map of likely flooded places around Valencia. NISAR cannot forecast floods, but it records where water is on every pass. An independent, pre-registered check shows that on 18 June 2026 a simple NISAR threshold found about half of the wet rice where Sentinel-1's water product found 2 %, and passed the rule fixed in advance on the points the optical referee could decide; a strict open-water check shows that much of this extra water is wet ground or water among plants rather than open water. During DANA "Adam", NISAR's new water fell 87 %<!--#pego.inside_share--> inside the official outline, but its 12-day repeat missed the peak. These results support using NISAR water, together with Sentinel-1, as labels for a model of where water goes, and they bound what such labels mean; they do not yet show that the model works, and the NISAR period so far holds no confirmed rain flood to learn from. The flood-extent model and its independent test against EMSR935 are **[PLACEHOLDER]**. The main limitation is the data regime: five months, few storms and one test event. Repeating the test on the next storms, as NISAR keeps collecting, is the essential next step.
+We asked whether the first months of NISAR L-band data can help turn a rain alert into a map of likely flooded places around Valencia. NISAR cannot forecast floods, but it records where water is on every pass. An independent, pre-registered check shows that on 18 June 2026 a simple NISAR threshold found about half of the wet rice where Sentinel-1's water product found 2 %, and passed the rule fixed in advance on the points the optical referee could decide; a strict open-water check shows that much of this extra water is wet ground or water among plants rather than open water. During DANA "Adam", NISAR's new water fell 87 %<!--#pego.inside_share--> inside the official outline, but its 12-day repeat missed the peak. These results support using NISAR water, together with Sentinel-1, as labels for a model of where water goes, and they bound what such labels mean; the NISAR period so far holds no confirmed rain flood to learn from. A flood-extent model trained on Sentinel-1 water passed its independent test against EMSR935, fixed before it existed (F1 0.42 (precision 0.51, recall 0.35)<!--#test.model--> against at most 0.29 for the three baselines), but not robustly: the last NISAR map before the storm, with a per-scene threshold, scores higher, and NISAR labels are not yet part of the tested model. The main limitation is the data regime: five months, few storms and one test event. Repeating the test on the next storms, as NISAR keeps collecting, is the essential next step.
 
 
 **Key results.**
@@ -335,7 +346,8 @@ We asked whether the first months of NISAR L-band data can help turn a rain aler
 - The finding does not depend on the threshold: −13 to −18 dB give the same picture (Table 5).
 - Event check: 87 %<!--#pego.inside_share--> of new NISAR water during DANA "Adam" fell inside the official flood outline; the 12-day repeat missed the peak.
 - The forecast saw the DANA five days ahead (158.2 / 69.2 mm<!--#alert.run13_daily_18_19--> for 18 and 19 October in the run of 13 October); what it lacks is the map of where the water goes.
-- Every check, including the ones that failed, is in Table 6; every number is traced to a result file.
+- Flood-extent model, tested independently on the held-out DANA: F1 0.42 (precision 0.51, recall 0.35)<!--#test.model-->, better than low terrain, past water and the last NISAR map under the rule fixed in advance, and best at ranking flooded pixels; not robust, and trained on Sentinel-1 labels.
+- Every check, including the ones that failed, is in Table 7; every number is traced to a result file.
 
 ---
 
@@ -417,7 +429,7 @@ Status: **pass**, **needs revision**, or **needs new experiment**.
 
 | Dimension | Question | Answer | Status |
 |---|---|---|---|
-| Contribution | What is new? | First independent, pre-registered sample check of NISAR water over Spain; using NISAR passes as labels for a where-water-goes model | pass (labels) / needs new experiment (model) |
+| Contribution | What is new? | First independent, pre-registered sample check of NISAR water over Spain; an independently tested where-water-goes model | pass (check) / needs new experiment (NISAR labels in the tested model) |
 | Contribution | Is the gain non-obvious? | That L-band sees water under rice is expected physics; that the C-band operational product and a C-band-trained U-Net miss ~96–98 % of it, and that the extra water is not open water, is a measured finding | pass |
 | Writing clarity | Can a reader reproduce it? | Sample design, referee rule, threshold and seeds are given; code and files are public | pass |
 | Writing clarity | Terms stable? | "water" = open water + flooded vegetation; "wet" = referee label; kept throughout | pass |
@@ -425,7 +437,7 @@ Status: **pass**, **needs revision**, or **needs new experiment**.
 | Experimental strength | Are failures reported? | Strict referee failure, missed DANA peak, rain alert never red | pass |
 | Evaluation completeness | Sensitivity? | Referee v1 vs v2 vs strict; ±1 dB on the DANA; unclear-point bounds | pass |
 | Evaluation completeness | Enough events? | One flood event; one June date | needs new experiment (future storms) |
-| Evaluation completeness | Flood-extent model scored? | Test fixed in Section 4.5, not yet run | needs new experiment |
+| Evaluation completeness | Flood-extent model scored? | Section 5.6, Table 6: rule passed, not robust | pass, with caveats |
 | Method soundness | Is the referee independent? | Optical only, no radar; but biased against under-canopy water | pass, limit stated |
 | Method soundness | Hidden tuning? | −15 dB fixed before checks; rule v2 changed the after-image after seeing v1 (stated) | pass, disclosed |
 | Method soundness | Towns? | Labels unreliable in towns; prediction there is terrain + rain only; app marks towns *not assessed* | limit stated |
@@ -444,23 +456,26 @@ Status: **pass**, **needs revision**, or **needs new experiment**.
 | NISAR DANA water is in the right place | 87 % inside EMSR935; `nisar_check.json` pego_oliva_dana | supported |
 | NISAR missed the DANA peak | 2 NISAR passes vs 18 Sentinel-1 passes; EMSR935 imagery 20 Oct | supported |
 | Rain forecasts saw the DANA days ahead | IFS 13 Oct run, 158.2 / 69.2 mm on 18 / 19 Oct (`early_runs_pego_oliva.json`); 15 Oct run, 68.9 / 55.7 mm; `forecast.json` | supported (our replay; official AEMET lead time not checked) |
-| The flood-extent model turns an alert into a useful map | Section 5.6 | **needs evidence [PLACEHOLDER]** |
+| The flood-extent model maps where water goes better than simple maps | Table 6: F1 0.42 vs 0.24 / 0.29 / 0.27; AP 0.45 vs ≤ 0.36; Otsu persistence 0.46 | partly supported (one event, not robust) |
+| NISAR improves the model | variant scored only on Sentinel-1 passes (0.45 → 0.49 new-water AP on storm passes) | needs evidence |
 | We are not the first to learn flood maps from satellite water | Nevo et al. 2022; Dasgupta et al. 2022; Table 1 | stated, cited |
 | The approach improves as NISAR collects | team expectation, Section 6.3 | stated as belief, not claimed as result |
 
 
 ## Appendix C. Reproducibility checklist
 
-- ✓ **Pre-registration.** The 18 June sample points, strata and pass rule were committed to git before scoring (`data/validation/june18/points.csv`, `strata.json`; Section 4.3), and the independent test of the model is written in Section 4.5 before the model exists.
+- ✓ **Pre-registration.** The EMSR935 test script was committed before its first score (`pipeline/validation/emsr935_test.py`); changes after the first run are listed in Section 4.5.
+- ✓ **Pre-registration (18 June).** The 18 June sample points, strata and pass rule were committed to git before scoring (`data/validation/june18/points.csv`, `strata.json`; Section 4.3), and the independent test of the model is written in Section 4.5 before the model exists.
 - ✓ **Seeds and resampling.** Sample seed 20261118<!--#june.seed-->; 2,000 stratified bootstrap resamples for Table 4, 1,000 for the sweep (Table 5).
 - ✓ **One command per result.**
   - 18 June check: `python -m pipeline.validation.june18 sample` then `score` (with `--data DIR`).
   - Threshold sweep: `python -m pipeline.validation.june18_sweep`.
   - Albufera and DANA checks: `python -m pipeline.prediction.nisar_check`.
   - Rain trigger and DANA replay: `python -m pipeline.prediction.flood fit`; earlier forecast runs: `python -m pipeline.prediction.flood.early_runs`.
+  - Independent model test: `python -m pipeline.validation.emsr935_test --model-dir <PR #33 checkout>`.
   - Every number in this paper: `python docs/paper/numbers.py check`; chart data: `python docs/paper/figure_data.py`.
 - ✓ **Software.** Python ≥ 3.11 with the versions in `pyproject.toml` (NumPy, xarray, rasterio, GeoPandas, scikit-image, earthaccess, harmony-py; LightGBM and scikit-learn for the land-class model; PyTorch for the U-Net); web app Next.js 16, React 19, MapLibre 6 (`web/package.json`).
 - ✓ **Tests.** `python -m pytest -q` runs the checks in `tests/`.
 - ✓ **Data access.** NISAR GCOV and GUNW from the ASF DAAC need a free NASA Earthdata login; the radar stacks are too large for git, the result files are in git.
-- ✓ **Failures reported.** Table 6 lists the checks that failed next to those that passed.
+- ✓ **Failures reported.** Table 7 lists the checks that failed next to those that passed.
 - ✗ **Public code with a licence.** The repository is still private and has no licence file (see Project information).

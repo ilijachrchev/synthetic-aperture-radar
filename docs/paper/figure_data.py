@@ -91,6 +91,20 @@ def main():
     except Exception as e:
         print("skip fig8:", e)
 
+    # Table 6: independent EMSR935 test of the flood-extent model
+    te = load("data/validation/emsr935/result.json")["sets"]["all_pixels"]
+    sc = te["references"]["flooded_area"]["scores"]
+    names6 = {"model": "Model (rain that fell)", "model_forecast_rain": "Model (forecast rain)",
+              "low_hand_same_area": "Low terrain, same area", "jrc_past_water": "Past water (JRC)",
+              "nisar_16oct_persistence": "NISAR 16 Oct, -15 dB", "nisar_16oct_persistence_otsu": "NISAR 16 Oct, Otsu",
+              "hand_zero_all": "All land with HAND = 0"}
+    write("table6_emsr935_test.csv", ["Method", "F1", "Precision", "Recall", "Mapped area (ha)"],
+          [[label, sc[k]["f1"], sc[k]["precision"], sc[k]["recall"], sc[k]["predicted_ha"]] for k, label in names6.items()])
+    ap_ = te["average_precision_flooded_area"]
+    write("table6_emsr935_ranking.csv", ["Method", "Average precision"],
+          [["Model", ap_["model"]], ["NISAR 16 Oct darkness", ap_["nisar_16oct_darkness"]], ["Low terrain (HAND)", ap_["low_hand"]],
+           ["Past water (JRC)", ap_["jrc_occurrence"]], ["Random guess (base rate)", ap_["base_rate"]]])
+
     # Table 5 / optional chart: threshold sweep
     sw = load("data/validation/june18/threshold_sweep.json")["by_threshold"]
     write("table5_threshold_sweep.csv",

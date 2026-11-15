@@ -285,6 +285,51 @@ def rows() -> list[tuple[str, str, str]]:
     add("alert.run15_daily_18_19", f"{run15['daily_max_mm'][3]} / {run15['daily_max_mm'][4]} mm",
         f"{src_f} dana_replay_pego_oliva[2026-10-15].daily_max_mm[3:5]")
 
+    # --- Independent EMSR935 test of the flood-extent model (Section 4.5 / 5.6) ---
+    src_t = "data/validation/emsr935/result.json"
+    T = json.loads((ROOT / src_t).read_text(encoding="utf-8"))
+    A = T["sets"]["all_pixels"]; S0 = A["references"]["flooded_area"]["scores"]
+    f2 = lambda x: f"{x:.2f}"
+    def sc(k):
+        s = S0[k]; return f"{f2(s['f1'])} (precision {f2(s['precision'])}, recall {f2(s['recall'])})"
+    add("test.commit", T["model"]["commit"][:7], f"{src_t} model.commit (PR #33)")
+    add("test.threshold", f"{T['model']['threshold_water_frozen']:.3f}", f"{src_t} model.threshold_water_frozen")
+    add("test.area_ha", f"{A['area_ha']:,.0f} ha", f"{src_t} sets.all_pixels.area_ha")
+    add("test.observed_ha", f"{S0['model']['observed_ha']:.0f} ha", f"{src_t} flooded_area observed_ha")
+    add("test.model_ha", f"{S0['model']['predicted_ha']:.0f} ha", f"{src_t} model predicted_ha")
+    for k in ("model", "model_forecast_rain", "low_hand_same_area", "jrc_past_water", "nisar_16oct_persistence",
+              "nisar_16oct_persistence_otsu", "hand_zero_all"):
+        add(f"test.{k}", sc(k), f"{src_t} sets.all_pixels.references.flooded_area.scores.{k}")
+    add("test.hand0_ha", f"{S0['hand_zero_all']['predicted_ha']:,.0f} ha", f"{src_t} hand_zero_all predicted_ha")
+    lo, mean, hi = A["low_hand_f1_over_50_tie_draws_flooded_area"]
+    add("test.low_hand_draws", f"{lo:.3f}–{hi:.3f}", f"{src_t} low_hand_f1_over_50_tie_draws_flooded_area (min, max)")
+    ci = A["references"]["flooded_area"]["f1_model_minus_baseline_ci95"]
+    for k, short in (("low_hand_same_area", "hand"), ("jrc_past_water", "jrc"), ("nisar_16oct_persistence", "nisar")):
+        add(f"test.diff_ci.{short}", f"{ci[k][0]:.2f} to {ci[k][1]:.2f}", f"{src_t} f1_model_minus_baseline_ci95.{k}")
+    add("test.rule", "passed" if A["references"]["flooded_area"]["model_beats_all_three"] else "not passed",
+        f"{src_t} references.flooded_area.model_beats_all_three")
+    St = A["references"]["flooded_area_plus_trace"]["scores"]
+    add("test.trace.model", f"{St['model']['f1']:.2f}", f"{src_t} flooded_area_plus_trace model f1")
+    L = T["sets"]["model_learning_domain"]["references"]["flooded_area"]["scores"]
+    add("test.domain.model", f"{L['model']['f1']:.2f}", f"{src_t} model_learning_domain model f1")
+    ap_ = A["average_precision_flooded_area"]
+    add("test.ap", f"model {ap_['model']:.2f}, NISAR 16 Oct darkness {ap_['nisar_16oct_darkness']:.2f}, low HAND {ap_['low_hand']:.2f}, "
+        f"JRC {ap_['jrc_occurrence']:.2f}, base rate {ap_['base_rate']:.2f}", f"{src_t} average_precision_flooded_area")
+    try:
+        cmp_ = json.loads(subprocess.run(["git", "-C", str(ROOT), "show", f"{T['model']['commit']}:data/prediction/spatial/comparison.json"],
+                                         capture_output=True, text=True, check=True, encoding="utf-8").stdout)
+        pv = cmp_["variants"]
+        add("model.storm_new_ap", f"{pv['base']['sites']['pego_oliva']['storm_passes_mean']['new_water_ap']:.2f} (base) vs "
+            f"{pv['nisar']['sites']['pego_oliva']['storm_passes_mean']['new_water_ap']:.2f} (NISAR labels)",
+            "PR #33 data/prediction/spatial/comparison.json pego_oliva storm_passes_mean.new_water_ap")
+        hm = json.loads(subprocess.run(["git", "-C", str(ROOT), "show", f"{T['model']['commit']}:data/prediction/spatial/holdout_s1_metrics.json"],
+                                       capture_output=True, text=True, check=True, encoding="utf-8").stdout)
+        pg = hm["sites"]["pego_oliva"]["pooled_over_held_out_passes"]["methods"]
+        add("model.holdout_pego", f"water AP {pg['rain_and_state']['water_ap']:.2f} vs {pg['terrain_only']['water_ap']:.2f} terrain only",
+            "PR #33 data/prediction/spatial/holdout_s1_metrics.json pego_oliva pooled")
+    except Exception as e:
+        add("model.unavailable", f"PR #33 commit not fetched ({type(e).__name__})", "-")
+
     # --- Land-class ML model (local branch, may be absent) -------------------
     try:
         log = subprocess.run(["git", "-C", str(ROOT), "show", f"{ML_BRANCH}:data/ml/experiments/LOG.md"],
