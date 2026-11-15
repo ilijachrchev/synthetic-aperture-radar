@@ -1,9 +1,9 @@
 {
  "site": "pego_oliva",
  "made_by": "web/scripts/bake_prediction.py",
- "baked_utc": "2026-11-15T01:59:22Z",
+ "baked_utc": "2026-11-15T04:31:43Z",
  "game": "web/public/layers/pego_oliva/game.json",
- "game_made_utc": "2026-11-14T21:54:11Z",
+ "game_made_utc": "2026-11-15T04:23:32Z",
  "map": "replay_2026-10-28_prestorm",
  "issued_from_pass": "20261017T175323_S1C",
  "issued_from_sensor": "Sentinel-1",
@@ -185,7 +185,6 @@
   7.1,
   1.6,
   1.7,
-  0.2,
   0.1,
   0.0,
   0.0,
@@ -344,8 +343,8 @@
   0.0
  ],
  "sources": {
-  "forecast": "pr-33:data/prediction/spatial/pego_oliva/replay_2026-10-28_prestorm/forecast.json",
-  "new_water_likelihood": "pr-33:data/prediction/spatial/pego_oliva/replay_2026-10-28_prestorm/new_water_likelihood_web.tif",
-  "water_likelihood": "pr-33:data/prediction/spatial/pego_oliva/replay_2026-10-28_prestorm/water_likelihood_web.tif"
+  "forecast": "3f54054fa623da49ee7a4c797d2f7771e7d3e21a:data/prediction/spatial/pego_oliva/replay_2026-10-28_prestorm/forecast.json",
+  "new_water_likelihood": "3f54054fa623da49ee7a4c797d2f7771e7d3e21a:data/prediction/spatial/pego_oliva/replay_2026-10-28_prestorm/new_water_likelihood_web.tif",
+  "water_likelihood": "3f54054fa623da49ee7a4c797d2f7771e7d3e21a:data/prediction/spatial/pego_oliva/replay_2026-10-28_prestorm/water_likelihood_web.tif"
  }
 }
