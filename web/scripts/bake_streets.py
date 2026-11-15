@@ -13,7 +13,8 @@ line layer.
     --upv-raster  the UPV street depth map of 2024 (upv_depth5.tif of the street scores, 5 m, no value = NaN) and,
     --upv-outlines  beside it, its outlines (outline_cgat.geojson, outline_extra.geojson): the tap card then says what
                   that map holds on each street (a depth, no value inside its outlines, or outside them)
-    --method      one more option for the switch of step 3, e.g. the run driven by the forecast of the night before:
+    --method      one more simulated run, repeatable, e.g. the runs driven by the forecasts of the night before and the
+                  same morning (the last step's switch draws them through public/layers/guided/coming.json):
                   KEY (a short name), LABEL (the words on the switch), RASTER (its maximum depth raster, flagged above
                   0.3 m like the SIMULATED run), RESULTS_PATH (optional: a dotted path in data/streets/results.json to
                   its totals against key A, with flagged_km, hit_rate_pct and precision_pct; without it the numbers are

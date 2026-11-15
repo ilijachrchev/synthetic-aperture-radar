@@ -25,9 +25,9 @@ run time from a baked or hand-kept file:
 
 ```bash
 # from the repo root, pipeline environment, PYTHONPATH set to the repo root
-python web/scripts/bake_streets.py --sim-raster <sim_hmax_25m.tif> --upv-raster <upv_depth5.tif> --upv-outlines <outlines> [--method "night_before=The night before=<raster>=<results path>"]   # the streets step and the last one (needs data/interim downloads, see its docstring)
-python web/scripts/bake_swipe_open.py              # step 4: open water only on both sides
-python web/scripts/bake_exam.py --ref <git ref>    # steps 5 and 6: the colour layer and the rain outlines from the frozen model maps of that ref
+python web/scripts/bake_streets.py --sim-raster <sim_hmax_25m.tif> --upv-raster <upv_depth5.tif> --upv-outlines <outlines> --method "night_before=The night before=<raster>=<results path>" --method "same_morning=The same morning=<raster>=<results path>"   # the streets step and the last one (needs data/interim downloads, see its docstring)
+python web/scripts/bake_swipe_open.py              # step 3: open water only on both sides
+python web/scripts/bake_exam.py --ref <git ref>    # the marsh model's screens: the colour layer and the rain outlines from the frozen model maps of that ref
 python web/scripts/bake_exam.py --result <result.json> --result-source "<how to cite it>"   # the marsh model screen's numbers from a new test
 ```
 
