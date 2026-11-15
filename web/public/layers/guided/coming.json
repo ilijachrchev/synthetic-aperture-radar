@@ -16,14 +16,14 @@
   {
    "key": "same_morning",
    "label": "The same morning",
-   "status": "arriving",
-   "found_pct": null,
-   "really_flooded_pct": null,
-   "flagged_km": null,
+   "status": "in",
+   "found_pct": 21.0,
+   "really_flooded_pct": 70.1,
+   "flagged_km": 154.14,
    "streets": "m_same_morning",
    "found_text": "with the forecast of that morning",
    "line": "Simulated, driven by the ECMWF forecast of 29 Oct 2024, 06 UTC, which reached forecasters between 12:45 and 13:12 local, about 5 hours before Chiva's streets flooded.",
-   "source": "street-sim run A3, ECMWF IFS HRES run of 29 Oct 2024 06 UTC (docs/STREETS.md): data/streets/results.json streets_more_runs, when it lands"
+   "source": "data/streets/results.json streets_more_runs.main.methods.simulated_ifs_20241029T06_depth_above_0p3m.A.total (hit_rate_pct 21.0, precision_pct 70.1, flagged_km 154.14), street-sim run A3 (PR #54); the times in its line: docs/STREETS.md, run A3, Why (ECMWF dissemination schedule as read on 15 Nov 2026)"
   },
   {
    "key": "night_before",
