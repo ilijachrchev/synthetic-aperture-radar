@@ -197,6 +197,20 @@ def rows() -> list[tuple[str, str, str]]:
     big = max(pre, key=lambda e: float(e["rain_3d_max_mm"]))
     add("alert.nisar_period_max_rain", f"{float(big['rain_3d_max_mm']):.0f} mm ({big['site']}, {big['date']})",
         "data/prediction/flood/events.csv rain_3d_max_mm, 17 Jun - 14 Oct 2026")
+    # Earlier IFS runs (raised on #29): pipeline/prediction/flood/early_runs.py
+    er = json.loads((ROOT / "data/prediction/flood/early_runs_pego_oliva.json").read_text(encoding="utf-8"))
+    r13 = next(r for r in er["runs"] if r["run"] == "2026-10-13")
+    m13 = dict(zip(r13["dates"], r13["max_mm"]))
+    add("alert.run13_daily_18_19", f"{m13['2026-10-18']} / {m13['2026-10-19']} mm",
+        "data/prediction/flood/early_runs_pego_oliva.json runs[2026-10-13].max_mm, 18 and 19 Oct")
+    # NISAR dark rice on 4 Oct vs 22 Sep, both tracks (unverified hint of a rain flood, #29)
+    nc = json.loads((ROOT / "data/prediction/nisar_check.json").read_text(encoding="utf-8"))
+    hint = []
+    for k in ("albufera_rice_058_A_021", "albufera_rice"):
+        dd = {x["date"]: x["nisar_dark_pct"]["-15"] for x in nc[k]["dates"]}
+        hint.append(round((dd["2026-10-04"] - dd["2026-09-22"]) / 100 * nc[k]["rice_mask_ha"]))
+    add("alb.oct4_extra_dark_ha", f"{hint[0]} to {hint[1]} ha",
+        "derived: nisar_check.json (dark % on 2026-10-04 minus 2026-09-22) x rice_mask_ha, tracks 058 A and 066 D")
     th = n_th = None
     pg = load("data/prediction/nisar_check.json")["pego_oliva_dana"]["thresholds_db"]
     add("pego.otsu_db", f"{pg['before']} / {pg['after']}", "data/prediction/nisar_check.json pego_oliva_dana.thresholds_db")
