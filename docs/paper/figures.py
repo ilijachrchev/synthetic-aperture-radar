@@ -7,6 +7,10 @@ the NISAR stacks, the rice mask and the DSWx-S1 tiles in --data (not in git). Co
 order everywhere: NISAR = blue, Sentinel-1 / DSWx-S1 = orange, app U-Net = aqua (validated for
 colour-vision deficiency with the dataviz palette checker); every series is also named in text.
 
+The paper now uses only the two maps from this script (fig4, fig6). Figs. 2, 3, 5, 7, 8 and the Table 5
+chart are Datawrapper charts made from docs/paper/figure-data/*.csv (see figure_data.py), under other
+file names; the charts this script draws are kept as a backup.
+
 Written with SI assistance (Claude Code), reviewed by the team.
 """
 

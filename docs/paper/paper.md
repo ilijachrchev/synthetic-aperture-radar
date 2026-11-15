@@ -182,19 +182,23 @@ A per-pixel LightGBM classifier [Ke et al. 2017] (by L. Georgieski) labels land 
 | App U-Net (trained on DSWx-S1) | 0.07<!--#v1.unet.producer--> (n/a) | 0.04<!--#v2.unet.producer--> (0.00–0.08<!--#v2.ci95.unet_producer-->) | 0.01–0.04<!--#v2.unet.range_producer--> | 1.00<!--#v1.unet.user--> | 1.00<!--#v2.unet.user--> |
 | *Random map, same area as NISAR (reference)* | *0.44*<!--#june.nisar_area_share--> | *0.44* | — | — | — |
 
-![Figure 2](figures/fig2_june18_accuracy.png)
+![Figure 2a](figures/fig2a_wet_rice_found.png)
 
-*Figure 2. Accuracy of three water maps on 18 June 2026 (referee v2). Dot: estimate from decided points; line: 95 % interval (stratified bootstrap); shaded band: worst to best case when each unclear point is set wet or dry. Source: `data/validation/june18/result.json`, `reference.csv`; drawn by `docs/paper/figures.py`.*
+![Figure 2b](figures/fig2b_map_water_wet.png)
 
-![Figure 3](figures/fig3_june18_strata.png)
+*Figure 2. Accuracy of three water maps on 18 June 2026 (referee v2). (a) Producer's accuracy: how much of the wet rice each map finds. (b) User's accuracy: how much of each map's water is really wet. Dark dot: estimate from decided points; mid-blue and light-blue dots: lower and upper end of the 95 % interval (stratified bootstrap); where the dots overlap, the interval is narrow. Worst and best cases for the unclear points are in Table 4. Data: `docs/paper/figure-data/``fig2a_producers_accuracy.csv`, `fig2b_users_accuracy.csv`, from `data/validation/june18/result.json`.*
 
-*Figure 3. Referee outcome per stratum, as counts of sample points: referee v2 (left) and the strict open-water referee (right). Source: `result.json`.*
+![Figure 3a](figures/fig3a_referee_v2.png)
+
+![Figure 3b](figures/fig3b_referee_strict.png)
+
+*Figure 3. Referee outcome per stratum, as counts of sample points: (a) referee v2, (b) the strict open-water referee on the same points. The bold number is the number of points in the stratum. Data: `docs/paper/figure-data/``fig3a_strata_referee_v2.csv`, `fig3b_strata_strict.csv`, from `result.json`.*
 
 ![Figure 4](figures/fig4_june18_map.png)
 
 *Figure 4. Left: where the two radar maps agree and disagree inside the Albufera rice on 18 June 2026 (20 m grid, UTM 30N). Right: the sample points coloured by referee v2; points outside the rice are the control stratum E.*
 
-**Pre-registered rule: passed, on few decided points.** In stratum B, where only NISAR sees water, referee v1 gives 25 wet / 5 dry / 120 unclear<!--#v1.counts_B--> points: 0.83<!--#v1.b_wet_share--> of the decided points are wet (interval 0.69–0.96<!--#v1.ci95.b_user-->), so both parts of the rule (≥ 0.7, lower bound ≥ 0.6) hold (Fig. 3). Under v2: 46 wet / 3 dry / 101 unclear<!--#v2.counts_B-->, a share of 0.94<!--#v2.b_wet_share--> (0.86–1.00<!--#v2.ci95.b_user-->). Stratum B is wetter than stratum D, where neither map sees water (0.56<!--#v1.d_wet_share--> under v1, 0.68<!--#v2.d_wet_share--> under v2), so the extra NISAR water is not simply where the rice was wet anyway. The control stratum E stays dry (2.9 %<!--#v2.control_E--> wet under v2). The pass rests on decided points only: for the rule to hold on all 150 B points, at least 80 of 120<!--#v1.b_tipping--> unclear points would have to be wet under v1 (59 of 101<!--#v2.b_tipping--> under v2). Most B points are unclear because the canopy grew between 8 June (median NDVI 0.34<!--#optical.ndvi_2026-06-08-->) and 22 June (0.59<!--#optical.ndvi_2026-06-22-->) and hid the water, and they are not random: 95 of 101<!--#v2.b_unclear_wet_then_dry--> unclear B points are wet before and dry after. If each unclear point took its worst or best case, NISAR's producer's accuracy could lie anywhere in 0.22–0.71<!--#v2.nisar.range_producer-->, against 0.01–0.05<!--#v2.s1.range_producer--> for DSWx-S1: the ranking holds, the size of the gap does not (Fig. 2, shaded bands).
+**Pre-registered rule: passed, on few decided points.** In stratum B, where only NISAR sees water, referee v1 gives 25 wet / 5 dry / 120 unclear<!--#v1.counts_B--> points: 0.83<!--#v1.b_wet_share--> of the decided points are wet (interval 0.69–0.96<!--#v1.ci95.b_user-->), so both parts of the rule (≥ 0.7, lower bound ≥ 0.6) hold (Fig. 3). Under v2: 46 wet / 3 dry / 101 unclear<!--#v2.counts_B-->, a share of 0.94<!--#v2.b_wet_share--> (0.86–1.00<!--#v2.ci95.b_user-->). Stratum B is wetter than stratum D, where neither map sees water (0.56<!--#v1.d_wet_share--> under v1, 0.68<!--#v2.d_wet_share--> under v2), so the extra NISAR water is not simply where the rice was wet anyway. The control stratum E stays dry (2.9 %<!--#v2.control_E--> wet under v2). The pass rests on decided points only: for the rule to hold on all 150 B points, at least 80 of 120<!--#v1.b_tipping--> unclear points would have to be wet under v1 (59 of 101<!--#v2.b_tipping--> under v2). Most B points are unclear because the canopy grew between 8 June (median NDVI 0.34<!--#optical.ndvi_2026-06-08-->) and 22 June (0.59<!--#optical.ndvi_2026-06-22-->) and hid the water, and they are not random: 95 of 101<!--#v2.b_unclear_wet_then_dry--> unclear B points are wet before and dry after. If each unclear point took its worst or best case, NISAR's producer's accuracy could lie anywhere in 0.22–0.71<!--#v2.nisar.range_producer-->, against 0.01–0.05<!--#v2.s1.range_producer--> for DSWx-S1: the ranking holds, the size of the gap does not (Table 4).
 
 **The result that goes against us: not open water.** Under the strict referee (MNDWI > 0 only), stratum B has 3 wet / 26 dry / 121 unclear<!--#strict.counts_B--> points, a share of 0.10<!--#strict.b_wet_share--> (interval 0.00–0.23<!--#strict.ci95.b_user-->), and NISAR fails the rule. The extra NISAR water is therefore wet according to the rice-flooding index but not open water seen from above. Three explanations fit: a short drainage between the optical looks, water beneath young rice plants (which L-band can reach and the optical open-water index cannot), or soaked mud, which darkens radar and can trip LSWI. Optical data cannot separate them. Under this referee, stratum B is also no wetter than stratum D (10 wet / 75 dry / 65 unclear<!--#strict.counts_D-->), which fits a common cause, the crop stage, behind both the dark radar signal and the optical index. For flood mapping the practical reading is that NISAR at −15 dB marks *wet ground and shallow water among plants*, a useful but broader class than open flood water; and because the June median sits almost at the threshold (Section 4.2), a threshold sweep on the fixed sample points is the next check.
 
@@ -211,15 +215,21 @@ A per-pixel LightGBM classifier [Ke et al. 2017] (by L. Georgieski) labels land 
 | −17 dB | 0.22<!--#sweep.17.mapped--> | 0.34 (0.23–0.45)<!--#sweep.17.v1.producer--> | 0.89 (0.71–1.00)<!--#sweep.17.v1.user--> | 0.25 (0.03–0.50)<!--#sweep.17.strict.user--> |
 | −18 dB | 0.10<!--#sweep.18.mapped--> | 0.13 (0.05–0.23)<!--#sweep.18.v1.producer--> | 1.00 (1.00–1.00)<!--#sweep.18.v1.user--> | 0.04 (0.01–0.15)<!--#sweep.18.strict.user--> |
 
+![Table 5 as a chart](figures/table5_threshold_sweep.png)
+
+*Table 5 as a chart: accuracy (0–1) against the threshold (dB). "Random map of same size" is the mapped share of rice. Data: `docs/paper/figure-data/``table5_threshold_sweep.csv`.*
+
 **Two radar mechanisms, one threshold.** On track 066 D the dark share of the rice falls from 43.7 %<!--#alb.066.jun18_dark--> on 18 June to 0.3 %<!--#alb.066.jul24_dark--> on 24 July, while the rice calendar keeps the paddies flooded until the August drainage. As the plants grow, the water stops looking dark and starts looking bright (double bounce, Section 2), which a dark threshold cannot see. The June result is therefore about water among *young* rice; later in the season the flooded-vegetation class of Section 4.2 is needed, and it is still unchecked.
 
 ### 5.2 Autumn: the two radars agree
 
 When the paddies are flooded again in autumn, after harvest and without a canopy, NISAR and Sentinel-1 rise together. On 4, 16 and 28 October, the dark share of the rice on track 066 D went 5.8 → 13.7 → 31.0 %<!--#alb.066.autumn_nisar--> against DSWx-S1 2.5 → 9.8 → 21.7 %<!--#alb.066.autumn_dswx-->; on track 058 A, 2.2 → 7.6 → 30.8 %<!--#alb.058.autumn_nisar--> against 3.0 → 9.7 → 32.1 %<!--#alb.058.autumn_dswx-->. On 28 October the morning and evening NISAR tracks agree within 0.2 points. The June disagreement is therefore tied to the crop stage: it is consistent with water among young plants that the C-band product misses, but with the June median so close to the threshold, a threshold effect is not ruled out (Fig. 5).
 
-![Figure 5](figures/fig5_albufera_timeseries.png)
+![Figure 5a](figures/fig5a_rice_066D.png)
 
-*Figure 5. Share of the Albufera rice mask that is water, per pass: NISAR darker than −15 dB vs DSWx-S1 on a Sentinel-1 pass within 2 h, for both NISAR tracks. The grey band is the permanent NISAR data gap. Source: `data/prediction/nisar_check.json`.*
+![Figure 5b](figures/fig5b_rice_058A.png)
+
+*Figure 5. Share of the Albufera rice mask that is water (%), per pass: NISAR darker than −15 dB vs DSWx-S1 on a Sentinel-1 pass within 2 h. (a) Track 066 D (evening), (b) track 058 A (morning). A series has no line where no Sentinel-1 pass fell within 2 h; on track 066 D, DSWx-S1 has one June value (1.7 % on 18 June, the dot at the left) and none again until 22 September. NISAR has no data from 27 July to 10 August; the line bridges that gap. Data: `docs/paper/figure-data/``fig5a_albufera_track066D.csv`, `fig5b_albufera_track058A.csv`, from `data/prediction/nisar_check.json`.*
 
 ### 5.3 DANA "Adam" at Pego-Oliva
 
@@ -229,17 +239,19 @@ Between the NISAR passes of 2026-10-16<!--#pego.before--> and 2026-10-28<!--#peg
 
 *Figure 6. New NISAR water between the passes of 16 and 28 October 2026 at Pego-Oliva, with the Copernicus EMSR935 flood outline (imagery of 20 October). The 212 ha and 87 % are computed over both EMSR935 areas of interest; the view shows the Pego-Oliva marsh (AOI01).*
 
-![Figure 7](figures/fig7_dana_timeline.png)
+![Figure 7a](figures/fig7a_rain.png)
 
-*Figure 7. DANA "Adam" at Pego-Oliva: daily rain at the wettest ECMWF IFS grid point (top), who was looking (middle) and DSWx-S1 water inside the EMSR935 outline on each Sentinel-1 pass (bottom). NISAR's two passes fall before the storm and nine days after the peak. Sources: `data/prediction/flood/rain_pego_oliva.csv`, `water_pego_oliva.csv`, `nisar_check.json`.*
+![Figure 7b](figures/fig7b_s1_water.png)
+
+*Figure 7. DANA "Adam" at Pego-Oliva: (a) daily rain at the wettest ECMWF IFS grid point (mm); (b) DSWx-S1 water inside the EMSR935 outline (ha) on each of the 18 Sentinel-1 passes from 16 October to 10 November. NISAR track 066 D passed only on 16 and 28 October, before the storm and nine days after the peak; the EMSR935 imagery is from 20 October. Data: `docs/paper/figure-data/``fig7a_dana_rain_per_day.csv`, `fig7b_dana_sentinel1_water.csv`, from `data/prediction/flood/rain_pego_oliva.csv`, `water_pego_oliva.csv`.*
 
 ### 5.4 Land-class model
 
 The final land-class model (v2d: both tracks plus texture) agrees with the label maps at accuracy / macro F1 of 0.823 / 0.834<!--#ml.albufera--> on Albufera test blocks and 0.793 / 0.815<!--#ml.espadà--> at Espadà. Trained on Albufera only and applied to Pego-Oliva, which it never saw, it reaches 0.611 / 0.596<!--#ml.pego-oliva-->, against 0.530 / 0.523 for the single-track version. Rice and permanent water are separated almost perfectly at Albufera; orchards are the weakest class, largely because the reference labels themselves conflict (inside CORINE orchard polygons, the ground between trees is labelled "other crops" by WorldCover-based rules). These scores are agreement with label maps, not ground-truth accuracy (Fig. 8). *(Source: experiment log on branch `claude/ml-training-loop-f64c3f`, not yet merged.)*
 
-![Figure 8](figures/fig8_landclass_f1.png)
+![Figure 8](figures/fig8_landclass_scores.png)
 
-*Figure 8. Land-class model v2d, per-class F1 on the test blocks (agreement with the label maps). Pego-Oliva was never seen in training. Classes without labels at a site have no bar.*
+*Figure 8. Land-class model v2d, per-class F1 on the test blocks (agreement with the label maps), rounded to two decimals (permanent water at Albufera: 0.997). Pego-Oliva was never seen in training. Classes without labels at a site have no bar. Data: `docs/paper/figure-data/``fig8_landclass_f1.csv`.*
 
 ### 5.5 Rain trigger
 
