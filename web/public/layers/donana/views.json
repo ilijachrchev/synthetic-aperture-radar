@@ -1,0 +1,285 @@
+{
+ "views": {
+  "coherence": {
+   "title": "Coherence takes out the dry ground",
+   "what": "At L-band smooth dry ground is as dark as water. Over 12 days water loses its radar phase and dry ground keeps it, so NISAR's coherence tells them apart. Off: every dark pixel (HH below -15 dB). On: only dark pixels with low coherence (below 0.25) stay water. The amber layer, to lay on top if wanted, is the dark ground coherence takes out.",
+   "legend": {
+    "water": "#2a8fff",
+    "dry_ground_removed": "#ffab4a",
+    "not_covered": "rgba(10,16,24,0.49)"
+   },
+   "items": [
+    {
+     "date": "2026-09-07",
+     "rule": "the dry-marsh case of docs/CV_BENCHMARK.md section 2",
+     "tried": null,
+     "dark": {
+      "file": "views/coherence/2026-09-07_dark.webp",
+      "bytes": 51204
+     },
+     "coh": {
+      "file": "views/coherence/2026-09-07_coh.webp",
+      "bytes": 20584
+     },
+     "removed": {
+      "file": "views/coherence/2026-09-07_removed.webp",
+      "bytes": 67132
+     },
+     "photo": {
+      "file": "views/coherence/2026-09-07_photo.webp",
+      "bytes": 71120,
+      "day": "2026-09-07",
+      "time_utc": "2026-09-07T11:21:07Z",
+      "scenes": [
+       "S2B_29SQA_20260907_0_L2A",
+       "S2B_29SQB_20260907_0_L2A"
+      ],
+      "cloud_pct": 10.3,
+      "covered": 1.0,
+      "source": "Sentinel-2 L2A true colour (visual), Element 84 Earth Search",
+      "credit": "Contains modified Copernicus Sentinel data 2026, Element 84 Earth Search"
+     },
+     "pair": {
+      "file": "data/coherence/donana_023_D_070/2026-08-26_2026-09-07.tif",
+      "granule": "NISAR_L2_PR_GUNW_029_023_D_070_030_2000_SH_20260826T191850_20260826T191925_20260907T191850_20260907T191925_P05023_N_F_J_001",
+      "maturity": "PROVISIONAL"
+     },
+     "nisar": {
+      "granule": "NISAR_L2_PR_GCOV_030_023_D_070_2005_DHDH_M_20260907T191850_20260907T191925_P05023_N_F_J_001",
+      "time_utc": "2026-09-07T19:18:50Z"
+     },
+     "answer_key": {
+      "optical_days": [
+       "2026-09-06",
+       "2026-09-07"
+      ],
+      "granules": [
+       "OPERA_L3_DSWx-HLS_T29SQA_20260907T110619Z_20260909T054304Z_S2B_30_v1.1_B01_WTR.tif",
+       "OPERA_L3_DSWx-HLS_T29SQB_20260907T110619Z_20260909T054322Z_S2B_30_v1.1_B01_WTR.tif",
+       "OPERA_L3_DSWx-HLS_T30STF_20260907T110619Z_20260909T054317Z_S2B_30_v1.1_B01_WTR.tif",
+       "OPERA_L3_DSWx-HLS_T30STG_20260907T110619Z_20260909T054315Z_S2B_30_v1.1_B01_WTR.tif",
+       "OPERA_L3_DSWx-HLS_T29SQA_20260906T110230Z_20260908T022857Z_L9_30_v1.1_B01_WTR.tif",
+       "OPERA_L3_DSWx-HLS_T29SQB_20260906T110230Z_20260908T022918Z_L9_30_v1.1_B01_WTR.tif",
+       "OPERA_L3_DSWx-HLS_T30STG_20260906T110230Z_20260908T022902Z_L9_30_v1.1_B01_WTR.tif"
+      ]
+     },
+     "caption": [
+      "7 Sep: 21,214 ha outside permanent water look as dark as water to the radar.",
+      "Coherence over the 12 days before (26 Aug to 7 Sep) keeps 184 ha as water and takes out the 21,030 ha that kept their coherence, as dry ground.",
+      "Judged by the optical map of the day: darkness alone calls 44 % of the dry ground water, coherence 0.2 %. The price: coherence finds 33 % of the open water, darkness alone 74 %."
+     ],
+     "numbers": {
+      "dark_ha": {
+       "value": 21214.4,
+       "unit": "ha",
+       "what": "dark (HH below -15 dB) in the window, outside the sea and permanent water",
+       "source": [
+        "data/stack/donana_023_D_070.nc",
+        "data/coherence/donana_023_D_070/2026-08-26_2026-09-07.tif",
+        "data/context/donana_worldcover_2021_20m.tif",
+        "data/context/donana_jrc_occurrence_20m.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "kept_ha": {
+       "value": 184.0,
+       "unit": "ha",
+       "what": "of it with low coherence (below 0.25): kept as water",
+       "source": [
+        "data/stack/donana_023_D_070.nc",
+        "data/coherence/donana_023_D_070/2026-08-26_2026-09-07.tif",
+        "data/context/donana_worldcover_2021_20m.tif",
+        "data/context/donana_jrc_occurrence_20m.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "removed_ha": {
+       "value": 21030.4,
+       "unit": "ha",
+       "what": "of it coherent: called dry ground by the rule",
+       "source": [
+        "data/stack/donana_023_D_070.nc",
+        "data/coherence/donana_023_D_070/2026-08-26_2026-09-07.tif",
+        "data/context/donana_worldcover_2021_20m.tif",
+        "data/context/donana_jrc_occurrence_20m.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "window_holds": {
+       "value": 0.794,
+       "unit": "share",
+       "what": "of the dark coherent ground of the whole site box inside this window",
+       "source": [
+        "data/stack/donana_023_D_070.nc",
+        "data/coherence/donana_023_D_070/2026-08-26_2026-09-07.tif",
+        "data/context/donana_worldcover_2021_20m.tif",
+        "data/context/donana_jrc_occurrence_20m.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "answer_key_clear": {
+       "value": 0.989,
+       "unit": "share",
+       "what": "of the changing land the optical map saw clear",
+       "source": [
+        "data/optical/donana_023_D_070/2026-09-07.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "dark_false_water": {
+       "value": 0.4422,
+       "unit": "share",
+       "what": "of the optical dry ground darkness alone calls water",
+       "source": [
+        "data/stack/donana_023_D_070.nc",
+        "data/coherence/donana_023_D_070/2026-08-26_2026-09-07.tif",
+        "data/context/donana_worldcover_2021_20m.tif",
+        "data/context/donana_jrc_occurrence_20m.tif",
+        "data/optical/donana_023_D_070/2026-09-07.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "coh_false_water": {
+       "value": 0.002,
+       "unit": "share",
+       "what": "of it the coherence rule calls water",
+       "source": [
+        "data/stack/donana_023_D_070.nc",
+        "data/coherence/donana_023_D_070/2026-08-26_2026-09-07.tif",
+        "data/context/donana_worldcover_2021_20m.tif",
+        "data/context/donana_jrc_occurrence_20m.tif",
+        "data/optical/donana_023_D_070/2026-09-07.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "dark_finds": {
+       "value": 0.736,
+       "unit": "share",
+       "what": "of the optical open water darkness alone finds",
+       "source": [
+        "data/stack/donana_023_D_070.nc",
+        "data/coherence/donana_023_D_070/2026-08-26_2026-09-07.tif",
+        "data/context/donana_worldcover_2021_20m.tif",
+        "data/context/donana_jrc_occurrence_20m.tif",
+        "data/optical/donana_023_D_070/2026-09-07.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "coh_finds": {
+       "value": 0.334,
+       "unit": "share",
+       "what": "of it the coherence rule finds",
+       "source": [
+        "data/stack/donana_023_D_070.nc",
+        "data/coherence/donana_023_D_070/2026-08-26_2026-09-07.tif",
+        "data/context/donana_worldcover_2021_20m.tif",
+        "data/context/donana_jrc_occurrence_20m.tif",
+        "data/optical/donana_023_D_070/2026-09-07.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "dark_iou": {
+       "value": 0.008,
+       "unit": "IoU",
+       "what": "darkness alone against the optical map, changing open water",
+       "source": [
+        "data/stack/donana_023_D_070.nc",
+        "data/coherence/donana_023_D_070/2026-08-26_2026-09-07.tif",
+        "data/context/donana_worldcover_2021_20m.tif",
+        "data/context/donana_jrc_occurrence_20m.tif",
+        "data/optical/donana_023_D_070/2026-09-07.tif",
+        "web/scripts/bake_views.py"
+       ]
+      },
+      "coh_iou": {
+       "value": 0.233,
+       "unit": "IoU",
+       "what": "the coherence rule against it",
+       "source": [
+        "data/stack/donana_023_D_070.nc",
+        "data/coherence/donana_023_D_070/2026-08-26_2026-09-07.tif",
+        "data/context/donana_worldcover_2021_20m.tif",
+        "data/context/donana_jrc_occurrence_20m.tif",
+        "data/optical/donana_023_D_070/2026-09-07.tif",
+        "web/scripts/bake_views.py"
+       ]
+      }
+     }
+    }
+   ],
+   "context": [
+    {
+     "text": "Across 26 dates at Doñana, coherence cuts the false water from 32 % to 5 % of the dry ground.",
+     "numbers": {
+      "dark_false_water": {
+       "value": 0.31669,
+       "unit": "share",
+       "what": "of the optical dry ground darkness alone calls water",
+       "source": [
+        {
+         "file": "data/metrics/cv_optical_benchmark.json",
+         "path": "tables[10].methods.nisar_threshold_15db.false_water_share_of_dry"
+        }
+       ]
+      },
+      "coh_false_water": {
+       "value": 0.05382,
+       "unit": "share",
+       "what": "with coherence",
+       "source": [
+        {
+         "file": "data/metrics/cv_optical_benchmark.json",
+         "path": "tables[10].methods.nisar_dark_lowcoh.false_water_share_of_dry"
+        }
+       ]
+      }
+     }
+    },
+    {
+     "text": "In the Pego-Oliva marsh, where water keeps some coherence, it does not help: IoU 0.306 with coherence against 0.340 for darkness alone.",
+     "numbers": {
+      "dark_iou": {
+       "value": 0.3398,
+       "unit": "IoU",
+       "what": "darkness alone, changing open water",
+       "source": [
+        {
+         "file": "data/metrics/cv_optical_benchmark.json",
+         "path": "tables[0].methods.nisar_threshold_15db.iou"
+        }
+       ]
+      },
+      "coh_iou": {
+       "value": 0.3057,
+       "unit": "IoU",
+       "what": "dark and low coherence",
+       "source": [
+        {
+         "file": "data/metrics/cv_optical_benchmark.json",
+         "path": "tables[0].methods.nisar_dark_lowcoh.iou"
+        }
+       ]
+      }
+     }
+    }
+   ]
+  }
+ },
+ "site": "donana",
+ "title": "Doñana marsh",
+ "zoom": 13,
+ "width": 1166,
+ "height": 1971,
+ "bounds": [
+  -6.4201355,
+  36.8798952,
+  -6.2199783,
+  37.1500555
+ ],
+ "pixel_m": 15.26,
+ "note": "Every image covers bounds (west, south, east, north). Ask for files with ?v=baked_utc. Numbers carry the files they come from; 'remote:' files are read from NASA Earthdata.",
+ "written_with": "Written with SI assistance (Claude Code), reviewed by the team.",
+ "baked_utc": "2026-11-15T00:57:56Z",
+ "bytes_total": 210040,
+ "focus": null
+}
