@@ -9,19 +9,24 @@
 
 import 'maplibre-gl/dist/maplibre-gl.css'
 import { Layers, Pause, Play } from 'lucide-react'
-import type { Map as MapLibreMap } from 'maplibre-gl'
+import type { Map as MapLibreMap, Marker as MapLibreMarker, MapMouseEvent } from 'maplibre-gl'
 import Link from 'next/link'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { STORIES, type Story } from '@/content/stories'
 import { type FloodModel, type RainFile, floodModel, utcDay } from '@/lib/flood-model'
 import type { Bounds } from '@/lib/gl-quad'
+import { LikelihoodLayer } from '@/lib/likelihood-layer'
 import { PictureLayer } from '@/lib/picture-layer'
+import { PREDICTION_SITES, type Prediction, type SpotResult, fileUrl, inspectAt, loadPrediction, warmInspect } from '@/lib/prediction'
 import { FAR_BASE, TERRAIN, addFarBase, emptyLayer, farView, flyIn, set3d, setSky, warmUp } from '@/lib/scene3d'
 import { maxZoomOf, tileCount, tilesOf, transformTile } from '@/lib/tiles'
 import { warmStory, whenIdle } from '@/lib/warm'
 import { WaterLayer, type WaterMeta, type WaterSeries } from '@/lib/water-layer'
 import { ThemeSwitch } from '../theme-switch'
+import { RainSlider } from './rain-slider'
+import { SpotPanel } from './spot-panel'
 import './story.css'
+import './prediction.css'
 
 /** MapLibre is the largest file of the page: fetch it as soon as this code runs in the browser, while the story's
  *  data is on its way, and start its workers right away. Nothing happens on the server. */
@@ -68,6 +73,8 @@ type Active = {
 	refHa: number
 }
 type Photo = 'clear' | 'day'
+/** what the map shows: the radar passes as they were, or the model's map of where the water would go */
+type Mode = 'radar' | 'model'
 
 const HOUR = 3600e3
 const DAY = 24 * HOUR
@@ -104,6 +111,30 @@ const wait = (ms: number) => new Promise((r) => setTimeout(r, ms))
 const asFilm = (q: URLSearchParams) => q.get('story') === ''
 /** the resting view of a story on this screen: a narrow, upright screen has a view of its own */
 const viewOf = (story: Story): Story['view'] => (window.matchMedia('(max-width: 820px)').matches ? { ...story.view, zoom: story.view.zoom - 1.2, ...story.phone } : story.view)
+/** how long the map takes to go from the radar to the model and back */
+const MODE_MS = 650
+
+/** prediction.json of a story that has one, once the first view is up: the page never waits for it */
+function usePrediction(story: Story, ready: boolean, onLoad: (p: Prediction) => void) {
+	const [pred, setPred] = useState<Prediction | null>(null)
+	const loaded = useRef(onLoad)
+	useEffect(() => {
+		loaded.current = onLoad
+	}, [onLoad])
+	useEffect(() => {
+		if (!story.predict || !ready) return
+		let gone = false
+		loadPrediction(story.root).then((p) => {
+			if (gone || !p || !p.scenarios.length) return
+			setPred(p)
+			loaded.current(p)
+		})
+		return () => {
+			gone = true
+		}
+	}, [story, ready])
+	return pred
+}
 
 function useData(story: Story) {
 	const [data, setData] = useState<Data | null>(null)
@@ -167,7 +198,7 @@ export function StoryApp({ story }: { story: Story }) {
 	const head = useRef<HTMLDivElement>(null)
 	const el = useRef<Record<string, HTMLElement | null>>({})
 	const labels = useRef<Record<string, { box: HTMLElement; value: HTMLElement; at: [number, number] }>>({})
-	const st = useRef({ T: 0, playing: false, dwell: 0, now: 0, shown: Number.NaN, beat: -1, zoomFade: -1, hold: false, columns: 0, sky: '', lit: 0, up: false })
+	const st = useRef({ T: 0, playing: false, dwell: 0, now: 0, shown: Number.NaN, beat: -1, zoomFade: -1, hold: false, columns: 0, sky: '', lit: 0, up: false, radar: 1 })
 	const speed = useRef(1)
 	/** true once the style of the map is read: before that the map takes no sky, no terrain, no layers */
 	const styled = useRef(false)
@@ -187,6 +218,44 @@ export function StoryApp({ story }: { story: Story }) {
 	const [veil, setVeil] = useState(false)
 	const opt = useRef({ photo, official, depth, relief })
 	opt.current = { photo, official, depth, relief }
+
+	// the model's map of where the water would go, beside the radar passes (story.predict)
+	const [mode, setMode] = useState<Mode>('radar')
+	const modeRef = useRef<Mode>('radar')
+	useEffect(() => {
+		modeRef.current = mode
+	}, [mode])
+	/** the map shows the radar or the model; the passes stop playing when the model comes */
+	const chooseMode = useCallback((m: Mode) => {
+		if (m === 'model') setPlaying(false)
+		modeRef.current = m
+		setMode(m)
+	}, [])
+	const [rainIdx, setRainIdx] = useState(0)
+	const rainPos = useRef(0)
+	// the stop a page opens on: 100 mm, or the one in the address (?rain=200); ?mode=model opens the model
+	const onPrediction = useCallback(
+		(p: Prediction) => {
+			const list = p.scenarios.filter((s) => s.rain_mm !== null)
+			const q = new URLSearchParams(window.location.search)
+			const i = list.findIndex((s) => s.rain_mm === Number(q.get('rain') ?? 100))
+			const at = i >= 0 ? i : Math.min(list.length - 1, Math.floor(list.length / 2))
+			rainPos.current = at
+			setRainIdx(at)
+			if (q.get('mode') === 'model') chooseMode('model')
+		},
+		[chooseMode],
+	)
+	const pred = usePrediction(story, ready, onPrediction)
+	const like = useRef<LikelihoodLayer | null>(null)
+	/** the rain scenarios in the order of the slider, the stop chosen, and where the handle is (between two stops
+	 *  while it is dragged) */
+	const rains = useMemo(() => pred?.scenarios.filter((s) => s.rain_mm !== null) ?? [], [pred])
+	/** the model map the layer shows, by id: a click reads its values */
+	const shownMap = useRef<string | null>(null)
+	const [spot, setSpot] = useState<{ result: SpotResult | null; loading: boolean; pred: Prediction | null; at: [number, number] } | null>(null)
+	const spotMarker = useRef<MapLibreMarker | null>(null)
+	const spotSeq = useRef(0)
 
 	const days = useMemo<Days>(
 		() => ({
@@ -354,22 +423,26 @@ export function StoryApp({ story }: { story: Story }) {
 			}
 			const [open] = model.areaAt(T)
 			const fresh = Math.max(0, open - active.refHa)
-			put(e.date, utcDay(T))
-			if (e.state) {
-				e.state.dataset.pass = v.pass !== null ? 'true' : 'false'
-				put(e.state, v.pass !== null ? 'Radar pass' : 'Estimate')
+			// in the model view the readout, the caption and the labels belong to the model's map (see showModel)
+			const radar = modeRef.current === 'radar'
+			if (radar) {
+				put(e.date, utcDay(T))
+				if (e.state) {
+					e.state.dataset.pass = v.pass !== null ? 'true' : 'false'
+					put(e.state, v.pass !== null ? 'Radar pass' : 'Estimate')
+				}
+				put(e.num, ha(open))
+				const mapped = data.extra?.official?.properties.area_ha
+				if (story.kind === 'fire') put(e.delta, open > 0.5 && mapped ? `EU map: ${ha(mapped)} ha` : 'No burn yet')
+				else if (story.kind === 'season') put(e.delta, fresh > 50 ? `+${ha(fresh)} ha of farm water` : 'The lagoon')
+				else put(e.delta, fresh > 5 && ref >= 0 ? `+${ha(fresh)} ha since ${utcDay(model.times[ref], false)}` : 'Normal for the marsh')
 			}
-			put(e.num, ha(open))
-			const mapped = data.extra?.official?.properties.area_ha
-			if (story.kind === 'fire') put(e.delta, open > 0.5 && mapped ? `EU map: ${ha(mapped)} ha` : 'No burn yet')
-			else if (story.kind === 'season') put(e.delta, fresh > 50 ? `+${ha(fresh)} ha of farm water` : 'The lagoon')
-			else put(e.delta, fresh > 5 && ref >= 0 ? `+${ha(fresh)} ha since ${utcDay(model.times[ref], false)}` : 'Normal for the marsh')
 			if (scene) {
 				const c = cloud(scene)
 				put(e.pic, `Photo: Sentinel-2, ${utcDay(Date.parse(scene.time_utc), false)}${c >= CLEAR_PCT ? `, ${c >= 99.5 ? '100' : c.toFixed(0)} % cloud` : ''} ·`)
 			}
 
-			if (!s.hold) {
+			if (!s.hold && radar) {
 				let beat = 0
 				for (let i = 0; i < beats.length; i++) if (T >= beats[i].from) beat = i
 				if (beat !== s.beat) {
@@ -378,7 +451,7 @@ export function StoryApp({ story }: { story: Story }) {
 				}
 			}
 			// rain falls on the picture when the weather model says it rains, harder when it rains harder
-			const rain = model.rainAt(T)
+			const rain = radar ? model.rainAt(T) : 0
 			if (e.rain) e.rain.style.opacity = String(Math.min(0.85, rain / 14))
 			// and the sky darkens with it
 			const map = mapRef.current
@@ -396,11 +469,12 @@ export function StoryApp({ story }: { story: Story }) {
 				else delete l.box.dataset.show
 				if (value !== undefined && l.value.textContent !== value) l.value.textContent = value
 			}
-			show('normal', true, `${ha(active.refHa)} ha`)
-			show('new', fresh > 8, `+${ha(fresh)} ha`)
-			show('burn', open > 1, `${ha(open)} ha`)
-			show('always', true, `${ha(active.refHa)} ha`)
-			show('season', fresh > 300, `+${ha(fresh)} ha`)
+			// the labels of the passes are radar numbers: the model's map has none
+			show('normal', radar, `${ha(active.refHa)} ha`)
+			show('new', radar && fresh > 8, `+${ha(fresh)} ha`)
+			show('burn', radar && open > 1, `${ha(open)} ha`)
+			show('always', radar, `${ha(active.refHa)} ha`)
+			show('season', radar && fresh > 300, `+${ha(fresh)} ha`)
 			show('deepest', opt.current.depth)
 			show('official', opt.current.official)
 			lean()
@@ -580,6 +654,134 @@ export function StoryApp({ story }: { story: Story }) {
 		}
 	}, [mapReady, data, active, story])
 
+	// ---------------------------------------------------------------- the model's map of where the water would go
+
+	/** the handle of the rain slider, as a position over the stops: the layer mixes the two maps around it */
+	const showRain = useCallback(
+		(pos: number) => {
+			rainPos.current = pos
+			if (!rains.length) return
+			const a = Math.max(0, Math.min(rains.length - 1, Math.floor(pos)))
+			const b = Math.min(rains.length - 1, a + 1)
+			like.current?.set(rains[a].id, rains[b].id, pos - a, rains[a].thresholds.water)
+			shownMap.current = rains[Math.round(pos)]?.id ?? null
+		},
+		[rains],
+	)
+
+	// the layer, on the radar layer and under the shapes; it loads its first frame only when it is asked to show
+	useEffect(() => {
+		const map = mapRef.current
+		if (!map || !mapReady || !pred || !map.getLayer('over-water')) return
+		const frames = [...pred.scenarios, ...pred.replays].map((m) => ({ key: m.id, url: fileUrl(story.root, pred, m.file) }))
+		const layer = new LikelihoodLayer({ id: 'likelihood', frames, bounds: pred.grid.bounds, size: [pred.grid.width, pred.grid.height] })
+		like.current = layer
+		map.addLayer(layer.layer, 'over-water')
+		st.current.zoomFade = -1
+		return () => {
+			if (map.getLayer(layer.id)) map.removeLayer(layer.id)
+			if (like.current === layer) like.current = null
+		}
+	}, [mapReady, pred, story])
+
+	// the radar and the model take turns on the map
+	useEffect(() => {
+		const l = like.current
+		if (!l || !rains.length) return
+		if (mode === 'model') {
+			showRain(rainPos.current)
+			l.fadeTo(1, MODE_MS)
+			// the other rains come in without hurry, so a sweep of the slider never waits
+			l.preload(rains.map((r) => r.id))
+			warmInspect(story.root, [rains[Math.round(rainPos.current)]?.id ?? ''])
+		} else l.fadeTo(0, MODE_MS)
+		st.current.shown = Number.NaN
+		st.current.beat = -1
+	}, [mode, rains, showRain, story, mapReady, pred])
+
+	/** the readout and the caption of the model view: every number from prediction.json, which has it from the
+	 *  forecast.json of the scenario (the difference to the dry scenario is the two files' own numbers subtracted) */
+	const rain = mode === 'model' ? rains[rainIdx] : undefined
+	useEffect(() => {
+		if (!rain) return
+		const e = el.current
+		const put = (node: HTMLElement | null | undefined, text: string) => {
+			if (node && node.textContent !== text) node.textContent = text
+		}
+		const dry = rains.find((s) => s.rain_mm === 0)
+		put(e.date, utcDay(Date.parse(rain.target_time_utc)))
+		if (e.state) {
+			e.state.dataset.pass = 'false'
+			put(e.state, 'Model')
+		}
+		put(e.num, ha(rain.area_ha.likely_water))
+		const more = dry ? rain.area_ha.likely_water - dry.area_ha.likely_water : 0
+		put(e.delta, !dry || rain === dry ? 'With no more rain' : more >= 0 ? `+${ha(more)} ha more than with no rain` : `${ha(-more)} ha less than with no rain`)
+		say(rain.caption.line)
+	}, [rain, rains, say])
+
+	/** Read one spot of ground: the model map shown, the NISAR history of the pixel, the soil before the storm and
+	 *  the land. A ring marks the spot; a newer click wins over a slower older one. */
+	const spotAt = useRef<[number, number] | null>(null)
+	const inspect = useCallback(
+		async (lngLat: [number, number]) => {
+			const map = mapRef.current
+			const seq = ++spotSeq.current
+			spotAt.current = lngLat
+			setSpot((s) => ({ result: s?.result ?? null, loading: true, pred: s?.pred ?? null, at: lngLat }))
+			if (map) {
+				if (!spotMarker.current) {
+					const { Marker } = await (maplibre ?? import('maplibre-gl'))
+					const node = document.createElement('span')
+					node.className = 'st-spot'
+					spotMarker.current = new Marker({ element: node, anchor: 'center', opacityWhenCovered: '1' })
+				}
+				if (seq !== spotSeq.current) return
+				spotMarker.current.setLngLat(lngLat).addTo(map)
+			}
+			const id = shownMap.current ?? rains[Math.round(rainPos.current)]?.id ?? null
+			const result = await inspectAt(lngLat, id)
+			const site = result.kind === 'spot' ? PREDICTION_SITES.find((s) => s.site === result.spot.site) : undefined
+			const p = site ? await loadPrediction(site.root) : null
+			if (seq !== spotSeq.current) return
+			setSpot({ result, loading: false, pred: p, at: lngLat })
+		},
+		[rains],
+	)
+	const closeSpot = useCallback(() => {
+		spotSeq.current++
+		spotAt.current = null
+		setSpot(null)
+		spotMarker.current?.remove()
+	}, [])
+	// the panel follows the rain: a new stop reads the same spot again
+	useEffect(() => {
+		if (spotAt.current) inspect(spotAt.current)
+	}, [rainIdx, mode, inspect])
+	// a click on the ground; a click on a label, a pin or a town name is not one
+	useEffect(() => {
+		const map = mapRef.current
+		if (!map || !mapReady || !story.predict) return
+		const click = (e: MapMouseEvent) => {
+			if ((e.originalEvent.target as HTMLElement | null)?.closest?.('.maplibregl-marker')) return
+			inspect([e.lngLat.lng, e.lngLat.lat])
+		}
+		map.on('click', click)
+		return () => {
+			map.off('click', click)
+		}
+	}, [mapReady, story, inspect])
+	/** fly to one of the boxes the model covers */
+	const goSite = useCallback(
+		(site: string) => {
+			closeSpot()
+			const root = PREDICTION_SITES.find((s) => s.site === site)?.root
+			const to = STORIES.find((s) => s.root === root) ?? story
+			mapRef.current?.flyTo({ ...viewOf(to), duration: 2600, curve: 1.4, essential: true })
+		},
+		[story, closeSpot],
+	)
+
 	// one loop: move the playhead while playing, redraw when anything changed
 	useEffect(() => {
 		if (!active) return
@@ -633,20 +835,25 @@ export function StoryApp({ story }: { story: Story }) {
 				}
 			}
 			const map = mapRef.current
+			// the radar layer gives way to the model's map, and back
+			const goal = modeRef.current === 'radar' ? 1 : 0
+			const radarWas = s.radar
+			if (s.radar !== goal) s.radar = goal > s.radar ? Math.min(goal, s.radar + dt / MODE_MS) : Math.max(goal, s.radar - dt / MODE_MS)
 			if (map && water.current) {
 				// from far out only the coast and the pin show: the layers of the place come in on the way down
 				const zf = clamp01((map.getZoom() - 9.2) / 1.5)
-				if (Math.abs(zf - s.zoomFade) > 0.004) {
+				if (Math.abs(zf - s.zoomFade) > 0.004 || s.radar !== radarWas) {
 					s.zoomFade = zf
-					water.current.setStyle({ opacity: zf })
+					water.current.setStyle({ opacity: zf * s.radar * s.radar * (3 - 2 * s.radar) })
 					pic.current?.setAlpha(zf)
+					like.current?.setAlpha(zf)
 					mapEl.current?.parentElement?.style.setProperty('--near', String(zf))
 				}
 			}
 			if (s.T !== s.shown) apply(s.T)
 			// water is never quite still: the light on it keeps moving while the page is close. It moves slowly, so twelve
 			// steps a second are smooth to the eye, and each step draws every terrain tile again (gl-quad.ts)
-			if (alive && s.zoomFade > 0.5 && now - s.lit > SHIMMER_MS) {
+			if (alive && s.zoomFade > 0.5 && s.radar > 0.01 && now - s.lit > SHIMMER_MS) {
 				s.lit = now
 				water.current?.repaint()
 			}
@@ -798,15 +1005,22 @@ export function StoryApp({ story }: { story: Story }) {
 				return
 			}
 			if (e.target instanceof HTMLElement && /^(INPUT|TEXTAREA|SELECT|BUTTON|A)$/.test(e.target.tagName)) return
+			// in the model view the arrows move the rain
+			const model = modeRef.current === 'model'
 			if (e.code === 'Space') {
 				e.preventDefault()
-				toggle()
-			} else if (e.code === 'ArrowRight') step(1)
-			else if (e.code === 'ArrowLeft') step(-1)
+				if (!model) toggle()
+			} else if (e.code === 'ArrowRight') {
+				if (model) setRainIdx((i) => Math.min(rains.length - 1, i + 1))
+				else step(1)
+			} else if (e.code === 'ArrowLeft') {
+				if (model) setRainIdx((i) => Math.max(0, i - 1))
+				else step(-1)
+			}
 		}
 		window.addEventListener('keydown', key)
 		return () => window.removeEventListener('keydown', key)
-	}, [toggle, step])
+	}, [toggle, step, rains])
 
 	/** The story told by itself, for the demo film: from far out onto the place in one move, the passes played, then
 	 *  the official map and the measured depths as the check. */
@@ -929,13 +1143,19 @@ export function StoryApp({ story }: { story: Story }) {
 			complete: () => !!water.current?.ready() && !!pic.current?.current() && !!mapRef.current?.areTilesLoaded(),
 			/** tiles served by the app and tiles that had to go to their own server */
 			tiles: () => ({ ...tileCount }),
+			/** the model view: 'radar' or 'model', the stop of the rain slider (0 is the driest), a click on a spot */
+			mode: (m: Mode) => chooseMode(m),
+			rain: (i: number) => setRainIdx(i),
+			inspect: (lng: number, lat: number) => inspect([lng, lat]),
+			/** the model layer has its frames on the card and has drawn */
+			modelReady: () => !!like.current?.ready(),
 		}
 		const host = window as unknown as { __flood?: typeof api }
 		host.__flood = api
 		return () => {
 			delete host.__flood
 		}
-	}, [data, active, seek, tell, say])
+	}, [data, active, seek, tell, say, inspect, chooseMode])
 
 	// once the page is ready it plays by itself: ?story plays the film, otherwise the passes run once
 	const told = useRef(false)
@@ -981,7 +1201,7 @@ export function StoryApp({ story }: { story: Story }) {
 	const hasDepth = !!data?.extra?.depth.features.length
 
 	return (
-		<div className="st" data-kind={story.kind} data-ready={ready || undefined} data-cinema={cinema || undefined} data-veil={veil || undefined}>
+		<div className="st" data-kind={story.kind} data-mode={mode} data-ready={ready || undefined} data-cinema={cinema || undefined} data-veil={veil || undefined}>
 			<div ref={mapEl} className="st-map" />
 			{story.storm && <div ref={set('rain')} className="st-rain" aria-hidden />}
 
@@ -1011,14 +1231,41 @@ export function StoryApp({ story }: { story: Story }) {
 					<b ref={set('num')} className="display">
 						0
 					</b>
-					<span>{active?.twoClass ? 'ha of open water' : story.unit}</span>
+					<span>{mode === 'model' ? 'ha likely under water' : active?.twoClass ? 'ha of open water' : story.unit}</span>
 				</p>
 				<p ref={set('delta')} className="st-delta" />
 			</section>
 
 			<footer className="st-bottom">
+				{rains.length > 0 && (
+					<div className="st-mode" role="group" aria-label="What the map shows">
+						<button type="button" aria-pressed={mode === 'radar'} onClick={() => chooseMode('radar')}>
+							Radar passes
+						</button>
+						<button type="button" aria-pressed={mode === 'model'} onClick={() => chooseMode('model')}>
+							What if it rains
+						</button>
+					</div>
+				)}
 				<p ref={set('caption')} className="st-caption" />
-				<div className="st-strip">
+				{rain && (
+					<div className="st-note">
+						<span className="st-key">
+							<i className="st-ramp" /> less to more likely
+						</span>
+						<span className="st-key">
+							<i className="st-dash" /> likely water
+						</span>
+						<span className="st-why">{rain.caption.note}</span>
+						{rain.caption.warning && <span className="st-warn">{rain.caption.warning}</span>}
+					</div>
+				)}
+				{mode === 'model' && rains.length > 0 && (
+					<div className="st-strip st-rainstrip">
+						<RainSlider stops={rains.map((r) => ({ label: `${r.rain_mm} mm`, warn: !!r.caption.warning }))} index={rainIdx} onInput={showRain} onStop={setRainIdx} label={`Rain in ${Math.round(rains[rainIdx]?.lead_days ?? 0)} days`} />
+					</div>
+				)}
+				<div className="st-strip st-timestrip">
 					<button type="button" className="st-play" onClick={toggle} aria-label={playing ? 'Pause' : 'Play'} disabled={!ready}>
 						{playing ? <Pause size={18} strokeWidth={2.4} /> : <Play size={18} strokeWidth={2.4} />}
 					</button>
@@ -1106,6 +1353,8 @@ export function StoryApp({ story }: { story: Story }) {
 					<Layers size={16} strokeWidth={2.2} /> Layers
 				</button>
 			</div>
+
+			<SpotPanel result={spot?.result ?? null} loading={!!spot?.loading} prediction={spot?.pred ?? null} onClose={closeSpot} onGo={goSite} />
 
 			<p className="st-credit">
 				<span ref={set('pic')} /> {story.credit} · From far out: NASA Blue Marble

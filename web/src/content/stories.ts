@@ -34,6 +34,9 @@ export type Story = {
 	event?: { t: string; until?: string; label: string }
 	/** colours and strengths of the layer when it is not water */
 	layer?: { rgb: { open: [number, number, number]; glow: [number, number, number]; edge: [number, number, number]; fill: number; line: number } }
+	/** the page also shows the model's map of where the water would go (prediction.json in the root, from
+	 *  scripts/bake_prediction.py): a rain slider over its scenarios */
+	predict?: boolean
 	/** the short credit line that is always on screen, and the full list behind "Sources" */
 	credit: string
 	credits: { what: string; who: string }[]
@@ -63,6 +66,7 @@ export const DANA: Story = {
 	phone: { center: [-0.058, 38.872], zoom: 11.75, pitch: 44, bearing: -42 },
 	far: { line: 'Valencia coast, Spain' },
 	unit: 'ha under water',
+	predict: true,
 	places: [
 		{ name: 'Pego', at: [-0.1178, 38.8431] },
 		{ name: 'Oliva', at: [-0.1211, 38.9197] },
@@ -75,6 +79,8 @@ export const DANA: Story = {
 		{ what: 'EU flood map', who: 'Copernicus Emergency Management Service, EMSR935, imagery of 20 to 21 Oct 2026, drawn here as one generalised shape' },
 		{ what: 'Measured depths', who: 'Generalitat Valenciana, Servicio de Gestión de Riesgos en el Territorio. The columns are far taller than the water: their height only compares the points' },
 		{ what: 'Rain', who: 'Weather data by Open-Meteo.com (Meteo-France AROME), modelled, not gauged' },
+		{ what: 'Where the water would go', who: 'The team spatial model (LightGBM) trained on OPERA DSWx-S1 water maps, with terrain (ASF GLO-30 HAND, Copernicus DEM GLO-30), rain (Open-Meteo, ECMWF IFS 9 km, CC BY 4.0), ESA WorldCover 2021 and JRC Global Surface Water. A relative likelihood, not depth' },
+		{ what: 'Soil moisture', who: 'NASA-ISRO NISAR L3 SME2, provisional (NASA ASF DAAC), 200 m' },
 		COVER,
 		BASE,
 		NAMES,
