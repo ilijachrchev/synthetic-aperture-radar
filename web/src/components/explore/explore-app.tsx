@@ -2,8 +2,9 @@
 
 // The flat flood explorer: a street map, flat and sharp down to the houses, of the official flood zones (SNCZI), what
 // really flooded (Copernicus EMS in 2024 and 2026, NISAR in 2026), and our model of where the water would go, with
-// its rain slider and its honest notes. A click on any spot reads every layer there. A short replay walks through the
-// DANA of 2026 at Pego-Oliva, our maps in order and no score.
+// its rain slider and its honest notes. A click on any spot reads every layer there. It is the "All layers" view of
+// /explore, behind the guided steps (components/guided). The step by step replay of the 2026 DANA is no longer
+// offered (the team found it hard to read); its code stays reachable only through the test hook.
 //
 // Everything that is a measurement comes from the baked files: public/layers/explore/ (scripts/bake_explore.py) and
 // public/layers/<site>/prediction* (scripts/bake_prediction.py). The radar and model pictures are 15 to 20 m pixels:
@@ -151,7 +152,7 @@ const smooth = (a: number, b: number, x: number) => {
 	return t * t * (3 - 2 * t)
 }
 
-export function ExploreApp() {
+export function ExploreApp({ onGuide }: { onGuide?: () => void } = {}) {
 	const mapEl = useRef<HTMLDivElement>(null)
 	const mapRef = useRef<MapLibreMap | null>(null)
 	const [idx, setIdx] = useState<ExploreIndex | null>(null)
@@ -742,6 +743,11 @@ export function ExploreApp() {
 				</Link>
 				<h1 className="display ex-title">Flood explorer</h1>
 				<p className="ex-sub">Official flood zones, what really flooded, and where our model says the water would go.</p>
+				{onGuide && (
+					<button type="button" className="ex-pill ex-guide" onClick={onGuide}>
+						<b>Back to the guided tour</b>
+					</button>
+				)}
 				<nav className="ex-places" aria-label="Places">
 					{PLACES.map((p) => (
 						<button key={p.key} type="button" onClick={() => go(p.key)}>
@@ -913,11 +919,6 @@ export function ExploreApp() {
 						<button type="button" className="ex-pill" aria-pressed={layers.model} onClick={() => toggle('model')}>
 							What if it rains
 						</button>
-						{nisarPego && (
-							<button type="button" className="ex-pill" onClick={startReplay}>
-								<Play size={14} strokeWidth={2.6} /> DANA replay
-							</button>
-						)}
 					</div>
 				)}
 			</footer>
