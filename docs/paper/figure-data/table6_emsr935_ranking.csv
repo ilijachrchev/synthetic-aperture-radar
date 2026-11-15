@@ -1,0 +1,6 @@
+Method,Average precision
+Model,0.45
+NISAR 16 Oct darkness,0.364
+Low terrain (HAND),0.296
+Past water (JRC),0.095
+Random guess (base rate),0.0194

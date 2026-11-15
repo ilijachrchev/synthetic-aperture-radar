@@ -1,0 +1,6 @@
+Stratum,Wet,Dry,Unclear
+A both maps water,20,0,5
+B NISAR only,46,3,101
+C Sentinel-1 only,23,4,11
+D neither (rice),46,22,82
+E control cropland,4,133,13

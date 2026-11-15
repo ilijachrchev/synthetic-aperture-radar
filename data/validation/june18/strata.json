@@ -1,0 +1,41 @@
+{
+ "nisar_time": "2026-06-18T18:53:21",
+ "granule": "NISAR_L2_PR_GCOV_023_066_D_069_2005_DHDH_M_20260618T185321_20260618T185356_P05023_N_F_J_001",
+ "dswx_files": [
+  "OPERA_L3_DSWx-S1_T30SYJ_20260618T175410Z_20260826T154002Z_S1A_30_v1.0_B01_WTR.tif",
+  "OPERA_L3_DSWx-S1_T31SBD_20260618T175410Z_20260826T154002Z_S1A_30_v1.0_B01_WTR.tif"
+ ],
+ "rice_ha_scored": 14627.8,
+ "nisar_water_ha": 6387.2,
+ "s1_water_ha": 249.6,
+ "stratum_ha": {
+  "A": 116.2,
+  "B": 6271.0,
+  "C": 133.4,
+  "D": 8107.2,
+  "E": 5661.2
+ },
+ "weights": {
+  "A": 0.007941043765979847,
+  "B": 0.4287069825947853,
+  "C": 0.009119621542542283,
+  "D": 0.5542323520966926
+ },
+ "n_points": {
+  "A": 25,
+  "B": 150,
+  "C": 38,
+  "D": 150,
+  "E": 150
+ },
+ "design": {
+  "grid_step_m": 200,
+  "n_per_stratum": 150,
+  "seed": 20261118,
+  "nisar_threshold_db": -15.0,
+  "dswx_water_classes": [
+   1,
+   3
+  ]
+ }
+}
