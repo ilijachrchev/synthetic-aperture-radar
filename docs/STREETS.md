@@ -66,7 +66,7 @@ Not computed yet.
 
 ## Changes to the rules
 
-None yet.
+1. **Permanent water also counts as drainage for HAND** (decided while writing the code, before any score). The rules make permanent water an outlet of the depression filling, so water that reaches the Albufera leaves the grid there; without this clarification a cell that drains straight into the lake would have no drainage cell on its path. HAND is then measured from the lake surface, as for a river. The lake itself is not a scored pixel.
 
 ## Sources
 
