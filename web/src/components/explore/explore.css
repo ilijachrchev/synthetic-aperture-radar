@@ -1,156 +1,487 @@
-/* The model's map on the story page (story-app.tsx, rain-slider.tsx, spot-panel.tsx): the switch between the radar
-   and the model, the rain slider, the key under the caption, the panel of a clicked spot and its ring. Same pills
-   and glass as the rest of the page; the colours of the key match the shader (lib/likelihood-shader.ts). */
-.st {
+/* The flat flood explorer (explore-app.tsx, rain-slider.tsx, explore-spot.tsx). The same pills and glass as the
+   story pages: what sits on the photograph is small and light, the panels take the theme tokens. The colours of the
+   legend match the map layers and the model shader (lib/likelihood-shader.ts). */
+.ex {
+	--pad: clamp(14px, 1.6vw, 26px);
+	--on-map: #f4f9ff;
+	--pill: rgb(6 14 20 / 0.66);
+	--pill-line: rgb(255 255 255 / 0.14);
+	--panel: color-mix(in oklab, var(--bg) 84%, transparent);
 	--model-low: #8ce6ff;
 	--model-high: #1280ff;
+	--ems: #ff7ac8;
+	--still: #ffa030;
+	position: fixed;
+	inset: 0;
+	overflow: hidden;
+	background: #050a12;
+	color: var(--ink);
+	font-family: var(--font-sans);
+}
+.ex button {
+	cursor: pointer;
+}
+.ex-map {
+	position: absolute;
+	inset: 0;
+}
+/* seats the title and the bottom panel on the photograph */
+.ex::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	z-index: 1;
+	pointer-events: none;
+	background:
+		linear-gradient(180deg, rgb(4 9 16 / 0.5) 0, rgb(4 9 16 / 0) 20%),
+		linear-gradient(0deg, rgb(4 9 16 / 0.55) 0, rgb(4 9 16 / 0) 26%);
 }
 
-/* ---------------------------------------------------------------- the switch: radar passes or the model */
-.st-mode {
+/* ---------------------------------------------------------------- top left: where we are, and the places */
+.ex-top {
+	position: absolute;
+	z-index: 3;
+	left: var(--pad);
+	top: var(--pad);
+	display: grid;
+	justify-items: start;
+	gap: 9px;
+	max-width: min(520px, 56vw);
+	pointer-events: none;
+}
+.ex-top > * {
+	pointer-events: auto;
+}
+.ex-brand {
 	display: inline-flex;
-	justify-self: start;
+	align-items: center;
+	gap: 8px;
+	font-size: 12.5px;
+	font-weight: 700;
+	color: var(--on-map);
+	text-decoration: none;
+	text-shadow: 0 1px 2px rgb(0 0 0 / 0.7);
+}
+.ex-brand::before {
+	content: "";
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	background: var(--accent);
+	box-shadow: 0 0 0 3px rgb(18 181 214 / 0.25);
+}
+.ex-title {
+	margin: 2px 0 0;
+	font-size: clamp(28px, 3.2vw, 46px);
+	line-height: 0.95;
+	color: var(--on-map);
+	text-shadow: 0 2px 18px rgb(0 0 0 / 0.45);
+}
+.ex-sub {
+	margin: 0;
+	font-size: 14px;
+	font-weight: 600;
+	color: rgb(244 249 255 / 0.88);
+	text-shadow: 0 1px 2px rgb(0 0 0 / 0.8);
+}
+.ex-places {
+	display: inline-flex;
+	flex-wrap: wrap;
+	gap: 6px;
+}
+.ex-places button,
+.ex-pill {
+	display: grid;
+	padding: 7px 13px 8px;
+	border: 1px solid var(--pill-line);
+	border-radius: 14px;
+	background: var(--pill);
+	color: var(--on-map);
+	text-align: left;
+	-webkit-backdrop-filter: blur(14px) saturate(1.3);
+	backdrop-filter: blur(14px) saturate(1.3);
+	transition: background 0.25s var(--ease);
+}
+.ex-places button:hover {
+	background: rgb(6 14 20 / 0.82);
+}
+.ex-places b {
+	font-size: 13px;
+	font-weight: 700;
+}
+.ex-places small {
+	font-size: 11px;
+	font-weight: 600;
+	color: rgb(244 249 255 / 0.68);
+}
+
+/* ---------------------------------------------------------------- right: the legend, in the manner of the SNCZI viewer */
+.ex-legend {
+	position: absolute;
+	z-index: 4;
+	right: var(--pad);
+	top: var(--pad);
+	width: 292px;
+	max-height: calc(100vh - 2 * var(--pad) - 70px);
+	overflow-y: auto;
+	padding: 12px 14px 10px;
+	border-radius: 18px;
+	background: var(--panel);
+	border: 1px solid var(--glass-line);
+	box-shadow: var(--shadow);
+	-webkit-backdrop-filter: blur(16px) saturate(1.4);
+	backdrop-filter: blur(16px) saturate(1.4);
+}
+.ex-legend h2 {
+	margin: 10px 0 5px;
+	font-size: 10.5px;
+	font-weight: 750;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+	color: var(--ink-2);
+}
+.ex-legend h2:first-child {
+	margin-top: 0;
+}
+.ex-row {
+	display: grid;
+	grid-template-columns: 30px 1fr auto;
+	align-items: center;
+	gap: 9px;
+	width: 100%;
+	padding: 5px 4px;
+	border: 0;
+	border-radius: 10px;
+	background: transparent;
+	color: var(--ink);
+	text-align: left;
+	font: inherit;
+}
+.ex-row:hover {
+	background: color-mix(in srgb, var(--ink) 6%, transparent);
+}
+.ex-row:disabled {
+	cursor: default;
+	opacity: 0.55;
+}
+.ex-row:disabled:hover {
+	background: transparent;
+}
+.ex-row b {
+	display: block;
+	font-size: 13px;
+	font-weight: 650;
+	line-height: 1.2;
+}
+.ex-row small {
+	display: block;
+	font-size: 11px;
+	color: var(--muted);
+}
+/* the switch at the end of a row */
+.ex-row > i {
+	position: relative;
+	width: 30px;
+	height: 18px;
+	border-radius: 9px;
+	background: color-mix(in srgb, var(--ink) 18%, transparent);
+	transition: background 0.2s var(--ease);
+}
+.ex-row > i::after {
+	content: "";
+	position: absolute;
+	left: 2px;
+	top: 2px;
+	width: 14px;
+	height: 14px;
+	border-radius: 50%;
+	background: var(--bg);
+	box-shadow: 0 1px 3px rgb(0 0 0 / 0.3);
+	transition: transform 0.2s var(--ease);
+}
+.ex-row[aria-checked="true"] > i {
+	background: var(--accent);
+}
+.ex-row[aria-checked="true"] > i::after {
+	transform: translateX(12px);
+}
+.ex-soon {
+	font-size: 10px;
+	font-weight: 700;
+	color: var(--muted);
+}
+/* swatches: what each layer looks like on the map */
+.ex-sw {
+	display: block;
+	width: 30px;
+	height: 20px;
+	border-radius: 5px;
+}
+.ex-sw[data-kind="zones"] {
+	background:
+		linear-gradient(#ff3b30, #ff3b30) 0 4px / 100% 2.5px no-repeat,
+		linear-gradient(#ff9500, #ff9500) 0 9px / 100% 2.5px no-repeat,
+		linear-gradient(#ffd60a, #ffd60a) 0 14px / 100% 2.5px no-repeat;
+}
+.ex-sw[data-kind="flood2024"],
+.ex-sw[data-kind="flood2026"] {
+	background: rgb(255 122 200 / 0.3);
+	box-shadow: inset 0 0 0 2px var(--ems);
+}
+.ex-sw[data-kind="flood2024"] {
+	background: repeating-linear-gradient(45deg, rgb(255 122 200 / 0.35) 0 3px, rgb(255 122 200 / 0.12) 3px 6px);
+}
+.ex-sw[data-kind="buildings"] {
+	background:
+		radial-gradient(circle at 25% 50%, #ff2d55 0 3px, transparent 3.5px),
+		radial-gradient(circle at 55% 40%, #ff6b3d 0 3px, transparent 3.5px),
+		radial-gradient(circle at 80% 60%, #ffb340 0 3px, transparent 3.5px);
+}
+.ex-sw[data-kind="nisar"] {
+	background: linear-gradient(90deg, #144096 0 50%, #40aaff 50% 100%);
+}
+.ex-sw[data-kind="still"] {
+	background: var(--still);
+}
+.ex-sw[data-kind="model"] {
+	background: linear-gradient(90deg, rgb(140 230 255 / 0.25), var(--model-high));
+	box-shadow: inset 0 0 0 1.5px rgb(255 255 255 / 0.4);
+}
+.ex-sw[data-kind="flow"] {
+	background: repeating-linear-gradient(90deg, color-mix(in srgb, var(--ink) 40%, transparent) 0 6px, transparent 6px 9px) 0 50% / 100% 2px no-repeat;
+}
+.ex-sw[data-kind="depth"] {
+	background: linear-gradient(90deg, color-mix(in srgb, var(--ink) 12%, transparent), color-mix(in srgb, var(--ink) 40%, transparent));
+}
+.ex-zonekey {
+	display: grid;
+	gap: 3px;
+	margin: 2px 0 6px 43px;
+	padding: 0;
+	list-style: none;
+	font-size: 11.5px;
+	color: var(--ink-2);
+}
+.ex-zonekey li {
+	display: flex;
+	align-items: center;
+	gap: 7px;
+}
+.ex-zonekey i {
+	width: 16px;
+	height: 3px;
+	border-radius: 2px;
+}
+.ex-base {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 10px;
+	margin-top: 10px;
+	padding-top: 9px;
+	border-top: 1px solid var(--line-strong);
+	font-size: 12px;
+	color: var(--ink-2);
+}
+.ex-seg {
+	display: inline-flex;
+	padding: 2px;
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--ink) 8%, transparent);
+}
+.ex-seg button {
+	padding: 4px 10px;
+	border: 0;
+	border-radius: 999px;
+	background: transparent;
+	color: var(--ink-2);
+	font: 650 11.5px var(--font-sans);
+}
+.ex-seg button[aria-pressed="true"] {
+	background: var(--bg);
+	color: var(--ink);
+	box-shadow: 0 1px 3px rgb(0 0 0 / 0.15);
+}
+.ex-sources {
+	display: grid;
+	gap: 5px;
+	margin: 8px 0 0;
+	padding: 0;
+	list-style: none;
+	font-size: 10.5px;
+	line-height: 1.35;
+	color: var(--ink-2);
+}
+.ex-sources b {
+	color: var(--ink);
+}
+.ex-legend-btn {
+	position: absolute;
+	z-index: 4;
+	right: var(--pad);
+	top: var(--pad);
+	display: none;
+	align-items: center;
+	gap: 8px;
+	height: 42px;
+	padding: 0 15px;
+	border-radius: 999px;
+	border: 1px solid var(--pill-line);
+	background: var(--pill);
+	color: var(--on-map);
+	font: 650 13px var(--font-sans);
+	-webkit-backdrop-filter: blur(14px) saturate(1.3);
+	backdrop-filter: blur(14px) saturate(1.3);
+}
+
+/* ---------------------------------------------------------------- bottom left: the model's numbers, the slider, the replay */
+.ex-bottom {
+	position: absolute;
+	z-index: 3;
+	left: var(--pad);
+	bottom: calc(var(--pad) + 18px);
+	display: grid;
+	gap: 11px;
+	width: min(720px, calc(100vw - 2 * var(--pad) - 320px));
+}
+.ex-read {
+	display: flex;
+	align-items: flex-end;
+	gap: 14px;
+	color: var(--on-map);
+	text-shadow: 0 1px 2px rgb(0 0 0 / 0.7);
+}
+.ex-read b {
+	font-size: clamp(38px, 3.6vw, 56px);
+	font-weight: 800;
+	line-height: 0.86;
+	font-variant-numeric: tabular-nums;
+}
+.ex-read span {
+	display: grid;
 	gap: 2px;
-	padding: 3px;
+	padding-bottom: 2px;
+	font-size: 13px;
+	font-weight: 650;
+}
+.ex-read small {
+	font-size: 12.5px;
+	font-weight: 600;
+	color: rgb(244 249 255 / 0.8);
+}
+.ex-tag {
+	justify-self: start;
+	padding: 3px 9px;
+	border-radius: 999px;
+	font-size: 11px;
+	font-weight: 700;
+	background: rgb(255 255 255 / 0.14);
+	box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.3);
+}
+.ex-tag[data-pass] {
+	background: rgb(42 143 255 / 0.4);
+	box-shadow: none;
+}
+.ex-caption {
+	margin: 0;
+	font-size: clamp(18px, 1.7vw, 25px);
+	font-weight: 700;
+	line-height: 1.2;
+	color: var(--on-map);
+	text-shadow:
+		0 1px 2px rgb(0 0 0 / 0.78),
+		0 0 22px rgb(0 0 0 / 0.55);
+	text-wrap: balance;
+	animation: ex-rise 0.42s var(--ease);
+}
+@keyframes ex-rise {
+	from {
+		opacity: 0;
+		transform: translateY(6px);
+	}
+}
+.ex-strip {
+	display: flex;
+	align-items: center;
+	height: 48px;
+	padding: 0 6px;
 	border-radius: 999px;
 	background: var(--pill);
 	border: 1px solid var(--pill-line);
 	-webkit-backdrop-filter: blur(14px) saturate(1.3);
 	backdrop-filter: blur(14px) saturate(1.3);
 }
-.st-mode button {
-	padding: 8px 15px;
-	border: 0;
-	border-radius: 999px;
-	background: transparent;
-	color: rgb(244 249 255 / 0.8);
-	font: 650 13px var(--font-sans);
-	white-space: nowrap;
-	transition:
-		background 0.25s var(--ease),
-		color 0.25s var(--ease);
-}
-.st-mode button:hover {
-	color: #fff;
-}
-.st-mode button[aria-pressed="true"] {
-	background: var(--on-map);
-	color: #071018;
-}
-.st[data-cinema] .st-mode {
-	display: none;
-}
-
-/* the time strip belongs to the radar, the rain strip to the model */
-.st[data-mode="model"] .st-timestrip,
-.st[data-mode="replay"] .st-timestrip {
-	display: none;
-}
-
-/* ---------------------------------------------------------------- the DANA replay: four steps in a row */
-.rp-steps {
-	display: flex;
-	flex: 1;
-	gap: 6px;
-	min-width: 0;
-	margin: 0 0 0 10px;
-	padding: 0;
-	list-style: none;
-}
-.rp-steps li {
-	flex: 1;
-	min-width: 0;
-}
-.rp-steps button {
-	position: relative;
+.ex-play {
 	display: grid;
-	align-content: center;
-	width: 100%;
+	flex: none;
+	place-items: center;
+	width: 36px;
 	height: 36px;
-	padding: 0 10px;
-	overflow: hidden;
 	border: 0;
-	border-radius: 999px;
-	background: rgb(244 249 255 / 0.08);
-	color: rgb(244 249 255 / 0.72);
-	font: 650 12.5px var(--font-sans);
-	white-space: nowrap;
-	transition:
-		background 0.25s var(--ease),
-		color 0.25s var(--ease);
-}
-.rp-steps button span {
-	position: relative;
-	overflow: hidden;
-	text-overflow: ellipsis;
-}
-.rp-steps button:hover {
-	color: #fff;
-}
-.rp-steps button[data-done] {
-	color: rgb(244 249 255 / 0.9);
-}
-.rp-steps button[aria-current="step"] {
+	border-radius: 50%;
 	background: var(--on-map);
 	color: #071018;
 }
-/* while it plays, the step on screen fills up until the next one comes */
-.rp-steps button i {
-	position: absolute;
-	inset: 0;
-	transform: scaleX(0);
-	transform-origin: 0 50%;
-	background: rgb(18 128 255 / 0.22);
+.ex-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
 }
-.rp-steps button[data-auto] i {
-	animation: rp-fill var(--scene-ms, 5600ms) linear forwards;
+.ex-actions .ex-pill {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	font: 650 13px var(--font-sans);
 }
-@keyframes rp-fill {
-	to {
-		transform: scaleX(1);
-	}
+.ex-actions .ex-pill[aria-pressed="true"] {
+	background: var(--on-map);
+	color: #071018;
 }
 
-/* ---------------------------------------------------------------- the key under the caption */
-.st-note {
+/* ---------------------------------------------------------------- the key and notes under the caption */
+.ex-note {
 	display: flex;
 	flex-wrap: wrap;
 	align-items: center;
-	gap: 6px 14px;
-	margin-top: -6px;
+	gap: 5px 14px;
+	margin-top: -4px;
 	font-size: 12.5px;
 	font-weight: 600;
 	color: rgb(244 249 255 / 0.86);
 	text-shadow: 0 1px 2px rgb(0 0 0 / 0.8);
 }
-.st-key {
+.ex-key {
 	display: inline-flex;
 	align-items: center;
 	gap: 7px;
 	white-space: nowrap;
 }
-.st-ramp {
+.ex-ramp {
 	width: 42px;
 	height: 9px;
 	border-radius: 3px;
 	background: linear-gradient(90deg, rgb(140 230 255 / 0.18), rgb(140 230 255 / 0.55) 38%, var(--model-high));
 	box-shadow: 0 0 0 1px rgb(255 255 255 / 0.25);
 }
-.st-dash {
+.ex-dash {
 	width: 26px;
 	height: 0;
 	border-top: 2px dashed #f2fbff;
 	filter: drop-shadow(0 1px 1px rgb(0 0 0 / 0.6));
 }
-.st-why {
+.ex-why {
 	color: rgb(244 249 255 / 0.72);
 }
-.st-warn {
+.ex-warn {
 	padding: 2px 9px;
 	border-radius: 999px;
 	background: rgb(255 171 74 / 0.2);
 	box-shadow: inset 0 0 0 1px rgb(255 171 74 / 0.55);
 	color: #ffd9a8;
+}
+.ex-detail {
+	flex-basis: 100%;
+	color: rgb(244 249 255 / 0.92);
 }
 
 /* ---------------------------------------------------------------- the rain slider */
@@ -224,6 +555,10 @@
 .rs-stop[data-on] small {
 	color: #fff;
 }
+.rs-stop[data-warn] small::after {
+	content: " !";
+	color: #ffc37a;
+}
 /* over the stop: what that rain adds to the likely new water of no rain */
 .rs-stop em {
 	position: absolute;
@@ -239,14 +574,6 @@
 }
 .rs-stop[data-on] em {
 	color: #fff;
-}
-.st-detail {
-	flex-basis: 100%;
-	color: rgb(244 249 255 / 0.9);
-}
-.rs-stop[data-warn] small::after {
-	content: " !";
-	color: #ffc37a;
 }
 .rs-thumb {
 	position: absolute;
@@ -269,8 +596,84 @@
 		0 4px 14px rgb(0 0 0 / 0.5);
 }
 
+/* ---------------------------------------------------------------- the DANA replay: four steps in a row */
+.rp-steps {
+	display: flex;
+	flex: 1;
+	gap: 6px;
+	min-width: 0;
+	margin: 0 0 0 10px;
+	padding: 0;
+	list-style: none;
+}
+.rp-steps li {
+	flex: 1;
+	min-width: 0;
+}
+.rp-steps button {
+	position: relative;
+	display: grid;
+	align-content: center;
+	width: 100%;
+	height: 36px;
+	padding: 0 10px;
+	overflow: hidden;
+	border: 0;
+	border-radius: 999px;
+	background: rgb(244 249 255 / 0.08);
+	color: rgb(244 249 255 / 0.72);
+	font: 650 12.5px var(--font-sans);
+	white-space: nowrap;
+	transition:
+		background 0.25s var(--ease),
+		color 0.25s var(--ease);
+}
+.rp-steps button span {
+	position: relative;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.rp-steps button:hover {
+	color: #fff;
+}
+.rp-steps button[data-done] {
+	color: rgb(244 249 255 / 0.9);
+}
+.rp-steps button[aria-current="step"] {
+	background: var(--on-map);
+	color: #071018;
+}
+/* while it plays, the step on screen fills up until the next one comes */
+.rp-steps button i {
+	position: absolute;
+	inset: 0;
+	transform: scaleX(0);
+	transform-origin: 0 50%;
+	background: rgb(18 128 255 / 0.22);
+}
+.rp-steps button[data-auto] i {
+	animation: rp-fill var(--scene-ms, 5600ms) linear forwards;
+}
+@keyframes rp-fill {
+	to {
+		transform: scaleX(1);
+	}
+}
+.ex-close {
+	display: grid;
+	flex: none;
+	place-items: center;
+	width: 34px;
+	height: 34px;
+	margin-left: 6px;
+	border: 0;
+	border-radius: 50%;
+	background: rgb(244 249 255 / 0.12);
+	color: var(--on-map);
+}
+
 /* ---------------------------------------------------------------- the ring on a clicked spot */
-.st-spot {
+.ex-spot {
 	display: block;
 	width: 22px;
 	height: 22px;
@@ -286,10 +689,10 @@
 .sp {
 	position: absolute;
 	z-index: 5;
-	right: var(--pad);
-	top: calc(var(--pad) + 160px);
+	right: calc(var(--pad) + 306px);
+	top: var(--pad);
 	width: 300px;
-	max-height: calc(100vh - 2 * var(--pad) - 300px);
+	max-height: calc(100vh - 2 * var(--pad) - 90px);
 	overflow-y: auto;
 	padding: 14px 16px 12px;
 	border-radius: 18px;
@@ -374,6 +777,7 @@
 	margin: 0;
 }
 .sp-row .sp-text {
+	margin: 0;
 	text-align: right;
 }
 .sp-text {
@@ -382,9 +786,6 @@
 	font-weight: 550;
 	line-height: 1.38;
 	color: var(--ink);
-}
-.sp-row .sp-text {
-	margin: 0;
 }
 .sp-note {
 	margin: 6px 0 0;
@@ -427,7 +828,6 @@
 	border-radius: 3px;
 	background: linear-gradient(90deg, var(--model-low), var(--model-high));
 }
-/* the line of likely water */
 .sp-bar s {
 	position: absolute;
 	top: -3px;
@@ -436,41 +836,35 @@
 	border-left: 2px dashed var(--ink);
 	opacity: 0.7;
 }
-.sp-dots {
-	display: flex;
-	gap: 5px;
-	margin: 2px 0 0;
+.sp-facts {
+	display: grid;
+	gap: 6px;
+	margin: 4px 0 0;
 	padding: 0;
 	list-style: none;
 }
-.sp-dots li {
-	flex: 1;
-	max-width: 18px;
-	aspect-ratio: 1;
-	border-radius: 50%;
-	box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--ink) 45%, transparent);
+.sp-facts li {
+	display: grid;
+	grid-template-columns: 12px 1fr;
+	gap: 9px;
+	align-items: baseline;
+	font-size: 13px;
+	line-height: 1.35;
 }
-.sp-dots li[data-state="0"] {
-	box-shadow: none;
-	background: repeating-linear-gradient(45deg, color-mix(in srgb, var(--ink) 18%, transparent) 0 2px, transparent 2px 4px);
+.sp-facts li > i {
+	width: 12px;
+	height: 12px;
+	border-radius: 3px;
+	transform: translateY(1px);
 }
-.sp-dots li[data-state="2"] {
-	background: linear-gradient(90deg, #7cc8ff 50%, transparent 50%);
-	box-shadow: inset 0 0 0 1.5px #2a8fff;
-}
-.sp-dots li[data-state="3"] {
-	background: #2a8fff;
-	box-shadow: none;
-}
-.sp-ends {
-	display: flex;
-	justify-content: space-between;
-	margin: 4px 0 0;
-	font-size: 10px;
+.sp-facts small {
+	display: block;
+	font-size: 11.5px;
 	color: var(--muted);
 }
 .sp-go {
 	display: flex;
+	flex-wrap: wrap;
 	gap: 8px;
 	margin-top: 10px;
 }
@@ -508,18 +902,50 @@
 	color: var(--ink);
 }
 
-@media (max-width: 720px) {
-	.st-mode button {
-		padding: 7px 11px;
-		font-size: 12px;
+/* MapLibre's own attribution, made quiet */
+.ex .maplibregl-ctrl-attrib {
+	font-size: 10.5px;
+	background: rgb(255 255 255 / 0.7);
+}
+
+/* ---------------------------------------------------------------- a narrow screen */
+@media (max-width: 1100px) {
+	.sp {
+		right: var(--pad);
+		top: auto;
+		bottom: calc(var(--pad) + 150px);
+		max-height: 46vh;
 	}
-	.st-note {
-		font-size: 11.5px;
-		gap: 4px 10px;
+}
+@media (max-width: 760px) {
+	.ex-top {
+		max-width: calc(100vw - 2 * var(--pad) - 118px);
 	}
-	.st-why {
+	.ex-title {
+		font-size: 26px;
+	}
+	.ex-legend:not([data-open]) {
 		display: none;
 	}
+	.ex-sub {
+		display: none;
+	}
+	.ex-places small {
+		display: none;
+	}
+	.ex-legend {
+		top: calc(var(--pad) + 52px);
+		width: min(300px, calc(100vw - 2 * var(--pad)));
+		max-height: 60vh;
+	}
+	.ex-legend-btn {
+		display: inline-flex;
+	}
+	.ex-bottom {
+		width: calc(100vw - 2 * var(--pad));
+		bottom: calc(var(--pad) + 22px);
+	}
+	.ex-why,
 	.rs-name {
 		display: none;
 	}
@@ -533,14 +959,14 @@
 	.sp {
 		left: var(--pad);
 		right: var(--pad);
-		top: auto;
-		bottom: calc(var(--pad) + 76px);
 		width: auto;
-		max-height: 52vh;
+		bottom: calc(var(--pad) + 22px);
+		max-height: 58vh;
 	}
 }
 @media (prefers-reduced-motion: reduce) {
 	.sp,
+	.ex-caption,
 	.rp-steps button[data-auto] i {
 		animation: none;
 	}

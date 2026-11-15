@@ -105,7 +105,7 @@ export function loadPrediction(root: string): Promise<Prediction | null> {
 export const fileUrl = (root: string, p: Prediction, file: string) => `${root}/${file}?v=${encodeURIComponent(p.baked_utc)}`
 
 /** the pixel of the grid under a point, or null outside it */
-export function pixelAt(grid: Prediction['grid'], lngLat: [number, number]): { row: number; col: number } | null {
+export function pixelAt(grid: { width: number; height: number; bounds: Bounds }, lngLat: [number, number]): { row: number; col: number } | null {
 	const [west, south, east, north] = grid.bounds
 	const x = (mercX(lngLat[0]) - mercX(west)) / (mercX(east) - mercX(west))
 	const y = (mercY(lngLat[1]) - mercY(north)) / (mercY(south) - mercY(north))
