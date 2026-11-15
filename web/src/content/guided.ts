@@ -18,8 +18,8 @@ export type Step = {
 
 /** the core of L'Horta Sud: Torrent's east, Picanya, Paiporta, Sedaví, Alfafar, Massanassa, Catarroja, Benetússer */
 const HORTA: [number, number, number, number] = [-0.4655, 39.3895, -0.3545, 39.4535]
-/** the Pego-Oliva marsh, on the Copernicus EMS flood of Oct 2026 */
-const PEGO: [number, number, number, number] = [-0.135, 38.85, -0.035, 38.93]
+/** the Pego-Oliva marsh: the box of the Copernicus EMSR935 flooded area of AOI01 (data/labels), a little wider */
+const PEGO: [number, number, number, number] = [-0.099, 38.846, -0.005, 38.893]
 
 export const STEPS: Step[] = [
 	{ key: 'missed', when: '29 Oct 2024', where: "L'Horta Sud", title: 'The official map said safe', hint: 'Tap a blue street', view: HORTA },

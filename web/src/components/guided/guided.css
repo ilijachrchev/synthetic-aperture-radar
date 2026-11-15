@@ -184,6 +184,7 @@
 }
 .gd-pair p {
 	display: grid;
+	align-content: start;
 	gap: 4px;
 	margin: 0;
 	opacity: 0.55;
@@ -263,6 +264,18 @@
 .gd-sw[data-fill][data-k="false"] {
 	color: var(--false);
 	background: var(--false);
+}
+.gd-sw[data-fill][data-k="rain"] {
+	color: #7fe0f0;
+	background: color-mix(in oklab, #7fe0f0 22%, transparent);
+}
+.gd-sw[data-fill][data-k="water"] {
+	color: #2a8fff;
+	background: #2a8fff;
+}
+.gd-sw[data-fill][data-k="nodata"] {
+	color: rgb(10 16 24 / 0.55);
+	background: rgb(10 16 24 / 0.45);
 }
 .gd-sw[data-fill][data-k="missed"] {
 	color: var(--missed);

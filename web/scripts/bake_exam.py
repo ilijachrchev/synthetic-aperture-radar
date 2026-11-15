@@ -23,8 +23,9 @@ exam_happened.webp (green predicted and flooded, yellow flooded but missed). The
 
 Step 6, "What if it rains": for each rain scenario of the ref (scenario_000mm to scenario_200mm), the model's likely
 new water (new_water_likelihood_utm.tif at thresholds.new_water, evidence 0 pixels, as forecast.json counts it) as
-one outline: rain_2026.json, one feature per rain, with the hectares of forecast.json and the hectares of the drawn
-mask beside them.
+one clear outline: rain_2026.json, one feature per rain. The 20 m mask is scattered over the fields, so the outline is
+drawn around it: gaps under 40 m closed, holes and specks under 1 ha left out, simplified by 15 m. The page shows the
+hectares of forecast.json; the hectares of the mask and of the drawn outline are written beside them.
 
 Writes exam_prediction.webp, exam_happened.webp, rain_2026.json and exam.json (the index, every number with the file
 it comes from) under web/public/layers/guided/. Needs numpy, rasterio, shapely, pyproj, geopandas, xarray and pillow.
@@ -68,7 +69,9 @@ COLOURS = {
     "prediction": {HIT: (47, 210, 122, 235), FALSE_ALARM: (255, 77, 79, 235)},
     "happened": {HIT: (47, 210, 122, 235), MISSED: (255, 210, 63, 235)},
 }
-OUTLINE_SIMPLIFY_M = 10.0
+OUTLINE_SIMPLIFY_M = 15.0
+OUTLINE_CLOSE_PX = 2       # 40 m: the gaps between likely pixels closed before the outline is drawn
+OUTLINE_MIN_PX = 25        # 1 ha: smaller parts and holes left out of the drawing
 
 
 def now() -> str:
@@ -210,7 +213,8 @@ def rain(src: Ref) -> dict:
         ev, *_ = read(src.path(f"{SPATIAL}/{SITE}/{sid}/evidence_utm.tif"))
         thr = float(doc["thresholds"]["new_water"])
         mask = (ev == 0) & np.isfinite(nl) & (nl >= thr)
-        polys = [shapely.geometry.shape(g) for g, v in shapes(mask.astype("uint8"), mask=mask, transform=t, connectivity=4) if v == 1]
+        shape_mask = outline_mask(mask)
+        polys = [shapely.geometry.shape(g) for g, v in shapes(shape_mask.astype("uint8"), mask=shape_mask, transform=t, connectivity=4) if v == 1]
         merged = shapely.union_all(polys) if polys else shapely.Polygon()
         merged = shapely.make_valid(shapely.simplify(merged, OUTLINE_SIMPLIFY_M, preserve_topology=True))
         if to_deg is None:
@@ -220,26 +224,51 @@ def rain(src: Ref) -> dict:
         mm = int(round(float(doc["rain"]["rain_between_mm"])))
         ha_file = float(doc["area_ha"]["likely_new_water"])
         ha_mask = round(float(mask.sum()) * PIXEL_HA, 1)
+        ha_outline = round(float(merged.area) / 1e4, 1)
         seen = doc.get("rain_seen_in_training") or {}
         warning = None
         if seen and not seen.get("inside_training_range", True):
             warning = f"Beyond the storms the model learned from: the largest had {round(float(seen['max']))} mm"
         feats.append({"type": "Feature", "properties": {"rain_mm": mm}, "geometry": shapely.geometry.mapping(geo)})
-        stops.append({"id": sid, "rain_mm": mm, "lead_days": doc["lead_days"], "ha": ha_file, "ha_mask": ha_mask,
+        stops.append({"id": sid, "rain_mm": mm, "lead_days": doc["lead_days"], "ha": ha_file, "ha_mask": ha_mask, "ha_inside_outline": ha_outline,
                       "issued_from_pass": doc.get("issued_from_pass"), "target_time_utc": doc.get("target_time_utc"),
                       "warning": warning, "source": src.name(f"{SPATIAL}/{SITE}/{sid}/forecast.json") + " area_ha.likely_new_water"})
-        print(f"  rain {mm} mm: {ha_file} ha in forecast.json, {ha_mask} ha in the drawn mask", flush=True)
+        print(f"  rain {mm} mm: {ha_file} ha in forecast.json, {ha_mask} ha in the mask, {ha_outline} ha inside the outline, "
+              f"{len(getattr(merged, 'geoms', [merged]))} parts", flush=True)
     data = json.dumps({"type": "FeatureCollection", "features": feats}, separators=(",", ":")).encode("utf-8")
     path = OUT / "rain_2026.json"
     path.write_bytes(data)
     print(f"  rain_2026.json: {len(data) / 1e3:.0f} kB", flush=True)
     return {
         "file": path.name, "bytes": len(data), "stops": stops,
-        "rule": "likely new water: new_water_likelihood_utm.tif at forecast.json thresholds.new_water, on evidence 0 pixels (as forecast.json counts area_ha.likely_new_water), outlined and simplified by 10 m",
+        "rule": ("likely new water: new_water_likelihood_utm.tif at forecast.json thresholds.new_water, on evidence 0 pixels (as forecast.json "
+                 "counts area_ha.likely_new_water); drawn as an outline around it: gaps under 40 m closed, holes and parts under 1 ha left out, "
+                 "simplified by 15 m (ha_inside_outline); the number shown is ha, from forecast.json"),
         "source": {"model": src.name(f"{SPATIAL}/{SITE}/scenario_*mm") + ", the team spatial model (LightGBM, PR #33)",
                    "rain": "hypothetical rain in the 4 days after the latest Sentinel-1 map, at the wettest point of the site (forecast.json mode_note)"},
         "streets": "no street scenarios in data/streets yet: fields only",
     }
+
+
+def outline_mask(mask: np.ndarray) -> np.ndarray:
+    """The likely pixels with the gaps between them closed, holes and specks under 1 ha left out: what one outline
+    can draw clearly. For the drawing only; every number comes from the mask itself."""
+    from scipy import ndimage
+
+    disk = np.hypot(*np.mgrid[-OUTLINE_CLOSE_PX:OUTLINE_CLOSE_PX + 1, -OUTLINE_CLOSE_PX:OUTLINE_CLOSE_PX + 1]) <= OUTLINE_CLOSE_PX
+    closed = ndimage.binary_closing(np.pad(mask, OUTLINE_CLOSE_PX + 1), structure=disk)[OUTLINE_CLOSE_PX + 1:-OUTLINE_CLOSE_PX - 1, OUTLINE_CLOSE_PX + 1:-OUTLINE_CLOSE_PX - 1]
+    lab, n = ndimage.label(closed)
+    if n:
+        size = ndimage.sum(closed, lab, index=np.arange(1, n + 1))
+        closed = np.isin(lab, 1 + np.flatnonzero(size >= OUTLINE_MIN_PX))
+    holes = ~closed
+    lab, n = ndimage.label(holes)
+    if n:
+        size = ndimage.sum(holes, lab, index=np.arange(1, n + 1))
+        edge = np.unique(np.concatenate([lab[0], lab[-1], lab[:, 0], lab[:, -1]]))
+        small = np.isin(lab, 1 + np.flatnonzero(size < OUTLINE_MIN_PX)) & ~np.isin(lab, edge[edge > 0])
+        closed = closed | small
+    return closed
 
 
 def score_from(result: Path, label: str | None = None) -> None:

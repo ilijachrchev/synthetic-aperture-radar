@@ -70,6 +70,59 @@
 .hx-line {
 	display: inline;
 }
+/* the hook: two sentences, one a line, a step smaller than the old line */
+.hx-hook {
+	font-size: clamp(44px, 5.6vw, 92px);
+}
+.hx-hook .hx-line {
+	display: block;
+}
+.hx-eyebrow {
+	margin: 0 0 18px;
+	font-size: 14px;
+	font-weight: 700;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	color: rgb(255 255 255 / 0.82);
+}
+/* the toll of the 2024 flood: two numbers, white on the panel */
+.hx-toll {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: 14px clamp(28px, 5vw, 64px);
+	margin-top: 30px;
+}
+.hx-toll p {
+	display: grid;
+	justify-items: center;
+	gap: 6px;
+	margin: 0;
+}
+.hx-toll b {
+	font-size: clamp(40px, 4.4vw, 68px);
+	line-height: 0.92;
+	font-variant-numeric: tabular-nums;
+}
+.hx-toll span {
+	font-size: 15px;
+	font-weight: 650;
+	color: rgb(255 255 255 / 0.86);
+}
+.hx-caption {
+	margin: 14px 0 0;
+	font-size: 13px;
+	color: rgb(255 255 255 / 0.72);
+}
+.hx-caption a {
+	white-space: nowrap;
+	color: inherit;
+	text-decoration: underline;
+	text-underline-offset: 2px;
+}
+.hx-caption a:hover {
+	color: #fff;
+}
 .hx-lead {
 	margin: 22px auto 0;
 	max-width: 620px;
@@ -269,6 +322,9 @@
 	}
 	.hx-title {
 		font-size: clamp(52px, 14vw, 96px);
+	}
+	.hx-hook {
+		font-size: clamp(38px, 10.4vw, 84px);
 	}
 }
 @media (max-width: 860px) {

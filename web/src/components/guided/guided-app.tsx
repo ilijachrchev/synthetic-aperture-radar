@@ -216,8 +216,13 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 			})
 			m.once('style.load', () => {
 				if (gone || !m) return
-				// on a phone the photo credit folds into its (i) button, so it does not cover the map
-				if (window.innerWidth < 900) mapEl.current?.querySelector('.maplibregl-ctrl-attrib')?.classList.remove('maplibregl-compact-show')
+				// on a phone the photo credit folds into its (i) button, so it does not cover the map (MapLibre opens it
+				// once its sources have loaded: fold it then too)
+				const fold = () => {
+					if (window.innerWidth < 900) mapEl.current?.querySelector('.maplibregl-ctrl-attrib')?.classList.remove('maplibregl-compact-show')
+				}
+				fold()
+				m.once('idle', fold)
 				setMap(m)
 				setReady(true)
 			})
@@ -257,7 +262,7 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 		map.addSource('g-pick', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } })
 		const hidden = { visibility: 'none' as const }
 		map.addLayer({ id: 'g-zones-fill', type: 'fill', source: 'g-zones', layout: hidden, paint: { 'fill-color': COLORS.zone, 'fill-opacity': 0.16 } })
-		map.addLayer({ id: 'g-sim-fill', type: 'fill', source: 'g-sim', layout: hidden, paint: { 'fill-color': COLORS.sim, 'fill-opacity': 0.2 } })
+		map.addLayer({ id: 'g-sim-fill', type: 'fill', source: 'g-sim', layout: hidden, paint: { 'fill-color': COLORS.sim, 'fill-opacity': 0.34 } })
 		map.addLayer({ id: 'g-zones-line', type: 'line', source: 'g-zones', layout: hidden, paint: { 'line-color': COLORS.zone, 'line-width': ['interpolate', ['linear'], ['zoom'], 10, 1, 16, 2.4] as never, 'line-opacity': 0.95 } })
 		map.addLayer({ id: 'g-sim-line', type: 'line', source: 'g-sim', layout: hidden, paint: { 'line-color': COLORS.sim, 'line-width': ['interpolate', ['linear'], ['zoom'], 10, 1, 16, 2.4] as never, 'line-opacity': 0.95 } })
 		const street = { 'line-color': COLORS.flooded, 'line-width': lineWidth(), 'line-opacity': 0 }
@@ -282,7 +287,7 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 	useEffect(() => {
 		if (!map || !ready) return
 		const on = new Set(STEP_LAYERS[key])
-		if (key === 'simulation') for (const id of method === 'zones' ? ['g-zones-line', 'g-zones-fill'] : ['g-sim-line', 'g-sim-fill']) on.add(id)
+		if (key === 'simulation') for (const id of method === 'zones' ? ['g-zones-line', 'g-zones-fill'] : ['g-sim-fill']) on.add(id)
 		if (key === 'missed' && pick) on.add('g-pick')
 		for (const id of ALL_LAYERS) if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', on.has(id) ? 'visible' : 'none')
 		if (map.getLayer('g-hit')) map.setLayoutProperty('g-hit', 'visibility', key === 'missed' ? 'visible' : 'none')
@@ -529,6 +534,14 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 					</div>
 				)}
 				{still && <p className="gd-small">9 days after the flood, {pct(still.open_water_share * 100)} of the flooded farmland was still under water.</p>}
+				<ul className="gd-key">
+					<li>
+						<i className="gd-sw" data-k="water" data-fill /> Water on each radar map
+					</li>
+					<li>
+						<i className="gd-sw" data-k="nodata" data-fill /> Ground the map does not cover
+					</li>
+				</ul>
 				{swipe28 && (
 					<p className="gd-hint">
 						<i /> {s.hint}: the same evening, {minutesApart(swipe28.nisar.time_utc, swipe28.s1.time_utc)} minutes apart
@@ -553,7 +566,7 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 				)}
 				{score && (
 					<p className="gd-small">
-						Simple rules {f2(score.simple_rules[0])} to {f2(score.simple_rules[1])}. {score.score}: {score.help}.
+						Three simple rules: {f2(score.simple_rules[0])} to {f2(score.simple_rules[1])}. {score.score}: {score.help}.
 					</p>
 				)}
 				<ul className="gd-key">
@@ -584,7 +597,13 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 						<RainSlider stops={rainStops.map((r) => ({ label: `${r.rain_mm} mm`, warn: !!r.warning }))} index={rainIdx} onInput={() => {}} onStop={setRainIdx} label="Rain" />
 					</div>
 				)}
+				<ul className="gd-key">
+					<li>
+						<i className="gd-sw" data-k="rain" data-fill /> Likely flooded, our model: a relative likelihood, not depth
+					</li>
+				</ul>
 				{rain?.warning && <p className="gd-small">{rain.warning}.</p>}
+				{rain?.rain_mm === 0 && <p className="gd-small">With no rain the model still marks this much: water the marsh holds in this season.</p>}
 				<p className="gd-note">Version 1. Its tested score is on the step before.</p>
 				<div className="gd-end">
 					<button type="button" className="gd-btn" onClick={() => go(0)}>
@@ -615,6 +634,7 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 	if (key === 'rain' && exam?.rain) src.push(`Model: ${exam.rain.source.model}.`, `Rain scenarios: ${exam.rain.source.rain}.`)
 
 	const swipeOn = map && (key === 'nisar' || key === 'exam')
+
 	return (
 		<div className="gd" data-step={key} data-ready={ready || undefined}>
 			<div ref={mapEl} className="gd-map" />
@@ -624,6 +644,7 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 					key="nisar"
 					map={map}
 					bounds={views.bounds}
+					beside=".gd-card"
 					left={{ src: `/layers/pego_oliva/${swipe28.s1.file}?v=${encodeURIComponent(views.baked_utc)}`, label: 'Sentinel-1', sub: `${timeOf(swipe28.s1.time_utc)} UTC` }}
 					right={{ src: `/layers/pego_oliva/${swipe28.nisar.file}?v=${encodeURIComponent(views.baked_utc)}`, label: 'NISAR', sub: `${timeOf(swipe28.nisar.time_utc)} UTC` }}
 				/>
@@ -633,6 +654,7 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 					key="exam"
 					map={map}
 					bounds={exam.bounds}
+					beside=".gd-card"
 					left={{ src: `${ROOT}/${exam.prediction.file}?v=${encodeURIComponent(exam.baked_utc)}`, label: 'Our prediction' }}
 					right={{ src: `${ROOT}/${exam.happened.file}?v=${encodeURIComponent(exam.baked_utc)}`, label: 'What happened' }}
 				/>

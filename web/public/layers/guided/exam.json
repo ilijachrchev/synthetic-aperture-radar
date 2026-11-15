@@ -1,6 +1,6 @@
 {
  "made_by": "web/scripts/bake_exam.py",
- "baked_utc": "2026-11-15T07:42:19Z",
+ "baked_utc": "2026-11-15T07:56:57Z",
  "ref": null,
  "commit": null,
  "bounds": [
@@ -50,7 +50,7 @@
  },
  "rain": {
   "file": "rain_2026.json",
-  "bytes": 607409,
+  "bytes": 97605,
   "stops": [
    {
     "id": "scenario_000mm",
@@ -58,6 +58,7 @@
     "lead_days": 4.0,
     "ha": 405.1,
     "ha_mask": 405.1,
+    "ha_inside_outline": 479.2,
     "issued_from_pass": "20261110T175323_S1C",
     "target_time_utc": "2026-11-14T17:53:23Z",
     "warning": null,
@@ -69,6 +70,7 @@
     "lead_days": 4.0,
     "ha": 470.6,
     "ha_mask": 470.6,
+    "ha_inside_outline": 548.1,
     "issued_from_pass": "20261110T175323_S1C",
     "target_time_utc": "2026-11-14T17:53:23Z",
     "warning": null,
@@ -80,6 +82,7 @@
     "lead_days": 4.0,
     "ha": 430.3,
     "ha_mask": 430.2,
+    "ha_inside_outline": 509.5,
     "issued_from_pass": "20261110T175323_S1C",
     "target_time_utc": "2026-11-14T17:53:23Z",
     "warning": null,
@@ -91,24 +94,18 @@
     "lead_days": 4.0,
     "ha": 513.3,
     "ha_mask": 512.9,
+    "ha_inside_outline": 611.6,
     "issued_from_pass": "20261110T175323_S1C",
     "target_time_utc": "2026-11-14T17:53:23Z",
     "warning": "Beyond the storms the model learned from: the largest had 194 mm",
     "source": "data/prediction/spatial/pego_oliva/scenario_200mm/forecast.json area_ha.likely_new_water"
    }
   ],
-  "rule": "likely new water: new_water_likelihood_utm.tif at forecast.json thresholds.new_water, on evidence 0 pixels (as forecast.json counts area_ha.likely_new_water), outlined and simplified by 10 m",
+  "rule": "likely new water: new_water_likelihood_utm.tif at forecast.json thresholds.new_water, on evidence 0 pixels (as forecast.json counts area_ha.likely_new_water); drawn as an outline around it: gaps under 40 m closed, holes and parts under 1 ha left out, simplified by 15 m (ha_inside_outline); the number shown is ha, from forecast.json",
   "source": {
    "model": "data/prediction/spatial/pego_oliva/scenario_*mm, the team spatial model (LightGBM, PR #33)",
    "rain": "hypothetical rain in the 4 days after the latest Sentinel-1 map, at the wettest point of the site (forecast.json mode_note)"
   },
   "streets": "no street scenarios in data/streets yet: fields only"
- },
- "check": {
-  "test_predicted_ha": 527.4,
-  "test_observed_ha": 759.8,
-  "here_predicted_ha": 527.4,
-  "here_observed_ha": 759.8,
-  "same": true
  }
 }

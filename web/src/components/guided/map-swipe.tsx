@@ -15,6 +15,7 @@ export function MapSwipe({
 	left,
 	right,
 	start = 0.5,
+	beside,
 }: {
 	map: MapLibreMap
 	/** west, south, east, north of both pictures */
@@ -23,11 +24,17 @@ export function MapSwipe({
 	right: SwipeSide
 	/** where the line starts, as a share of the screen's width */
 	start?: number
+	/** on a wide screen, a panel on the left (a CSS selector): the line starts in the middle of the map beside it */
+	beside?: string
 }) {
 	const root = useRef<HTMLDivElement>(null)
 	const pics = useRef<HTMLImageElement[]>([])
-	const [x, setX] = useState(start)
-	const xRef = useRef(start)
+	const [x, setX] = useState(() => {
+		const el = beside ? document.querySelector(beside) : null
+		if (!el || window.innerWidth < 900) return start
+		return (el.getBoundingClientRect().right + window.innerWidth) / 2 / window.innerWidth
+	})
+	const xRef = useRef(x)
 
 	// the pictures follow the map
 	useEffect(() => {

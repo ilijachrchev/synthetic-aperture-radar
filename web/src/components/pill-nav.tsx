@@ -3,7 +3,6 @@
 import { ArrowUpRight } from 'lucide-react'
 import Link from 'next/link'
 import { useLayoutEffect, useRef, useSyncExternalStore } from 'react'
-import { STORIES } from '@/content/stories'
 import { storyNav } from '@/lib/story-nav'
 import { Mark } from './brand'
 import { ThemeSwitch } from './theme-switch'
@@ -11,8 +10,8 @@ import './pill-nav.css'
 
 /**
  * The navbar: one glass pill that floats with the page. It names the overview and the stories, a thumb slides
- * under the one on screen (the story playing in the monitor), and each takes you there. The map is one button away:
- * it opens the first story's 3D page, and the others are on the switch there.
+ * under the one on screen (the story playing in the monitor), and each takes you there. The flood map (/explore, the
+ * guided steps) is one button away.
  */
 export function PillNav({ stories }: { stories: { key: string; tab: string }[] }) {
 	const active = useSyncExternalStore(storyNav.subscribe, storyNav.get, () => -1)
@@ -53,8 +52,8 @@ export function PillNav({ stories }: { stories: { key: string; tab: string }[] }
 			</div>
 			<div className="pnav-end">
 				<ThemeSwitch />
-				<Link href={STORIES[0].path} className="pnav-cta">
-					Open the map <ArrowUpRight size={16} strokeWidth={2.4} />
+				<Link href="/explore" className="pnav-cta">
+					The flood map <ArrowUpRight size={16} strokeWidth={2.4} />
 				</Link>
 			</div>
 		</header>
