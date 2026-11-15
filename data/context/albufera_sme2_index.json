@@ -1,0 +1,214 @@
+{
+ "product": "NISAR_L3_SME2_PROVISIONAL_V1",
+ "maturity": "PROVISIONAL",
+ "units": "m3/m3",
+ "storage": "uint16 x 10000, 65535 no data",
+ "grid": "200 m, aligned with the 20 m site grid (pipeline.stack.site_grid); load() resamples to 20 m",
+ "dates": [
+  {
+   "date": "2026-06-18",
+   "granules": [
+    "NISAR_L3_PR_SME2_023_058_A_021_2005_DHDH_A_20260618T050655_20260618T050722_P05023_N_F_J_001",
+    "NISAR_L3_PR_SME2_023_066_D_069_2005_DHDH_M_20260618T185321_20260618T185356_P05023_N_F_J_001",
+    "NISAR_L3_PR_SME2_023_058_A_022_2005_DHDH_A_20260618T050721_20260618T050756_P05023_N_F_J_001"
+   ],
+   "file": "C:/Projects/synthetic-aperture-radar/data/context/albufera_sme2_2026-06-18_200m.tif",
+   "share_with_value": 0.363,
+   "share_recommended": 0.798,
+   "median_m3m3": 0.291
+  },
+  {
+   "date": "2026-06-25",
+   "granules": [
+    "NISAR_L3_PR_SME2_023_167_D_068_2005_DHDH_A_20260625T190107_20260625T190142_P05023_N_F_J_001",
+    "NISAR_L3_PR_SME2_023_167_D_069_2005_DHDH_A_20260625T190141_20260625T190216_P05023_N_F_J_001"
+   ],
+   "file": "C:/Projects/synthetic-aperture-radar/data/context/albufera_sme2_2026-06-25_200m.tif",
+   "share_with_value": 0.363,
+   "share_recommended": 0.798,
+   "median_m3m3": 0.284
+  },
+  {
+   "date": "2026-06-30",
+   "granules": [
+    "NISAR_L3_PR_SME2_024_058_A_021_2005_DHDH_A_20260630T050650_20260630T050721_P05023_N_F_J_001",
+    "NISAR_L3_PR_SME2_024_058_A_022_2005_DHDH_A_20260630T050720_20260630T050755_P05023_N_F_J_001",
+    "NISAR_L3_PR_SME2_024_066_D_069_2005_DHDH_M_20260630T185321_20260630T185356_P05023_N_F_J_001"
+   ],
+   "file": "C:/Projects/synthetic-aperture-radar/data/context/albufera_sme2_2026-06-30_200m.tif",
+   "share_with_value": 0.363,
+   "share_recommended": 0.798,
+   "median_m3m3": 0.296
+  },
+  {
+   "date": "2026-07-07",
+   "granules": [
+    "NISAR_L3_PR_SME2_024_167_D_069_2005_DHDH_A_20260707T190140_20260707T190215_P05023_N_F_J_001",
+    "NISAR_L3_PR_SME2_024_167_D_068_2005_DHDH_A_20260707T190106_20260707T190141_P05023_N_F_J_001"
+   ],
+   "file": "C:/Projects/synthetic-aperture-radar/data/context/albufera_sme2_2026-07-07_200m.tif",
+   "share_with_value": 0.363,
+   "share_recommended": 0.798,
+   "median_m3m3": 0.282
+  },
+  {
+   "date": "2026-07-12",
+   "granules": [
+    "NISAR_L3_PR_SME2_025_058_A_021_2005_DHDH_A_20260712T050653_20260712T050721_P05023_N_F_J_001",
+    "NISAR_L3_PR_SME2_025_066_D_069_2005_DHDH_M_20260712T185320_20260712T185355_P05023_N_F_J_001"
+   ],
+   "file": "C:/Projects/synthetic-aperture-radar/data/context/albufera_sme2_2026-07-12_200m.tif",
+   "share_with_value": 0.545,
+   "share_recommended": 0.536,
+   "median_m3m3": 0.219
+  },
+  {
+   "date": "2026-07-19",
+   "granules": [
+    "NISAR_L3_PR_SME2_025_167_D_068_2005_DHDH_A_20260719T190106_20260719T190141_P05023_N_F_J_001",
+    "NISAR_L3_PR_SME2_025_167_D_069_2005_DHDH_A_20260719T190140_20260719T190214_P05023_N_F_J_001"
+   ],
+   "file": "C:/Projects/synthetic-aperture-radar/data/context/albufera_sme2_2026-07-19_200m.tif",
+   "share_with_value": 0.545,
+   "share_recommended": 0.537,
+   "median_m3m3": 0.238
+  },
+  {
+   "date": "2026-07-24",
+   "granules": [
+    "NISAR_L3_PR_SME2_026_058_A_021_2005_DHDH_A_20260724T050653_20260724T050720_P05023_N_F_J_001",
+    "NISAR_L3_PR_SME2_026_058_A_022_2005_DHDH_A_20260724T050719_20260724T050754_P05023_N_F_J_001",
+    "NISAR_L3_PR_SME2_026_066_D_069_2005_DHDH_M_20260724T185319_20260724T185354_P05023_N_F_J_001"
+   ],
+   "file": "C:/Projects/synthetic-aperture-radar/data/context/albufera_sme2_2026-07-24_200m.tif",
+   "share_with_value": 0.545,
+   "share_recommended": 0.536,
+   "median_m3m3": 0.223
+  },
+  {
+   "date": "2026-08-17",
+   "granules": [
+    "NISAR_L3_PR_SME2_028_058_A_021_2005_DHDH_A_20260817T050652_20260817T050719_P05023_N_F_J_001",
+    "NISAR_L3_PR_SME2_028_058_A_022_2005_DHDH_A_20260817T050718_20260817T050753_P05023_N_F_J_001",
+    "NISAR_L3_PR_SME2_028_066_D_069_2005_DHDH_M_20260817T185318_20260817T185353_P05023_N_F_J_001"
+   ],
+   "file": "C:/Projects/synthetic-aperture-radar/data/context/albufera_sme2_2026-08-17_200m.tif",
+   "share_with_value": 0.545,
+   "share_recommended": 0.536,
+   "median_m3m3": 0.203
+  },
+  {
+   "date": "2026-08-24",
+   "granules": [
+    "NISAR_L3_PR_SME2_028_167_D_068_2005_DHDH_A_20260824T190104_20260824T190139_P05023_N_F_J_001",
+    "NISAR_L3_PR_SME2_028_167_D_069_2005_DHDH_A_20260824T190138_20260824T190212_P05023_N_F_J_001"
+   ],
+   "file": "C:/Projects/synthetic-aperture-radar/data/context/albufera_sme2_2026-08-24_200m.tif",
+   "share_with_value": 0.545,
+   "share_recommended": 0.537,
+   "median_m3m3": 0.202
+  },
+  {
+   "date": "2026-08-29",
+   "granules": [
+    "NISAR_L3_PR_SME2_029_058_A_021_2005_DHDH_A_20260829T050652_20260829T050719_P05023_N_F_J_001",
+    "NISAR_L3_PR_SME2_029_066_D_069_2005_DHDH_M_20260829T185318_20260829T185353_P05023_N_F_J_001"
+   ],
+   "file": "C:/Projects/synthetic-aperture-radar/data/context/albufera_sme2_2026-08-29_200m.tif",
+   "share_with_value": 0.545,
+   "share_recommended": 0.536,
+   "median_m3m3": 0.187
+  },
+  {
+   "date": "2026-09-05",
+   "granules": [
+    "NISAR_L3_PR_SME2_029_167_D_069_2005_DHDH_A_20260905T190137_20260905T190212_P05023_N_F_J_001",
+    "NISAR_L3_PR_SME2_029_167_D_068_2005_DHDH_A_20260905T190104_20260905T190138_P05023_N_F_J_001"
+   ],
+   "file": "C:/Projects/synthetic-aperture-radar/data/context/albufera_sme2_2026-09-05_200m.tif",
+   "share_with_value": 0.545,
+   "share_recommended": 0.518,
+   "median_m3m3": 0.211
+  },
+  {
+   "date": "2026-09-10",
+   "granules": [
+    "NISAR_L3_PR_SME2_030_058_A_021_2005_DHDH_A_20260910T050651_20260910T050718_P05023_N_F_J_001",
+    "NISAR_L3_PR_SME2_030_058_A_022_2005_DHDH_A_20260910T050717_20260910T050752_P05023_N_F_J_001",
+    "NISAR_L3_PR_SME2_030_066_D_069_2005_DHDH_M_20260910T185318_20260910T185353_P05023_N_F_J_001"
+   ],
+   "file": "C:/Projects/synthetic-aperture-radar/data/context/albufera_sme2_2026-09-10_200m.tif",
+   "share_with_value": 0.545,
+   "share_recommended": 0.536,
+   "median_m3m3": 0.236
+  },
+  {
+   "date": "2026-09-17",
+   "granules": [
+    "NISAR_L3_PR_SME2_030_167_D_068_2005_DHDH_A_20260917T190103_20260917T190138_P05023_N_F_J_001",
+    "NISAR_L3_PR_SME2_030_167_D_069_2005_DHDH_A_20260917T190137_20260917T190212_P05023_N_F_J_001"
+   ],
+   "file": "C:/Projects/synthetic-aperture-radar/data/context/albufera_sme2_2026-09-17_200m.tif",
+   "share_with_value": 0.545,
+   "share_recommended": 0.537,
+   "median_m3m3": 0.241
+  },
+  {
+   "date": "2026-09-22",
+   "granules": [
+    "NISAR_L3_PR_SME2_031_058_A_021_2005_SHSH_A_20260922T050651_20260922T050719_P05023_N_F_J_001",
+    "NISAR_L3_PR_SME2_031_066_D_069_2005_DHDH_M_20260922T185318_20260922T185353_P05023_N_F_J_001"
+   ],
+   "file": "C:/Projects/synthetic-aperture-radar/data/context/albufera_sme2_2026-09-22_200m.tif",
+   "share_with_value": 0.545,
+   "share_recommended": 0.536,
+   "median_m3m3": 0.2
+  },
+  {
+   "date": "2026-09-29",
+   "granules": [
+    "NISAR_L3_PR_SME2_031_167_D_068_2005_DHDH_A_20260929T190103_20260929T190138_P05023_N_F_J_001",
+    "NISAR_L3_PR_SME2_031_167_D_069_2005_DHDH_A_20260929T190137_20260929T190212_P05023_N_F_J_001"
+   ],
+   "file": "C:/Projects/synthetic-aperture-radar/data/context/albufera_sme2_2026-09-29_200m.tif",
+   "share_with_value": 0.545,
+   "share_recommended": 0.535,
+   "median_m3m3": 0.217
+  },
+  {
+   "date": "2026-10-04",
+   "granules": [
+    "NISAR_L3_PR_SME2_032_058_A_021_2005_DHDH_A_20261004T050652_20261004T050719_P05023_N_F_J_001",
+    "NISAR_L3_PR_SME2_032_058_A_022_2005_DHDH_A_20261004T050718_20261004T050752_P05023_N_F_J_001",
+    "NISAR_L3_PR_SME2_032_066_D_069_2005_DHDH_M_20261004T185318_20261004T185353_P05023_N_F_J_001"
+   ],
+   "file": "C:/Projects/synthetic-aperture-radar/data/context/albufera_sme2_2026-10-04_200m.tif",
+   "share_with_value": 0.545,
+   "share_recommended": 0.536,
+   "median_m3m3": 0.215
+  },
+  {
+   "date": "2026-10-11",
+   "granules": [
+    "NISAR_L3_PR_SME2_032_167_D_068_2005_DHDH_A_20261011T190103_20261011T190138_P05023_N_F_J_001",
+    "NISAR_L3_PR_SME2_032_167_D_069_2005_DHDH_A_20261011T190137_20261011T190212_P05023_N_F_J_001"
+   ],
+   "file": "C:/Projects/synthetic-aperture-radar/data/context/albufera_sme2_2026-10-11_200m.tif",
+   "share_with_value": 0.545,
+   "share_recommended": 0.535,
+   "median_m3m3": 0.197
+  },
+  {
+   "date": "2026-10-16",
+   "granules": [
+    "NISAR_L3_PR_SME2_033_058_A_021_2005_DHDH_A_20261016T050652_20261016T050719_P05023_N_F_J_001",
+    "NISAR_L3_PR_SME2_033_058_A_022_2005_DHDH_A_20261016T050718_20261016T050753_P05023_N_F_J_001",
+    "NISAR_L3_PR_SME2_033_066_D_069_2005_DHDH_M_20261016T185318_20261016T185353_P05023_N_F_J_001"
+   ],
+   "file": "C:/Projects/synthetic-aperture-radar/data/context/albufera_sme2_2026-10-16_200m.tif",
+   "share_with_value": 0.545,
+   "share_recommended": 0.536,
+   "median_m3m3": 0.226
+  }
+ ]
+}
