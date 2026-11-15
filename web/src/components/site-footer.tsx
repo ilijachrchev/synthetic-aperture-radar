@@ -114,7 +114,9 @@ export function SiteFooter() {
 					</nav>
 				</div>
 				<div className="foot8-bar">
-					<p>© 2026 {SITE.name} · NASA Space Apps Challenge, Valencia</p>
+					<p>
+						© 2026 {SITE.name} · {SITE.event} · {SITE.challengeName}, Valencia
+					</p>
 					<ul>
 						<li>NISAR data: NASA-ISRO via ASF DAAC</li>
 						<li>Not endorsed by NASA</li>

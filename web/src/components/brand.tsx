@@ -14,9 +14,9 @@ export function Mark({ size = 22 }: { size?: number }) {
 /** The lockup, set like 8x.social's: the mark, then the name in Archivo capitals. */
 export function Brand({ className = '' }: { className?: string }) {
 	return (
-		<Link href="/" className={`brand ${className}`} aria-label="Dancing with the SARs, home">
+		<Link href="/" className={`brand ${className}`} aria-label="Through the Clouds, home">
 			<Mark size={24} />
-			<span className="display brand-name">Dancing with the SARs</span>
+			<span className="display brand-name">Through the Clouds</span>
 		</Link>
 	)
 }

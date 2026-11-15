@@ -59,6 +59,6 @@ export const REVEAL_MS = 4000
 export const REVEAL_FADE_MS = 700
 
 export const META = {
-	title: 'The flood map · Dancing with the SARs',
+	title: 'The flood map · Through the Clouds',
 	description: 'What the official flood map missed in the Valencia flood of 2024, what our street simulation and NISAR radar saw, and whether the forecast of the night before would have seen it coming.',
 }

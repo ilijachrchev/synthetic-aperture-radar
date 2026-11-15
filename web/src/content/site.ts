@@ -1,9 +1,12 @@
 // Site copy. Wording comes from the repository README (the team's own words), shaped into lines, never extended
-// with new claims. The working title is the challenge's name until the team picks a product name.
+// with new claims. The product is "Through the Clouds"; "Dancing with the SARs" is the challenge of NASA Space Apps 2026.
 export const SITE = {
-	name: 'Dancing with the SARs',
-	title: 'Dancing with the SARs · Valencia seen by NISAR radar',
-	description: "Watching Earth's surface flood, grow, burn and sink, seen by NASA-ISRO NISAR radar. One web app for the land around Valencia.",
+	name: 'Through the Clouds',
+	tagline: 'Where the water really went',
+	challengeName: 'Dancing with the SARs',
+	event: 'NASA Space Apps 2026',
+	title: 'Through the Clouds · Where the water really went',
+	description: "Where the water really went in Valencia's 2024 flood, street by street, against the official flood map, with NASA-ISRO NISAR radar.",
 	repo: 'https://github.com/ilijachrchev/synthetic-aperture-radar',
 	challenge: 'https://www.spaceappschallenge.org/2026/challenges/dancing-with-the-sars/',
 } as const

@@ -28,17 +28,16 @@ export function Hero() {
 			</div>
 			<SiteNav variant="pill" end={<ThemeSwitch />} />
 			<div className="hx-head">
-				<p className="hx-eyebrow" data-a>
-					{HERO.eyebrow}
+				<h1 className="display hx-title hx-name">{HERO.name}</h1>
+				<p className="hx-tagline" data-a>
+					{HERO.tagline}
 				</p>
-				<h1 className="display hx-title hx-hook">
-					{HERO.lines.map((l, i) => (
-						<span key={l} className="hx-line">
-							{i > 0 ? ' ' : ''}
-							{l}
-						</span>
-					))}
-				</h1>
+				<p className="hx-small" data-a>
+					{HERO.small}
+				</p>
+				<p className="hx-hook" data-a>
+					{HERO.lines.join(' ')}
+				</p>
 				<div className="hx-toll" data-a>
 					<p>
 						<b className="display">{TOLL.lives_lost}</b>

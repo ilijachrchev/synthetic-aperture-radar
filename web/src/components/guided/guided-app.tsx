@@ -7,7 +7,8 @@
 //   2  The official map said safe      tap a blue street (streets that flooded in 2024, official zones as outlines)
 //   3  Our simulation saw it           one switch: the streets the official map or our simulation flags
 //   4  NISAR sees more water           drag the line between Sentinel-1 and NISAR of the same evening, open water
-//   5  Would we have seen it coming?   one switch: the street simulation with the real rain or the night before's forecast
+//   5  Would we have seen it coming?   one switch: the street simulation with the real rain, the forecast of the same
+//                                      morning or the forecast of the night before
 //
 // Out of the flow, opened from "All layers" (?screen=exam, ?screen=rain): the marsh model's test against EMSR935 (drag
 // the line between our prediction and what happened) and its rain slider (one outline).
@@ -95,7 +96,7 @@ type ScoreDoc = {
 	source: string
 }
 
-/** step 5: the two rains of the street simulation, hand-kept in public/layers/guided/coming.json */
+/** step 5: the rains of the street simulation, hand-kept in public/layers/guided/coming.json */
 type ComingOption = {
 	key: string
 	label: string
@@ -105,10 +106,12 @@ type ComingOption = {
 	flagged_km: number | null
 	/** the property of streets_2024.json that flags this option's streets */
 	streets: string
+	/** the end of "of the flooded streets found ..." */
+	found_text: string
 	line: string
 	source: string
 }
-type ComingDoc = { options: ComingOption[]; agreement: { value: number; text: string; source: string }; closing: string }
+type ComingDoc = { options: ComingOption[]; ceiling: { text: string; pair: number[]; source: string }; closing: string }
 
 type Pick = { name: string; town: string; zone: string; zoneCode: number; water: number | null; lngLat: [number, number] }
 type Extra = 'exam' | 'rain'
@@ -733,7 +736,7 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 	} else if (key === 'coming') {
 		body = (
 			<>
-				<div className="gd-seg" role="radiogroup" aria-label="Which rain" style={{ ['--n' as string]: Math.max(1, rains.length) }}>
+				<div className="gd-seg" role="radiogroup" aria-label="Which rain" data-n={rains.length} style={{ ['--n' as string]: Math.max(1, rains.length) }}>
 					{rains.map((o) => (
 						<button key={o.key} type="button" role="radio" aria-checked={o.key === rainOpt?.key} onClick={() => setRainKey(o.key)}>
 							{o.label}
@@ -745,7 +748,7 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 						{rains.map((o) => (
 							<p key={o.key} data-on={o.key === rainOpt.key || undefined} data-arriving={o.status !== 'in' || undefined}>
 								{o.status === 'in' && o.found_pct !== null ? <b className="display">{pct(o.found_pct)}</b> : <b className="gd-arriving">Arriving</b>}
-								<span>of the flooded streets found {o.key === rains[0]?.key ? 'with the real rain' : 'with the forecast of the night before'}</span>
+								<span>of the flooded streets found {o.found_text}</span>
 							</p>
 						))}
 					</div>
@@ -753,7 +756,7 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 				{rainOpt && rainOpt.status === 'in' && rainOpt.really_flooded_pct !== null && (
 					<p className="gd-small">{pct(rainOpt.really_flooded_pct)} of the streets it flagged really flooded.</p>
 				)}
-				{rainOpt && rainOpt.status !== 'in' && <p className="gd-small">The forecast run is still being simulated: its streets and numbers arrive here when it is done.</p>}
+				{rainOpt && rainOpt.status !== 'in' && <p className="gd-small">This forecast run is still being simulated: its streets and numbers arrive here when it is done.</p>}
 				<ul className="gd-key">
 					<li>
 						<i className="gd-sw" data-k="hit" /> Flagged, and it flooded
@@ -766,7 +769,7 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 					</li>
 				</ul>
 				{rainOpt && <p className="gd-note">{rainOpt.line}</p>}
-				{coming && <p className="gd-small">{coming.agreement.text.replace('{value}', String(Math.round(coming.agreement.value)))}</p>}
+				{coming && <p className="gd-small">{coming.ceiling.text}</p>}
 				{coming && <p className="gd-close">{coming.closing}</p>}
 				<div className="gd-end">
 					<button type="button" className="gd-btn" onClick={() => go(0)}>
@@ -855,7 +858,7 @@ export function GuidedApp({ onAllLayers }: { onAllLayers: () => void }) {
 	}
 	if (key === 'coming' && coming) {
 		for (const o of coming.options) src.push(`${o.label}: ${o.source}.`)
-		src.push(`Agreement: ${coming.agreement.source}.`)
+		src.push(`Two records: ${coming.ceiling.source}.`)
 	}
 	if (key === 'nisar') {
 		if (SWIPE_WATER === 'open') {

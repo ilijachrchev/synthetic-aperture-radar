@@ -80,7 +80,7 @@ export const DANA: Story = {
 		NAMES,
 	],
 	meta: {
-		title: 'DANA Adam flood · Dancing with the SARs',
+		title: 'DANA Adam flood · Through the Clouds',
 		description: 'The October 2026 flood at the Pego-Oliva marsh: where the water was before and after the storm, from real radar passes over real satellite pictures.',
 	},
 }
@@ -119,7 +119,7 @@ export const FIRE: Story = {
 		NAMES,
 	],
 	meta: {
-		title: "Serra d'Espadà fire · Dancing with the SARs",
+		title: "Serra d'Espadà fire · Through the Clouds",
 		description: "The burn scar of the July 2026 fire in the Serra d'Espadà, as NISAR confirms it pass after pass, over real satellite pictures.",
 	},
 }
@@ -147,7 +147,7 @@ export const RICE: Story = {
 	credit: 'NISAR: NASA-ISRO · Sentinel-2: Copernicus · EOX · OpenStreetMap',
 	credits: [NISAR, PICTURES, BASE, NAMES],
 	meta: {
-		title: 'Rice season at the Albufera · Dancing with the SARs',
+		title: 'Rice season at the Albufera · Through the Clouds',
 		description: 'Every autumn farmers flood the rice fields around the Albufera lagoon. NISAR maps it on every pass: farm water, not a flood.',
 	},
 }

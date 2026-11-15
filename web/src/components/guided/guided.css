@@ -413,6 +413,11 @@
 	font-weight: 750;
 	transition: background 0.25s var(--ease), color 0.25s var(--ease);
 }
+.gd-seg[data-n="3"] button {
+	padding: 9px 4px;
+	font-size: 12.5px;
+	line-height: 1.2;
+}
 .gd-seg button[aria-checked="true"] {
 	background: var(--ink);
 	color: var(--bg);
@@ -665,4 +670,10 @@
 	box-shadow:
 		0 0 0 3px var(--bg),
 		0 4px 14px rgb(0 0 0 / 0.25);
+}
+
+/* "Arriving" stays quiet in a row of two or three numbers */
+.gd-pair[data-n] b.gd-arriving {
+	font-size: 20px;
+	line-height: 1.8;
 }

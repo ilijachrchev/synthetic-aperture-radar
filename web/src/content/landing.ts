@@ -3,7 +3,10 @@
 import type { SiteKey } from '@/lib/radar'
 
 export const HERO = {
-	eyebrow: 'NASA-ISRO NISAR · Valencia',
+	/** the name, its line, and the small line under them (SITE: Through the Clouds, NASA Space Apps 2026) */
+	name: 'Through the Clouds',
+	tagline: 'Where the water really went',
+	small: 'NASA Space Apps 2026 · Dancing with the SARs',
 	lines: ['The alert says rain.', 'Not where the water goes.'],
 	/** the two numbers come from src/data/dana_2024_toll.json, with their sources */
 	toll: { lives: 'lives lost', damage: 'of damage', caption: 'Valencia flood' },

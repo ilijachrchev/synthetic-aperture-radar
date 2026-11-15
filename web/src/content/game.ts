@@ -24,7 +24,7 @@ export const GAME = {
 	],
 	credit: 'NISAR: NASA-ISRO · Sentinel-1 water: OPERA DSWx-S1, NASA JPL · Flood map: Copernicus EMS · Terrain: Mapterhorn, MDT02 · Rain: Open-Meteo · EOX · OpenStreetMap',
 	meta: {
-		title: 'Where will the water go? · Dancing with the SARs',
+		title: 'Where will the water go? · Through the Clouds',
 		description: 'A game on real radar passes: see the Pego-Oliva marsh before the October 2026 storm, mark where you think the water will be, and learn from the pass that followed.',
 	},
 } as const
