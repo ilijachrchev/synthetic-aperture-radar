@@ -121,3 +121,64 @@ def test_equal_area_pick_lowest_first_ties_by_upstream_area():
     assert list(tf.equal_area_pick(score, tie, 5))[-1] == 3  # NaN last
     assert tf.equal_area_pick(score, tie, 0).size == 0
 
+
+
+def test_metrics_on_a_tiny_pixel_set():
+    from pipeline.streets import metrics
+
+    # 10 scored pixels; the reference saw 4 flooded (2 water, 2 traces)
+    fa = np.array([1, 1, 0, 0, 0, 0, 0, 0, 0, 0], dtype=bool)
+    ft = np.array([0, 0, 1, 1, 0, 0, 0, 0, 0, 0], dtype=bool)
+    icv = np.array([1, 1, 1, 1, 1, 0, 0, 0, 0, 0], dtype=bool)
+    refs = {"flooded_area": fa, "flood_trace": ft, "observed": fa | ft, "lb_observed": fa, "icv": icv}
+    sel = np.array([0, 1, 1, 0, 1, 0, 0, 0, 0, 0], dtype=bool)  # 3 pixels, 2 of them flooded
+    buildings = np.array([2, 3, 3, 9])  # positions; the same pixel can hold two buildings
+    marks = np.array([4])
+    m = metrics(sel, refs, buildings, marks)
+    assert m["area_pct_of_scored"] == 30.0
+    assert m["own_area_flooded_pct"] == pytest.approx(66.7)
+    assert m["observed_covered_pct"] == 50.0
+    assert m["flood_trace_covered_pct"] == 50.0
+    assert m["flooded_area_covered_pct"] == 50.0
+    assert m["buildings_covered_pct"] == 25.0
+    assert m["water_marks_covered_pct"] == 100.0
+    assert m["generalitat_footprint_covered_pct"] == 60.0
+    assert m["own_area_in_generalitat_footprint_pct"] == 100.0
+    assert m["chance_own_area_flooded_pct"] == 40.0
+    assert m["area_ha"] == pytest.approx(3 * 25 / 1e4, abs=0.05)
+
+
+def test_metrics_with_nothing_observed_gives_none():
+    from pipeline.streets import metrics
+
+    z = np.zeros(4, dtype=bool)
+    refs = {"flooded_area": z, "flood_trace": z, "observed": z, "lb_observed": z, "icv": z}
+    m = metrics(z.copy(), refs, np.zeros(0, dtype=int), np.zeros(0, dtype=int))
+    assert m["own_area_flooded_pct"] is None and m["buildings_covered_pct"] is None
+
+
+def test_large_water_keeps_lakes_and_drops_ponds():
+    from pipeline.streets import CELL_M, large_water
+
+    w = np.zeros((300, 300), dtype=bool)
+    w[:250, :250] = True        # 250 x 250 cells of 25 m2: 1.5625 km2, a lake
+    w[260:262, 260:262] = True  # a pond
+    big = large_water(w, min_km2=1.0)
+    assert big[:250, :250].all()
+    assert not big[260:262, 260:262].any()
+    assert CELL_M == 5.0
+
+
+def test_burn_uses_cell_centres_and_points_find_their_cell():
+    import shapely
+
+    from pipeline import streets as s
+
+    w, s_, e, n = s.GRID_BOUNDS
+    # a 10 m square whose edges fall on cell edges covers exactly 2 x 2 cells
+    sq = shapely.box(w + 10, n - 20, w + 20, n - 10)
+    m = s.burn([sq])
+    assert m.sum() == 4 and m[2:4, 2:4].all()
+    cols = s.grid_shape()[1]
+    idx = s.cells_of_points(np.array([w + 12.0, w - 1.0]), np.array([n - 17.0, n - 1.0]))
+    assert idx[0] == 3 * cols + 2 and idx[1] == -1

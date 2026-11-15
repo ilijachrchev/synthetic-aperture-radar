@@ -26,7 +26,7 @@ G = 9.81
 H_MIN = 1e-3
 
 
-@njit(parallel=True, cache=True)
+@njit(parallel=True)
 def step(z, h, qx, qy, sinks, rain, dx, dt, n2, hmax, ratio):
     """One step; returns (rain volume, sink volume) in m3. Same order of operations as Run.step."""
     rows, cols = h.shape
@@ -90,7 +90,7 @@ def step(z, h, qx, qy, sinks, rain, dx, dt, n2, hmax, ratio):
     return rain_row.sum() * dx * dx, sink_row.sum() * dx * dx
 
 
-@njit(cache=True)
+@njit
 def boundary_outflow(qx, qy, inside, dx):
     rows, cols = inside.shape
     q = 0.0

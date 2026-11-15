@@ -458,8 +458,42 @@ def hand_maps(rec: np.ndarray, upa: np.ndarray, sinks: np.ndarray, valid: np.nda
     return out
 
 
-def terrain(variants: bool = True) -> dict:
-    """5 m mosaic, permanent water, flow and HAND (bare terrain; buildings as obstacles)."""
+LAKE_MIN_KM2 = 1.0  # water bodies this large are sinks in the "lake" routing (the sea, the port, the Albufera)
+
+
+def large_water(water: np.ndarray, min_km2: float = LAKE_MIN_KM2) -> np.ndarray:
+    """The connected permanent-water bodies (8-connected) of at least min_km2; drops ponds and quarry lakes."""
+    from scipy import ndimage
+
+    lab, _ = ndimage.label(water, structure=np.ones((3, 3), dtype=bool))
+    sizes = np.bincount(lab.ravel()) * CELL_M * CELL_M / 1e6
+    keep = sizes >= min_km2
+    keep[0] = False
+    return keep[lab]
+
+
+def terrain(variants: bool = True, only: str | None = None) -> dict:
+    """5 m mosaic, permanent water, flow and HAND (bare terrain; buildings as obstacles; lake-only sinks).
+
+    only="lake" runs just the lake-only routing (sinks: water bodies of at least 1 km2), added after
+    the first scores showed that WorldCover ponds acting as sinks cut the Poyo's flow paths.
+    """
+    info_path = TERRAIN_DIR / "terrain_info.json"
+    if only == "lake":
+        info = json.loads(info_path.read_text(encoding="utf-8"))
+        z = load_grid("dtm5")
+        valid = z != DTM_NODATA
+        water = load_grid("water5").astype(bool)
+        lake = large_water(water)
+        save_grid("lake5", lake)
+        info["lake_cells"] = int(lake.sum())
+        info["lake_rule"] = f"WorldCover class 80 bodies of at least {LAKE_MIN_KM2:g} km2 (8-connected)"
+        res = flow(z, valid, lake, "lake")
+        info["flow_lake"] = res["info"]
+        info["hand_lake"] = hand_maps(res["rec"], res["upa"], lake, valid, load_grid("zfill_lake"), "lake",
+                                      thresholds=(DRAINAGE_M2,))
+        info_path.write_text(json.dumps(info, indent=1), encoding="utf-8")
+        return info
     z = mosaic_dtm()
     valid = z != DTM_NODATA
     save_grid("dtm5", z, nodata=DTM_NODATA)
@@ -486,7 +520,9 @@ def terrain(variants: bool = True) -> dict:
         info["hand_bldg"] = hand_maps(obst["rec"], obst["upa"], sinks, valid, zf_bare, "bldg",
                                       thresholds=(DRAINAGE_M2,))
         del obst
-    (TERRAIN_DIR / "terrain_info.json").write_text(json.dumps(info, indent=1), encoding="utf-8")
+    info_path.write_text(json.dumps(info, indent=1), encoding="utf-8")
+    if variants:
+        info = terrain(only="lake")
     return info
 
 
@@ -696,13 +732,12 @@ def score(zones_dir: Path, zones_json: Path | None = None) -> dict:
     # terrain rasters on the scored pixels
     hand_files = {
         "bare": "hand_bare_d0p5km2", "bare_d0p05": "hand_bare_d0p05km2", "bare_d5": "hand_bare_d5km2",
-        "bldg": "hand_bldg_d0p5km2",
+        "bldg": "hand_bldg_d0p5km2", "lake": "hand_lake_d0p5km2",
     }
     hand = {k: load_grid(f).ravel()[idx] for k, f in hand_files.items() if (TERRAIN_DIR / f"{f}.tif").exists()}
-    upa = {"bare": load_grid("upa_bare").ravel()[idx]}
-    if (TERRAIN_DIR / "upa_bldg.tif").exists():
-        upa["bldg"] = load_grid("upa_bldg").ravel()[idx]
-    upa_of = {k: upa["bldg" if k == "bldg" else "bare"] for k in hand}
+    upa = {v: load_grid(f"upa_{v}").ravel()[idx] for v in ("bare", "bldg", "lake")
+           if (TERRAIN_DIR / f"upa_{v}.tif").exists()}
+    upa_of = {k: upa[k if k in ("bldg", "lake") else "bare"] for k in hand}
 
     # methods: boolean selections over the scored pixels
     methods: dict[str, np.ndarray] = {}
@@ -788,10 +823,37 @@ def score(zones_dir: Path, zones_json: Path | None = None) -> dict:
     diagnostics = {"what": "HAND (bare terrain, drainage above 0.5 km2) of the flooded cells, the flood traces, the "
                            "graded buildings and all scored cells, and the HAND at which the equal-area cut stops",
                    "towns": {}}
+    # descriptive, not a method: how much land the terrain ranking (bare, per town) needs to catch as
+    # much as the official union does. Each town's budget is scaled by one factor f (capped at the town).
+    k_town = {t: int(zones["union"][p].sum()) for t, p in town_pos.items()}
+    entry = np.full(n, np.inf)
+    for t, p in town_pos.items():
+        if k_town[t] > 0:
+            entry[ranked(hb, upa["bare"], p)] = (np.arange(p.size) + 1) / k_town[t]
+
+    def land_for(target_pct: float, entries: np.ndarray) -> dict:
+        e = np.sort(entries)
+        need = int(np.ceil(target_pct / 100.0 * e.size))
+        f = float(e[max(need - 1, 0)]) if e.size else float("nan")
+        land = sum(min(f * k_town[t], p.size) for t, p in town_pos.items())
+        return {"budget_factor": round(f, 2), "land_pct_of_scored": pct(land, n),
+                "official_union_land_pct_of_scored": pct(sum(k_town.values()), n)}
+
+    off_tot = results["official_union"]["total"]
+    diagnostics["land_needed_for_the_official_hit_rate"] = {
+        "what": "descriptive only: the terrain ranking (bare HAND, per town) with every town's budget scaled by "
+                "the same factor until it catches as much as the official union",
+        "buildings": {"target_pct": off_tot["buildings_covered_pct"], **land_for(off_tot["buildings_covered_pct"], entry[b_pos])},
+        "flood_traces": {"target_pct": off_tot["flood_trace_covered_pct"],
+                         **land_for(off_tot["flood_trace_covered_pct"], entry[refs["flood_trace"]])},
+    }
     for t, p in [*town_pos.items(), ("total", np.arange(n))]:
         bp = b_pos if t == "total" else b_pos[b_town == t]
         cut = hb[p][eq[p]]
+        low = np.isfinite(hb[p]) & (hb[p] < 3.0)
         diagnostics["towns"][t] = {
+            "land_hand_below_3m_ha": round(int(low.sum()) * 25 / 1e4, 1),
+            "land_hand_below_3m_observed_flooded_pct": pct(int((low & refs["observed"][p]).sum()), int(low.sum())),
             "observed_flood": hand_stats(hb[p][refs["observed"][p]]),
             "flood_traces": hand_stats(hb[p][refs["flood_trace"][p]]),
             "graded_buildings": hand_stats(hb[bp]),
@@ -816,6 +878,9 @@ def score(zones_dir: Path, zones_json: Path | None = None) -> dict:
         "flooded_area_ha_on_scored_pixels": round(int(refs["flooded_area"].sum()) * 25 / 1e4, 1),
         "union_zone_ha_on_scored_pixels": round(int(zones["union"].sum()) * 25 / 1e4, 1),
         "generalitat_footprint_ha_on_scored_pixels": round(int(refs["icv"].sum()) * 25 / 1e4, 1),
+        "scored_pixels_without_hand": {k: int((~np.isfinite(h)).sum()) for k, h in hand.items()},
+        "note_without_hand": "cells whose flow path leaves the grid before it meets a drainage cell; "
+                             "they rank last in the equal-area cut and are never flood-prone in method 2",
     }
     if zones_json is not None and zones_json.exists():
         z = json.loads(zones_json.read_text(encoding="utf-8"))["events"]["dana_2024_horta_sud"]
@@ -937,15 +1002,17 @@ def simulate(numba_python: Path | None = None) -> dict:
 
     from pipeline import terrain_flow as tf
 
-    rec = tf.receivers(load_grid("code_bare"))
-    upa = load_grid("upa_bare")
+    # the lake-only routing: WorldCover ponds are not sinks (one on the Poyo near Cheste drains 157.6 km2)
+    rec = tf.receivers(load_grid("code_lake"))
+    upa = load_grid("upa_lake")
     zones = rain_zones(rec, upa)
+    print(json.dumps(zones["info"], indent=1), flush=True)
     del rec
     f = int(SIM_CELL_M // CELL_M)
     z5 = load_grid("dtm5")
     z25 = block_mean(z5, f, DTM_NODATA)
     del z5
-    water25 = block_mean(load_grid("water5").astype(np.float32), f, -1.0, min_valid=1) >= 0.5
+    water25 = block_mean(load_grid("lake5").astype(np.float32), f, -1.0, min_valid=1) >= 0.5
     rows, cols = z25.shape
     sinks = (z25 == DTM_NODATA) | water25
     sinks[0, :] = sinks[-1, :] = sinks[:, 0] = sinks[:, -1] = True
@@ -1028,10 +1095,11 @@ def flow_path_lines(min_km2: float = WEB_FLOW_MIN_KM2):
 
     from pipeline import terrain_flow as tf
 
-    code = load_grid("code_bare")
+    # the lake-only routing, so the Poyo is one line from Chiva to the Albufera (display only)
+    code = load_grid("code_lake")
     rec = tf.receivers(code)
     del code
-    upa = load_grid("upa_bare").ravel()
+    upa = load_grid("upa_lake").ravel()
     rows, cols = grid_shape()
     cells = np.flatnonzero((upa > min_km2 * 1e6) & (rec >= 0))
     dst = rec[cells]
@@ -1080,8 +1148,8 @@ def layers(zones_dir: Path) -> None:
 
     res = json.loads((STREETS_DIR / "results.json").read_text(encoding="utf-8"))
     lines = flow_path_lines()
-    lines["what"] = (f"terrain flow paths (D8, ICV MDT 2015 at 5 m), upstream area above "
-                     f"{WEB_FLOW_MIN_KM2:g} km2; drainage for HAND starts at 0.5 km2")
+    lines["what"] = (f"terrain flow paths (D8 on the ICV MDT 2015 at 5 m, only water bodies of 1 km2 or more "
+                     f"as sinks), upstream area above {WEB_FLOW_MIN_KM2:g} km2; drainage for HAND starts at 0.5 km2")
     _write_geojson(lines, "flow_paths")
 
     towns = load_towns(zones_dir)
@@ -1176,6 +1244,8 @@ def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(prog="python -m pipeline.streets", description=__doc__.split("\n\n")[0])
     parser.add_argument("step", choices=STEPS)
     parser.add_argument("--no-variants", action="store_true", help="terrain: skip the buildings variant")
+    parser.add_argument("--only", choices=["lake"], default=None,
+                        help="terrain: run only the lake-only routing (after the main terrain step)")
     parser.add_argument("--zones-interim", type=Path, default=ZONES_INTERIM_DIR,
                         help="downloads of pipeline.zones (PR #36): municipalities, SNCZI, EMSR773")
     parser.add_argument("--zones-json", type=Path, default=DATA_DIR / "zones" / "zones_vs_floods.json",
@@ -1193,7 +1263,7 @@ def main(argv: list[str] | None = None) -> None:
             fn(manifest)
             save_manifest(manifest)
     elif args.step == "terrain":
-        terrain(variants=not args.no_variants)
+        terrain(variants=not args.no_variants, only=args.only)
     elif args.step == "score":
         score(args.zones_interim, args.zones_json)
     elif args.step == "simulate":
