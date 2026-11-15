@@ -125,7 +125,7 @@
 	border: 0;
 	border-radius: 3px;
 	background: var(--line-strong);
-	transition: background 0.3s var(--ease), width 0.3s var(--ease);
+	transition: background 0.3s var(--ease);
 }
 .gd-dots button[aria-current] {
 	width: 34px;
