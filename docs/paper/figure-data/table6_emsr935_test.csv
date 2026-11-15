@@ -1,0 +1,8 @@
+Method,F1,Precision,Recall,Mapped area (ha)
+Model (rain that fell),0.417,0.509,0.353,527.4
+Model (forecast rain),0.396,0.535,0.314,446.2
+"Low terrain, same area",0.244,0.298,0.207,527.4
+Past water (JRC),0.288,0.478,0.206,328.4
+"NISAR 16 Oct, -15 dB",0.273,0.531,0.184,263.2
+"NISAR 16 Oct, Otsu",0.46,0.51,0.42,625.0
+All land with HAND = 0,0.454,0.296,0.97,2490.7

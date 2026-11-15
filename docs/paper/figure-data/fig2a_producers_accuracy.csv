@@ -1,0 +1,4 @@
+Map,Estimate,95% low,95% high,Worst case,Best case
+"NISAR threshold (L-band, -15 dB)",0.52,0.48,0.57,0.22,0.71
+DSWx-S1 (Sentinel-1),0.02,0.02,0.02,0.01,0.05
+App U-Net (trained on DSWx-S1),0.04,0.0,0.08,0.01,0.04

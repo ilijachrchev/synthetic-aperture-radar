@@ -1,0 +1,366 @@
+{
+ "model": {
+  "pr": 33,
+  "commit": "b4c69d9af6e86ebcf8a61f7772056023f2ada290",
+  "model_sha256_16": "2eea321ceebe7d37",
+  "variant": "base",
+  "scenario": "replay_2026-10-22",
+  "issued_from_pass": "20261017T175323_S1C",
+  "target_pass": "20261022T060936_S1D",
+  "threshold_water_frozen": 0.2946
+ },
+ "reference": "Copernicus EMSR935 AOI01, imagery 20-21 Oct 2026 (data/labels)",
+ "nisar_before": {
+  "date": "2026-10-16",
+  "threshold_db": -15.0,
+  "otsu_db": -11.85
+ },
+ "rule": "model F1 > F1 of each of baselines (i) low HAND, (ii) JRC > 0, (iii) NISAR 16 Oct persistence",
+ "bootstrap": {
+  "block_m": 1000,
+  "reps": 1000,
+  "seed": 20261115
+ },
+ "sets": {
+  "all_pixels": {
+   "pixels": 977275,
+   "area_ha": 39091.0,
+   "hand_zero_share": 0.064,
+   "low_hand_f1_over_50_tie_draws_flooded_area": [
+    0.246,
+    0.252,
+    0.258
+   ],
+   "references": {
+    "flooded_area": {
+     "scores": {
+      "model": {
+       "precision": 0.5,
+       "recall": 0.369,
+       "f1": 0.425,
+       "iou": 0.27,
+       "predicted_ha": 561.3,
+       "observed_ha": 759.8
+      },
+      "model_forecast_rain": {
+       "precision": 0.501,
+       "recall": 0.352,
+       "f1": 0.414,
+       "iou": 0.261,
+       "predicted_ha": 534.8,
+       "observed_ha": 759.8
+      },
+      "low_hand_same_area": {
+       "precision": 0.296,
+       "recall": 0.219,
+       "f1": 0.252,
+       "iou": 0.144,
+       "predicted_ha": 561.3,
+       "observed_ha": 759.8
+      },
+      "hand_zero_all": {
+       "precision": 0.296,
+       "recall": 0.97,
+       "f1": 0.454,
+       "iou": 0.293,
+       "predicted_ha": 2490.7,
+       "observed_ha": 759.8
+      },
+      "jrc_past_water": {
+       "precision": 0.478,
+       "recall": 0.206,
+       "f1": 0.288,
+       "iou": 0.168,
+       "predicted_ha": 328.4,
+       "observed_ha": 759.8
+      },
+      "nisar_16oct_persistence": {
+       "precision": 0.531,
+       "recall": 0.184,
+       "f1": 0.273,
+       "iou": 0.158,
+       "predicted_ha": 263.2,
+       "observed_ha": 759.8
+      },
+      "nisar_16oct_persistence_otsu": {
+       "precision": 0.51,
+       "recall": 0.42,
+       "f1": 0.46,
+       "iou": 0.299,
+       "predicted_ha": 625.0,
+       "observed_ha": 759.8
+      }
+     },
+     "f1_model_minus_baseline_ci95": {
+      "low_hand_same_area": [
+       0.044,
+       0.288
+      ],
+      "jrc_past_water": [
+       -0.01,
+       0.281
+      ],
+      "nisar_16oct_persistence": [
+       -0.054,
+       0.341
+      ]
+     },
+     "model_beats_all_three": true
+    },
+    "flooded_area_plus_trace": {
+     "scores": {
+      "model": {
+       "precision": 0.614,
+       "recall": 0.356,
+       "f1": 0.45,
+       "iou": 0.291,
+       "predicted_ha": 561.3,
+       "observed_ha": 970.0
+      },
+      "model_forecast_rain": {
+       "precision": 0.616,
+       "recall": 0.34,
+       "f1": 0.438,
+       "iou": 0.281,
+       "predicted_ha": 534.8,
+       "observed_ha": 970.0
+      },
+      "low_hand_same_area": {
+       "precision": 0.372,
+       "recall": 0.215,
+       "f1": 0.273,
+       "iou": 0.158,
+       "predicted_ha": 561.3,
+       "observed_ha": 970.0
+      },
+      "hand_zero_all": {
+       "precision": 0.373,
+       "recall": 0.959,
+       "f1": 0.537,
+       "iou": 0.367,
+       "predicted_ha": 2490.7,
+       "observed_ha": 970.0
+      },
+      "jrc_past_water": {
+       "precision": 0.485,
+       "recall": 0.164,
+       "f1": 0.245,
+       "iou": 0.14,
+       "predicted_ha": 328.4,
+       "observed_ha": 970.0
+      },
+      "nisar_16oct_persistence": {
+       "precision": 0.531,
+       "recall": 0.144,
+       "f1": 0.227,
+       "iou": 0.128,
+       "predicted_ha": 263.2,
+       "observed_ha": 970.0
+      },
+      "nisar_16oct_persistence_otsu": {
+       "precision": 0.524,
+       "recall": 0.338,
+       "f1": 0.411,
+       "iou": 0.258,
+       "predicted_ha": 625.0,
+       "observed_ha": 970.0
+      }
+     },
+     "f1_model_minus_baseline_ci95": {
+      "low_hand_same_area": [
+       0.03,
+       0.301
+      ],
+      "jrc_past_water": [
+       0.023,
+       0.371
+      ],
+      "nisar_16oct_persistence": [
+       0.005,
+       0.422
+      ]
+     },
+     "model_beats_all_three": true
+    }
+   },
+   "average_precision_flooded_area": {
+    "model": 0.452,
+    "model_forecast_rain": 0.449,
+    "low_hand": 0.296,
+    "jrc_occurrence": 0.095,
+    "nisar_16oct_darkness": 0.364,
+    "base_rate": 0.0194
+   }
+  },
+  "model_learning_domain": {
+   "pixels": 905462,
+   "area_ha": 36218.5,
+   "hand_zero_share": 0.067,
+   "low_hand_f1_over_50_tie_draws_flooded_area": [
+    0.251,
+    0.257,
+    0.264
+   ],
+   "references": {
+    "flooded_area": {
+     "scores": {
+      "model": {
+       "precision": 0.5,
+       "recall": 0.37,
+       "f1": 0.426,
+       "iou": 0.27,
+       "predicted_ha": 561.1,
+       "observed_ha": 757.4
+      },
+      "model_forecast_rain": {
+       "precision": 0.501,
+       "recall": 0.354,
+       "f1": 0.415,
+       "iou": 0.261,
+       "predicted_ha": 534.6,
+       "observed_ha": 757.4
+      },
+      "low_hand_same_area": {
+       "precision": 0.301,
+       "recall": 0.223,
+       "f1": 0.256,
+       "iou": 0.147,
+       "predicted_ha": 561.1,
+       "observed_ha": 757.4
+      },
+      "hand_zero_all": {
+       "precision": 0.302,
+       "recall": 0.971,
+       "f1": 0.461,
+       "iou": 0.299,
+       "predicted_ha": 2435.5,
+       "observed_ha": 757.4
+      },
+      "jrc_past_water": {
+       "precision": 0.484,
+       "recall": 0.207,
+       "f1": 0.29,
+       "iou": 0.17,
+       "predicted_ha": 324.0,
+       "observed_ha": 757.4
+      },
+      "nisar_16oct_persistence": {
+       "precision": 0.531,
+       "recall": 0.184,
+       "f1": 0.274,
+       "iou": 0.159,
+       "predicted_ha": 263.2,
+       "observed_ha": 757.4
+      },
+      "nisar_16oct_persistence_otsu": {
+       "precision": 0.514,
+       "recall": 0.42,
+       "f1": 0.462,
+       "iou": 0.301,
+       "predicted_ha": 619.8,
+       "observed_ha": 757.4
+      }
+     },
+     "f1_model_minus_baseline_ci95": {
+      "low_hand_same_area": [
+       0.04,
+       0.286
+      ],
+      "jrc_past_water": [
+       -0.011,
+       0.28
+      ],
+      "nisar_16oct_persistence": [
+       -0.054,
+       0.342
+      ]
+     },
+     "model_beats_all_three": true
+    },
+    "flooded_area_plus_trace": {
+     "scores": {
+      "model": {
+       "precision": 0.615,
+       "recall": 0.357,
+       "f1": 0.451,
+       "iou": 0.292,
+       "predicted_ha": 561.1,
+       "observed_ha": 966.6
+      },
+      "model_forecast_rain": {
+       "precision": 0.617,
+       "recall": 0.341,
+       "f1": 0.439,
+       "iou": 0.281,
+       "predicted_ha": 534.6,
+       "observed_ha": 966.6
+      },
+      "low_hand_same_area": {
+       "precision": 0.377,
+       "recall": 0.219,
+       "f1": 0.277,
+       "iou": 0.161,
+       "predicted_ha": 561.1,
+       "observed_ha": 966.6
+      },
+      "hand_zero_all": {
+       "precision": 0.381,
+       "recall": 0.96,
+       "f1": 0.546,
+       "iou": 0.375,
+       "predicted_ha": 2435.5,
+       "observed_ha": 966.6
+      },
+      "jrc_past_water": {
+       "precision": 0.492,
+       "recall": 0.165,
+       "f1": 0.247,
+       "iou": 0.141,
+       "predicted_ha": 324.0,
+       "observed_ha": 966.6
+      },
+      "nisar_16oct_persistence": {
+       "precision": 0.531,
+       "recall": 0.145,
+       "f1": 0.227,
+       "iou": 0.128,
+       "predicted_ha": 263.2,
+       "observed_ha": 966.6
+      },
+      "nisar_16oct_persistence_otsu": {
+       "precision": 0.528,
+       "recall": 0.338,
+       "f1": 0.412,
+       "iou": 0.26,
+       "predicted_ha": 619.8,
+       "observed_ha": 966.6
+      }
+     },
+     "f1_model_minus_baseline_ci95": {
+      "low_hand_same_area": [
+       0.026,
+       0.296
+      ],
+      "jrc_past_water": [
+       0.021,
+       0.371
+      ],
+      "nisar_16oct_persistence": [
+       0.005,
+       0.423
+      ]
+     },
+     "model_beats_all_three": true
+    }
+   },
+   "average_precision_flooded_area": {
+    "model": 0.453,
+    "model_forecast_rain": 0.45,
+    "low_hand": 0.3,
+    "jrc_occurrence": 0.097,
+    "nisar_16oct_darkness": 0.367,
+    "base_rate": 0.0209
+   }
+  }
+ }
+}
