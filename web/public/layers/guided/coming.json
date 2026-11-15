@@ -44,7 +44,7 @@
    84.2,
    78.9
   ],
-  "source": "data/streets/results.json streets_more_runs.main.ceiling.key_b_against_key_a.total: the UPV depth map against key A (Copernicus EMS map and water marks), 84.2 % found and 78.9 % really flooded, inside the UPV outlines (PR #50)"
+  "source": "data/streets/results.json streets_more_runs.main.ceiling.key_b_against_key_a.total: the UPV depth map against key A (Copernicus EMS map and water marks), 84.2% found and 78.9% really flooded, inside the UPV outlines (PR #50)"
  },
  "closing": "Open code, every test written down before the answer was seen."
 }

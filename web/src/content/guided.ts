@@ -56,8 +56,17 @@ export const COLORS = {
 export const SWIPE_WATER: 'open' | 'any' = 'open'
 
 /** how long the flooded streets take to appear when step 2 opens, and how long each of its 16 groups fades in */
+/** a street piece the simulation puts this deep (m) or deeper lies over a ravine channel (a bridge, a path in the
+ *  riverbed): its 25 m cell is the channel's, so the tap card says so instead of giving a street depth. Measured water
+ *  marks on streets reach 4.2 m (one mark of 7.0 m in Chiva, data/streets/water_marks_2024.geojson); the full check of
+ *  15 Nov 2026 found 5 to 13.8 m only on ravine pieces. */
+export const CHANNEL_M = 5
+
 export const REVEAL_MS = 4000
 export const REVEAL_FADE_MS = 700
+
+/** the title of /explore?all, every layer (the guide's own is META's) */
+export const TITLE_ALL = 'Explore · Through the Clouds'
 
 export const META = {
 	title: 'The flood map · Through the Clouds',

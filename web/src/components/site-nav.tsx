@@ -90,7 +90,7 @@ export function SiteNav({
 		<>
 			<p>{NAV_STORIES}</p>
 			{STORIES.map((s) => (
-				<Link key={s.key} href={s.path} onClick={() => setStories(false)}>
+				<Link key={s.key} href={s.path} prefetch={false} onClick={() => setStories(false)}>
 					<b>{s.title}</b>
 					<small>{s.place}</small>
 				</Link>
