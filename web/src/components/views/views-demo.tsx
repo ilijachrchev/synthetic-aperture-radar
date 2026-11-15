@@ -95,7 +95,12 @@ const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', '
 const day = (d: string) => `${Number(d.slice(8, 10))} ${MONTHS[Number(d.slice(5, 7)) - 1]}`
 const clock = (t: string) => t.slice(11, 16)
 const ha = (v: number | null | undefined) => (v == null ? '' : `${new Intl.NumberFormat('en-GB').format(Math.round(v))} ha`)
-const pct = (v: number | null | undefined) => (v == null ? '' : `${Math.round(v * 100)} %`)
+// as the captions round: 99.7 % stays 99.7 %, not 100 %
+const pct = (v: number | null | undefined) => {
+	if (v == null) return ''
+	const p = v * 100
+	return (p > 0 && p < 1) || (p > 99 && p < 100) ? `${p.toFixed(1)} %` : `${Math.round(p)} %`
+}
 
 // ---------------------------------------------------------------- pieces
 
